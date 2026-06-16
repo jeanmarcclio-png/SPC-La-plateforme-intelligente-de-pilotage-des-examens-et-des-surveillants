@@ -1,6 +1,3 @@
-# /visuel — Générer les prompts d'images
-
-Invoque le **Designer** pour produire 8 prompts (4 formats × 2 variants).
-
-## Usage
-## Règles : 1 slide = 1 idée · max 30 mots · titre = affirmation
+# /visuel
+Invoque le Designer. Usage: /visuel {nom-campagne}
+Produit 8 prompts (4 formats x 2 variants) dans prompts-images/

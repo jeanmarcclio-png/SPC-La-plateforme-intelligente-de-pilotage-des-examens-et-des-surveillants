@@ -1,7 +1,3 @@
-# /brief — Lancer une analyse stratégique
-
-Invoque le **Stratège** pour produire un brief de positionnement.
-
-## Usage
-## Sortie attendue
-`briefs/{YYYY-MM-DD}_{nom-campagne}_brief.md` avec `statut: brouillon`
+# /brief
+Invoque le Stratège. Usage: /brief {nom-campagne} [contexte]
+Sortie : briefs/{YYYY-MM-DD}_{campagne}_brief.md statut: brouillon
