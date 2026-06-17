@@ -1,80 +1,120 @@
-# Brand Guard — SPC
+---
+projet: SPC
+fichier: brand.md
+version: "2.0"
+date: 2026-06-17
+---
 
-> Ce fichier est lu par CHAQUE agent avant toute production.
-> Une violation = re-production obligatoire. Ne jamais livrer sans vérification.
+# Brand SPC — Garde-fou transverse v2.0
+
+> Tous les agents lisent ce fichier AVANT de produire. Toute violation est bloquante.
 
 ---
 
-## Identité de marque
+## Positionnement officiel
 
-**Nom complet** : SPC — Plateforme Intelligente de Pilotage des Examens  
-**Positionnement** : La seule plateforme SaaS qui élimine le chaos administratif
-des examens en automatisant planification, affectation et facturation.  
-**Promesse** : Zéro erreur, zéro oubli, 100% traçable.
+**SPC** est une société spécialisée dans la surveillance d'examens, la coordination de surveillants,
+la sécurisation logistique des sessions, la gestion des plannings, la présence en salle,
+les tiers-temps, les renforts, les rapports post-session et l'appui opérationnel aux établissements.
 
----
+**SPC ne vend pas des surveillants. SPC vend la sécurisation opérationnelle des examens.**
 
-## Ton de communication
-
-| Attribut       | Description                                                      |
-|----------------|------------------------------------------------------------------|
-| Professionnel  | Sérieux sans être froid. On parle à des responsables d'examens. |
-| Direct         | Phrases courtes. Verbe d'action en tête. Pas de circonlocutions.|
-| Rassurant      | On résout des problèmes réels. On ne vend pas du rêve.          |
-| Précis         | Chiffres concrets si disponibles. Jamais de vague.              |
-
-**Voix de marque** : Un expert bienveillant qui connaît les galères du terrain et
-propose des solutions concrètes — pas un commercial qui survend.
+### Proposition de valeur core
+- Continuité de service garantie (zéro salle sans surveillant)
+- Fiabilité des profils (formation, ponctualité, respect des consignes)
+- Gestion des absences et renforts en temps réel
+- Coordination terrain complète
+- Prise en charge des tiers-temps et PMR
+- Reporting post-session structuré
+- Réduction de la charge administrative des directions des examens
+- Professionnalisation de la surveillance académique
 
 ---
 
-## Vocabulaire AUTORISÉ
+## Cible principale (v2.0) — Enseignement supérieur post-bac
 
-- Piloter, planifier, affecter, automatiser, tracer, optimiser
-- Surveillant, salle d'examen, session, devis, facturation
-- Gain de temps, fiabilité, conformité, traçabilité
-- Responsable d'examens, établissement, centre de formation
+### Établissements prioritaires
+
+**Tier 1 — Business schools**
+HEC, ESSEC, ESCP, EM Normandie, NEOMA, SKEMA, IÉSEG, ESSCA, ESG, INSEEC,
+ISC Paris, IPAG, EDC, EBS, Paris School of Business, Audencia, ICN, etc.
+
+**Tier 2 — Universités et pôles universitaires**
+Paris Dauphine-PSL, Paris-Saclay, Paris Cité, Sorbonne Université, Panthéon-Sorbonne,
+Assas, Nanterre, UPEC, Gustave Eiffel, CY Cergy, UVSQ, Évry, etc.
+
+**Tier 3 — Grandes écoles et écoles spécialisées**
+Écoles d'ingénieurs, de management, communication, RH, droit, santé,
+informatique, digital, commerce post-bac, art, écoles privées reconnues.
+
+**Tier 4 — CFA et organismes post-bac**
+CFA de l'enseignement supérieur, BTS, Bachelor, Mastère, titres RNCP,
+certifications professionnelles, concours.
+
+**Zones géographiques prioritaires**
+Paris · Île-de-France · Paris-Saclay · grands pôles universitaires nationaux
+
+### Interlocuteurs à cibler (décideurs opérationnels)
+- Responsable des examens / Coordinateur examens
+- Responsable scolarité / Direction de la scolarité
+- Directeur(trice) des opérations académiques
+- Responsable concours / admissions
+- Directeur pédagogique
+- Responsable planning examens
+- Secrétaire général d'établissement
+- Directeur de campus
+- Responsable qualité académique
+- Responsable des surveillances
+- Responsable certifications / titres RNCP
+
+### Interlocuteurs à ÉVITER
+- DRH de lycée public
+- Principal de collège / Proviseur lycée public
+- CPE collège/lycée
+- Académie / rectorat comme cible principale
+- Établissements primaires ou secondaires non post-bac
 
 ---
 
-## Vocabulaire BANNI (violation bloquante)
+## Ton et style
 
-| Mot/expression banni        | Raison                                        |
-|-----------------------------|-----------------------------------------------|
-| "Révolutionnaire"           | Galvaudé, non crédible                        |
-| "Game-changer"              | Anglicisme vide de sens                       |
-| "Solution innovante"        | Tautologie creuse                             |
-| "À la pointe de"            | Cliché                                        |
-| "Disruption" / "Disruptif"  | Mot-valise sans contenu                       |
-| "Synergies"                 | Jargon corporate opaque                       |
-| "Passer au niveau supérieur"| Expression vague                              |
-| Emojis excessifs (>2/post)  | Nuit à la crédibilité professionnelle         |
-| Phrases > 25 mots           | Trop long pour le feed LinkedIn               |
-| Majuscules abusives (CECI)  | Agressif visuellement                         |
+### Ton obligatoire
+Professionnel · Institutionnel · Rassurant · Direct · B2B premium enseignement supérieur
 
----
+### Vocabulaire privilégié
+sécurisation · fiabilité · coordination · continuité · conformité · reporting ·
+tiers-temps · PMR · opérationnel · professionnalisation · externalisation ·
+session d'examens · direction des examens · établissement · campus ·
+surveillance académique · appui opérationnel
 
-## Palette visuelle
-
-| Rôle            | Couleur          | Hex       | Usage                          |
-|-----------------|------------------|-----------|-------------------------------|
-| Primaire        | Bleu marine      | `#1A2E4A` | Titres, CTA principaux        |
-| Secondaire      | Bleu ciel        | `#3A86FF` | Accents, liens, highlights    |
-| Accent          | Orange vif       | `#FF6B35` | Alertes, badges, urgence      |
-| Neutre clair    | Gris perle       | `#F4F6F9` | Fonds de slide, arrière-plans |
-| Neutre foncé    | Gris anthracite  | `#2D3748` | Corps de texte                |
-| Succès          | Vert menthe      | `#38B2AC` | Validations, statuts OK       |
-
-**Style visuel** : Épuré, géométrique, data-forward. Pas d'illustrations figuratives
-trop complexes. Préférer les pictogrammes et les graphiques clairs.
+### Vocabulaire INTERDIT
+révolutionnaire · disruptif · game-changer · IA magique · solution miracle ·
+simple (seul) · innovant (seul) · unique · meilleur · numéro 1 ·
+lycée (sauf contexte) · collège · CPE · académie (hors contexte) ·
+DRH lycée · administration scolaire bas niveau
 
 ---
 
-## Checklist de conformité brand (à valider avant livraison)
+## Palette graphique
 
-- [ ] Ton respecté (professionnel, direct, rassurant, précis)
-- [ ] Aucun mot du vocabulaire banni présent
-- [ ] Palette respectée dans les prompts images
-- [ ] Phrases courtes (≤25 mots pour le contenu social)
-- [ ] Emojis : 0 à 2 maximum par post
-- [ ] Promesse de marque cohérente avec le positionnement SPC
+| Nom | Hex | Usage |
+|-----|-----|-------|
+| Bleu nuit | `#1A2E4A` | Fond principal, titres |
+| Bleu électrique | `#3A86FF` | Accents, CTA |
+| Orange vif | `#FF6B35` | Alertes, CTA secondaire |
+| Blanc cassé | `#F4F6F9` | Fond clair |
+| Gris anthracite | `#2D3748` | Corps de texte |
+| Turquoise | `#38B2AC` | Indicateurs succès |
+
+---
+
+## Différenciateurs vs agences d'intérim généralistes
+
+| SPC | Concurrents |
+|-----|-------------|
+| Spécialisation examens uniquement | Généralistes |
+| Formation aux consignes académiques | Personnel non formé |
+| Gestion des tiers-temps intégrée | Non pris en charge |
+| Reporting post-session structuré | Absent |
+| Continuité de service garantie | Aléatoire |
+| Interlocuteur dédié par établissement | Plateforme anonyme |
