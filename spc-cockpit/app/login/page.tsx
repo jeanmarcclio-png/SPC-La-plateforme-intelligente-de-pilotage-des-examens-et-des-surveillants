@@ -16,13 +16,13 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log("Supabase response:", { data, error });
     if (error) {
-      setError("Email ou mot de passe incorrect.");
+      setError(`Erreur : ${error.message}`);
       setLoading(false);
     } else {
-      router.push("/dashboard");
-      router.refresh();
+      window.location.href = "/dashboard";
     }
   }
 
