@@ -16,6 +16,7 @@ export interface Prospect {
   canal: string;
   statut: "Non contacté" | "En cours" | "RDV fixé" | "Converti";
   action: string;
+  notes?: string;
 }
 
 export interface ScoreBANT {

@@ -70,7 +70,7 @@ export default async function QualificationPage() {
             {/* Notes */}
             <div className="mt-3 pt-3 border-t border-gray-100">
               <div className="text-[11px] text-gray-400 mb-1.5">Notes</div>
-              <ProspectNotesInput id={emLyon.id} />
+              <ProspectNotesInput id={emLyon.id} notes={emLyon.notes} />
             </div>
           </div>
 
