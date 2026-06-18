@@ -4,7 +4,7 @@ import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
 import { clusterScores } from "@/lib/data";
 import { getProspects } from "@/lib/supabase/queries";
-import { ProspectStatutSelect, ProspectNotesInput } from "@/components/ProspectCRM";
+import { ProspectStatutSelect, ProspectNotesInput, ProspectDeleteButton } from "@/components/ProspectCRM";
 import { AddProspectButton } from "@/components/AddProspectModal";
 
 export default async function QualificationPage() {
@@ -134,7 +134,7 @@ export default async function QualificationPage() {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    {["#", "Établissement", "Segment", "Score", "Statut", "Action"].map((h) => (
+                    {["#", "Établissement", "Segment", "Score", "Statut", "Action", ""].map((h) => (
                       <th key={h} className="text-left px-3 py-2.5 text-[10.5px] font-semibold text-gray-500 uppercase tracking-[.5px]">{h}</th>
                     ))}
                   </tr>
@@ -161,6 +161,9 @@ export default async function QualificationPage() {
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap">
                         <Link href="/planning" className="text-[11.5px] text-[#4a90d9] hover:underline">{p.action}</Link>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <ProspectDeleteButton id={p.id} nom={p.nom} />
                       </td>
                     </tr>
                   ))}

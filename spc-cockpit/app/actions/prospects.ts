@@ -3,16 +3,28 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
+function revalidateAll() {
+  revalidatePath("/qualification");
+  revalidatePath("/dashboard");
+  revalidatePath("/campagnes");
+}
+
 export async function updateProspectStatut(id: string, statut: string) {
   const supabase = await createClient();
   await supabase.from("prospects").update({ statut }).eq("id", id);
-  revalidatePath("/qualification");
+  revalidateAll();
 }
 
 export async function updateProspectNotes(id: string, notes: string) {
   const supabase = await createClient();
   await supabase.from("prospects").update({ notes }).eq("id", id);
   revalidatePath("/qualification");
+}
+
+export async function deleteProspect(id: string) {
+  const supabase = await createClient();
+  await supabase.from("prospects").delete().eq("id", id);
+  revalidateAll();
 }
 
 export async function createProspect(formData: FormData) {
@@ -33,6 +45,5 @@ export async function createProspect(formData: FormData) {
     action:       formData.get("action") as string,
     campagne_id:  formData.get("campagne_id") as string,
   });
-  revalidatePath("/qualification");
-  revalidatePath("/dashboard");
+  revalidateAll();
 }
