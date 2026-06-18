@@ -1,9 +1,10 @@
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
-import { livraisonIDF } from "@/lib/data";
+import { getLivrables } from "@/lib/supabase/queries";
 
-export default function LivrablesPage() {
+export default async function LivrablesPage() {
+  const livraisonIDF = await getLivrables();
   return (
     <>
       <Topbar context="Production" title="Livrables" badge="7 validés" badgeColor="green" />

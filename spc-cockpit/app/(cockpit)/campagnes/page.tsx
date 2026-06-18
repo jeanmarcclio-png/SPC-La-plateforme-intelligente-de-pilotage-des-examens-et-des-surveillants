@@ -1,7 +1,7 @@
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
-import { campagnes, livraisonIDF } from "@/lib/data";
+import { getCampagnes, getLivrables } from "@/lib/supabase/queries";
 
 const checkIcon = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3.5 h-3.5">
@@ -15,7 +15,11 @@ const clockIcon = (
   </svg>
 );
 
-export default function CampagnesPage() {
+export default async function CampagnesPage() {
+  const [campagnes, livraisonIDF] = await Promise.all([
+    getCampagnes(),
+    getLivrables("idf-2026"),
+  ]);
   const validated = livraisonIDF.filter((l) => l.statut === "Validé").length;
   const total = livraisonIDF.length;
   const pct = Math.round((validated / total) * 100);
