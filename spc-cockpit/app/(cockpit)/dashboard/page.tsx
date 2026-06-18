@@ -60,7 +60,7 @@ export default async function DashboardPage() {
                 </thead>
                 <tbody>
                   {campagnes.map((c) => (
-                    <tr key={c.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 cursor-pointer">
+                    <tr key={c.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                       <td className="px-3.5 py-3 text-[13px] font-semibold text-gray-800">{c.nom}</td>
                       <td className="px-3.5 py-3 text-[13px] text-gray-600">{c.perimetre}</td>
                       <td className="px-3.5 py-3">
@@ -75,7 +75,7 @@ export default async function DashboardPage() {
                           {c.statut}
                         </Badge>
                       </td>
-                      <td className="px-3.5 py-3 text-gray-300 text-right">›</td>
+                      <td className="px-3.5 py-3 text-right"><Link href="/campagnes" className="text-gray-300 hover:text-[#1a6b7e]">›</Link></td>
                     </tr>
                   ))}
                 </tbody>
@@ -121,16 +121,16 @@ export default async function DashboardPage() {
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
                 <div className="text-[12.5px] font-semibold text-gray-700 mb-3">Actions recommandées</div>
                 {[
-                  { ico: "📞", txt: "Appeler IFSI CHU Lyon — urgent S1" },
-                  { ico: "📧", txt: "Email relance CPGE Lyon J+7" },
-                  { ico: "🔗", txt: "LinkedIn Kedge Bordeaux J+3" },
-                  { ico: "📊", txt: "Planifier /analyse à J+30" },
+                  { ico: "📞", txt: "Appeler IFSI CHU Lyon — urgent S1", href: "/qualification" },
+                  { ico: "📧", txt: "Email relance CPGE Lyon J+7",        href: "/qualification" },
+                  { ico: "🔗", txt: "LinkedIn Kedge Bordeaux J+3",        href: "/qualification" },
+                  { ico: "📊", txt: "Planifier /analyse à J+30",          href: "/reporting" },
                 ].map((a, i) => (
-                  <div key={i} className="flex items-start gap-2.5 py-2.5 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 rounded-lg px-1 -mx-1">
+                  <Link key={i} href={a.href} className="flex items-start gap-2.5 py-2.5 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded-lg px-1 -mx-1">
                     <span className="w-6 h-6 rounded-md bg-gray-50 border border-gray-200 flex items-center justify-center text-[11px] flex-shrink-0">{a.ico}</span>
                     <span className="text-[12px] text-gray-600 leading-snug flex-1">{a.txt}</span>
                     <span className="text-gray-300 text-sm">›</span>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -143,17 +143,17 @@ export default async function DashboardPage() {
                 <span>⚠</span> Alertes critiques
               </div>
               {alertes.map((a) => (
-                <div key={a.id} className={`flex items-start gap-2.5 p-2.5 rounded-lg mb-2 cursor-pointer ${a.type === "rouge" ? "bg-red-50" : a.type === "orange" ? "bg-orange-50" : "bg-yellow-50"}`}>
+                <Link key={a.id} href="/livrables" className={`flex items-start gap-2.5 p-2.5 rounded-lg mb-2 hover:opacity-90 ${a.type === "rouge" ? "bg-red-50" : a.type === "orange" ? "bg-orange-50" : "bg-yellow-50"}`}>
                   <span className="text-base flex-shrink-0 mt-0.5">{a.type === "rouge" ? "📁" : a.type === "orange" ? "⏰" : "📊"}</span>
                   <div className="flex-1 min-w-0">
                     <div className="text-[12px] font-semibold text-gray-800">{a.titre}</div>
                     <div className="text-[11px] text-gray-500 mt-0.5 leading-snug">{a.description}</div>
-                    <span className="text-[11.5px] text-[#4a90d9] mt-1 cursor-pointer block">Voir les dossiers →</span>
+                    <span className="text-[11.5px] text-[#4a90d9] mt-1 block">Voir les dossiers →</span>
                   </div>
                   <span className={`min-w-[20px] h-5 rounded-full text-[11px] font-bold flex items-center justify-center px-1 text-white ${a.type === "rouge" ? "bg-red-500" : a.type === "orange" ? "bg-orange-500" : "bg-yellow-500"}`}>
                     {a.count}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
 
@@ -172,7 +172,7 @@ export default async function DashboardPage() {
                   <span className={`text-[11px] font-medium ${(e as { urgent?: boolean }).urgent ? "text-red-500" : "text-[#4a90d9]"}`}>{e.tag}</span>
                 </div>
               ))}
-              <span className="text-[11.5px] text-[#4a90d9] mt-2 cursor-pointer block">Voir toutes les échéances →</span>
+              <Link href="/planning" className="text-[11.5px] text-[#4a90d9] mt-2 hover:underline block">Voir toutes les échéances →</Link>
             </div>
           </div>
         </div>
