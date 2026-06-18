@@ -2,18 +2,23 @@ import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge, ScoreTag } from "@/components/Badge";
 import Link from "next/link";
-import { getCampagnes, getAlertes, getEcheances, getClusterScores, getSegmentRepartition } from "@/lib/supabase/queries";
+import { getCampagnes, getAlertes, getEcheances, getClusterScores, getSegmentRepartition, getProspects } from "@/lib/supabase/queries";
 
 export default async function DashboardPage() {
-  const [campagnes, alertes, echeances, clusterScores, segmentRepartition] = await Promise.all([
+  const [campagnes, alertes, echeances, clusterScores, segmentRepartition, prospects] = await Promise.all([
     getCampagnes(),
     getAlertes(),
     getEcheances(),
     getClusterScores(),
     getSegmentRepartition(),
+    getProspects(),
   ]);
   const total = campagnes.reduce((s, c) => s + c.nombreProspects, 0);
-  const tresChaudes = campagnes.reduce((s, c) => s + c.tresChaudes, 0);
+  const tresChaudes = prospects.filter((p) => p.niveau === "Très chaud").length;
+  const scoreMoyen = prospects.length > 0
+    ? (prospects.reduce((s, p) => s + p.scoreBANT, 0) / prospects.length).toFixed(1).replace(".", ",")
+    : "—";
+  const actionsUrgentes = alertes.reduce((s, a) => s + a.count, 0);
 
   return (
     <>
@@ -23,10 +28,10 @@ export default async function DashboardPage() {
         {/* KPI */}
         <div className="grid grid-cols-4 gap-3.5 mb-5">
           {[
-            { icon: "🔍", color: "bg-blue-50 text-blue-700", num: total, label: "établissements ciblés", link: "Voir tous →", href: "/campagnes" },
-            { icon: "📈", color: "bg-teal-50 text-teal-700", num: tresChaudes, label: "prospects Très chaud", link: "Voir la liste →", href: "/qualification" },
-            { icon: "🎯", color: "bg-orange-50 text-orange-700", num: "9,4", label: "Score BANT moyen /10", link: "Voir l'analyse →", href: "/qualification" },
-            { icon: "⚠️", color: "bg-red-50 text-red-700", num: 5, label: "actions urgentes", link: "Voir le détail →", href: "/campagnes" },
+            { icon: "🔍", color: "bg-blue-50 text-blue-700",    num: total,           label: "établissements ciblés",   link: "Voir tous →",       href: "/campagnes" },
+            { icon: "📈", color: "bg-teal-50 text-teal-700",    num: tresChaudes,     label: "prospects Très chaud",    link: "Voir la liste →",   href: "/qualification" },
+            { icon: "🎯", color: "bg-orange-50 text-orange-700",num: scoreMoyen,      label: "Score BANT moyen /10",   link: "Voir l'analyse →",  href: "/qualification" },
+            { icon: "⚠️", color: "bg-red-50 text-red-700",      num: actionsUrgentes, label: "actions urgentes",        link: "Voir le détail →",  href: "/livrables" },
           ].map((kpi, i) => (
             <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
               <div className={`w-9 h-9 rounded-[9px] flex items-center justify-center mb-2.5 text-base ${kpi.color}`}>

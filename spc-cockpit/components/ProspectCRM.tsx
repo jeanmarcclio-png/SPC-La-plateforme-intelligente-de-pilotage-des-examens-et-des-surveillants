@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateProspectStatut, updateProspectNotes } from "@/app/actions/prospects";
+import { updateProspectStatut, updateProspectNotes, deleteProspect } from "@/app/actions/prospects";
 
 const STATUTS = ["Non contacté", "En cours", "RDV fixé", "Converti"] as const;
 
@@ -63,5 +63,30 @@ export function ProspectNotesInput({ id, notes }: { id: string; notes?: string }
         <span className="absolute bottom-2 right-2 text-[10px] text-green-500 font-medium">Sauvegardé ✓</span>
       )}
     </div>
+  );
+}
+
+export function ProspectDeleteButton({ id, nom }: { id: string; nom: string }) {
+  const [pending, startTransition] = useTransition();
+
+  function handleDelete() {
+    if (!confirm(`Supprimer "${nom}" ?`)) return;
+    startTransition(() => deleteProspect(id));
+  }
+
+  return (
+    <button
+      onClick={handleDelete}
+      disabled={pending}
+      title="Supprimer"
+      className="w-6 h-6 rounded flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
+        <polyline points="3 6 5 6 21 6" />
+        <path d="M19 6l-1 14H6L5 6" />
+        <path d="M10 11v6M14 11v6" />
+        <path d="M9 6V4h6v2" />
+      </svg>
+    </button>
   );
 }
