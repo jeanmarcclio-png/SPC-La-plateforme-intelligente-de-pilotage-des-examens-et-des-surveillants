@@ -3,6 +3,7 @@ import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
 import { getCampagnes, getLivrables } from "@/lib/supabase/queries";
+import { CampagneStatutSelect, AddCampagneButton } from "@/components/CampagneActions";
 
 const checkIcon = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3.5 h-3.5">
@@ -27,24 +28,26 @@ export default async function CampagnesPage() {
 
   return (
     <>
-      <Topbar context="Prospection B2B" title="Mes campagnes" badge="3 actives" badgeColor="green" />
+      <Topbar context="Prospection B2B" title="Mes campagnes" badge={`${campagnes.filter(c => c.statut === "Actif" || c.statut === "En cours").length} actives`} badgeColor="green" />
 
       <main className="flex-1 overflow-y-auto p-5">
         {/* Campaign cards */}
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[14px] font-semibold text-gray-900">{campagnes.length} campagne{campagnes.length > 1 ? "s" : ""}</span>
+          <AddCampagneButton />
+        </div>
         <div className="grid grid-cols-3 gap-3.5 mb-5">
           {campagnes.map((c) => (
             <div
               key={c.id}
-              className={`bg-white rounded-xl border shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow ${c.statut === "Actif" ? "border-[#1a6b7e]/40" : "border-gray-200"}`}
+              className={`bg-white rounded-xl border shadow-sm p-4 hover:shadow-md transition-shadow ${c.statut === "Actif" ? "border-[#1a6b7e]/40" : "border-gray-200"}`}
             >
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <div className="text-[13.5px] font-bold text-gray-900">{c.nom}</div>
                   <div className="text-[11.5px] text-gray-400 mt-0.5">{c.perimetre}</div>
                 </div>
-                <Badge variant={c.statut === "Actif" ? "tres-chaud" : c.statut === "En cours" ? "en-cours" : "valide"}>
-                  {c.statut}
-                </Badge>
+                <CampagneStatutSelect id={c.id} statut={c.statut} />
               </div>
               <div className="grid grid-cols-3 gap-2 mt-3">
                 <div className="text-center">
