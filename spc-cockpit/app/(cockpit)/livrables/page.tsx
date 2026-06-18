@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
@@ -25,8 +26,8 @@ export default async function LivrablesPage() {
                   <td className="px-4 py-3 text-[12.5px] text-gray-500">{l.description}</td>
                   <td className="px-4 py-3 text-[12.5px] text-gray-600">IDF Complète 2026</td>
                   <td className="px-4 py-3"><Badge variant={l.statut === "Validé" ? "valide" : "a-rediger"}>{l.statut}</Badge></td>
-                  <td className="px-4 py-3 text-right text-[11.5px] text-[#4a90d9]">
-                    {l.fichier ? "Ouvrir →" : <span className="text-gray-300">—</span>}
+                  <td className="px-4 py-3 text-right text-[11.5px]">
+                    {l.fichier ? <Link href="/campagnes" className="text-[#4a90d9] hover:underline">Ouvrir →</Link> : <span className="text-gray-300">—</span>}
                   </td>
                 </tr>
               ))}

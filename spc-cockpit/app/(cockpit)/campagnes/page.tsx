@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
@@ -99,7 +100,7 @@ export default async function CampagnesPage() {
 
                   {/* File link */}
                   {l.fichier && (
-                    <span className="text-[11.5px] text-[#4a90d9] hover:underline whitespace-nowrap">Ouvrir →</span>
+                    <Link href="/livrables" className="text-[11.5px] text-[#4a90d9] hover:underline whitespace-nowrap">Ouvrir →</Link>
                   )}
                   {!l.fichier && (
                     <span className="text-[11.5px] text-gray-300 flex items-center gap-1">{clockIcon} À générer</span>
@@ -156,18 +157,18 @@ export default async function CampagnesPage() {
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
               <div className="text-[12.5px] font-semibold text-gray-700 mb-3">Actions rapides</div>
               {[
-                { ico: "📊", label: "Lancer /analyse", sub: "Rapport J+30" },
-                { ico: "📧", label: "Planifier Vague 2", sub: "Septembre 2026" },
-                { ico: "🎯", label: "Nouvelle campagne", sub: "Ciblage → /cibler" },
+                { ico: "📊", label: "Lancer /analyse", sub: "Rapport J+30",        href: "/reporting" },
+                { ico: "📧", label: "Planifier Vague 2", sub: "Septembre 2026",     href: "/planning" },
+                { ico: "🎯", label: "Nouvelle campagne", sub: "Ciblage → /cibler",  href: "/qualification" },
               ].map((a, i) => (
-                <div key={i} className="flex items-center gap-2.5 py-2.5 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 rounded-lg px-1 -mx-1">
+                <Link key={i} href={a.href} className="flex items-center gap-2.5 py-2.5 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded-lg px-1 -mx-1">
                   <span className="w-7 h-7 rounded-md bg-gray-50 border border-gray-200 flex items-center justify-center text-sm flex-shrink-0">{a.ico}</span>
                   <div className="flex-1">
                     <div className="text-[12.5px] font-semibold text-gray-700">{a.label}</div>
                     <div className="text-[11px] text-gray-400">{a.sub}</div>
                   </div>
                   <span className="text-gray-300">›</span>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

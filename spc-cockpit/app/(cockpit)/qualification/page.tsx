@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
@@ -111,9 +112,9 @@ export default async function QualificationPage() {
               <div className="text-[12px] text-white/70 mb-1">Prochaine étape recommandée</div>
               <div className="text-[13.5px] font-bold text-white">Appel sortant — Lundi matin</div>
               <div className="text-[12px] text-white/80 mt-1.5 leading-snug">Demander le responsable des examens · Script : segment Commerce · Proposer audit gratuit 30 min.</div>
-              <button className="mt-3 w-full bg-white/[0.15] hover:bg-white/[0.25] text-white text-[12px] font-semibold py-2 rounded-lg transition-colors">
+              <Link href="/planning" className="mt-3 w-full bg-white/[0.15] hover:bg-white/[0.25] text-white text-[12px] font-semibold py-2 rounded-lg transition-colors flex items-center justify-center">
                 Lancer le script d&apos;appel →
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -154,8 +155,8 @@ export default async function QualificationPage() {
                       <td className="px-3 py-2.5">
                         <ProspectStatutSelect id={p.id} statut={p.statut} />
                       </td>
-                      <td className="px-3 py-2.5 text-[11.5px] text-[#4a90d9] hover:underline cursor-pointer whitespace-nowrap">
-                        {p.action}
+                      <td className="px-3 py-2.5 whitespace-nowrap">
+                        <Link href="/planning" className="text-[11.5px] text-[#4a90d9] hover:underline">{p.action}</Link>
                       </td>
                     </tr>
                   ))}
