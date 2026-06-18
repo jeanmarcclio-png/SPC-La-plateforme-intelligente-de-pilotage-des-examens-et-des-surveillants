@@ -1,3 +1,8 @@
+"use client";
+
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+
 interface TopbarProps {
   context?: string;
   title: string;
@@ -11,6 +16,14 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
     green: "bg-green-50 text-green-700",
     orange: "bg-orange-50 text-orange-700",
   };
+  const router = useRouter();
+  const supabase = createClient();
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <header className="h-[54px] bg-white border-b border-gray-200 flex items-center px-6 gap-3 flex-shrink-0">
@@ -24,7 +37,6 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
         </span>
       )}
       <div className="ml-auto flex items-center gap-2.5">
-        {/* Notifications */}
         <button className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100 relative">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -32,7 +44,6 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
           </svg>
           <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
         </button>
-        {/* Help */}
         <button className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
             <circle cx="12" cy="12" r="10" />
@@ -45,6 +56,17 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
         <div className="w-8 h-8 rounded-full bg-[#1a6b7e] text-white flex items-center justify-center text-[11px] font-bold">
           JC
         </div>
+        <button
+          onClick={handleLogout}
+          title="Déconnexion"
+          className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
       </div>
     </header>
   );
