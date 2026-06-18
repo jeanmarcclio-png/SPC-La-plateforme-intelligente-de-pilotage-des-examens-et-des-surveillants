@@ -1,0 +1,143 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import Link from "next/link";
+import type { Prospect } from "@/lib/types";
+import { ProspectStatutSelect, ProspectDeleteButton } from "@/components/ProspectCRM";
+import { AddProspectButton } from "@/components/AddProspectModal";
+
+export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) {
+  const [search, setSearch] = useState("");
+  const [segment, setSegment] = useState("");
+  const [cluster, setCluster] = useState("");
+  const [statut, setStatut] = useState("");
+
+  const segments = useMemo(() => [...new Set(prospects.map((p) => p.segment))].sort(), [prospects]);
+  const clusters = useMemo(() => [...new Set(prospects.map((p) => p.cluster).filter(Boolean))].sort(), [prospects]);
+  const statuts = useMemo(() => [...new Set(prospects.map((p) => p.statut))].sort(), [prospects]);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return prospects.filter((p) => {
+      if (q && !p.nom.toLowerCase().includes(q) && !p.cluster.toLowerCase().includes(q)) return false;
+      if (segment && p.segment !== segment) return false;
+      if (cluster && p.cluster !== cluster) return false;
+      if (statut && p.statut !== statut) return false;
+      return true;
+    });
+  }, [prospects, search, segment, cluster, statut]);
+
+  const hasFilters = search || segment || cluster || statut;
+
+  return (
+    <div>
+      {/* Header + filters */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[14px] font-semibold text-gray-900">
+          Top prospects — Vague 1
+          {hasFilters && <span className="ml-2 text-[12px] font-normal text-gray-400">{filtered.length} résultat{filtered.length !== 1 ? "s" : ""}</span>}
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] text-gray-400">{prospects.length} chargés</span>
+          <AddProspectButton />
+        </div>
+      </div>
+
+      {/* Search + filter bar */}
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <div className="relative flex-1 min-w-[180px]">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Rechercher un prospect…"
+            className="w-full pl-8 pr-3 py-1.5 text-[12px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 focus:border-[#4a90d9]"
+          />
+        </div>
+        <select
+          value={segment}
+          onChange={(e) => setSegment(e.target.value)}
+          className="text-[12px] border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 text-gray-600"
+        >
+          <option value="">Tous les segments</option>
+          {segments.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select
+          value={cluster}
+          onChange={(e) => setCluster(e.target.value)}
+          className="text-[12px] border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 text-gray-600"
+        >
+          <option value="">Tous les clusters</option>
+          {clusters.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select
+          value={statut}
+          onChange={(e) => setStatut(e.target.value)}
+          className="text-[12px] border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 text-gray-600"
+        >
+          <option value="">Tous les statuts</option>
+          {statuts.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        {hasFilters && (
+          <button
+            onClick={() => { setSearch(""); setSegment(""); setCluster(""); setStatut(""); }}
+            className="text-[11.5px] text-gray-400 hover:text-red-500 px-2 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+          >
+            Effacer ✕
+          </button>
+        )}
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-200">
+              {["#", "Établissement", "Segment", "Score", "Statut", "Action", ""].map((h) => (
+                <th key={h} className="text-left px-3 py-2.5 text-[10.5px] font-semibold text-gray-500 uppercase tracking-[.5px]">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={7} className="text-center py-8 text-[13px] text-gray-400">
+                  Aucun prospect ne correspond aux filtres.
+                </td>
+              </tr>
+            )}
+            {filtered.map((p, i) => (
+              <tr key={p.id} className={`border-b border-gray-100 last:border-0 hover:bg-gray-50 ${i === 0 && !hasFilters ? "bg-[#1a6b7e]/[0.03]" : ""}`}>
+                <td className="px-3 py-2.5 text-[12px] font-bold text-gray-400">{i + 1}</td>
+                <td className="px-3 py-2.5">
+                  <div className="text-[12.5px] font-semibold text-gray-800">{p.nom}</div>
+                  <div className="text-[11px] text-gray-400">{p.cluster}</div>
+                </td>
+                <td className="px-3 py-2.5 text-[12px] text-gray-600">{p.segment}</td>
+                <td className="px-3 py-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-1 w-12 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#1a6b7e] rounded-full" style={{ width: `${(p.scoreBANT / 10) * 100}%` }} />
+                    </div>
+                    <span className="text-[12px] font-bold text-gray-800">{p.scoreBANT}</span>
+                  </div>
+                </td>
+                <td className="px-3 py-2.5">
+                  <ProspectStatutSelect id={p.id} statut={p.statut} />
+                </td>
+                <td className="px-3 py-2.5 whitespace-nowrap">
+                  <Link href="/planning" className="text-[11.5px] text-[#4a90d9] hover:underline">{p.action}</Link>
+                </td>
+                <td className="px-3 py-2.5">
+                  <ProspectDeleteButton id={p.id} nom={p.nom} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

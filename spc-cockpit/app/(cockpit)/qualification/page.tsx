@@ -4,8 +4,8 @@ import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
 import { clusterScores } from "@/lib/data";
 import { getProspects } from "@/lib/supabase/queries";
-import { ProspectStatutSelect, ProspectNotesInput, ProspectDeleteButton } from "@/components/ProspectCRM";
-import { AddProspectButton } from "@/components/AddProspectModal";
+import { ProspectStatutSelect, ProspectNotesInput } from "@/components/ProspectCRM";
+import { ProspectFilteredTable } from "@/components/ProspectFilteredTable";
 
 export default async function QualificationPage() {
   const prospects = await getProspects();
@@ -123,53 +123,7 @@ export default async function QualificationPage() {
         {/* Bottom: prospects table + cluster scores */}
         <div className="grid grid-cols-[1fr_220px] gap-4">
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[14px] font-semibold text-gray-900">Top prospects — Vague 1</span>
-              <div className="flex items-center gap-3">
-                <span className="text-[12px] text-gray-400">{prospects.length} prospects chargés</span>
-                <AddProspectButton />
-              </div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    {["#", "Établissement", "Segment", "Score", "Statut", "Action", ""].map((h) => (
-                      <th key={h} className="text-left px-3 py-2.5 text-[10.5px] font-semibold text-gray-500 uppercase tracking-[.5px]">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {prospects.map((p, i) => (
-                    <tr key={p.id} className={`border-b border-gray-100 last:border-0 hover:bg-gray-50 ${i === 0 ? "bg-[#1a6b7e]/[0.03]" : ""}`}>
-                      <td className="px-3 py-2.5 text-[12px] font-bold text-gray-400">{i + 1}</td>
-                      <td className="px-3 py-2.5">
-                        <div className="text-[12.5px] font-semibold text-gray-800">{p.nom}</div>
-                        <div className="text-[11px] text-gray-400">{p.cluster}</div>
-                      </td>
-                      <td className="px-3 py-2.5 text-[12px] text-gray-600">{p.segment}</td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex items-center gap-1.5">
-                          <div className="h-1 w-12 bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-[#1a6b7e] rounded-full" style={{ width: `${(p.scoreBANT / 10) * 100}%` }} />
-                          </div>
-                          <span className="text-[12px] font-bold text-gray-800">{p.scoreBANT}</span>
-                        </div>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <ProspectStatutSelect id={p.id} statut={p.statut} />
-                      </td>
-                      <td className="px-3 py-2.5 whitespace-nowrap">
-                        <Link href="/planning" className="text-[11.5px] text-[#4a90d9] hover:underline">{p.action}</Link>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <ProspectDeleteButton id={p.id} nom={p.nom} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ProspectFilteredTable prospects={prospects} />
           </div>
 
           {/* Cluster scores */}
