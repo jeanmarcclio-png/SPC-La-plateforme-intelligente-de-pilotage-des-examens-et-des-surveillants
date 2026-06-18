@@ -5,6 +5,7 @@ import { Badge } from "@/components/Badge";
 import { clusterScores } from "@/lib/data";
 import { getProspects } from "@/lib/supabase/queries";
 import { ProspectStatutSelect, ProspectNotesInput } from "@/components/ProspectCRM";
+import { AddProspectButton } from "@/components/AddProspectModal";
 
 export default async function QualificationPage() {
   const prospects = await getProspects();
@@ -124,7 +125,10 @@ export default async function QualificationPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-[14px] font-semibold text-gray-900">Top prospects — Vague 1</span>
-              <span className="text-[12px] text-gray-400">{prospects.length} prospects chargés</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[12px] text-gray-400">{prospects.length} prospects chargés</span>
+                <AddProspectButton />
+              </div>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
               <table className="w-full border-collapse">
