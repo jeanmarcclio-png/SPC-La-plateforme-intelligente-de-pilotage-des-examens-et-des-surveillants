@@ -52,15 +52,16 @@ export async function getEcheances() {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.from("echeances").select("*").order("id");
-    if (error || !data?.length) return mockEcheances;
+    if (error || !data?.length) return mockEcheances.map((e, i) => ({ id: i + 1, ...e, urgent: (e as { urgent?: boolean }).urgent ?? false }));
     return data.map((r) => ({
+      id: r.id as number,
       date: r.date,
       nom: r.nom,
       tag: r.tag ?? "",
       urgent: r.urgent ?? false,
     }));
   } catch {
-    return mockEcheances;
+    return mockEcheances.map((e, i) => ({ id: i + 1, ...e, urgent: (e as { urgent?: boolean }).urgent ?? false }));
   }
 }
 
