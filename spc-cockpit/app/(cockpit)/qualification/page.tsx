@@ -1,15 +1,19 @@
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
-import { top10Prospects, clusterScores } from "@/lib/data";
+import { clusterScores } from "@/lib/data";
+import { getProspects } from "@/lib/supabase/queries";
+import { ProspectStatutSelect, ProspectNotesInput } from "@/components/ProspectCRM";
 
-export default function QualificationPage() {
-  const emLyon = top10Prospects[0];
-  const autresProspects = top10Prospects.slice(1);
+export default async function QualificationPage() {
+  const prospects = await getProspects();
+  const emLyon = prospects[0];
+  const autresProspects = prospects.slice(1);
+  const tresChaudes = prospects.filter((p) => p.niveau === "Très chaud").length;
 
   return (
     <>
-      <Topbar context="Qualification BANT" title="Analyse Go / No-Go" badge="23 Très chaud" badgeColor="orange" />
+      <Topbar context="Qualification BANT" title="Analyse Go / No-Go" badge={`${tresChaudes} Très chaud`} badgeColor="orange" />
 
       <main className="flex-1 overflow-y-auto p-5">
         {/* Top: Selected prospect hero + BANT sub-scores */}
@@ -59,12 +63,18 @@ export default function QualificationPage() {
               </div>
               <div>
                 <div className="text-gray-400 mb-0.5">Statut</div>
-                <div className="font-semibold text-[#1a6b7e]">{emLyon.statut}</div>
+                <ProspectStatutSelect id={emLyon.id} statut={emLyon.statut} />
               </div>
+            </div>
+
+            {/* Notes */}
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <div className="text-[11px] text-gray-400 mb-1.5">Notes</div>
+              <ProspectNotesInput id={emLyon.id} />
             </div>
           </div>
 
-          {/* Right panel: risques + points forts + prochaine étape */}
+          {/* Right panel */}
           <div className="space-y-3">
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
               <div className="text-[12.5px] font-semibold text-red-600 mb-2.5 flex items-center gap-1.5">
@@ -108,15 +118,12 @@ export default function QualificationPage() {
           </div>
         </div>
 
-        {/* Bottom: Top-10 matrix + cluster scores */}
+        {/* Bottom: prospects table + cluster scores */}
         <div className="grid grid-cols-[1fr_220px] gap-4">
-          {/* Top-10 table */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[14px] font-semibold text-gray-900">Top 10 prospects — Vague 1</span>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-[12.5px] text-gray-600 hover:bg-gray-50">
-                Voir les 32 prospects
-              </button>
+              <span className="text-[14px] font-semibold text-gray-900">Top prospects — Vague 1</span>
+              <span className="text-[12px] text-gray-400">{prospects.length} prospects chargés</span>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
               <table className="w-full border-collapse">
@@ -128,8 +135,8 @@ export default function QualificationPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {top10Prospects.map((p, i) => (
-                    <tr key={p.id} className={`border-b border-gray-100 last:border-0 hover:bg-gray-50 cursor-pointer ${i === 0 ? "bg-[#1a6b7e]/[0.03]" : ""}`}>
+                  {prospects.map((p, i) => (
+                    <tr key={p.id} className={`border-b border-gray-100 last:border-0 hover:bg-gray-50 ${i === 0 ? "bg-[#1a6b7e]/[0.03]" : ""}`}>
                       <td className="px-3 py-2.5 text-[12px] font-bold text-gray-400">{i + 1}</td>
                       <td className="px-3 py-2.5">
                         <div className="text-[12.5px] font-semibold text-gray-800">{p.nom}</div>
@@ -145,13 +152,7 @@ export default function QualificationPage() {
                         </div>
                       </td>
                       <td className="px-3 py-2.5">
-                        <Badge variant={
-                          p.statut === "RDV fixé" ? "valide"
-                          : p.statut === "En cours" ? "en-cours"
-                          : "a-rediger"
-                        }>
-                          {p.statut}
-                        </Badge>
+                        <ProspectStatutSelect id={p.id} statut={p.statut} />
                       </td>
                       <td className="px-3 py-2.5 text-[11.5px] text-[#4a90d9] hover:underline cursor-pointer whitespace-nowrap">
                         {p.action}
@@ -200,35 +201,16 @@ export default function QualificationPage() {
 }
 
 function BANTGauge({ score }: { score: number }) {
-  const r = 52;
-  const cx = 70;
-  const cy = 70;
+  const r = 52, cx = 70, cy = 70;
   const circumference = Math.PI * r;
   const dash = (score / 10) * circumference;
 
   return (
     <svg viewBox="0 0 140 82" className="w-[180px] h-[105px]">
-      {/* Track */}
-      <path
-        d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-        fill="none"
-        stroke="#edf2f7"
-        strokeWidth="16"
-        strokeLinecap="round"
-      />
-      {/* Fill */}
-      <path
-        d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-        fill="none"
-        stroke="#1a6b7e"
-        strokeWidth="16"
-        strokeLinecap="round"
-        strokeDasharray={`${dash} ${circumference}`}
-      />
-      {/* Score text */}
+      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="#edf2f7" strokeWidth="16" strokeLinecap="round" />
+      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="#1a6b7e" strokeWidth="16" strokeLinecap="round" strokeDasharray={`${dash} ${circumference}`} />
       <text x={cx} y={cy - 12} textAnchor="middle" style={{ fontSize: 26, fontWeight: 800, fill: "#1a202c" }}>{score}</text>
       <text x={cx} y={cy + 4} textAnchor="middle" style={{ fontSize: 10, fill: "#718096" }}>SCORE BANT / 10</text>
-      {/* Labels */}
       <text x={cx - r - 2} y={cy + 14} textAnchor="middle" style={{ fontSize: 9, fill: "#a0aec0" }}>0</text>
       <text x={cx + r + 2} y={cy + 14} textAnchor="middle" style={{ fontSize: 9, fill: "#a0aec0" }}>10</text>
     </svg>
