@@ -1,14 +1,15 @@
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge, ScoreTag } from "@/components/Badge";
-import { clusterScores, segmentRepartition } from "@/lib/data";
-import { getCampagnes, getAlertes, getEcheances } from "@/lib/supabase/queries";
+import { getCampagnes, getAlertes, getEcheances, getClusterScores, getSegmentRepartition } from "@/lib/supabase/queries";
 
 export default async function DashboardPage() {
-  const [campagnes, alertes, echeances] = await Promise.all([
+  const [campagnes, alertes, echeances, clusterScores, segmentRepartition] = await Promise.all([
     getCampagnes(),
     getAlertes(),
     getEcheances(),
+    getClusterScores(),
+    getSegmentRepartition(),
   ]);
   const total = campagnes.reduce((s, c) => s + c.nombreProspects, 0);
   const tresChaudes = campagnes.reduce((s, c) => s + c.tresChaudes, 0);

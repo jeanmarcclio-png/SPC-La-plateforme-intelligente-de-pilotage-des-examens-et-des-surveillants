@@ -6,6 +6,8 @@ import {
   echeances as mockEcheances,
   livraisonIDF as mockLivrables,
   top10Prospects as mockProspects,
+  clusterScores as mockClusterScores,
+  segmentRepartition as mockSegmentRepartition,
 } from "@/lib/data";
 
 export async function getCampagnes(): Promise<Campagne[]> {
@@ -105,5 +107,66 @@ export async function getProspects(campagneId?: string): Promise<Prospect[]> {
     }));
   } catch {
     return mockProspects;
+  }
+}
+
+const SEGMENT_COLORS: Record<string, string> = {
+  "Commerce":  "#1a6b7e",
+  "CPGE":      "#4a90d9",
+  "Santé":     "#38a169",
+  "Université":"#805ad5",
+};
+
+const CLUSTER_LABELS: Record<string, string> = {
+  "Lyon/RA":     "Lyon / Rhône-Alpes",
+  "Paris IDF":   "Paris IDF",
+  "Lille/HdF":   "Lille / HdF",
+  "Bordeaux/NA": "Bordeaux / NA",
+  "PACA":        "Marseille / PACA",
+  "Nancy/GE":    "Nancy / Grand Est",
+};
+
+export async function getClusterScores() {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("prospects").select("cluster, score_bant");
+    if (error || !data?.length) return mockClusterScores;
+
+    const map: Record<string, { total: number; count: number }> = {};
+    for (const r of data) {
+      const key = r.cluster ?? "Autre";
+      if (!map[key]) map[key] = { total: 0, count: 0 };
+      map[key].total += r.score_bant ?? 0;
+      map[key].count += 1;
+    }
+    return Object.entries(map)
+      .map(([key, { total, count }]) => ({
+        nom: CLUSTER_LABELS[key] ?? key,
+        score: Math.round((total / count) * 10) / 10,
+      }))
+      .sort((a, b) => b.score - a.score);
+  } catch {
+    return mockClusterScores;
+  }
+}
+
+export async function getSegmentRepartition() {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("prospects").select("segment");
+    if (error || !data?.length) return mockSegmentRepartition;
+
+    const map: Record<string, number> = {};
+    for (const r of data) {
+      const seg = r.segment ?? "Autre";
+      map[seg] = (map[seg] ?? 0) + 1;
+    }
+    return Object.entries(map).map(([nom, count]) => ({
+      nom,
+      count,
+      color: SEGMENT_COLORS[nom] ?? "#a0aec0",
+    }));
+  } catch {
+    return mockSegmentRepartition;
   }
 }
