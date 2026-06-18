@@ -101,6 +101,7 @@ export async function getProspects(campagneId?: string): Promise<Prospect[]> {
       canal: r.canal ?? "",
       statut: r.statut as Prospect["statut"],
       action: r.action ?? "",
+      notes: r.notes ?? undefined,
     }));
   } catch {
     return mockProspects;
