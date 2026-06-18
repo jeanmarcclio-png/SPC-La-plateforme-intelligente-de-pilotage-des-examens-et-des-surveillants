@@ -1,6 +1,7 @@
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge, ScoreTag } from "@/components/Badge";
+import Link from "next/link";
 import { getCampagnes, getAlertes, getEcheances, getClusterScores, getSegmentRepartition } from "@/lib/supabase/queries";
 
 export default async function DashboardPage() {
@@ -22,10 +23,10 @@ export default async function DashboardPage() {
         {/* KPI */}
         <div className="grid grid-cols-4 gap-3.5 mb-5">
           {[
-            { icon: "🔍", color: "bg-blue-50 text-blue-700", num: total, label: "établissements ciblés", link: "Voir tous →" },
-            { icon: "📈", color: "bg-teal-50 text-teal-700", num: tresChaudes, label: "prospects Très chaud", link: "Voir la liste →" },
-            { icon: "🎯", color: "bg-orange-50 text-orange-700", num: "9,4", label: "Score BANT moyen /10", link: "Voir l'analyse →" },
-            { icon: "⚠️", color: "bg-red-50 text-red-700", num: 5, label: "actions urgentes", link: "Voir le détail →" },
+            { icon: "🔍", color: "bg-blue-50 text-blue-700", num: total, label: "établissements ciblés", link: "Voir tous →", href: "/campagnes" },
+            { icon: "📈", color: "bg-teal-50 text-teal-700", num: tresChaudes, label: "prospects Très chaud", link: "Voir la liste →", href: "/qualification" },
+            { icon: "🎯", color: "bg-orange-50 text-orange-700", num: "9,4", label: "Score BANT moyen /10", link: "Voir l'analyse →", href: "/qualification" },
+            { icon: "⚠️", color: "bg-red-50 text-red-700", num: 5, label: "actions urgentes", link: "Voir le détail →", href: "/campagnes" },
           ].map((kpi, i) => (
             <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
               <div className={`w-9 h-9 rounded-[9px] flex items-center justify-center mb-2.5 text-base ${kpi.color}`}>
@@ -33,7 +34,7 @@ export default async function DashboardPage() {
               </div>
               <div className="text-[26px] font-extrabold text-gray-900 leading-none">{kpi.num}</div>
               <div className="text-[12.5px] text-gray-500 mt-1">{kpi.label}</div>
-              <div className="text-[11.5px] text-[#4a90d9] mt-2.5 cursor-pointer hover:underline">{kpi.link}</div>
+              <Link href={kpi.href} className="text-[11.5px] text-[#4a90d9] mt-2.5 hover:underline block">{kpi.link}</Link>
             </div>
           ))}
         </div>
@@ -44,9 +45,9 @@ export default async function DashboardPage() {
             {/* Campagnes table */}
             <div className="flex items-center justify-between mb-3">
               <span className="text-[14px] font-semibold text-gray-900">Mes campagnes en cours</span>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-[12.5px] text-gray-600 hover:bg-gray-50">
+              <Link href="/campagnes" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-[12.5px] text-gray-600 hover:bg-gray-50">
                 Voir toutes les campagnes
-              </button>
+              </Link>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-4">
               <table className="w-full border-collapse">
