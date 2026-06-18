@@ -7,7 +7,7 @@ interface TopbarProps {
   context?: string;
   title: string;
   badge?: string;
-  badgeColor?: "blue" | "green" | "orange";
+  badgeColor?: "blue" | "green" | "orange" | "red";
 }
 
 export function Topbar({ context = "Campagnes en cours", title, badge, badgeColor = "blue" }: TopbarProps) {
@@ -15,6 +15,7 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
     blue: "bg-blue-50 text-blue-700",
     green: "bg-green-50 text-green-700",
     orange: "bg-orange-50 text-orange-700",
+    red: "bg-red-50 text-red-600",
   };
   const router = useRouter();
   const supabase = createClient();
