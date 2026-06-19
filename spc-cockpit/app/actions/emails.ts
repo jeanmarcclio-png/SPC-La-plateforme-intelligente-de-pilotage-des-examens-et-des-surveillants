@@ -1,5 +1,6 @@
 "use server";
 
+import { Resend } from "resend";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -59,18 +60,36 @@ L'équipe SPC`,
 export async function sendProspectEmail(prospectId: string, type: string) {
   const supabase = await createClient();
 
-  const { data: prospect } = await supabase.from("prospects").select("nom, email").eq("id", prospectId).single();
+  const { data: prospect } = await supabase
+    .from("prospects")
+    .select("nom, email")
+    .eq("id", prospectId)
+    .single();
   if (!prospect) throw new Error("Prospect introuvable");
 
   const template = TEMPLATES[type];
   if (!template) throw new Error("Template inconnu");
+
+  const status = "sent";
+
+  // Envoi réel si RESEND_API_KEY et email prospect configurés
+  if (process.env.RESEND_API_KEY && prospect.email) {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { error } = await resend.emails.send({
+      from: "SPC <contact@spc-examens.fr>",
+      to: [prospect.email],
+      subject: template.subject,
+      text: template.body,
+    });
+    if (error) throw new Error(error.message);
+  }
 
   await supabase.from("email_logs").insert({
     prospect_id: prospectId,
     type,
     subject: template.subject,
     sent_at: new Date().toISOString(),
-    status: "sent",
+    status: prospect.email && process.env.RESEND_API_KEY ? "sent" : "simulated",
   });
 
   revalidatePath("/qualification");
@@ -79,6 +98,20 @@ export async function sendProspectEmail(prospectId: string, type: string) {
 
 export async function getEmailLogs(prospectId: string) {
   const supabase = await createClient();
-  const { data } = await supabase.from("email_logs").select("*").eq("prospect_id", prospectId).order("sent_at", { ascending: false });
+  const { data } = await supabase
+    .from("email_logs")
+    .select("*")
+    .eq("prospect_id", prospectId)
+    .order("sent_at", { ascending: false });
+  return data ?? [];
+}
+
+export async function getAllEmailLogs() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("email_logs")
+    .select("*, prospects(nom)")
+    .order("sent_at", { ascending: false })
+    .limit(50);
   return data ?? [];
 }
