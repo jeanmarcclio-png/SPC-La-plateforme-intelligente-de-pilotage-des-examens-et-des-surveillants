@@ -1,10 +1,26 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
 import type { Prospect } from "@/lib/types";
 import { ProspectStatutSelect, ProspectDeleteButton } from "@/components/ProspectCRM";
 import { AddProspectButton } from "@/components/AddProspectModal";
+import { EmailSequenceButton } from "@/components/EmailSequenceButton";
+
+function exportCSV(prospects: Prospect[]) {
+  const headers = ["Nom", "Segment", "Cluster", "Score BANT", "Niveau", "Priorité", "Vague", "Interlocuteur", "Canal", "Statut", "Action", "Notes"];
+  const rows = prospects.map((p) => [
+    p.nom, p.segment, p.cluster, p.scoreBANT, p.niveau, p.priorite, p.vague,
+    p.interlocuteur, p.canal, p.statut, p.action, p.notes ?? "",
+  ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","));
+  const csv = [headers.join(","), ...rows].join("\n");
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `prospects-spc-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) {
   const [search, setSearch] = useState("");
@@ -39,6 +55,18 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
         </span>
         <div className="flex items-center gap-2">
           <span className="text-[12px] text-gray-400">{prospects.length} chargés</span>
+          <button
+            onClick={() => exportCSV(filtered)}
+            title="Exporter les prospects filtrés en CSV"
+            className="text-[12px] font-semibold text-gray-500 hover:text-[#1a6b7e] border border-gray-200 hover:border-[#1a6b7e]/40 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            CSV
+          </button>
           <AddProspectButton />
         </div>
       </div>
@@ -95,7 +123,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
-              {["#", "Établissement", "Segment", "Score", "Statut", "Action", ""].map((h) => (
+              {["#", "Établissement", "Segment", "Score", "Statut", "Email", ""].map((h) => (
                 <th key={h} className="text-left px-3 py-2.5 text-[10.5px] font-semibold text-gray-500 uppercase tracking-[.5px]">{h}</th>
               ))}
             </tr>
@@ -128,7 +156,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
                   <ProspectStatutSelect id={p.id} statut={p.statut} />
                 </td>
                 <td className="px-3 py-2.5 whitespace-nowrap">
-                  <Link href="/planning" className="text-[11.5px] text-[#4a90d9] hover:underline">{p.action}</Link>
+                  <EmailSequenceButton prospectId={p.id} prospectNom={p.nom} />
                 </td>
                 <td className="px-3 py-2.5">
                   <ProspectDeleteButton id={p.id} nom={p.nom} />

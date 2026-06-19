@@ -3,12 +3,16 @@ import { ConseilBar } from "@/components/ConseilBar";
 import { getCampagnes } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { CompteSection, NotificationsSection } from "@/components/ParametresForm";
+import { TeamSection } from "@/components/TeamSection";
+import { getNotificationPrefs, getTeamMembers } from "@/app/actions/parametres";
 
 export default async function ParametresPage() {
   const supabase = await createClient();
-  const [{ data: { user } }, campagnes] = await Promise.all([
+  const [{ data: { user } }, campagnes, notifPrefs, teamMembers] = await Promise.all([
     supabase.auth.getUser(),
     getCampagnes(),
+    getNotificationPrefs(),
+    getTeamMembers(),
   ]);
 
   const email = user?.email ?? "—";
@@ -30,7 +34,7 @@ export default async function ParametresPage() {
           {/* Notifications */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
             <div className="text-[13px] font-semibold text-gray-800 mb-4">Notifications</div>
-            <NotificationsSection />
+            <NotificationsSection saved={notifPrefs} />
           </div>
 
           {/* Campagne active */}
@@ -57,6 +61,12 @@ export default async function ParametresPage() {
                 <div className="text-[12.5px] text-gray-400">Aucune campagne active</div>
               )}
             </div>
+          </div>
+
+          {/* Équipe */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <div className="text-[13px] font-semibold text-gray-800 mb-4">Équipe & rôles</div>
+            <TeamSection members={teamMembers} />
           </div>
 
           {/* Intégrations */}
