@@ -291,24 +291,23 @@ export default function App() {
             <View style={[styles.header, { backgroundColor: "#1a5c6e", paddingBottom: 16 }]}>
               <Text style={styles.headerTitle}>Campagnes</Text>
               <Text style={styles.headerSub}>{campagnes.length} campagnes • {campagnes.filter(c => c.statut === "En cours" || c.statut === "Actif").length} actives</Text>
-              <View style={styles.campKpiRow}>
-                <View style={styles.campKpi}>
-                  <Text style={styles.campKpiValue}>{campagnes.reduce((s, c) => s + c.nombre_prospects, 0)}</Text>
-                  <Text style={styles.campKpiLabel}>Prospects</Text>
-                </View>
-                <View style={styles.campKpiDivider} />
-                <View style={styles.campKpi}>
-                  <Text style={[styles.campKpiValue, { color: "#f6ad55" }]}>{campagnes.reduce((s, c) => s + c.tres_chaudes, 0)}</Text>
-                  <Text style={styles.campKpiLabel}>Chauds</Text>
-                </View>
-                <View style={styles.campKpiDivider} />
-                <View style={styles.campKpi}>
-                  <Text style={[styles.campKpiValue, { color: "#68d391" }]}>
-                    {campagnes.length > 0 ? (campagnes.reduce((s, c) => s + c.score, 0) / campagnes.length).toFixed(1) : "—"}
-                  </Text>
-                  <Text style={styles.campKpiLabel}>Score moy.</Text>
-                </View>
-              </View>
+              {(() => {
+                const totalP = campagnes.reduce((s, c) => s + c.nombre_prospects, 0);
+                const totalC = campagnes.reduce((s, c) => s + c.tres_chaudes, 0);
+                const pctQ = totalP > 0 ? Math.round((totalC / totalP) * 100) : 0;
+                const scoreMoy = campagnes.length > 0 ? (campagnes.reduce((s, c) => s + c.score, 0) / campagnes.length).toFixed(1) : "—";
+                return (
+                  <View style={styles.campKpiRow}>
+                    <View style={styles.campKpi}><Text style={styles.campKpiValue}>{totalP}</Text><Text style={styles.campKpiLabel}>Prospects</Text></View>
+                    <View style={styles.campKpiDivider} />
+                    <View style={styles.campKpi}><Text style={[styles.campKpiValue, { color: "#fbd38d" }]}>{pctQ}%</Text><Text style={styles.campKpiLabel}>Qualifiés</Text></View>
+                    <View style={styles.campKpiDivider} />
+                    <View style={styles.campKpi}><Text style={[styles.campKpiValue, { color: "#f6ad55" }]}>{totalC}</Text><Text style={styles.campKpiLabel}>Chauds</Text></View>
+                    <View style={styles.campKpiDivider} />
+                    <View style={styles.campKpi}><Text style={[styles.campKpiValue, { color: "#68d391" }]}>{scoreMoy}</Text><Text style={styles.campKpiLabel}>Score IA</Text></View>
+                  </View>
+                );
+              })()}
             </View>
 
             {campagnes.map(c => {
@@ -328,8 +327,8 @@ export default function App() {
                   {c.nombre_prospects > 0 && (
                     <View style={{ marginBottom: 10 }}>
                       <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                        <Text style={{ fontSize: 10, color: "#718096" }}>Taux de chaleur</Text>
-                        <Text style={{ fontSize: 10, color: color, fontWeight: "700" }}>{pct}%</Text>
+                        <Text style={{ fontSize: 10, color: "#718096" }}>Indice d'intérêt</Text>
+                        <Text style={{ fontSize: 10, color, fontWeight: "700" }}>{pct}%</Text>
                       </View>
                       <View style={styles.campProgressTrack}>
                         <View style={[styles.campProgressFill, { width: `${pct}%` as any, backgroundColor: color }]} />
@@ -337,19 +336,20 @@ export default function App() {
                     </View>
                   )}
 
-                  <View style={styles.campStats}>
-                    <Text style={styles.campStat}>📊 Score IA : {c.score}</Text>
-                    <Text style={styles.campStat}>👥 {c.nombre_prospects} prospects</Text>
-                    <Text style={styles.campStat}>🔥 {c.tres_chaudes} chauds</Text>
-                    {c.nombre_prospects > 0 && <Text style={styles.campStat}>🎯 {pct}% qualifiés</Text>}
-                    {c.jours_restants > 0 && <Text style={[styles.campStat, { color: "#b7791f", backgroundColor: "#fffbeb" }]}>⏳ {c.jours_restants}j restants</Text>}
+                  {/* Stats compactes 2×2 */}
+                  <View style={styles.campGrid}>
+                    <View style={styles.campGridCell}><Text style={styles.campGridVal}>{c.nombre_prospects}</Text><Text style={styles.campGridLbl}>👥 prospects</Text></View>
+                    <View style={styles.campGridCell}><Text style={styles.campGridVal}>{c.tres_chaudes}</Text><Text style={styles.campGridLbl}>🔥 chauds</Text></View>
+                    <View style={styles.campGridCell}><Text style={[styles.campGridVal, { color: color }]}>{pct}%</Text><Text style={styles.campGridLbl}>🎯 qualifiés</Text></View>
+                    <View style={styles.campGridCell}><Text style={[styles.campGridVal, { color: "#1a6b7e" }]}>{c.score}</Text><Text style={styles.campGridLbl}>📊 Score IA</Text></View>
                   </View>
+                  {c.jours_restants > 0 && <Text style={styles.campJours}>⏳ {c.jours_restants} jours restants</Text>}
                 </TouchableOpacity>
               );
             })}
             <View style={{ height: 80 }} />
           </ScrollView>
-          <TouchableOpacity style={styles.fab} onPress={() => setShowAddCampagne(true)}><Text style={styles.fabTxt}>+</Text></TouchableOpacity>
+          <TouchableOpacity style={[styles.fab, { bottom: 88 }]} onPress={() => setShowAddCampagne(true)}><Text style={styles.fabTxt}>+</Text></TouchableOpacity>
         </View>
       )}
 
@@ -557,19 +557,24 @@ const styles = StyleSheet.create({
   niveauBadgeTxt: { fontSize: 10, fontWeight: "700" },
   statutBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
   statutText: { fontSize: 10, fontWeight: "700" },
-  campCard: { backgroundColor: "#fff", marginHorizontal: 12, marginBottom: 10, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#edf2f7", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
-  campTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 },
+  campCard: { backgroundColor: "#fff", marginHorizontal: 12, marginBottom: 10, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: "#edf2f7", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
+  campTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 2 },
   campNom: { fontSize: 15, fontWeight: "800", color: "#1a202c", flex: 1, marginRight: 8 },
-  campPerim: { fontSize: 11, color: "#718096", marginBottom: 10 },
+  campPerim: { fontSize: 11, color: "#718096", marginBottom: 8 },
   campProgressTrack: { height: 6, backgroundColor: "#edf2f7", borderRadius: 3, overflow: "hidden" },
   campProgressFill: { height: "100%", borderRadius: 3 },
+  campGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
+  campGridCell: { width: "47%", backgroundColor: "#f8fafc", borderRadius: 8, paddingVertical: 7, paddingHorizontal: 10, borderWidth: 1, borderColor: "#edf2f7" },
+  campGridVal: { fontSize: 16, fontWeight: "800", color: "#1a202c" },
+  campGridLbl: { fontSize: 10, color: "#718096", marginTop: 1 },
+  campJours: { fontSize: 11, color: "#b7791f", backgroundColor: "#fffbeb", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, alignSelf: "flex-start", marginTop: 6, borderWidth: 1, borderColor: "#fde68a" },
   campStats: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
   campStat: { fontSize: 11, color: "#4a5568", backgroundColor: "#f8fafc", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: "#edf2f7" },
-  campKpiRow: { flexDirection: "row", marginTop: 16, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 12, padding: 12 },
+  campKpiRow: { flexDirection: "row", marginTop: 16, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 12, padding: 10 },
   campKpi: { flex: 1, alignItems: "center" },
-  campKpiValue: { fontSize: 20, fontWeight: "800", color: "#fff" },
-  campKpiLabel: { fontSize: 10, color: "rgba(255,255,255,0.65)", marginTop: 2 },
-  campKpiDivider: { width: 1, backgroundColor: "rgba(255,255,255,0.2)", marginHorizontal: 4 },
+  campKpiValue: { fontSize: 18, fontWeight: "800", color: "#fff" },
+  campKpiLabel: { fontSize: 9, color: "rgba(255,255,255,0.65)", marginTop: 2 },
+  campKpiDivider: { width: 1, backgroundColor: "rgba(255,255,255,0.2)", marginHorizontal: 2 },
   emptyState: { alignItems: "center", paddingTop: 80 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
   emptyTxt: { fontSize: 16, color: "#718096" },
