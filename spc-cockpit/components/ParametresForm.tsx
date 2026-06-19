@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateDisplayName, updatePassword } from "@/app/actions/parametres";
+import { updateDisplayName, updatePassword, updateNotificationPref } from "@/app/actions/parametres";
 
 function SaveFeedback({ saved, error }: { saved: boolean; error?: string }) {
   if (error) return <span className="text-[11px] text-red-500">{error}</span>;
@@ -126,20 +126,28 @@ const NOTIF_LABELS: Record<string, string> = {
   rapport_j30: "Rapport J+30",
 };
 
-export function NotificationsSection() {
-  const [prefs, setPrefs] = useState({
-    alertes_urgentes: true,
-    rappels_echeances: true,
-    rapport_j30: false,
-  });
+const NOTIF_DEFAULTS: Record<string, boolean> = {
+  alertes_urgentes: true,
+  rappels_echeances: true,
+  rapport_j30: false,
+};
 
-  function toggle(key: keyof typeof prefs) {
-    setPrefs((p) => ({ ...p, [key]: !p[key] }));
+export function NotificationsSection({ saved }: { saved: Record<string, boolean> }) {
+  const [prefs, setPrefs] = useState<Record<string, boolean>>({
+    ...NOTIF_DEFAULTS,
+    ...saved,
+  });
+  const [, startTransition] = useTransition();
+
+  function toggle(key: string) {
+    const next = !prefs[key];
+    setPrefs((p) => ({ ...p, [key]: next }));
+    startTransition(() => updateNotificationPref(key, next));
   }
 
   return (
     <div className="space-y-3">
-      {(Object.keys(prefs) as (keyof typeof prefs)[]).map((key) => (
+      {Object.keys(NOTIF_LABELS).map((key) => (
         <div key={key} className="flex items-center justify-between py-1">
           <span className="text-[12.5px] text-gray-600">{NOTIF_LABELS[key]}</span>
           <button
