@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Modal, SafeAreaView, Alert, TextInput, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Modal, SafeAreaView, Alert, TextInput, KeyboardAvoidingView, Platform, Linking } from "react-native";
 import { supabase } from "./lib/supabase";
 
 type Prospect = { id: string; nom: string; email: string; segment: string; score_bant: number; statut: string; niveau: string };
@@ -68,8 +68,42 @@ export default function App() {
     ]);
   }
 
-  function showStatutPicker(c: Campagne) {
-    Alert.alert("Statut de " + c.nom, "Choisissez le nouveau statut :", [
+  async function updateProspectStatut(id: string, statut: string) {
+    const { error } = await supabase.from("prospects").update({ statut }).eq("id", id);
+    if (error) { Alert.alert("Erreur", error.message); return; }
+    setSelected(prev => prev ? { ...prev, statut } : null);
+    await loadProspects();
+  }
+
+  async function updateProspectNiveau(id: string, niveau: string) {
+    const { error } = await supabase.from("prospects").update({ niveau }).eq("id", id);
+    if (error) { Alert.alert("Erreur", error.message); return; }
+    setSelected(prev => prev ? { ...prev, niveau } : null);
+    await loadProspects();
+  }
+
+  function showStatutProspectPicker(p: Prospect) {
+    Alert.alert("Statut — " + p.nom, "Choisissez le nouveau statut :", [
+      { text: "Non contacté", onPress: () => updateProspectStatut(p.id, "Non contacté") },
+      { text: "En cours", onPress: () => updateProspectStatut(p.id, "En cours") },
+      { text: "RDV fixé", onPress: () => updateProspectStatut(p.id, "RDV fixé") },
+      { text: "Converti", onPress: () => updateProspectStatut(p.id, "Converti") },
+      { text: "Annuler", style: "cancel" },
+    ]);
+  }
+
+  function showNiveauPicker(p: Prospect) {
+    Alert.alert("Chaleur — " + p.nom, "Choisissez le niveau :", [
+      { text: "Très chaud 🔥", onPress: () => updateProspectNiveau(p.id, "Très chaud") },
+      { text: "Chaud", onPress: () => updateProspectNiveau(p.id, "Chaud") },
+      { text: "Tiède", onPress: () => updateProspectNiveau(p.id, "Tiède") },
+      { text: "Froid", onPress: () => updateProspectNiveau(p.id, "Froid") },
+      { text: "Annuler", style: "cancel" },
+    ]);
+  }
+
+  function showStatutCampagnePicker(c: Campagne) {
+    Alert.alert("Statut — " + c.nom, "Choisissez le nouveau statut :", [
       { text: "En cours", onPress: () => updateCampagneStatut(c.id, "En cours") },
       { text: "Planifiée", onPress: () => updateCampagneStatut(c.id, "Planifiée") },
       { text: "Terminée", onPress: () => updateCampagneStatut(c.id, "Terminée") },
@@ -83,6 +117,36 @@ export default function App() {
     if (error) { Alert.alert("Erreur", error.message); return; }
     await loadCampagnes();
   }
+
+  function callProspect(email: string, nom: string) {
+    Alert.alert("Appeler " + nom, "Quel numéro voulez-vous composer ?", [
+      { text: "Annuler", style: "cancel" },
+      { text: "Saisir le numéro", onPress: () => {
+        Alert.prompt("Numéro de téléphone", "Entrez le numéro :", (num) => {
+          if (num) Linking.openURL("tel:" + num.replace(/\s/g, ""));
+        }, "plain-text", "", "phone-pad");
+      }},
+    ]);
+  }
+
+  function emailProspect(email: string, nom: string) {
+    if (!email) { Alert.alert("Email manquant", "Aucun email enregistré pour " + nom); return; }
+    Linking.openURL(`mailto:${email}?subject=SPC — Surveillance d'examens &body=Bonjour,\n\nJe me permets de vous contacter au sujet de la gestion de vos surveillances d'examens...\n\nCordialement,`);
+  }
+
+  const ScoreGauge = ({ score }: { score: number }) => {
+    const pct = Math.min(score / 10, 1);
+    const color = score >= 8 ? "#38a169" : score >= 5 ? "#f6ad55" : "#fc8181";
+    return (
+      <View style={styles.gaugeWrap}>
+        <Text style={styles.gaugeLabel}>Score BANT</Text>
+        <View style={styles.gaugeTrack}>
+          <View style={[styles.gaugeFill, { width: `${pct * 100}%` as any, backgroundColor: color }]} />
+        </View>
+        <Text style={[styles.gaugeValue, { color }]}>{score}<Text style={styles.gaugeMax}>/10</Text></Text>
+      </View>
+    );
+  };
 
   const ProspectCard = ({ p }: { p: Prospect }) => (
     <TouchableOpacity style={styles.prospectCard} onPress={() => setSelected(p)}>
@@ -130,7 +194,7 @@ export default function App() {
             <View key={c.id} style={styles.campCard}>
               <View style={styles.campTop}>
                 <Text style={styles.campNom}>{c.nom}</Text>
-                <TouchableOpacity onPress={() => showStatutPicker(c)} style={[styles.statutBadge, { backgroundColor: (CAMP_COLORS[c.statut] ?? "#a0aec0") + "20" }]}>
+                <TouchableOpacity onPress={() => showStatutCampagnePicker(c)} style={[styles.statutBadge, { backgroundColor: (CAMP_COLORS[c.statut] ?? "#a0aec0") + "20" }]}>
                   <Text style={[styles.statutText, { color: CAMP_COLORS[c.statut] ?? "#a0aec0" }]}>{c.statut} ✎</Text>
                 </TouchableOpacity>
               </View>
@@ -157,19 +221,67 @@ export default function App() {
         ))}
       </SafeAreaView>
 
+      {/* Fiche prospect */}
       <Modal visible={!!selected} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={styles.modal}>
           <View style={styles.modalHeader}>
-            <View style={{ flex: 1 }}><Text style={styles.modalNom}>{selected?.nom}</Text><Text style={styles.modalSeg}>{selected?.segment}</Text></View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.modalNom}>{selected?.nom}</Text>
+              <Text style={styles.modalSeg}>{selected?.segment}</Text>
+            </View>
             <TouchableOpacity onPress={() => setSelected(null)} style={styles.closeBtn}><Text style={styles.closeTxt}>✕</Text></TouchableOpacity>
           </View>
           <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
+
+            {/* Badges statut + niveau — cliquables */}
             <View style={styles.row}>
-              <View style={[styles.badge, { backgroundColor: (NIVEAU_COLORS[selected?.niveau ?? ""] ?? "#a0aec0") + "20" }]}><Text style={[styles.badgeTxt, { color: NIVEAU_COLORS[selected?.niveau ?? ""] ?? "#a0aec0" }]}>{selected?.niveau}</Text></View>
-              <View style={[styles.badge, { backgroundColor: (STATUT_COLORS[selected?.statut ?? ""] ?? "#a0aec0") + "20" }]}><Text style={[styles.badgeTxt, { color: STATUT_COLORS[selected?.statut ?? ""] ?? "#a0aec0" }]}>{selected?.statut}</Text></View>
+              <TouchableOpacity
+                style={[styles.badge, { backgroundColor: (STATUT_COLORS[selected?.statut ?? ""] ?? "#a0aec0") + "20", flex: 1 }]}
+                onPress={() => selected && showStatutProspectPicker(selected)}
+              >
+                <Text style={[styles.badgeTxt, { color: STATUT_COLORS[selected?.statut ?? ""] ?? "#a0aec0" }]}>{selected?.statut} ✎</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.badge, { backgroundColor: (NIVEAU_COLORS[selected?.niveau ?? ""] ?? "#a0aec0") + "20", flex: 1 }]}
+                onPress={() => selected && showNiveauPicker(selected)}
+              >
+                <Text style={[styles.badgeTxt, { color: NIVEAU_COLORS[selected?.niveau ?? ""] ?? "#a0aec0" }]}>{selected?.niveau} ✎</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.scoreCard}><Text style={styles.scoreLabel}>Score BANT</Text><Text style={styles.scoreBig}>{selected?.score_bant}<Text style={styles.scoreMax}>/10</Text></Text></View>
-            {selected?.email ? <View style={styles.infoRow}><Text style={styles.infoLabel}>Email</Text><Text style={styles.infoValue}>{selected.email}</Text></View> : null}
+
+            {/* Jauge score BANT */}
+            {selected && <ScoreGauge score={selected.score_bant} />}
+
+            {/* Actions directes */}
+            <Text style={styles.sectionTitle}>Actions rapides</Text>
+            <View style={styles.actionsRow}>
+              <TouchableOpacity style={[styles.actionBtn, { backgroundColor: "#ebf8ff" }]} onPress={() => selected && callProspect(selected.email, selected.nom)}>
+                <Text style={styles.actionIcon}>📞</Text>
+                <Text style={[styles.actionTxt, { color: "#2b6cb0" }]}>Appeler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.actionBtn, { backgroundColor: "#f0fff4" }]} onPress={() => selected && emailProspect(selected.email, selected.nom)}>
+                <Text style={styles.actionIcon}>✉️</Text>
+                <Text style={[styles.actionTxt, { color: "#276749" }]}>Email</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.actionBtn, { backgroundColor: "#fffaf0" }]} onPress={() => selected && showStatutProspectPicker(selected)}>
+                <Text style={styles.actionIcon}>🔄</Text>
+                <Text style={[styles.actionTxt, { color: "#b7791f" }]}>Statut</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.actionBtn, { backgroundColor: "#fff5f5" }]} onPress={() => selected && showNiveauPicker(selected)}>
+                <Text style={styles.actionIcon}>🌡</Text>
+                <Text style={[styles.actionTxt, { color: "#c53030" }]}>Chaleur</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Email affiché */}
+            {selected?.email ? (
+              <TouchableOpacity style={styles.infoRow} onPress={() => selected && emailProspect(selected.email, selected.nom)}>
+                <Text style={styles.infoLabel}>Email</Text>
+                <Text style={[styles.infoValue, { color: "#2b6cb0" }]}>{selected.email} →</Text>
+              </TouchableOpacity>
+            ) : null}
+
+            {/* Supprimer */}
             <TouchableOpacity style={styles.deleteBtn} onPress={() => selected && deleteProspect(selected.id)}>
               <Text style={styles.deleteTxt}>🗑 Supprimer ce prospect</Text>
             </TouchableOpacity>
@@ -177,6 +289,7 @@ export default function App() {
         </SafeAreaView>
       </Modal>
 
+      {/* Formulaire nouveau prospect */}
       <Modal visible={showAdd} animationType="slide" presentationStyle="pageSheet">
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <SafeAreaView style={styles.modal}>
@@ -247,12 +360,18 @@ const styles = StyleSheet.create({
   closeBtn: { backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 20, width: 32, height: 32, alignItems: "center", justifyContent: "center" },
   closeTxt: { color: "#fff", fontSize: 14, fontWeight: "700" },
   row: { flexDirection: "row", gap: 8 },
-  badge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
+  badge: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, alignItems: "center" },
   badgeTxt: { fontSize: 12, fontWeight: "700" },
-  scoreCard: { backgroundColor: "#fff", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#e2e8f0", alignItems: "center" },
-  scoreLabel: { fontSize: 12, color: "#718096", marginBottom: 4 },
-  scoreBig: { fontSize: 48, fontWeight: "900", color: "#1a6b7e" },
-  scoreMax: { fontSize: 20, fontWeight: "400", color: "#a0aec0" },
+  actionsRow: { flexDirection: "row", gap: 8, marginBottom: 4 },
+  actionBtn: { flex: 1, alignItems: "center", paddingVertical: 14, borderRadius: 12, gap: 4 },
+  actionIcon: { fontSize: 22 },
+  actionTxt: { fontSize: 11, fontWeight: "700" },
+  gaugeWrap: { backgroundColor: "#fff", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#e2e8f0" },
+  gaugeLabel: { fontSize: 12, color: "#718096", marginBottom: 8 },
+  gaugeTrack: { height: 10, backgroundColor: "#e2e8f0", borderRadius: 5, overflow: "hidden", marginBottom: 6 },
+  gaugeFill: { height: "100%", borderRadius: 5 },
+  gaugeValue: { fontSize: 32, fontWeight: "900", textAlign: "right" },
+  gaugeMax: { fontSize: 16, fontWeight: "400", color: "#a0aec0" },
   infoRow: { backgroundColor: "#fff", borderRadius: 10, padding: 14, borderWidth: 1, borderColor: "#e2e8f0" },
   infoLabel: { fontSize: 11, color: "#718096", marginBottom: 2 },
   infoValue: { fontSize: 14, fontWeight: "600", color: "#1a202c" },
