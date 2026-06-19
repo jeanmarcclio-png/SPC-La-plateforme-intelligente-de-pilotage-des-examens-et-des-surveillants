@@ -251,30 +251,48 @@ export default function App() {
       {tab === "dashboard" && (
         <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1a6b7e" />}>
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>SPC Cockpit</Text>
-            <Text style={styles.headerSub}>Tableau de bord · {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}</Text>
+            <Text style={styles.headerGreeting}>Bonjour Jean-Marc 👋</Text>
+            <Text style={styles.headerSub}>{new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</Text>
           </View>
 
           {/* KPIs */}
+          {(() => {
+            const nonContactes = prospects.filter(p => p.statut === "Non contacté").length;
+            const enCours = prospects.filter(p => p.statut === "En cours").length;
+            const convertis = prospects.filter(p => p.statut === "Converti").length;
+            const aRelancer = prospects.filter(p => p.statut === "Non contacté" || p.statut === "En cours").length;
+            const tauxPct = stats.total > 0 ? Math.round((stats.rdvFixes / stats.total) * 100) : 0;
+            const kpis = [
+              { label: "Prospects", value: stats.total, color: "#1a202c", sub: `${nonContactes} à contacter` },
+              { label: "Opportunités 🔥", value: stats.tresChaudes, color: "#f6ad55", sub: `${enCours} en cours` },
+              { label: "Taux conv.", value: tauxPct + "%", color: "#38a169", sub: `${convertis} convertis` },
+              { label: "RDV / Conv.", value: stats.rdvFixes, color: "#1a6b7e", sub: `${aRelancer} à relancer` },
+            ];
+            return (
           <View style={styles.kpiGrid}>
-            {[
-              { label: "Prospects", value: stats.total, color: "#1a202c" },
-              { label: "Opportunités 🔥", value: stats.tresChaudes, color: "#f6ad55" },
-              { label: "Taux conv.", value: stats.total > 0 ? Math.round((stats.rdvFixes / stats.total) * 100) + "%" : "0%", color: "#38a169" },
-              { label: "RDV / Conv.", value: stats.rdvFixes, color: "#1a6b7e" },
-            ].map(k => (
+            {kpis.map(k => (
               <View key={k.label} style={styles.kpiCard}>
                 <Text style={[styles.kpiValue, { color: k.color }]}>{k.value}</Text>
                 <Text style={styles.kpiLabel}>{k.label}</Text>
+                <Text style={styles.kpiSub}>{k.sub}</Text>
               </View>
             ))}
           </View>
+            );
+          })()}
 
           {/* Recommandation IA */}
           {prospects.length > 0 && (() => {
             const rec = [...prospects].filter(p => p.statut !== "Converti" && p.statut !== "RDV fixé").sort((a, b) => b.score_bant - a.score_bant)[0];
             if (!rec) return null;
             const proba = Math.min(Math.round(rec.score_bant * 8 + 15), 95);
+            const whyReasons = [
+              `Score BANT ${rec.score_bant}/10 — priorité haute`,
+              rec.niveau === "Très chaud" || rec.niveau === "Chaud"
+                ? `Niveau ${rec.niveau} — intérêt confirmé`
+                : `Statut "${rec.statut}" — à activer maintenant`,
+              rec.segment ? `Segment ${rec.segment} — cible prioritaire SPC` : "Établissement à fort potentiel",
+            ];
             return (
               <View style={styles.iaRec}>
                 <View style={styles.iaRecTop}>
@@ -283,6 +301,18 @@ export default function App() {
                 </View>
                 <Text style={styles.iaRecNom}>{rec.nom}</Text>
                 <Text style={styles.iaRecSub}>{rec.segment} · Score {rec.score_bant}/10 · {rec.statut}</Text>
+
+                {/* Pourquoi ? */}
+                <View style={styles.iaRecWhy}>
+                  <Text style={styles.iaRecWhyTitle}>Pourquoi ?</Text>
+                  {whyReasons.map((r, i) => (
+                    <View key={i} style={styles.iaRecWhyRow}>
+                      <Text style={styles.iaRecWhyCheck}>✓</Text>
+                      <Text style={styles.iaRecWhyTxt}>{r}</Text>
+                    </View>
+                  ))}
+                </View>
+
                 <View style={styles.iaRecProba}>
                   <Text style={styles.iaRecProbaLabel}>Probabilité de conversion</Text>
                   <Text style={styles.iaRecProbaVal}>{proba}%</Text>
@@ -290,9 +320,14 @@ export default function App() {
                 <View style={styles.iaRecProbaTrack}>
                   <View style={[styles.iaRecProbaFill, { width: `${proba}%` as any }]} />
                 </View>
-                <TouchableOpacity style={styles.iaRecBtn} onPress={() => { openProspect(rec); }}>
-                  <Text style={styles.iaRecBtnTxt}>📞 Voir la fiche et appeler →</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                  <TouchableOpacity style={[styles.iaRecBtn, { flex: 1, backgroundColor: "#68d391" }]} onPress={() => callProspect(rec)}>
+                    <Text style={[styles.iaRecBtnTxt, { color: "#1a202c" }]}>📞 Appeler maintenant</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.iaRecBtn, { paddingHorizontal: 14 }]} onPress={() => openProspect(rec)}>
+                    <Text style={styles.iaRecBtnTxt}>Fiche →</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             );
           })()}
@@ -598,12 +633,19 @@ export default function App() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f7f8fa" },
   header: { backgroundColor: "#1a6b7e", paddingTop: 60, paddingBottom: 20, paddingHorizontal: 20 },
-  headerTitle: { fontSize: 22, fontWeight: "800", color: "#fff" },
-  headerSub: { fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 2 },
+  headerGreeting: { fontSize: 22, fontWeight: "800", color: "#fff" },
+  headerTitle: { fontSize: 16, fontWeight: "700", color: "rgba(255,255,255,0.85)", marginTop: 2 },
+  headerSub: { fontSize: 13, color: "rgba(255,255,255,0.6)", marginTop: 2 },
   kpiGrid: { flexDirection: "row", flexWrap: "wrap", padding: 12, gap: 8 },
   kpiCard: { flex: 1, minWidth: "45%", backgroundColor: "#fff", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: "#e2e8f0" },
   kpiValue: { fontSize: 26, fontWeight: "800" },
   kpiLabel: { fontSize: 11, color: "#718096", marginTop: 2 },
+  kpiSub: { fontSize: 10, color: "#a0aec0", marginTop: 4, fontWeight: "500" },
+  iaRecWhy: { backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 10, padding: 12, marginBottom: 14, marginTop: 4 },
+  iaRecWhyTitle: { fontSize: 10, color: "rgba(255,255,255,0.5)", fontWeight: "700", letterSpacing: 0.6, marginBottom: 8 },
+  iaRecWhyRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 5 },
+  iaRecWhyCheck: { fontSize: 12, color: "#68d391", fontWeight: "800", lineHeight: 17 },
+  iaRecWhyTxt: { fontSize: 12, color: "rgba(255,255,255,0.85)", flex: 1, lineHeight: 17 },
   sectionTitle: { fontSize: 13, fontWeight: "700", color: "#1a202c", marginHorizontal: 16, marginBottom: 8, marginTop: 4 },
   iaRec: { marginHorizontal: 12, marginTop: 4, marginBottom: 4, backgroundColor: "#0d4a5a", borderRadius: 14, padding: 16, shadowColor: "#1a6b7e", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
   iaRecTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
