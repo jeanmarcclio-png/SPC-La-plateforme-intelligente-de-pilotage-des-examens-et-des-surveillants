@@ -290,8 +290,15 @@ export default function App() {
           <ScrollView style={[styles.container, { backgroundColor: "#f8fafc" }]} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1a5c6e" />}>
             {/* Header enrichi */}
             <View style={[styles.header, { backgroundColor: "#1a5c6e", paddingBottom: 16 }]}>
-              <Text style={styles.headerTitle}>Campagnes</Text>
-              <Text style={styles.headerSub}>{campagnes.length} campagnes • {campagnes.filter(c => c.statut === "En cours" || c.statut === "Actif").length} actives</Text>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <View>
+                  <Text style={styles.headerTitle}>Campagnes</Text>
+                  <Text style={styles.headerSub}>{campagnes.length} campagnes • {campagnes.filter(c => c.statut === "En cours" || c.statut === "Actif").length} actives</Text>
+                </View>
+                <TouchableOpacity onPress={() => setShowAddCampagne(true)} style={styles.headerAddBtn}>
+                  <Text style={styles.headerAddTxt}>+ Nouvelle</Text>
+                </TouchableOpacity>
+              </View>
               {(() => {
                 const totalP = campagnes.reduce((s, c) => s + c.nombre_prospects, 0);
                 const totalC = campagnes.reduce((s, c) => s + c.tres_chaudes, 0);
@@ -299,26 +306,32 @@ export default function App() {
                 const scoreMoy = campagnes.length > 0 ? (campagnes.reduce((s, c) => s + c.score, 0) / campagnes.length).toFixed(1) : "—";
                 return (
                   <View style={styles.campKpiRow}>
-                    <View style={styles.campKpi}><Text style={styles.campKpiValue}>{totalP}</Text><Text style={styles.campKpiLabel}>Prospects</Text></View>
+                    <View style={styles.campKpi}><Text style={[styles.campKpiValue, { fontSize: 24 }]}>{totalP}</Text><Text style={styles.campKpiLabel}>Prospects</Text></View>
                     <View style={styles.campKpiDivider} />
-                    <View style={styles.campKpi}><Text style={[styles.campKpiValue, { color: "#fbd38d" }]}>{pctQ}%</Text><Text style={styles.campKpiLabel}>Qualifiés</Text></View>
+                    <View style={styles.campKpi}><Text style={[styles.campKpiValue, { color: "#fbd38d", fontSize: 24 }]}>{pctQ}%</Text><Text style={styles.campKpiLabel}>Qualifiés</Text></View>
                     <View style={styles.campKpiDivider} />
-                    <View style={styles.campKpi}><Text style={[styles.campKpiValue, { color: "#f6ad55" }]}>{totalC}</Text><Text style={styles.campKpiLabel}>Chauds</Text></View>
+                    <View style={styles.campKpi}><Text style={[styles.campKpiValue, { color: "#f6ad55", fontSize: 24 }]}>{totalC}</Text><Text style={styles.campKpiLabel}>Chauds</Text></View>
                     <View style={styles.campKpiDivider} />
-                    <View style={styles.campKpi}><Text style={[styles.campKpiValue, { color: "#68d391" }]}>{scoreMoy}</Text><Text style={styles.campKpiLabel}>Score IA</Text></View>
+                    <View style={styles.campKpi}><Text style={[styles.campKpiValue, { color: "#68d391", fontSize: 24 }]}>{scoreMoy}</Text><Text style={styles.campKpiLabel}>Score IA</Text></View>
                   </View>
                 );
               })()}
             </View>
 
-            {campagnes.map(c => {
+            {(() => {
+              const topScore = Math.max(...campagnes.map(c => c.score), 0);
+              return campagnes.map(c => {
               const pct = c.nombre_prospects > 0 ? Math.round((c.tres_chaudes / c.nombre_prospects) * 100) : 0;
               const badgeColor = CAMP_COLORS[c.statut] ?? "#a0aec0";
+              const isTop = c.score === topScore && campagnes.length > 1;
               const barColor = pct >= 70 ? "#38a169" : pct >= 40 ? "#f6ad55" : "#fc8181";
               const scoreColor = c.score >= 9 ? "#38a169" : c.score >= 7 ? "#4a90d9" : "#f6ad55";
               const scoreLabel = c.score >= 9 ? "Excellent" : c.score >= 7 ? "Bon" : "Moyen";
               return (
-                <TouchableOpacity key={c.id} style={styles.campCard} activeOpacity={0.85}>
+                <TouchableOpacity key={c.id} style={[styles.campCard, isTop && { borderColor: "#f6ad55", borderWidth: 1.5 }]} activeOpacity={0.85}>
+                  {isTop && (
+                    <View style={styles.topBadge}><Text style={styles.topBadgeTxt}>🏆 Recommandée</Text></View>
+                  )}
                   <View style={styles.campTop}>
                     <Text style={styles.campNom} numberOfLines={1}>{c.nom}</Text>
                     <TouchableOpacity onPress={() => showStatutCampagnePicker(c)} style={[styles.statutBadge, { backgroundColor: badgeColor + "20" }]}>
@@ -358,10 +371,10 @@ export default function App() {
                   </View>
                 </TouchableOpacity>
               );
-            })}
-            <View style={{ height: 120 }} />
+            });
+            })()}
+            <View style={{ height: 40 }} />
           </ScrollView>
-          <TouchableOpacity style={[styles.fab, { bottom: 88 }]} onPress={() => setShowAddCampagne(true)}><Text style={styles.fabTxt}>+</Text></TouchableOpacity>
         </View>
       )}
 
@@ -583,7 +596,11 @@ const styles = StyleSheet.create({
   scoreIATxt: { fontSize: 12, fontWeight: "800" },
   campStats: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
   campStat: { fontSize: 11, color: "#4a5568", backgroundColor: "#f8fafc", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: "#edf2f7" },
-  campKpiRow: { flexDirection: "row", marginTop: 16, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 12, padding: 10 },
+  headerAddBtn: { backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginTop: 4 },
+  headerAddTxt: { color: "#fff", fontWeight: "700", fontSize: 13 },
+  topBadge: { backgroundColor: "#fffbeb", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, alignSelf: "flex-start", marginBottom: 8, borderWidth: 1, borderColor: "#f6ad55" },
+  topBadgeTxt: { fontSize: 11, fontWeight: "700", color: "#b7791f" },
+  campKpiRow: { flexDirection: "row", marginTop: 16, backgroundColor: "rgba(255,255,255,0.18)", borderRadius: 12, padding: 12 },
   campKpi: { flex: 1, alignItems: "center" },
   campKpiValue: { fontSize: 18, fontWeight: "800", color: "#fff" },
   campKpiLabel: { fontSize: 9, color: "rgba(255,255,255,0.65)", marginTop: 2 },
