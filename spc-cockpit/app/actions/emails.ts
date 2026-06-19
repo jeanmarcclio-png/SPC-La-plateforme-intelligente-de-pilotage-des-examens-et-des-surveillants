@@ -76,7 +76,7 @@ export async function sendProspectEmail(prospectId: string, type: string) {
   if (process.env.RESEND_API_KEY && prospect.email) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { error } = await resend.emails.send({
-      from: "SPC <contact@spc-examens.fr>",
+      from: "SPC <onboarding@resend.dev>",
       to: [prospect.email],
       subject: template.subject,
       text: template.body,
