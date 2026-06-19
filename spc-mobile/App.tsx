@@ -13,6 +13,7 @@ type Campagne = { id: string; nom: string; perimetre: string; statut: string; sc
 const STATUT_COLORS: Record<string, string> = { "Non contacté": "#a0aec0", "En cours": "#4a90d9", "RDV fixé": "#38a169", "Converti": "#1a6b7e" };
 const NIVEAU_COLORS: Record<string, string> = { "Très chaud": "#f6ad55", "Chaud": "#fc8181", "Tiède": "#4a90d9", "Froid": "#a0aec0" };
 const CAMP_COLORS: Record<string, string> = { "En cours": "#4a90d9", "Planifiée": "#a0aec0", "Terminée": "#38a169", "Annulée": "#fc8181", "Actif": "#38a169", "Terminé": "#a0aec0" };
+const CAMP_EMOJI: Record<string, string> = { "En cours": "🔵", "Planifiée": "⚪", "Terminée": "⚫", "Annulée": "🔴", "Actif": "🟢", "Terminé": "⚫" };
 const PIPELINE = ["Non contacté", "En cours", "RDV fixé", "Converti"];
 const PIPELINE_SHORT = ["Nouveau", "En cours", "RDV", "Converti"];
 const FILTERS = ["Tous", "Non contacté", "En cours", "RDV fixé", "Converti", "Très chaud"];
@@ -312,42 +313,48 @@ export default function App() {
 
             {campagnes.map(c => {
               const pct = c.nombre_prospects > 0 ? Math.round((c.tres_chaudes / c.nombre_prospects) * 100) : 0;
-              const color = CAMP_COLORS[c.statut] ?? "#a0aec0";
+              const badgeColor = CAMP_COLORS[c.statut] ?? "#a0aec0";
+              const barColor = pct >= 70 ? "#38a169" : pct >= 40 ? "#f6ad55" : "#fc8181";
+              const scoreColor = c.score >= 9 ? "#38a169" : c.score >= 7 ? "#4a90d9" : "#f6ad55";
+              const scoreLabel = c.score >= 9 ? "Excellent" : c.score >= 7 ? "Bon" : "Moyen";
               return (
                 <TouchableOpacity key={c.id} style={styles.campCard} activeOpacity={0.85}>
                   <View style={styles.campTop}>
                     <Text style={styles.campNom} numberOfLines={1}>{c.nom}</Text>
-                    <TouchableOpacity onPress={() => showStatutCampagnePicker(c)} style={[styles.statutBadge, { backgroundColor: color + "20" }]}>
-                      <Text style={[styles.statutText, { color }]}>{c.statut} ✎</Text>
+                    <TouchableOpacity onPress={() => showStatutCampagnePicker(c)} style={[styles.statutBadge, { backgroundColor: badgeColor + "20" }]}>
+                      <Text style={[styles.statutText, { color: badgeColor }]}>{CAMP_EMOJI[c.statut] ?? ""} {c.statut} ✎</Text>
                     </TouchableOpacity>
                   </View>
                   {c.perimetre ? <Text style={styles.campPerim}>{c.perimetre}</Text> : null}
 
-                  {/* Barre de progression */}
+                  {/* Barre sémantique */}
                   {c.nombre_prospects > 0 && (
                     <View style={{ marginBottom: 10 }}>
                       <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
                         <Text style={{ fontSize: 10, color: "#718096" }}>Indice d'intérêt</Text>
-                        <Text style={{ fontSize: 10, color, fontWeight: "700" }}>{pct}%</Text>
+                        <Text style={{ fontSize: 10, color: barColor, fontWeight: "700" }}>{pct}%</Text>
                       </View>
                       <View style={styles.campProgressTrack}>
-                        <View style={[styles.campProgressFill, { width: `${pct}%` as any, backgroundColor: color }]} />
+                        <View style={[styles.campProgressFill, { width: `${pct}%` as any, backgroundColor: barColor }]} />
                       </View>
                     </View>
                   )}
 
-                  {/* Stats compactes 2×2 */}
-                  <View style={styles.campGrid}>
-                    <View style={styles.campGridCell}><Text style={styles.campGridVal}>{c.nombre_prospects}</Text><Text style={styles.campGridLbl}>👥 prospects</Text></View>
-                    <View style={styles.campGridCell}><Text style={styles.campGridVal}>{c.tres_chaudes}</Text><Text style={styles.campGridLbl}>🔥 chauds</Text></View>
-                    <View style={styles.campGridCell}><Text style={[styles.campGridVal, { color: color }]}>{pct}%</Text><Text style={styles.campGridLbl}>🎯 qualifiés</Text></View>
-                    <View style={styles.campGridCell}><Text style={[styles.campGridVal, { color: "#1a6b7e" }]}>{c.score}</Text><Text style={styles.campGridLbl}>📊 Score IA</Text></View>
+                  {/* Stats en ligne unique */}
+                  <View style={styles.campStatsLine}>
+                    <Text style={styles.campStatItem}>👥 {c.nombre_prospects}</Text>
+                    <Text style={styles.campStatSep}>·</Text>
+                    <Text style={styles.campStatItem}>🔥 {c.tres_chaudes}</Text>
+                    <Text style={styles.campStatSep}>·</Text>
+                    <Text style={[styles.campStatItem, { color: barColor }]}>🎯 {pct}%</Text>
+                    <Text style={styles.campStatSep}>·</Text>
+                    <Text style={[styles.campStatItem, { color: scoreColor, fontWeight: "700" }]}>IA {c.score} · {scoreLabel}</Text>
                   </View>
                   {c.jours_restants > 0 && <Text style={styles.campJours}>⏳ {c.jours_restants} jours restants</Text>}
                 </TouchableOpacity>
               );
             })}
-            <View style={{ height: 80 }} />
+            <View style={{ height: 120 }} />
           </ScrollView>
           <TouchableOpacity style={[styles.fab, { bottom: 88 }]} onPress={() => setShowAddCampagne(true)}><Text style={styles.fabTxt}>+</Text></TouchableOpacity>
         </View>
@@ -563,11 +570,10 @@ const styles = StyleSheet.create({
   campPerim: { fontSize: 11, color: "#718096", marginBottom: 8 },
   campProgressTrack: { height: 6, backgroundColor: "#edf2f7", borderRadius: 3, overflow: "hidden" },
   campProgressFill: { height: "100%", borderRadius: 3 },
-  campGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
-  campGridCell: { width: "47%", backgroundColor: "#f8fafc", borderRadius: 8, paddingVertical: 7, paddingHorizontal: 10, borderWidth: 1, borderColor: "#edf2f7" },
-  campGridVal: { fontSize: 16, fontWeight: "800", color: "#1a202c" },
-  campGridLbl: { fontSize: 10, color: "#718096", marginTop: 1 },
-  campJours: { fontSize: 11, color: "#b7791f", backgroundColor: "#fffbeb", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, alignSelf: "flex-start", marginTop: 6, borderWidth: 1, borderColor: "#fde68a" },
+  campStatsLine: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 4, marginTop: 4 },
+  campStatItem: { fontSize: 12, color: "#4a5568", fontWeight: "600" },
+  campStatSep: { fontSize: 12, color: "#cbd5e0" },
+  campJours: { fontSize: 11, color: "#b7791f", backgroundColor: "#fffbeb", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, alignSelf: "flex-start", marginTop: 8, borderWidth: 1, borderColor: "#fde68a" },
   campStats: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
   campStat: { fontSize: 11, color: "#4a5568", backgroundColor: "#f8fafc", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: "#edf2f7" },
   campKpiRow: { flexDirection: "row", marginTop: 16, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 12, padding: 10 },
