@@ -51,6 +51,10 @@ export default function App() {
   const [newNom, setNewNom] = useState("");
   const [newSegment, setNewSegment] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [showAddCampagne, setShowAddCampagne] = useState(false);
+  const [newCampNom, setNewCampNom] = useState("");
+  const [newCampPerim, setNewCampPerim] = useState("");
+  const [newCampJours, setNewCampJours] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Tous");
   const [editNotes, setEditNotes] = useState("");
@@ -187,6 +191,18 @@ export default function App() {
     await loadCampagnes();
   }
 
+  async function createCampagne() {
+    if (!newCampNom.trim()) { Alert.alert("Erreur", "Le nom est obligatoire"); return; }
+    const { error } = await supabase.from("campagnes").insert({
+      id: Date.now().toString(), nom: newCampNom.trim(), perimetre: newCampPerim.trim(),
+      statut: "Planifiée", score: 0, nombre_prospects: 0, tres_chaudes: 0,
+      jours_restants: parseInt(newCampJours) || 0,
+    });
+    if (error) { Alert.alert("Erreur", error.message); return; }
+    setNewCampNom(""); setNewCampPerim(""); setNewCampJours("");
+    setShowAddCampagne(false); await loadCampagnes();
+  }
+
   function callProspect(p: Prospect) {
     const tel = p.telephone || editTelephone;
     if (tel) { Linking.openURL("tel:" + tel.replace(/\s/g, "")); return; }
@@ -269,27 +285,72 @@ export default function App() {
 
       {/* ── CAMPAGNES ── */}
       {tab === "campagnes" && (
-        <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1a6b7e" />}>
-          <View style={styles.header}><Text style={styles.headerTitle}>Campagnes</Text><Text style={styles.headerSub}>{campagnes.length} campagnes</Text></View>
-          {campagnes.map(c => (
-            <View key={c.id} style={styles.campCard}>
-              <View style={styles.campTop}>
-                <Text style={styles.campNom}>{c.nom}</Text>
-                <TouchableOpacity onPress={() => showStatutCampagnePicker(c)} style={[styles.statutBadge, { backgroundColor: (CAMP_COLORS[c.statut] ?? "#a0aec0") + "20" }]}>
-                  <Text style={[styles.statutText, { color: CAMP_COLORS[c.statut] ?? "#a0aec0" }]}>{c.statut} ✎</Text>
-                </TouchableOpacity>
-              </View>
-              {c.perimetre ? <Text style={styles.campPerim}>{c.perimetre}</Text> : null}
-              <View style={styles.campStats}>
-                <Text style={styles.campStat}>📊 Score {c.score}</Text>
-                <Text style={styles.campStat}>👥 {c.nombre_prospects} prospects</Text>
-                <Text style={styles.campStat}>🔥 {c.tres_chaudes} chauds</Text>
-                {c.jours_restants > 0 && <Text style={styles.campStat}>⏳ {c.jours_restants}j</Text>}
+        <View style={{ flex: 1 }}>
+          <ScrollView style={[styles.container, { backgroundColor: "#f8fafc" }]} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1a5c6e" />}>
+            {/* Header enrichi */}
+            <View style={[styles.header, { backgroundColor: "#1a5c6e", paddingBottom: 16 }]}>
+              <Text style={styles.headerTitle}>Campagnes</Text>
+              <Text style={styles.headerSub}>{campagnes.length} campagnes • {campagnes.filter(c => c.statut === "En cours" || c.statut === "Actif").length} actives</Text>
+              <View style={styles.campKpiRow}>
+                <View style={styles.campKpi}>
+                  <Text style={styles.campKpiValue}>{campagnes.reduce((s, c) => s + c.nombre_prospects, 0)}</Text>
+                  <Text style={styles.campKpiLabel}>Prospects</Text>
+                </View>
+                <View style={styles.campKpiDivider} />
+                <View style={styles.campKpi}>
+                  <Text style={[styles.campKpiValue, { color: "#f6ad55" }]}>{campagnes.reduce((s, c) => s + c.tres_chaudes, 0)}</Text>
+                  <Text style={styles.campKpiLabel}>Chauds</Text>
+                </View>
+                <View style={styles.campKpiDivider} />
+                <View style={styles.campKpi}>
+                  <Text style={[styles.campKpiValue, { color: "#68d391" }]}>
+                    {campagnes.length > 0 ? (campagnes.reduce((s, c) => s + c.score, 0) / campagnes.length).toFixed(1) : "—"}
+                  </Text>
+                  <Text style={styles.campKpiLabel}>Score moy.</Text>
+                </View>
               </View>
             </View>
-          ))}
-          <View style={{ height: 80 }} />
-        </ScrollView>
+
+            {campagnes.map(c => {
+              const pct = c.nombre_prospects > 0 ? Math.round((c.tres_chaudes / c.nombre_prospects) * 100) : 0;
+              const color = CAMP_COLORS[c.statut] ?? "#a0aec0";
+              return (
+                <TouchableOpacity key={c.id} style={styles.campCard} activeOpacity={0.85}>
+                  <View style={styles.campTop}>
+                    <Text style={styles.campNom} numberOfLines={1}>{c.nom}</Text>
+                    <TouchableOpacity onPress={() => showStatutCampagnePicker(c)} style={[styles.statutBadge, { backgroundColor: color + "20" }]}>
+                      <Text style={[styles.statutText, { color }]}>{c.statut} ✎</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {c.perimetre ? <Text style={styles.campPerim}>{c.perimetre}</Text> : null}
+
+                  {/* Barre de progression */}
+                  {c.nombre_prospects > 0 && (
+                    <View style={{ marginBottom: 10 }}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                        <Text style={{ fontSize: 10, color: "#718096" }}>Taux de chaleur</Text>
+                        <Text style={{ fontSize: 10, color: color, fontWeight: "700" }}>{pct}%</Text>
+                      </View>
+                      <View style={styles.campProgressTrack}>
+                        <View style={[styles.campProgressFill, { width: `${pct}%` as any, backgroundColor: color }]} />
+                      </View>
+                    </View>
+                  )}
+
+                  <View style={styles.campStats}>
+                    <Text style={styles.campStat}>📊 Score IA : {c.score}</Text>
+                    <Text style={styles.campStat}>👥 {c.nombre_prospects} prospects</Text>
+                    <Text style={styles.campStat}>🔥 {c.tres_chaudes} chauds</Text>
+                    {c.nombre_prospects > 0 && <Text style={styles.campStat}>🎯 {pct}% qualifiés</Text>}
+                    {c.jours_restants > 0 && <Text style={[styles.campStat, { color: "#b7791f", backgroundColor: "#fffbeb" }]}>⏳ {c.jours_restants}j restants</Text>}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+            <View style={{ height: 80 }} />
+          </ScrollView>
+          <TouchableOpacity style={styles.fab} onPress={() => setShowAddCampagne(true)}><Text style={styles.fabTxt}>+</Text></TouchableOpacity>
+        </View>
       )}
 
       {/* ── AGENDA ── */}
@@ -429,6 +490,24 @@ export default function App() {
         </KeyboardAvoidingView>
       </Modal>
 
+      {/* ── NOUVELLE CAMPAGNE ── */}
+      <Modal visible={showAddCampagne} animationType="slide" presentationStyle="pageSheet">
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <SafeAreaView style={styles.modal}>
+            <View style={[styles.modalHeader, { backgroundColor: "#1a5c6e" }]}>
+              <Text style={styles.modalNom}>Nouvelle campagne</Text>
+              <TouchableOpacity onPress={() => setShowAddCampagne(false)} style={styles.closeBtn}><Text style={styles.closeTxt}>✕</Text></TouchableOpacity>
+            </View>
+            <ScrollView contentContainerStyle={{ padding: 20, gap: 14 }}>
+              <View><Text style={styles.inputLabel}>Nom de la campagne *</Text><TextInput style={styles.input} value={newCampNom} onChangeText={setNewCampNom} placeholder="Ex : IDF Printemps 2027" placeholderTextColor="#a0aec0" /></View>
+              <View><Text style={styles.inputLabel}>Périmètre géographique</Text><TextInput style={styles.input} value={newCampPerim} onChangeText={setNewCampPerim} placeholder="Ex : Paris · Lyon · Bordeaux" placeholderTextColor="#a0aec0" /></View>
+              <View><Text style={styles.inputLabel}>Jours restants</Text><TextInput style={styles.input} value={newCampJours} onChangeText={setNewCampJours} placeholder="Ex : 30" placeholderTextColor="#a0aec0" keyboardType="number-pad" /></View>
+              <TouchableOpacity style={[styles.createBtn, { backgroundColor: "#1a5c6e" }]} onPress={createCampagne}><Text style={styles.createTxt}>Créer la campagne</Text></TouchableOpacity>
+            </ScrollView>
+          </SafeAreaView>
+        </KeyboardAvoidingView>
+      </Modal>
+
       {/* ── NOUVEAU PROSPECT ── */}
       <Modal visible={showAdd} animationType="slide" presentationStyle="pageSheet">
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -478,12 +557,19 @@ const styles = StyleSheet.create({
   niveauBadgeTxt: { fontSize: 10, fontWeight: "700" },
   statutBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
   statutText: { fontSize: 10, fontWeight: "700" },
-  campCard: { backgroundColor: "#fff", marginHorizontal: 12, marginBottom: 8, borderRadius: 10, padding: 14, borderWidth: 1, borderColor: "#e2e8f0" },
+  campCard: { backgroundColor: "#fff", marginHorizontal: 12, marginBottom: 10, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#edf2f7", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
   campTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 },
-  campNom: { fontSize: 14, fontWeight: "700", color: "#1a202c", flex: 1, marginRight: 8 },
-  campPerim: { fontSize: 11, color: "#718096", marginBottom: 8 },
-  campStats: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 },
-  campStat: { fontSize: 11, color: "#4a5568", backgroundColor: "#f7f8fa", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  campNom: { fontSize: 15, fontWeight: "800", color: "#1a202c", flex: 1, marginRight: 8 },
+  campPerim: { fontSize: 11, color: "#718096", marginBottom: 10 },
+  campProgressTrack: { height: 6, backgroundColor: "#edf2f7", borderRadius: 3, overflow: "hidden" },
+  campProgressFill: { height: "100%", borderRadius: 3 },
+  campStats: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
+  campStat: { fontSize: 11, color: "#4a5568", backgroundColor: "#f8fafc", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: "#edf2f7" },
+  campKpiRow: { flexDirection: "row", marginTop: 16, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 12, padding: 12 },
+  campKpi: { flex: 1, alignItems: "center" },
+  campKpiValue: { fontSize: 20, fontWeight: "800", color: "#fff" },
+  campKpiLabel: { fontSize: 10, color: "rgba(255,255,255,0.65)", marginTop: 2 },
+  campKpiDivider: { width: 1, backgroundColor: "rgba(255,255,255,0.2)", marginHorizontal: 4 },
   emptyState: { alignItems: "center", paddingTop: 80 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
   emptyTxt: { fontSize: 16, color: "#718096" },
