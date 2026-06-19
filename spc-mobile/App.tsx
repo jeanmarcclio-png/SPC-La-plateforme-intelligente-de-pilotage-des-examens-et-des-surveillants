@@ -327,12 +327,12 @@ export default function App() {
                   </View>
                   {c.perimetre ? <Text style={styles.campPerim}>{c.perimetre}</Text> : null}
 
-                  {/* Barre sémantique */}
+                  {/* Barre sémantique avec % grand */}
                   {c.nombre_prospects > 0 && (
                     <View style={{ marginBottom: 10 }}>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                         <Text style={{ fontSize: 10, color: "#718096" }}>Indice d'intérêt</Text>
-                        <Text style={{ fontSize: 10, color: barColor, fontWeight: "700" }}>{pct}%</Text>
+                        <Text style={{ fontSize: 22, fontWeight: "900", color: barColor }}>{pct}%</Text>
                       </View>
                       <View style={styles.campProgressTrack}>
                         <View style={[styles.campProgressFill, { width: `${pct}%` as any, backgroundColor: barColor }]} />
@@ -340,17 +340,22 @@ export default function App() {
                     </View>
                   )}
 
-                  {/* Stats en ligne unique */}
+                  {/* Stats ligne */}
                   <View style={styles.campStatsLine}>
                     <Text style={styles.campStatItem}>👥 {c.nombre_prospects}</Text>
                     <Text style={styles.campStatSep}>·</Text>
                     <Text style={styles.campStatItem}>🔥 {c.tres_chaudes}</Text>
                     <Text style={styles.campStatSep}>·</Text>
                     <Text style={[styles.campStatItem, { color: barColor }]}>🎯 {pct}%</Text>
-                    <Text style={styles.campStatSep}>·</Text>
-                    <Text style={[styles.campStatItem, { color: scoreColor, fontWeight: "700" }]}>IA {c.score} · {scoreLabel}</Text>
                   </View>
-                  {c.jours_restants > 0 && <Text style={styles.campJours}>⏳ {c.jours_restants} jours restants</Text>}
+
+                  {/* Score IA badge + jours */}
+                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+                    <View style={[styles.scoreIABadge, { backgroundColor: scoreColor + "15", borderColor: scoreColor + "40" }]}>
+                      <Text style={[styles.scoreIATxt, { color: scoreColor }]}>🤖 {c.score}/10 · {scoreLabel}</Text>
+                    </View>
+                    {c.jours_restants > 0 && <Text style={styles.campJours}>⏳ {c.jours_restants}j</Text>}
+                  </View>
                 </TouchableOpacity>
               );
             })}
@@ -573,7 +578,9 @@ const styles = StyleSheet.create({
   campStatsLine: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 4, marginTop: 4 },
   campStatItem: { fontSize: 12, color: "#4a5568", fontWeight: "600" },
   campStatSep: { fontSize: 12, color: "#cbd5e0" },
-  campJours: { fontSize: 11, color: "#b7791f", backgroundColor: "#fffbeb", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, alignSelf: "flex-start", marginTop: 8, borderWidth: 1, borderColor: "#fde68a" },
+  campJours: { fontSize: 11, color: "#b7791f", backgroundColor: "#fffbeb", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: "#fde68a" },
+  scoreIABadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, borderWidth: 1 },
+  scoreIATxt: { fontSize: 12, fontWeight: "800" },
   campStats: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
   campStat: { fontSize: 11, color: "#4a5568", backgroundColor: "#f8fafc", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: "#edf2f7" },
   campKpiRow: { flexDirection: "row", marginTop: 16, backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 12, padding: 10 },
@@ -584,8 +591,8 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: "center", paddingTop: 80 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
   emptyTxt: { fontSize: 16, color: "#718096" },
-  fab: { position: "absolute", bottom: 20, right: 20, backgroundColor: "#1a6b7e", width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 },
-  fabTxt: { color: "#fff", fontSize: 32, lineHeight: 36 },
+  fab: { position: "absolute", bottom: 20, right: 20, backgroundColor: "#1a6b7e", width: 52, height: 52, borderRadius: 26, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.22, shadowRadius: 6, elevation: 5 },
+  fabTxt: { color: "#fff", fontSize: 28, lineHeight: 32 },
   tabBar: { flexDirection: "row", backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#e2e8f0" },
   tabItem: { flex: 1, alignItems: "center", paddingVertical: 8, position: "relative" },
   tabIcon: { fontSize: 20 },
