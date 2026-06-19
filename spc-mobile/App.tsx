@@ -7,7 +7,21 @@ type Prospect = {
   score_bant: number; statut: string; niveau: string;
   notes?: string; telephone?: string; contact_principal?: string;
   fonction_contact?: string; prochaine_relance?: string;
+  valeur_potentielle?: string; derniere_interaction?: string;
 };
+
+function getRelanceStatus(dateStr: string): { color: string; label: string; bg: string; border: string } {
+  if (!dateStr) return { color: "#a0aec0", label: "", bg: "#fffbeb", border: "#fde68a" };
+  const p = dateStr.split("/");
+  if (p.length !== 3) return { color: "#a0aec0", label: "", bg: "#fffbeb", border: "#fde68a" };
+  const d = new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const diff = Math.floor((d.getTime() - today.getTime()) / 86400000);
+  if (diff < 0) return { color: "#e53e3e", label: `⚠️ En retard de ${Math.abs(diff)}j`, bg: "#fff5f5", border: "#feb2b2" };
+  if (diff === 0) return { color: "#f6ad55", label: "🔔 Aujourd'hui", bg: "#fffbeb", border: "#f6ad55" };
+  if (diff === 1) return { color: "#f6ad55", label: "⏰ Demain", bg: "#fffbeb", border: "#f6ad55" };
+  return { color: "#38a169", label: `✅ Dans ${diff} jours`, bg: "#f0fff4", border: "#9ae6b4" };
+}
 type Campagne = { id: string; nom: string; perimetre: string; statut: string; score: number; nombre_prospects: number; tres_chaudes: number; jours_restants: number };
 
 const STATUT_COLORS: Record<string, string> = { "Non contacté": "#a0aec0", "En cours": "#4a90d9", "RDV fixé": "#38a169", "Converti": "#1a6b7e" };
@@ -63,15 +77,17 @@ export default function App() {
   const [editContact, setEditContact] = useState("");
   const [editFonction, setEditFonction] = useState("");
   const [editRelance, setEditRelance] = useState("");
+  const [editValeur, setEditValeur] = useState("");
+  const [editInteraction, setEditInteraction] = useState("");
   const [saving, setSaving] = useState(false);
 
   async function loadProspects() {
     let { data, error } = await supabase
       .from("prospects")
-      .select("id, nom, email, segment, score_bant, statut, niveau, notes, telephone, contact_principal, fonction_contact, prochaine_relance")
+      .select("id, nom, email, segment, score_bant, statut, niveau, notes, telephone, contact_principal, fonction_contact, prochaine_relance, valeur_potentielle, derniere_interaction")
       .order("score_bant", { ascending: false }).limit(50);
     if (error) {
-      const r = await supabase.from("prospects").select("id, nom, email, segment, score_bant, statut, niveau, notes").order("score_bant", { ascending: false }).limit(50);
+      const r = await supabase.from("prospects").select("id, nom, email, segment, score_bant, statut, niveau, notes, telephone, contact_principal, fonction_contact, prochaine_relance").order("score_bant", { ascending: false }).limit(50);
       data = r.data; if (r.error) { Alert.alert("Erreur", r.error.message); return; }
     }
     if (data) {
@@ -111,6 +127,8 @@ export default function App() {
     setEditContact(p.contact_principal ?? "");
     setEditFonction(p.fonction_contact ?? "");
     setEditRelance(p.prochaine_relance ?? "");
+    setEditValeur(p.valeur_potentielle ?? "");
+    setEditInteraction(p.derniere_interaction ?? "");
   }
 
   async function createProspect() {
@@ -141,11 +159,12 @@ export default function App() {
     const { error } = await supabase.from("prospects").update({
       notes: editNotes, telephone: editTelephone,
       contact_principal: editContact, fonction_contact: editFonction,
-      prochaine_relance: editRelance,
+      prochaine_relance: editRelance, valeur_potentielle: editValeur,
+      derniere_interaction: editInteraction,
     }).eq("id", selected.id);
     if (error) { Alert.alert("Erreur", error.message); }
     else {
-      setSelected(prev => prev ? { ...prev, notes: editNotes, telephone: editTelephone, contact_principal: editContact, fonction_contact: editFonction, prochaine_relance: editRelance } : null);
+      setSelected(prev => prev ? { ...prev, notes: editNotes, telephone: editTelephone, contact_principal: editContact, fonction_contact: editFonction, prochaine_relance: editRelance, valeur_potentielle: editValeur, derniere_interaction: editInteraction } : null);
       await loadProspects();
       Alert.alert("✅ Sauvegardé", "Fiche mise à jour.");
     }
@@ -542,6 +561,26 @@ export default function App() {
                 </TouchableOpacity>
               </View>
 
+              {/* Téléphone actionnable */}
+              {editTelephone ? (
+                <TouchableOpacity style={styles.telBtn} onPress={() => selected && callProspect(selected)}>
+                  <Text style={styles.telBtnIcon}>📞</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.telBtnNum}>{editTelephone}</Text>
+                    <Text style={styles.telBtnSub}>Appuyer pour appeler</Text>
+                  </View>
+                  <Text style={{ color: "#fff", fontSize: 18 }}>›</Text>
+                </TouchableOpacity>
+              ) : null}
+
+              {/* Dernière interaction */}
+              {editInteraction ? (
+                <View style={styles.interactionBlock}>
+                  <Text style={styles.blockTitle}>DERNIÈRE INTERACTION</Text>
+                  <Text style={styles.interactionTxt}>⏱ {editInteraction}</Text>
+                </View>
+              ) : null}
+
               {/* Coordonnées */}
               <View style={styles.coordBlock}>
                 <Text style={styles.blockTitle}>COORDONNÉES</Text>
@@ -555,21 +594,37 @@ export default function App() {
                   <Text style={styles.coordLabel}>Téléphone</Text>
                   <TextInput style={styles.coordInput} value={editTelephone} onChangeText={setEditTelephone} placeholder="+33 1 XX XX XX XX" placeholderTextColor="#c0cfe0" keyboardType="phone-pad" />
                 </View>
-                <View style={[styles.coordRow, { borderBottomWidth: 0 }]}>
+                <View style={styles.coordRow}>
                   <Text style={styles.coordLabel}>Contact</Text>
                   <TextInput style={styles.coordInput} value={editContact} onChangeText={setEditContact} placeholder="Marie Dupont" placeholderTextColor="#c0cfe0" />
                 </View>
-                <View style={[styles.coordRow, { borderBottomWidth: 0, paddingTop: 0 }]}>
+                <View style={styles.coordRow}>
                   <Text style={styles.coordLabel}>Fonction</Text>
                   <TextInput style={styles.coordInput} value={editFonction} onChangeText={setEditFonction} placeholder="Resp. Admissions" placeholderTextColor="#c0cfe0" />
                 </View>
+                <View style={styles.coordRow}>
+                  <Text style={styles.coordLabel}>Valeur €</Text>
+                  <TextInput style={styles.coordInput} value={editValeur} onChangeText={setEditValeur} placeholder="ex : 45 000 €" placeholderTextColor="#c0cfe0" />
+                </View>
+                <View style={[styles.coordRow, { borderBottomWidth: 0 }]}>
+                  <Text style={styles.coordLabel}>Dernier contact</Text>
+                  <TextInput style={styles.coordInput} value={editInteraction} onChangeText={setEditInteraction} placeholder="ex : Hier à 15h" placeholderTextColor="#c0cfe0" />
+                </View>
               </View>
 
-              {/* Prochaine relance */}
-              <View style={styles.relanceBlock}>
-                <Text style={styles.blockTitle}>PROCHAINE RELANCE</Text>
-                <TextInput style={styles.relanceInput} value={editRelance} onChangeText={setEditRelance} placeholder="ex : 24/06/2026" placeholderTextColor="#c0cfe0" />
-              </View>
+              {/* Prochaine relance colorée */}
+              {(() => {
+                const rs = getRelanceStatus(editRelance);
+                return (
+                  <View style={[styles.relanceBlock, { backgroundColor: rs.bg, borderColor: rs.border }]}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                      <Text style={styles.blockTitle}>PROCHAINE RELANCE</Text>
+                      {rs.label ? <Text style={{ fontSize: 11, color: rs.color, fontWeight: "700" }}>{rs.label}</Text> : null}
+                    </View>
+                    <TextInput style={[styles.relanceInput, editRelance ? { color: rs.color, fontWeight: "700" } : {}]} value={editRelance} onChangeText={setEditRelance} placeholder="ex : 24/06/2026" placeholderTextColor="#c0cfe0" />
+                  </View>
+                );
+              })()}
 
               {/* Notes */}
               <View style={styles.notesWrap}>
@@ -743,8 +798,14 @@ const styles = StyleSheet.create({
   coordLabel: { fontSize: 12, color: "#718096", width: 72, fontWeight: "600" },
   coordValue: { fontSize: 13, fontWeight: "600", flex: 1 },
   coordInput: { flex: 1, fontSize: 13, color: "#1a202c", padding: 0 },
-  relanceBlock: { backgroundColor: "#fffbeb", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: "#fde68a" },
+  relanceBlock: { borderRadius: 12, padding: 14, borderWidth: 1 },
   relanceInput: { fontSize: 14, color: "#1a202c", marginTop: 6 },
+  telBtn: { backgroundColor: "#38a169", borderRadius: 12, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 },
+  telBtnIcon: { fontSize: 22 },
+  telBtnNum: { fontSize: 16, fontWeight: "800", color: "#fff" },
+  telBtnSub: { fontSize: 11, color: "rgba(255,255,255,0.75)", marginTop: 2 },
+  interactionBlock: { backgroundColor: "#ebf8ff", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: "#bee3f8" },
+  interactionTxt: { fontSize: 13, color: "#2b6cb0", fontWeight: "600", marginTop: 6 },
   notesWrap: { backgroundColor: "#fff", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: "#e2e8f0" },
   notesInput: { fontSize: 14, color: "#1a202c", minHeight: 130, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, padding: 10, backgroundColor: "#f7f8fa", marginTop: 8, lineHeight: 20 },
   saveBtn: { backgroundColor: "#1a6b7e", borderRadius: 10, paddingVertical: 13, paddingHorizontal: 20, alignItems: "center" },
