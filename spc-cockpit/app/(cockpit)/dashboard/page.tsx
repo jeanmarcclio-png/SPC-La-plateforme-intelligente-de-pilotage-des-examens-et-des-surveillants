@@ -3,6 +3,7 @@ import { ConseilBar } from "@/components/ConseilBar";
 import { Badge, ScoreTag } from "@/components/Badge";
 import Link from "next/link";
 import { getCampagnes, getAlertes, getEcheances, getClusterScores, getSegmentRepartition, getProspects } from "@/lib/supabase/queries";
+import { RealtimeRefresh } from "@/components/RealtimeRefresh";
 
 export default async function DashboardPage() {
   const [campagnes, alertes, echeances, clusterScores, segmentRepartition, prospects] = await Promise.all([
@@ -22,6 +23,7 @@ export default async function DashboardPage() {
 
   return (
     <>
+      <RealtimeRefresh tables={["prospects", "campagnes", "alertes", "echeances"]} />
       <Topbar title="Tableau de bord" badge="Actif" />
 
       <main className="flex-1 overflow-y-auto p-5">

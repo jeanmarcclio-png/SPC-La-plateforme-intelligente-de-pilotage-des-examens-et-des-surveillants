@@ -5,6 +5,7 @@ import type { Prospect } from "@/lib/types";
 import { ProspectStatutSelect, ProspectDeleteButton } from "@/components/ProspectCRM";
 import { AddProspectButton } from "@/components/AddProspectModal";
 import { EmailSequenceButton } from "@/components/EmailSequenceButton";
+import { EmailHistoryButton } from "@/components/EmailHistory";
 
 function exportCSV(prospects: Prospect[]) {
   const headers = ["Nom", "Segment", "Cluster", "Score BANT", "Niveau", "Priorité", "Vague", "Interlocuteur", "Canal", "Statut", "Action", "Notes"];
@@ -123,7 +124,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
-              {["#", "Établissement", "Segment", "Score", "Statut", "Email", ""].map((h) => (
+              {["#", "Établissement", "Segment", "Score", "Statut", "Email", "Historique", ""].map((h) => (
                 <th key={h} className="text-left px-3 py-2.5 text-[10.5px] font-semibold text-gray-500 uppercase tracking-[.5px]">{h}</th>
               ))}
             </tr>
@@ -157,6 +158,9 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
                 </td>
                 <td className="px-3 py-2.5 whitespace-nowrap">
                   <EmailSequenceButton prospectId={p.id} prospectNom={p.nom} />
+                </td>
+                <td className="px-3 py-2.5">
+                  <EmailHistoryButton prospectId={p.id} prospectNom={p.nom} />
                 </td>
                 <td className="px-3 py-2.5">
                   <ProspectDeleteButton id={p.id} nom={p.nom} />
