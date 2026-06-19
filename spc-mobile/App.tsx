@@ -250,12 +250,53 @@ export default function App() {
       {/* ── DASHBOARD ── */}
       {tab === "dashboard" && (
         <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1a6b7e" />}>
-          <View style={styles.header}><Text style={styles.headerTitle}>SPC Cockpit</Text><Text style={styles.headerSub}>Tableau de bord</Text></View>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>SPC Cockpit</Text>
+            <Text style={styles.headerSub}>Tableau de bord · {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}</Text>
+          </View>
+
+          {/* KPIs */}
           <View style={styles.kpiGrid}>
-            {[{ label: "Prospects", value: stats.total, color: "#1a202c" }, { label: "Très chaud", value: stats.tresChaudes, color: "#f6ad55" }, { label: "Score BANT", value: stats.scoreMoyen, color: "#1a6b7e" }, { label: "RDV / Conv.", value: stats.rdvFixes, color: "#38a169" }].map(k => (
-              <View key={k.label} style={styles.kpiCard}><Text style={[styles.kpiValue, { color: k.color }]}>{k.value}</Text><Text style={styles.kpiLabel}>{k.label}</Text></View>
+            {[
+              { label: "Prospects", value: stats.total, color: "#1a202c" },
+              { label: "Opportunités 🔥", value: stats.tresChaudes, color: "#f6ad55" },
+              { label: "Taux conv.", value: stats.total > 0 ? Math.round((stats.rdvFixes / stats.total) * 100) + "%" : "0%", color: "#38a169" },
+              { label: "RDV / Conv.", value: stats.rdvFixes, color: "#1a6b7e" },
+            ].map(k => (
+              <View key={k.label} style={styles.kpiCard}>
+                <Text style={[styles.kpiValue, { color: k.color }]}>{k.value}</Text>
+                <Text style={styles.kpiLabel}>{k.label}</Text>
+              </View>
             ))}
           </View>
+
+          {/* Recommandation IA */}
+          {prospects.length > 0 && (() => {
+            const rec = [...prospects].filter(p => p.statut !== "Converti" && p.statut !== "RDV fixé").sort((a, b) => b.score_bant - a.score_bant)[0];
+            if (!rec) return null;
+            const proba = Math.min(Math.round(rec.score_bant * 8 + 15), 95);
+            return (
+              <View style={styles.iaRec}>
+                <View style={styles.iaRecTop}>
+                  <Text style={styles.iaRecLabel}>🤖 RECOMMANDATION IA</Text>
+                  <View style={styles.iaRecPriority}><Text style={styles.iaRecPriorityTxt}>PRIORITÉ 1</Text></View>
+                </View>
+                <Text style={styles.iaRecNom}>{rec.nom}</Text>
+                <Text style={styles.iaRecSub}>{rec.segment} · Score {rec.score_bant}/10 · {rec.statut}</Text>
+                <View style={styles.iaRecProba}>
+                  <Text style={styles.iaRecProbaLabel}>Probabilité de conversion</Text>
+                  <Text style={styles.iaRecProbaVal}>{proba}%</Text>
+                </View>
+                <View style={styles.iaRecProbaTrack}>
+                  <View style={[styles.iaRecProbaFill, { width: `${proba}%` as any }]} />
+                </View>
+                <TouchableOpacity style={styles.iaRecBtn} onPress={() => { openProspect(rec); }}>
+                  <Text style={styles.iaRecBtnTxt}>📞 Voir la fiche et appeler →</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })()}
+
           <Text style={styles.sectionTitle}>Top prospects</Text>
           {prospects.slice(0, 5).map(p => <ProspectCard key={p.id} p={p} />)}
           <View style={{ height: 80 }} />
@@ -564,6 +605,20 @@ const styles = StyleSheet.create({
   kpiValue: { fontSize: 26, fontWeight: "800" },
   kpiLabel: { fontSize: 11, color: "#718096", marginTop: 2 },
   sectionTitle: { fontSize: 13, fontWeight: "700", color: "#1a202c", marginHorizontal: 16, marginBottom: 8, marginTop: 4 },
+  iaRec: { marginHorizontal: 12, marginTop: 4, marginBottom: 4, backgroundColor: "#0d4a5a", borderRadius: 14, padding: 16, shadowColor: "#1a6b7e", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+  iaRecTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
+  iaRecLabel: { fontSize: 11, fontWeight: "700", color: "rgba(255,255,255,0.6)", letterSpacing: 0.8 },
+  iaRecPriority: { backgroundColor: "#f6ad55", borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 },
+  iaRecPriorityTxt: { fontSize: 9, fontWeight: "800", color: "#744210" },
+  iaRecNom: { fontSize: 20, fontWeight: "900", color: "#fff", marginBottom: 2 },
+  iaRecSub: { fontSize: 12, color: "rgba(255,255,255,0.6)", marginBottom: 12 },
+  iaRecProba: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+  iaRecProbaLabel: { fontSize: 11, color: "rgba(255,255,255,0.7)" },
+  iaRecProbaVal: { fontSize: 18, fontWeight: "900", color: "#68d391" },
+  iaRecProbaTrack: { height: 6, backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 3, overflow: "hidden", marginBottom: 14 },
+  iaRecProbaFill: { height: "100%", backgroundColor: "#68d391", borderRadius: 3 },
+  iaRecBtn: { backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 10, padding: 12, alignItems: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.2)" },
+  iaRecBtnTxt: { color: "#fff", fontWeight: "700", fontSize: 14 },
   searchHeader: { backgroundColor: "#fff", paddingHorizontal: 12, paddingTop: 56, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: "#e2e8f0" },
   searchInput: { backgroundColor: "#f7f8fa", borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, color: "#1a202c", borderWidth: 1, borderColor: "#e2e8f0" },
   filterRow: { backgroundColor: "#fff", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#e2e8f0", flexGrow: 0 },
