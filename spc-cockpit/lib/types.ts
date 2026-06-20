@@ -6,6 +6,7 @@ export type Vague = 1 | 2;
 export interface Prospect {
   id: string;
   nom: string;
+  email?: string;
   segment: Segment;
   cluster: string;
   scoreBANT: number;
@@ -17,6 +18,15 @@ export interface Prospect {
   statut: "Non contacté" | "En cours" | "RDV fixé" | "Converti";
   action: string;
   notes?: string;
+  telephone?: string;
+  contactPrincipal?: string;
+  fonctionContact?: string;
+  prochaineRelance?: string;
+  valeurPotentielle?: string;
+  derniereInteraction?: string;
+  nbEtudiants?: number;
+  sessionsParAn?: number;
+  campagneId?: string;
 }
 
 export interface ScoreBANT {

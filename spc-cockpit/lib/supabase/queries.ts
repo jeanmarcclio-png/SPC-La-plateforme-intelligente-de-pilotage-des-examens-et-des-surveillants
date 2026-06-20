@@ -94,6 +94,7 @@ export async function getProspects(campagneId?: string): Promise<Prospect[]> {
     return data.map((r) => ({
       id: r.id,
       nom: r.nom,
+      email: r.email ?? undefined,
       segment: r.segment as Prospect["segment"],
       cluster: r.cluster ?? "",
       scoreBANT: r.score_bant ?? 0,
@@ -105,6 +106,15 @@ export async function getProspects(campagneId?: string): Promise<Prospect[]> {
       statut: r.statut as Prospect["statut"],
       action: r.action ?? "",
       notes: r.notes ?? undefined,
+      telephone: r.telephone ?? undefined,
+      contactPrincipal: r.contact_principal ?? undefined,
+      fonctionContact: r.fonction_contact ?? undefined,
+      prochaineRelance: r.prochaine_relance ?? undefined,
+      valeurPotentielle: r.valeur_potentielle ?? undefined,
+      derniereInteraction: r.derniere_interaction ?? undefined,
+      nbEtudiants: r.nb_etudiants ?? undefined,
+      sessionsParAn: r.sessions_par_an ?? undefined,
+      campagneId: r.campagne_id ?? undefined,
     }));
   } catch {
     return mockProspects;

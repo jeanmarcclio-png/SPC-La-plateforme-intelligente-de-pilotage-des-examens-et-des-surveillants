@@ -21,6 +21,33 @@ export default async function DashboardPage() {
     : "—";
   const actionsUrgentes = alertes.reduce((s, a) => s + a.count, 0);
 
+  const pipelineSteps = [
+    { label: "Non contacté", count: prospects.filter((p) => p.statut === "Non contacté").length, color: "#a0aec0" },
+    { label: "En cours",     count: prospects.filter((p) => p.statut === "En cours").length,     color: "#4a90d9" },
+    { label: "RDV fixé",     count: prospects.filter((p) => p.statut === "RDV fixé").length,     color: "#d97706" },
+    { label: "Converti",     count: prospects.filter((p) => p.statut === "Converti").length,     color: "#38a169" },
+  ];
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  function parseFRDate(s?: string): Date | null {
+    if (!s) return null;
+    const parts = s.split("/");
+    if (parts.length !== 3) return null;
+    return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+  }
+  const fileAction = prospects
+    .filter((p) => {
+      const d = parseFRDate(p.prochaineRelance);
+      return d && d.getTime() <= today.getTime();
+    })
+    .sort((a, b) => {
+      const da = parseFRDate(a.prochaineRelance)!.getTime();
+      const db = parseFRDate(b.prochaineRelance)!.getTime();
+      if (da !== db) return da - db;
+      return b.scoreBANT - a.scoreBANT;
+    })
+    .slice(0, 6);
+
   return (
     <>
       <RealtimeRefresh tables={["prospects", "campagnes", "alertes", "echeances"]} />
@@ -45,6 +72,62 @@ export default async function DashboardPage() {
             </div>
           ))}
         </div>
+
+        {/* Pipeline banner */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[13px] font-semibold text-gray-800">Pipeline commercial</span>
+            <span className="text-[11.5px] text-gray-400">{prospects.length} prospects au total</span>
+          </div>
+          <div className="flex gap-1 h-2 rounded-full overflow-hidden mb-3">
+            {pipelineSteps.filter((s) => s.count > 0).map((s) => (
+              <div
+                key={s.label}
+                style={{ flex: s.count, background: s.color }}
+                title={`${s.label}: ${s.count}`}
+              />
+            ))}
+          </div>
+          <div className="flex gap-6">
+            {pipelineSteps.map((s) => (
+              <div key={s.label} className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: s.color }} />
+                <span className="text-[12px] text-gray-500">{s.label}</span>
+                <span className="text-[13px] font-bold text-gray-900">{s.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* File d'action du jour */}
+        {fileAction.length > 0 && (
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-base">🔔</span>
+              <span className="text-[13px] font-semibold text-orange-800">File d&apos;action du jour</span>
+              <span className="text-[11px] font-semibold bg-orange-200 text-orange-700 rounded-full px-2 py-0.5 ml-1">{fileAction.length}</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {fileAction.map((p) => {
+                const d = parseFRDate(p.prochaineRelance)!;
+                const diff = Math.floor((d.getTime() - today.getTime()) / 86400000);
+                const isOverdue = diff < 0;
+                return (
+                  <Link key={p.id} href="/qualification" className="bg-white rounded-lg border border-orange-200 p-2.5 hover:border-orange-400 transition-colors">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[12px] font-semibold text-gray-800 truncate flex-1">{p.nom}</span>
+                      <span className={`text-[10.5px] font-bold px-1.5 py-0.5 rounded ml-1 ${isOverdue ? "bg-red-100 text-red-600" : "bg-orange-100 text-orange-600"}`}>
+                        {isOverdue ? `J+${Math.abs(diff)}` : "Auj."}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-gray-500">{p.segment} · {p.cluster}</div>
+                    <div className="text-[11px] text-gray-400 mt-0.5">{p.canal || p.interlocuteur}</div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Main 2-col layout */}
         <div className="grid grid-cols-[1fr_252px] gap-4">

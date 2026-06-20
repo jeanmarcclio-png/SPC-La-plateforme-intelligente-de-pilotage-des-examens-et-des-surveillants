@@ -21,6 +21,35 @@ export async function updateProspectNotes(id: string, notes: string) {
   revalidatePath("/qualification");
 }
 
+export async function updateProspectNiveau(id: string, niveau: string) {
+  const supabase = await createClient();
+  await supabase.from("prospects").update({ niveau }).eq("id", id);
+  revalidateAll();
+}
+
+export async function logProspectInteraction(id: string, interaction: string) {
+  const supabase = await createClient();
+  await supabase.from("prospects").update({ derniere_interaction: interaction }).eq("id", id);
+  revalidatePath("/qualification");
+}
+
+export async function updateProspectFiche(id: string, fields: {
+  telephone?: string;
+  contact_principal?: string;
+  fonction_contact?: string;
+  valeur_potentielle?: string;
+  prochaine_relance?: string;
+  derniere_interaction?: string;
+  notes?: string;
+  score_bant?: number;
+  nb_etudiants?: number | null;
+  sessions_par_an?: number | null;
+}) {
+  const supabase = await createClient();
+  await supabase.from("prospects").update(fields).eq("id", id);
+  revalidateAll();
+}
+
 export async function deleteProspect(id: string) {
   const supabase = await createClient();
   await supabase.from("prospects").delete().eq("id", id);

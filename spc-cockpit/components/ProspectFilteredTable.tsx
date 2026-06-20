@@ -6,6 +6,7 @@ import { ProspectStatutSelect, ProspectDeleteButton } from "@/components/Prospec
 import { AddProspectButton } from "@/components/AddProspectModal";
 import { EmailSequenceButton } from "@/components/EmailSequenceButton";
 import { EmailHistoryButton } from "@/components/EmailHistory";
+import { ProspectDrawer } from "@/components/ProspectDrawer";
 
 function exportCSV(prospects: Prospect[]) {
   const headers = ["Nom", "Segment", "Cluster", "Score BANT", "Niveau", "Priorité", "Vague", "Interlocuteur", "Canal", "Statut", "Action", "Notes"];
@@ -28,23 +29,32 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
   const [segment, setSegment] = useState("");
   const [cluster, setCluster] = useState("");
   const [statut, setStatut] = useState("");
+  const [selected, setSelected] = useState<Prospect | null>(null);
+  const [localProspects, setLocalProspects] = useState<Prospect[]>(prospects);
 
-  const segments = useMemo(() => [...new Set(prospects.map((p) => p.segment))].sort(), [prospects]);
-  const clusters = useMemo(() => [...new Set(prospects.map((p) => p.cluster).filter(Boolean))].sort(), [prospects]);
-  const statuts = useMemo(() => [...new Set(prospects.map((p) => p.statut))].sort(), [prospects]);
+  const allProspects = localProspects.length ? localProspects : prospects;
+
+  const segments = useMemo(() => [...new Set(allProspects.map((p) => p.segment))].sort(), [allProspects]);
+  const clusters = useMemo(() => [...new Set(allProspects.map((p) => p.cluster).filter(Boolean))].sort(), [allProspects]);
+  const statuts = useMemo(() => [...new Set(allProspects.map((p) => p.statut))].sort(), [allProspects]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return prospects.filter((p) => {
+    return allProspects.filter((p) => {
       if (q && !p.nom.toLowerCase().includes(q) && !p.cluster.toLowerCase().includes(q)) return false;
       if (segment && p.segment !== segment) return false;
       if (cluster && p.cluster !== cluster) return false;
       if (statut && p.statut !== statut) return false;
       return true;
     });
-  }, [prospects, search, segment, cluster, statut]);
+  }, [allProspects, search, segment, cluster, statut]);
 
   const hasFilters = search || segment || cluster || statut;
+
+  function handleUpdated(id: string, fields: Partial<Prospect>) {
+    setLocalProspects((prev) => prev.map((p) => p.id === id ? { ...p, ...fields } : p));
+    setSelected((prev) => prev?.id === id ? { ...prev, ...fields } : prev);
+  }
 
   return (
     <div>
@@ -55,7 +65,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
           {hasFilters && <span className="ml-2 text-[12px] font-normal text-gray-400">{filtered.length} résultat{filtered.length !== 1 ? "s" : ""}</span>}
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-[12px] text-gray-400">{prospects.length} chargés</span>
+          <span className="text-[12px] text-gray-400">{allProspects.length} chargés</span>
           <button
             onClick={() => exportCSV(filtered)}
             title="Exporter les prospects filtrés en CSV"
@@ -138,7 +148,11 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
               </tr>
             )}
             {filtered.map((p, i) => (
-              <tr key={p.id} className={`border-b border-gray-100 last:border-0 hover:bg-gray-50 ${i === 0 && !hasFilters ? "bg-[#1a6b7e]/[0.03]" : ""}`}>
+              <tr
+                key={p.id}
+                onClick={() => setSelected(p)}
+                className={`border-b border-gray-100 last:border-0 hover:bg-blue-50/40 cursor-pointer ${i === 0 && !hasFilters ? "bg-[#1a6b7e]/[0.03]" : ""} ${selected?.id === p.id ? "bg-blue-50/60" : ""}`}
+              >
                 <td className="px-3 py-2.5 text-[12px] font-bold text-gray-400">{i + 1}</td>
                 <td className="px-3 py-2.5">
                   <div className="text-[12.5px] font-semibold text-gray-800">{p.nom}</div>
@@ -153,16 +167,16 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
                     <span className="text-[12px] font-bold text-gray-800">{p.scoreBANT}</span>
                   </div>
                 </td>
-                <td className="px-3 py-2.5">
+                <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                   <ProspectStatutSelect id={p.id} statut={p.statut} />
                 </td>
-                <td className="px-3 py-2.5 whitespace-nowrap">
+                <td className="px-3 py-2.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                   <EmailSequenceButton prospectId={p.id} prospectNom={p.nom} />
                 </td>
-                <td className="px-3 py-2.5">
+                <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                   <EmailHistoryButton prospectId={p.id} prospectNom={p.nom} />
                 </td>
-                <td className="px-3 py-2.5">
+                <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                   <ProspectDeleteButton id={p.id} nom={p.nom} />
                 </td>
               </tr>
@@ -170,6 +184,20 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
           </tbody>
         </table>
       </div>
+
+      {selected && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/20 z-40 backdrop-blur-[1px]"
+            onClick={() => setSelected(null)}
+          />
+          <ProspectDrawer
+            prospect={selected}
+            onClose={() => setSelected(null)}
+            onUpdated={handleUpdated}
+          />
+        </>
+      )}
     </div>
   );
 }
