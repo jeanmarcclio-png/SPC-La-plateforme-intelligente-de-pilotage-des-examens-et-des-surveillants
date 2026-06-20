@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Modal, SafeAreaView, Alert, TextInput, KeyboardAvoidingView, Platform, Linking, Share } from "react-native";
 import { supabase } from "./lib/supabase";
+import * as Notifications from "expo-notifications";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({ shouldShowAlert: true, shouldPlaySound: true, shouldSetBadge: true }),
+});
 
 type Prospect = {
   id: string; nom: string; email: string; segment: string;
@@ -109,7 +114,30 @@ export default function App() {
 
   async function load() { await Promise.all([loadProspects(), loadCampagnes()]); }
   async function onRefresh() { setRefreshing(true); await load(); setRefreshing(false); }
-  useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    load();
+    Notifications.requestPermissionsAsync().then(({ status }) => {
+      if (status !== "granted") console.log("Notifications refusées");
+    });
+  }, []);
+
+  async function scheduleRelanceNotification(nom: string, dateStr: string) {
+    if (!dateStr) return;
+    const p = dateStr.split("/");
+    if (p.length !== 3) return;
+    const trigger = new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]), 9, 0, 0);
+    if (trigger <= new Date()) return;
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "📅 Relance SPC",
+        body: `Relancer ${nom} aujourd'hui`,
+        sound: true,
+      },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: trigger },
+    });
+  }
 
   const filteredProspects = prospects.filter(p => {
     const q = searchQuery.toLowerCase();
@@ -166,7 +194,8 @@ export default function App() {
     else {
       setSelected(prev => prev ? { ...prev, notes: editNotes, telephone: editTelephone, contact_principal: editContact, fonction_contact: editFonction, prochaine_relance: editRelance, valeur_potentielle: editValeur, derniere_interaction: editInteraction } : null);
       await loadProspects();
-      Alert.alert("✅ Sauvegardé", "Fiche mise à jour.");
+      if (editRelance && selected) await scheduleRelanceNotification(selected.nom, editRelance);
+      Alert.alert("✅ Sauvegardé", editRelance ? `Rappel programmé pour le ${editRelance} à 9h00` : "Fiche mise à jour.");
     }
     setSaving(false);
   }
