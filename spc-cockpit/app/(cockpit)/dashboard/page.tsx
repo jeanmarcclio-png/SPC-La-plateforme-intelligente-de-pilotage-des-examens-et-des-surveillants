@@ -14,7 +14,7 @@ export default async function DashboardPage() {
     getSegmentRepartition(),
     getProspects(),
   ]);
-  const total = campagnes.reduce((s, c) => s + c.nombreProspects, 0);
+  const total = prospects.length;
   const tresChaudes = prospects.filter((p) => p.niveau === "Très chaud").length;
   const scoreMoyen = prospects.length > 0
     ? (prospects.reduce((s, p) => s + p.scoreBANT, 0) / prospects.length).toFixed(1).replace(".", ",")

@@ -7,12 +7,31 @@ import { AddProspectButton } from "@/components/AddProspectModal";
 import { EmailSequenceButton } from "@/components/EmailSequenceButton";
 import { EmailHistoryButton } from "@/components/EmailHistory";
 import { ProspectDrawer } from "@/components/ProspectDrawer";
+import { KanbanBoard } from "@/components/KanbanBoard";
+
+function parseFRDate(s?: string) {
+  if (!s) return null;
+  const p = s.split("/");
+  if (p.length !== 3) return null;
+  return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+}
+
+function RelanceBadge({ date }: { date?: string }) {
+  if (!date) return <span className="text-[11px] text-gray-300">—</span>;
+  const d = parseFRDate(date);
+  if (!d) return <span className="text-[11px] text-gray-400">{date}</span>;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const diff = Math.floor((d.getTime() - today.getTime()) / 86400000);
+  const cls = diff < 0 ? "bg-red-100 text-red-600" : diff === 0 ? "bg-orange-100 text-orange-600" : diff <= 3 ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500";
+  const label = diff < 0 ? `J+${Math.abs(diff)}` : diff === 0 ? "Auj." : diff === 1 ? "Demain" : date;
+  return <span className={`text-[10.5px] font-bold px-1.5 py-0.5 rounded ${cls}`}>{label}</span>;
+}
 
 function exportCSV(prospects: Prospect[]) {
-  const headers = ["Nom", "Segment", "Cluster", "Score BANT", "Niveau", "Priorité", "Vague", "Interlocuteur", "Canal", "Statut", "Action", "Notes"];
+  const headers = ["Nom", "Segment", "Cluster", "Score BANT", "Niveau", "Priorité", "Statut", "Relance", "Notes"];
   const rows = prospects.map((p) => [
-    p.nom, p.segment, p.cluster, p.scoreBANT, p.niveau, p.priorite, p.vague,
-    p.interlocuteur, p.canal, p.statut, p.action, p.notes ?? "",
+    p.nom, p.segment, p.cluster, p.scoreBANT, p.niveau, p.priorite, p.statut,
+    p.prochaineRelance ?? "", p.notes ?? "",
   ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","));
   const csv = [headers.join(","), ...rows].join("\n");
   const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
@@ -30,6 +49,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
   const [cluster, setCluster] = useState("");
   const [statut, setStatut] = useState("");
   const [selected, setSelected] = useState<Prospect | null>(null);
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [localProspects, setLocalProspects] = useState<Prospect[]>(prospects);
 
   const allProspects = localProspects.length ? localProspects : prospects;
@@ -50,6 +70,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
   }, [allProspects, search, segment, cluster, statut]);
 
   const hasFilters = search || segment || cluster || statut;
+  const selectedIndex = selected ? filtered.findIndex(p => p.id === selected.id) : -1;
 
   function handleUpdated(id: string, fields: Partial<Prospect>) {
     setLocalProspects((prev) => prev.map((p) => p.id === id ? { ...p, ...fields } : p));
@@ -58,23 +79,45 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
 
   return (
     <div>
-      {/* Header + filters */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-[14px] font-semibold text-gray-900">
           Top prospects — Vague 1
           {hasFilters && <span className="ml-2 text-[12px] font-normal text-gray-400">{filtered.length} résultat{filtered.length !== 1 ? "s" : ""}</span>}
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-[12px] text-gray-400">{allProspects.length} chargés</span>
+          <span className="text-[12px] text-gray-400">{allProspects.length} prospects</span>
+
+          {/* View toggle */}
+          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setViewMode("table")}
+              title="Vue tableau"
+              className={`px-2.5 py-1.5 transition-colors ${viewMode === "table" ? "bg-[#1a6b7e] text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /><line x1="9" y1="3" x2="9" y2="21" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode("kanban")}
+              title="Vue Kanban"
+              className={`px-2.5 py-1.5 transition-colors ${viewMode === "kanban" ? "bg-[#1a6b7e] text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
+                <rect x="3" y="3" width="5" height="18" rx="1" /><rect x="10" y="3" width="5" height="12" rx="1" /><rect x="17" y="3" width="5" height="15" rx="1" />
+              </svg>
+            </button>
+          </div>
+
           <button
             onClick={() => exportCSV(filtered)}
-            title="Exporter les prospects filtrés en CSV"
+            title="Exporter CSV"
             className="text-[12px] font-semibold text-gray-500 hover:text-[#1a6b7e] border border-gray-200 hover:border-[#1a6b7e]/40 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
+              <polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
             </svg>
             CSV
           </button>
@@ -82,119 +125,104 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
         </div>
       </div>
 
-      {/* Search + filter bar */}
+      {/* Filter bar */}
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         <div className="relative flex-1 min-w-[180px]">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
             <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
           </svg>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un prospect…"
-            className="w-full pl-8 pr-3 py-1.5 text-[12px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 focus:border-[#4a90d9]"
-          />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher un prospect…" className="w-full pl-8 pr-3 py-1.5 text-[12px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 focus:border-[#4a90d9]" />
         </div>
-        <select
-          value={segment}
-          onChange={(e) => setSegment(e.target.value)}
-          className="text-[12px] border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 text-gray-600"
-        >
-          <option value="">Tous les segments</option>
+        <select value={segment} onChange={(e) => setSegment(e.target.value)} className="text-[12px] border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 text-gray-600">
+          <option value="">Tous segments</option>
           {segments.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select
-          value={cluster}
-          onChange={(e) => setCluster(e.target.value)}
-          className="text-[12px] border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 text-gray-600"
-        >
-          <option value="">Tous les clusters</option>
+        <select value={cluster} onChange={(e) => setCluster(e.target.value)} className="text-[12px] border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 text-gray-600">
+          <option value="">Tous clusters</option>
           {clusters.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select
-          value={statut}
-          onChange={(e) => setStatut(e.target.value)}
-          className="text-[12px] border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 text-gray-600"
-        >
-          <option value="">Tous les statuts</option>
+        <select value={statut} onChange={(e) => setStatut(e.target.value)} className="text-[12px] border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 text-gray-600">
+          <option value="">Tous statuts</option>
           {statuts.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
         {hasFilters && (
-          <button
-            onClick={() => { setSearch(""); setSegment(""); setCluster(""); setStatut(""); }}
-            className="text-[11.5px] text-gray-400 hover:text-red-500 px-2 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
-          >
+          <button onClick={() => { setSearch(""); setSegment(""); setCluster(""); setStatut(""); }} className="text-[11.5px] text-gray-400 hover:text-red-500 px-2 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
             Effacer ✕
           </button>
         )}
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              {["#", "Établissement", "Segment", "Score", "Statut", "Email", "Historique", ""].map((h) => (
-                <th key={h} className="text-left px-3 py-2.5 text-[10.5px] font-semibold text-gray-500 uppercase tracking-[.5px]">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={7} className="text-center py-8 text-[13px] text-gray-400">
-                  Aucun prospect ne correspond aux filtres.
-                </td>
-              </tr>
-            )}
-            {filtered.map((p, i) => (
-              <tr
-                key={p.id}
-                onClick={() => setSelected(p)}
-                className={`border-b border-gray-100 last:border-0 hover:bg-blue-50/40 cursor-pointer ${i === 0 && !hasFilters ? "bg-[#1a6b7e]/[0.03]" : ""} ${selected?.id === p.id ? "bg-blue-50/60" : ""}`}
-              >
-                <td className="px-3 py-2.5 text-[12px] font-bold text-gray-400">{i + 1}</td>
-                <td className="px-3 py-2.5">
-                  <div className="text-[12.5px] font-semibold text-gray-800">{p.nom}</div>
-                  <div className="text-[11px] text-gray-400">{p.cluster}</div>
-                </td>
-                <td className="px-3 py-2.5 text-[12px] text-gray-600">{p.segment}</td>
-                <td className="px-3 py-2.5">
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-1 w-12 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#1a6b7e] rounded-full" style={{ width: `${(p.scoreBANT / 10) * 100}%` }} />
-                    </div>
-                    <span className="text-[12px] font-bold text-gray-800">{p.scoreBANT}</span>
-                  </div>
-                </td>
-                <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                  <ProspectStatutSelect id={p.id} statut={p.statut} />
-                </td>
-                <td className="px-3 py-2.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                  <EmailSequenceButton prospectId={p.id} prospectNom={p.nom} />
-                </td>
-                <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                  <EmailHistoryButton prospectId={p.id} prospectNom={p.nom} />
-                </td>
-                <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                  <ProspectDeleteButton id={p.id} nom={p.nom} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Kanban view */}
+      {viewMode === "kanban" && (
+        <KanbanBoard prospects={filtered} onSelect={(p) => setSelected(p)} selectedId={selected?.id} />
+      )}
 
+      {/* Table view */}
+      {viewMode === "table" && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                {["#", "Établissement", "Segment", "Score", "Relance", "Statut", "Email", ""].map((h) => (
+                  <th key={h} className="text-left px-3 py-2.5 text-[10.5px] font-semibold text-gray-500 uppercase tracking-[.5px]">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 && (
+                <tr><td colSpan={8} className="text-center py-8 text-[13px] text-gray-400">Aucun prospect ne correspond aux filtres.</td></tr>
+              )}
+              {filtered.map((p, i) => (
+                <tr
+                  key={p.id}
+                  onClick={() => setSelected(p)}
+                  className={`border-b border-gray-100 last:border-0 hover:bg-blue-50/40 cursor-pointer transition-colors ${i === 0 && !hasFilters ? "bg-[#1a6b7e]/[0.03]" : ""} ${selected?.id === p.id ? "bg-blue-50/60" : ""}`}
+                >
+                  <td className="px-3 py-2.5 text-[12px] font-bold text-gray-400">{i + 1}</td>
+                  <td className="px-3 py-2.5">
+                    <div className="text-[12.5px] font-semibold text-gray-800">{p.nom}</div>
+                    <div className="text-[11px] text-gray-400">{p.cluster}</div>
+                  </td>
+                  <td className="px-3 py-2.5 text-[12px] text-gray-600">{p.segment}</td>
+                  <td className="px-3 py-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-1 w-10 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${(p.scoreBANT / 10) * 100}%`, background: p.scoreBANT >= 8 ? "#38a169" : p.scoreBANT >= 5 ? "#f6ad55" : "#fc8181" }} />
+                      </div>
+                      <span className="text-[12px] font-bold text-gray-800">{p.scoreBANT}</span>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <RelanceBadge date={p.prochaineRelance} />
+                  </td>
+                  <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                    <ProspectStatutSelect id={p.id} statut={p.statut} />
+                  </td>
+                  <td className="px-3 py-2.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <EmailSequenceButton prospectId={p.id} prospectNom={p.nom} />
+                  </td>
+                  <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                    <ProspectDeleteButton id={p.id} nom={p.nom} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Drawer + backdrop */}
       {selected && (
         <>
-          <div
-            className="fixed inset-0 bg-black/20 z-40 backdrop-blur-[1px]"
-            onClick={() => setSelected(null)}
-          />
+          <div className="fixed inset-0 bg-black/20 z-40 backdrop-blur-[1px]" onClick={() => setSelected(null)} />
           <ProspectDrawer
+            key={selected.id}
             prospect={selected}
             onClose={() => setSelected(null)}
             onUpdated={handleUpdated}
+            allProspects={filtered}
+            currentIndex={selectedIndex}
+            onNavigate={(p) => setSelected(p)}
           />
         </>
       )}
