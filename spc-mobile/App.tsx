@@ -9,6 +9,8 @@ type Prospect = {
   fonction_contact?: string; prochaine_relance?: string;
   valeur_potentielle?: string; derniere_interaction?: string;
   campagne_id?: string;
+  nb_etudiants?: number;
+  sessions_par_an?: number;
 };
 type Campagne = { id: string; nom: string; perimetre: string; statut: string; score: number; nombre_prospects: number; tres_chaudes: number; jours_restants: number };
 
@@ -106,15 +108,17 @@ export default function App() {
   const [editValeur, setEditValeur] = useState("");
   const [editInteraction, setEditInteraction] = useState("");
   const [editCampagneId, setEditCampagneId] = useState("");
+  const [editNbEtudiants, setEditNbEtudiants] = useState("");
+  const [editSessionsParAn, setEditSessionsParAn] = useState("");
   const [saving, setSaving] = useState(false);
 
   async function loadProspects() {
     let { data, error } = await supabase
       .from("prospects")
-      .select("id, nom, email, segment, score_bant, statut, niveau, notes, telephone, contact_principal, fonction_contact, prochaine_relance, valeur_potentielle, derniere_interaction, campagne_id")
+      .select("id, nom, email, segment, score_bant, statut, niveau, notes, telephone, contact_principal, fonction_contact, prochaine_relance, valeur_potentielle, derniere_interaction, campagne_id, nb_etudiants, sessions_par_an")
       .order("score_bant", { ascending: false }).limit(50);
     if (error) {
-      const r = await supabase.from("prospects").select("id, nom, email, segment, score_bant, statut, niveau, notes, telephone, contact_principal, fonction_contact, prochaine_relance").order("score_bant", { ascending: false }).limit(50);
+      const r = await supabase.from("prospects").select("id, nom, email, segment, score_bant, statut, niveau, notes, telephone, contact_principal, fonction_contact, prochaine_relance, valeur_potentielle, derniere_interaction, campagne_id").order("score_bant", { ascending: false }).limit(50);
       data = r.data; if (r.error) { Alert.alert("Erreur", r.error.message); return; }
     }
     if (data) {
@@ -167,7 +171,20 @@ export default function App() {
     return matchSearch && matchFilter;
   });
 
-  const agendaProspects = prospects.filter(p => p.statut === "Non contacté" || p.statut === "En cours").sort((a, b) => b.score_bant - a.score_bant);
+  const agendaProspects = prospects
+    .filter(p => p.statut === "Non contacté" || p.statut === "En cours")
+    .sort((a, b) => {
+      const getTs = (s?: string): number => {
+        if (!s) return Infinity;
+        const parts = s.split("/");
+        if (parts.length !== 3) return Infinity;
+        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])).getTime();
+      };
+      const ta = getTs(a.prochaine_relance);
+      const tb = getTs(b.prochaine_relance);
+      if (ta === tb) return b.score_bant - a.score_bant;
+      return ta - tb;
+    });
 
   function openProspect(p: Prospect) {
     setSelected(p);
@@ -179,6 +196,8 @@ export default function App() {
     setEditValeur(p.valeur_potentielle ?? "");
     setEditInteraction(p.derniere_interaction ?? "");
     setEditCampagneId(p.campagne_id ?? "");
+    setEditNbEtudiants(p.nb_etudiants?.toString() ?? "");
+    setEditSessionsParAn(p.sessions_par_an?.toString() ?? "");
   }
 
   function navigateToFilter(filter: string) {
@@ -188,13 +207,16 @@ export default function App() {
 
   async function logInteraction(p: Prospect, type: string) {
     const today = new Date().toLocaleDateString("fr-FR");
-    const val = `${type} — ${today}`;
+    const entry = `${type} — ${today}`;
+    const prev = p.derniere_interaction || "";
+    const lines = prev ? [entry, ...prev.split("\n").filter(Boolean).slice(0, 4)] : [entry];
+    const val = lines.join("\n");
     const { error } = await supabase.from("prospects").update({ derniere_interaction: val }).eq("id", p.id);
     if (!error) {
       setEditInteraction(val);
-      setSelected(prev => prev ? { ...prev, derniere_interaction: val } : null);
+      setSelected(prev2 => prev2 ? { ...prev2, derniere_interaction: val } : null);
       await loadProspects();
-      Alert.alert("✅ Enregistré", val);
+      Alert.alert("✅ Enregistré", entry);
     }
   }
 
@@ -241,6 +263,8 @@ export default function App() {
       prochaine_relance: editRelance, valeur_potentielle: editValeur,
       derniere_interaction: editInteraction, campagne_id: editCampagneId || null,
       score_bant: bantAuto,
+      nb_etudiants: editNbEtudiants ? parseInt(editNbEtudiants) : null,
+      sessions_par_an: editSessionsParAn ? parseInt(editSessionsParAn) : null,
     }).eq("id", selected.id);
     if (error) { Alert.alert("Erreur", error.message); }
     else {
@@ -349,7 +373,7 @@ export default function App() {
     Linking.openURL(`mailto:${email}?subject=SPC — Surveillance d'examens&body=Bonjour,\n\nJe me permets de vous contacter au sujet de la gestion de vos surveillances d'examens...\n\nCordialement,`);
   }
 
-  const ProspectCard = ({ p, showNiveau }: { p: Prospect; showNiveau?: boolean }) => (
+  const ProspectCard = ({ p, showNiveau, showRelance }: { p: Prospect; showNiveau?: boolean; showRelance?: boolean }) => (
     <TouchableOpacity
       style={styles.prospectCard}
       onPress={() => openProspect(p)}
@@ -360,6 +384,10 @@ export default function App() {
         <Text style={styles.prospectNom}>{p.nom}</Text>
         <Text style={styles.prospectSeg}>{p.segment}</Text>
         {showNiveau && <View style={[styles.niveauBadge, { backgroundColor: (NIVEAU_COLORS[p.niveau] ?? "#a0aec0") + "20" }]}><Text style={[styles.niveauBadgeTxt, { color: NIVEAU_COLORS[p.niveau] ?? "#a0aec0" }]}>{p.niveau}</Text></View>}
+        {showRelance && p.prochaine_relance && (() => {
+          const rs = getRelanceStatus(p.prochaine_relance);
+          return <Text style={{ fontSize: 10, color: rs.color, fontWeight: "700", marginTop: 3 }}>{rs.label || `📅 ${p.prochaine_relance}`}</Text>;
+        })()}
       </View>
       <View style={styles.prospectRight}>
         <Text style={styles.prospectScore}>{p.score_bant}</Text>
@@ -528,8 +556,8 @@ export default function App() {
                 </TouchableOpacity>
               </View>
               {(() => {
-                const totalP = campagnes.reduce((s, c) => s + c.nombre_prospects, 0);
-                const totalC = campagnes.reduce((s, c) => s + c.tres_chaudes, 0);
+                const totalP = prospects.filter(p => p.campagne_id).length;
+                const totalC = prospects.filter(p => p.campagne_id && p.niveau === "Très chaud").length;
                 const pctQ = totalP > 0 ? Math.round((totalC / totalP) * 100) : 0;
                 const scoreMoy = campagnes.length > 0 ? (campagnes.reduce((s, c) => s + c.score, 0) / campagnes.length).toFixed(1) : "—";
                 return (
@@ -548,7 +576,10 @@ export default function App() {
             {(() => {
               const topScore = Math.max(...campagnes.map(c => c.score), 0);
               return campagnes.map(c => {
-                const pct = c.nombre_prospects > 0 ? Math.round((c.tres_chaudes / c.nombre_prospects) * 100) : 0;
+                const liveCP = prospects.filter(p => p.campagne_id === c.id);
+                const liveN = liveCP.length;
+                const liveC = liveCP.filter(p => p.niveau === "Très chaud").length;
+                const pct = liveN > 0 ? Math.round((liveC / liveN) * 100) : 0;
                 const badgeColor = CAMP_COLORS[c.statut] ?? "#a0aec0";
                 const isTop = c.score === topScore && campagnes.length > 1;
                 const barColor = pct >= 70 ? "#38a169" : pct >= 40 ? "#f6ad55" : "#fc8181";
@@ -566,7 +597,7 @@ export default function App() {
                     </View>
                     {c.perimetre ? <Text style={styles.campPerim}>{c.perimetre}</Text> : null}
                     {campPipeline > 0 && <Text style={styles.campPipeline}>💰 Pipeline : {formatMontant(campPipeline)}</Text>}
-                    {c.nombre_prospects > 0 && (
+                    {liveN > 0 && (
                       <View style={{ marginBottom: 10 }}>
                         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                           <Text style={{ fontSize: 10, color: "#718096" }}>Indice d'intérêt</Text>
@@ -578,9 +609,9 @@ export default function App() {
                       </View>
                     )}
                     <View style={styles.campStatsLine}>
-                      <Text style={styles.campStatItem}>👥 {c.nombre_prospects}</Text>
+                      <Text style={styles.campStatItem}>👥 {liveN}</Text>
                       <Text style={styles.campStatSep}>·</Text>
-                      <Text style={styles.campStatItem}>🔥 {c.tres_chaudes}</Text>
+                      <Text style={styles.campStatItem}>🔥 {liveC}</Text>
                       <Text style={styles.campStatSep}>·</Text>
                       <Text style={[styles.campStatItem, { color: barColor }]}>🎯 {pct}%</Text>
                     </View>
@@ -611,7 +642,7 @@ export default function App() {
           ) : (
             <>
               <Text style={styles.sectionTitle}>À contacter / relancer</Text>
-              {agendaProspects.map(p => <ProspectCard key={p.id} p={p} showNiveau />)}
+              {agendaProspects.map(p => <ProspectCard key={p.id} p={p} showNiveau showRelance />)}
             </>
           )}
           <View style={{ height: 80 }} />
@@ -703,11 +734,16 @@ export default function App() {
                 </TouchableOpacity>
               ) : null}
 
-              {/* Dernière interaction */}
+              {/* Timeline d'activité */}
               {editInteraction ? (
                 <View style={styles.interactionBlock}>
-                  <Text style={styles.blockTitle}>DERNIÈRE INTERACTION</Text>
-                  <Text style={styles.interactionTxt}>⏱ {editInteraction}</Text>
+                  <Text style={styles.blockTitle}>HISTORIQUE CONTACTS</Text>
+                  {editInteraction.split("\n").filter(Boolean).map((entry, i) => (
+                    <View key={i} style={styles.timelineRow}>
+                      <View style={[styles.timelineDot, i === 0 && styles.timelineDotActive]} />
+                      <Text style={[styles.timelineTxt, i === 0 && styles.timelineTxtRecent]}>{entry}</Text>
+                    </View>
+                  ))}
                 </View>
               ) : null}
 
@@ -753,6 +789,19 @@ export default function App() {
                     {editCampagneId ? (campagnes.find(c => c.id === editCampagneId)?.nom ?? "—") : "Aucune ✎"}
                   </Text>
                 </TouchableOpacity>
+              </View>
+
+              {/* Champs métier SPC */}
+              <View style={styles.coordBlock}>
+                <Text style={styles.blockTitle}>DONNÉES SPC</Text>
+                <View style={styles.coordRow}>
+                  <Text style={styles.coordLabel}>Étudiants</Text>
+                  <TextInput style={styles.coordInput} value={editNbEtudiants} onChangeText={setEditNbEtudiants} placeholder="ex : 2500" placeholderTextColor="#c0cfe0" keyboardType="numeric" />
+                </View>
+                <View style={[styles.coordRow, { borderBottomWidth: 0 }]}>
+                  <Text style={styles.coordLabel}>Sessions/an</Text>
+                  <TextInput style={styles.coordInput} value={editSessionsParAn} onChangeText={setEditSessionsParAn} placeholder="ex : 4" placeholderTextColor="#c0cfe0" keyboardType="numeric" />
+                </View>
               </View>
 
               {/* Prochaine relance colorée */}
@@ -1042,6 +1091,11 @@ const styles = StyleSheet.create({
   telBtnSub: { fontSize: 11, color: "rgba(255,255,255,0.75)", marginTop: 2 },
   interactionBlock: { backgroundColor: "#ebf8ff", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: "#bee3f8" },
   interactionTxt: { fontSize: 13, color: "#2b6cb0", fontWeight: "600", marginTop: 6 },
+  timelineRow: { flexDirection: "row", alignItems: "flex-start", paddingVertical: 5, gap: 10 },
+  timelineDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#bee3f8", marginTop: 5, flexShrink: 0 },
+  timelineDotActive: { backgroundColor: "#2b6cb0", width: 10, height: 10, borderRadius: 5, marginTop: 4 },
+  timelineTxt: { fontSize: 12, color: "#4a90d9", flex: 1, lineHeight: 18 },
+  timelineTxtRecent: { color: "#1a202c", fontWeight: "700", fontSize: 13 },
   notesWrap: { backgroundColor: "#fff", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: "#e2e8f0" },
   notesInput: { fontSize: 14, color: "#1a202c", minHeight: 130, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, padding: 10, backgroundColor: "#f7f8fa", marginTop: 8, lineHeight: 20 },
   saveBtn: { backgroundColor: "#1a6b7e", borderRadius: 10, paddingVertical: 13, paddingHorizontal: 20, alignItems: "center" },
