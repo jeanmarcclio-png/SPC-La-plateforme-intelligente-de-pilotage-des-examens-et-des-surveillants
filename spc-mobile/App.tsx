@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Modal, SafeAreaView, Alert, TextInput, KeyboardAvoidingView, Platform, Linking, Share } from "react-native";
 import { supabase } from "./lib/supabase";
-import * as Notifications from "expo-notifications";
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({ shouldShowAlert: true, shouldPlaySound: true, shouldSetBadge: true }),
-});
 
 type Prospect = {
   id: string; nom: string; email: string; segment: string;
@@ -116,28 +111,31 @@ export default function App() {
   async function onRefresh() { setRefreshing(true); await load(); setRefreshing(false); }
 
   useEffect(() => {
-    load();
-    Notifications.requestPermissionsAsync().then(({ status }) => {
-      if (status !== "granted") console.log("Notifications refusées");
+    load().then(() => {
+      // Alerte relances du jour au démarrage — vérifiée après chargement des données
     });
   }, []);
 
-  async function scheduleRelanceNotification(nom: string, dateStr: string) {
-    if (!dateStr) return;
-    const p = dateStr.split("/");
-    if (p.length !== 3) return;
-    const trigger = new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]), 9, 0, 0);
-    if (trigger <= new Date()) return;
-    await Notifications.cancelAllScheduledNotificationsAsync();
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "📅 Relance SPC",
-        body: `Relancer ${nom} aujourd'hui`,
-        sound: true,
-      },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: trigger },
+  useEffect(() => {
+    if (prospects.length === 0) return;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const dues = prospects.filter(p => {
+      if (!p.prochaine_relance) return false;
+      const parts = p.prochaine_relance.split("/");
+      if (parts.length !== 3) return false;
+      const d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      return d <= today;
     });
-  }
+    if (dues.length > 0) {
+      const names = dues.slice(0, 3).map(p => `• ${p.nom}`).join("\n");
+      const more = dues.length > 3 ? `\n+ ${dues.length - 3} autre(s)` : "";
+      Alert.alert(
+        `📅 ${dues.length} relance${dues.length > 1 ? "s" : ""} aujourd'hui`,
+        names + more,
+        [{ text: "Voir l'agenda", onPress: () => setTab("agenda") }, { text: "OK", style: "cancel" }]
+      );
+    }
+  }, [prospects]);
 
   const filteredProspects = prospects.filter(p => {
     const q = searchQuery.toLowerCase();
@@ -194,8 +192,7 @@ export default function App() {
     else {
       setSelected(prev => prev ? { ...prev, notes: editNotes, telephone: editTelephone, contact_principal: editContact, fonction_contact: editFonction, prochaine_relance: editRelance, valeur_potentielle: editValeur, derniere_interaction: editInteraction } : null);
       await loadProspects();
-      if (editRelance && selected) await scheduleRelanceNotification(selected.nom, editRelance);
-      Alert.alert("✅ Sauvegardé", editRelance ? `Rappel programmé pour le ${editRelance} à 9h00` : "Fiche mise à jour.");
+      Alert.alert("✅ Sauvegardé", editRelance ? `Relance enregistrée pour le ${editRelance}` : "Fiche mise à jour.");
     }
     setSaving(false);
   }
