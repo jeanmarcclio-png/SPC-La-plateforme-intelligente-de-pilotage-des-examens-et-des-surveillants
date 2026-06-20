@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Modal, SafeAreaView, Alert, TextInput, KeyboardAvoidingView, Platform, Linking } from "react-native";
+import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Modal, SafeAreaView, Alert, TextInput, KeyboardAvoidingView, Platform, Linking, Share } from "react-native";
 import { supabase } from "./lib/supabase";
 
 type Prospect = {
@@ -229,6 +229,27 @@ export default function App() {
     Alert.prompt("Appeler " + p.nom, "Numéro de téléphone :", (num) => {
       if (num) Linking.openURL("tel:" + num.replace(/\s/g, ""));
     }, "plain-text", "", "phone-pad");
+  }
+
+  function shareProspect(p: Prospect) {
+    const today = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    const lines = [
+      `📋 FICHE PROSPECT SPC — ${p.nom}`,
+      `Généré le ${today}`,
+      ``,
+      `Segment : ${p.segment || "—"}`,
+      `Score BANT : ${p.score_bant}/10`,
+      `Niveau : ${p.niveau}`,
+      `Statut pipeline : ${p.statut}`,
+      editTelephone ? `📞 ${editTelephone}` : null,
+      p.email ? `✉️ ${p.email}` : null,
+      editContact ? `👤 ${editContact}${editFonction ? ` · ${editFonction}` : ""}` : null,
+      editValeur ? `💰 Valeur estimée : ${editValeur}` : null,
+      editInteraction ? `⏱ Dernière interaction : ${editInteraction}` : null,
+      editRelance ? `📅 Prochaine relance : ${editRelance}` : null,
+      editNotes ? `\nNotes :\n${editNotes}` : null,
+    ].filter(Boolean).join("\n");
+    Share.share({ message: lines, title: `Fiche ${p.nom}` });
   }
 
   function emailProspect(email: string, nom: string) {
@@ -637,6 +658,11 @@ export default function App() {
                 <Text style={styles.saveTxt}>{saving ? "Sauvegarde..." : "💾  Enregistrer la fiche"}</Text>
               </TouchableOpacity>
 
+              {/* Share */}
+              <TouchableOpacity style={styles.shareBtn} onPress={() => selected && shareProspect(selected)}>
+                <Text style={styles.shareTxt}>📤  Partager la fiche</Text>
+              </TouchableOpacity>
+
               {/* Delete */}
               <TouchableOpacity style={styles.deleteBtn} onPress={() => selected && deleteProspect(selected.id)}>
                 <Text style={styles.deleteTxt}>🗑  Supprimer ce prospect</Text>
@@ -810,6 +836,8 @@ const styles = StyleSheet.create({
   notesInput: { fontSize: 14, color: "#1a202c", minHeight: 130, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, padding: 10, backgroundColor: "#f7f8fa", marginTop: 8, lineHeight: 20 },
   saveBtn: { backgroundColor: "#1a6b7e", borderRadius: 10, paddingVertical: 13, paddingHorizontal: 20, alignItems: "center" },
   saveTxt: { color: "#fff", fontWeight: "700", fontSize: 14 },
+  shareBtn: { backgroundColor: "#f0fff4", borderRadius: 10, padding: 13, borderWidth: 1, borderColor: "#9ae6b4", alignItems: "center" },
+  shareTxt: { color: "#276749", fontWeight: "700", fontSize: 14 },
   deleteBtn: { backgroundColor: "#fff5f5", borderRadius: 10, padding: 13, borderWidth: 1, borderColor: "#feb2b2", alignItems: "center" },
   deleteTxt: { color: "#e53e3e", fontWeight: "700", fontSize: 14 },
   inputLabel: { fontSize: 12, color: "#718096", marginBottom: 6, fontWeight: "600" },
