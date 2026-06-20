@@ -5,7 +5,6 @@ import type { Prospect } from "@/lib/types";
 import { ProspectStatutSelect, ProspectDeleteButton } from "@/components/ProspectCRM";
 import { AddProspectButton } from "@/components/AddProspectModal";
 import { EmailSequenceButton } from "@/components/EmailSequenceButton";
-import { EmailHistoryButton } from "@/components/EmailHistory";
 import { ProspectDrawer } from "@/components/ProspectDrawer";
 import { KanbanBoard } from "@/components/KanbanBoard";
 
