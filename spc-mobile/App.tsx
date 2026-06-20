@@ -8,6 +8,7 @@ type Prospect = {
   notes?: string; telephone?: string; contact_principal?: string;
   fonction_contact?: string; prochaine_relance?: string;
   valeur_potentielle?: string; derniere_interaction?: string;
+  campagne_id?: string;
 };
 
 function getRelanceStatus(dateStr: string): { color: string; label: string; bg: string; border: string } {
@@ -62,6 +63,7 @@ export default function App() {
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({ total: 0, tresChaudes: 0, scoreMoyen: 0, rdvFixes: 0 });
   const [selected, setSelected] = useState<Prospect | null>(null);
+  const [selectedCampagne, setSelectedCampagne] = useState<Campagne | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [newNom, setNewNom] = useState("");
   const [newSegment, setNewSegment] = useState("");
@@ -79,12 +81,13 @@ export default function App() {
   const [editRelance, setEditRelance] = useState("");
   const [editValeur, setEditValeur] = useState("");
   const [editInteraction, setEditInteraction] = useState("");
+  const [editCampagneId, setEditCampagneId] = useState("");
   const [saving, setSaving] = useState(false);
 
   async function loadProspects() {
     let { data, error } = await supabase
       .from("prospects")
-      .select("id, nom, email, segment, score_bant, statut, niveau, notes, telephone, contact_principal, fonction_contact, prochaine_relance, valeur_potentielle, derniere_interaction")
+      .select("id, nom, email, segment, score_bant, statut, niveau, notes, telephone, contact_principal, fonction_contact, prochaine_relance, valeur_potentielle, derniere_interaction, campagne_id")
       .order("score_bant", { ascending: false }).limit(50);
     if (error) {
       const r = await supabase.from("prospects").select("id, nom, email, segment, score_bant, statut, niveau, notes, telephone, contact_principal, fonction_contact, prochaine_relance").order("score_bant", { ascending: false }).limit(50);
@@ -155,6 +158,7 @@ export default function App() {
     setEditRelance(p.prochaine_relance ?? "");
     setEditValeur(p.valeur_potentielle ?? "");
     setEditInteraction(p.derniere_interaction ?? "");
+    setEditCampagneId(p.campagne_id ?? "");
   }
 
   async function createProspect() {
@@ -186,7 +190,7 @@ export default function App() {
       notes: editNotes, telephone: editTelephone,
       contact_principal: editContact, fonction_contact: editFonction,
       prochaine_relance: editRelance, valeur_potentielle: editValeur,
-      derniere_interaction: editInteraction,
+      derniere_interaction: editInteraction, campagne_id: editCampagneId || null,
     }).eq("id", selected.id);
     if (error) { Alert.alert("Erreur", error.message); }
     else {
@@ -470,7 +474,7 @@ export default function App() {
               const scoreColor = c.score >= 9 ? "#38a169" : c.score >= 7 ? "#4a90d9" : "#f6ad55";
               const scoreLabel = c.score >= 9 ? "Excellent" : c.score >= 7 ? "Bon" : "Moyen";
               return (
-                <TouchableOpacity key={c.id} style={[styles.campCard, isTop && { borderColor: "#f6ad55", borderWidth: 1.5 }]} activeOpacity={0.85}>
+                <TouchableOpacity key={c.id} style={[styles.campCard, isTop && { borderColor: "#f6ad55", borderWidth: 1.5 }]} activeOpacity={0.85} onPress={() => setSelectedCampagne(c)}>
                   {isTop && (
                     <View style={styles.topBadge}><Text style={styles.topBadgeTxt}>🏆 Recommandée</Text></View>
                   )}
@@ -653,10 +657,23 @@ export default function App() {
                   <Text style={styles.coordLabel}>Valeur €</Text>
                   <TextInput style={styles.coordInput} value={editValeur} onChangeText={setEditValeur} placeholder="ex : 45 000 €" placeholderTextColor="#c0cfe0" />
                 </View>
-                <View style={[styles.coordRow, { borderBottomWidth: 0 }]}>
+                <View style={styles.coordRow}>
                   <Text style={styles.coordLabel}>Dernier contact</Text>
                   <TextInput style={styles.coordInput} value={editInteraction} onChangeText={setEditInteraction} placeholder="ex : Hier à 15h" placeholderTextColor="#c0cfe0" />
                 </View>
+                <TouchableOpacity style={[styles.coordRow, { borderBottomWidth: 0 }]} onPress={() => {
+                  const options = [
+                    { text: "Aucune campagne", onPress: () => setEditCampagneId("") },
+                    ...campagnes.map(c => ({ text: c.nom, onPress: () => setEditCampagneId(c.id) })),
+                    { text: "Annuler", style: "cancel" as const },
+                  ];
+                  Alert.alert("Assigner à une campagne", undefined, options);
+                }}>
+                  <Text style={styles.coordLabel}>Campagne</Text>
+                  <Text style={[styles.coordValue, { color: editCampagneId ? "#1a6b7e" : "#c0cfe0" }]}>
+                    {editCampagneId ? (campagnes.find(c => c.id === editCampagneId)?.nom ?? "—") : "Aucune ✎"}
+                  </Text>
+                </TouchableOpacity>
               </View>
 
               {/* Prochaine relance colorée */}
@@ -696,6 +713,92 @@ export default function App() {
             </ScrollView>
           </SafeAreaView>
         </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── DÉTAIL CAMPAGNE ── */}
+      <Modal visible={!!selectedCampagne} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modal}>
+          {selectedCampagne && (() => {
+            const campProspects = prospects.filter(p => p.campagne_id === selectedCampagne.id);
+            const badgeColor = CAMP_COLORS[selectedCampagne.statut] ?? "#a0aec0";
+            const pct = selectedCampagne.nombre_prospects > 0 ? Math.round((selectedCampagne.tres_chaudes / selectedCampagne.nombre_prospects) * 100) : 0;
+            const convertis = campProspects.filter(p => p.statut === "Converti").length;
+            const rdv = campProspects.filter(p => p.statut === "RDV fixé").length;
+            return (
+              <>
+                <View style={[styles.modalHeader, { backgroundColor: "#1a5c6e", paddingBottom: 16 }]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.modalNom} numberOfLines={2}>{selectedCampagne.nom}</Text>
+                    {selectedCampagne.perimetre ? <Text style={styles.modalSeg}>{selectedCampagne.perimetre}</Text> : null}
+                    <View style={[styles.statutBadge, { backgroundColor: badgeColor + "30", alignSelf: "flex-start", marginTop: 6 }]}>
+                      <Text style={[styles.statutText, { color: badgeColor }]}>{CAMP_EMOJI[selectedCampagne.statut]} {selectedCampagne.statut}</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity onPress={() => setSelectedCampagne(null)} style={styles.closeBtn}><Text style={styles.closeTxt}>✕</Text></TouchableOpacity>
+                </View>
+                <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+                  {/* KPIs campagne */}
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    {[
+                      { label: "Prospects", value: campProspects.length, color: "#1a202c" },
+                      { label: "Très chauds", value: campProspects.filter(p => p.niveau === "Très chaud").length, color: "#f6ad55" },
+                      { label: "RDV / Conv.", value: rdv + convertis, color: "#38a169" },
+                      { label: "Score IA", value: selectedCampagne.score + "/10", color: "#1a6b7e" },
+                    ].map(k => (
+                      <View key={k.label} style={[styles.kpiCard, { flex: 1, padding: 10 }]}>
+                        <Text style={[styles.kpiValue, { color: k.color, fontSize: 20 }]}>{k.value}</Text>
+                        <Text style={[styles.kpiLabel, { fontSize: 9 }]}>{k.label}</Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  {/* Barre d'intérêt */}
+                  {selectedCampagne.nombre_prospects > 0 && (
+                    <View style={styles.coordBlock}>
+                      <Text style={styles.blockTitle}>INDICE D'INTÉRÊT</Text>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: 8 }}>
+                        <View style={[styles.campProgressTrack, { flex: 1 }]}>
+                          <View style={[styles.campProgressFill, { width: `${pct}%` as any, backgroundColor: pct >= 70 ? "#38a169" : pct >= 40 ? "#f6ad55" : "#fc8181" }]} />
+                        </View>
+                        <Text style={{ fontSize: 22, fontWeight: "900", color: pct >= 70 ? "#38a169" : pct >= 40 ? "#f6ad55" : "#fc8181" }}>{pct}%</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Prospects liés */}
+                  <Text style={styles.sectionTitle}>
+                    {campProspects.length > 0 ? `${campProspects.length} prospect${campProspects.length > 1 ? "s" : ""} dans cette campagne` : "Aucun prospect lié"}
+                  </Text>
+                  {campProspects.length === 0 ? (
+                    <View style={[styles.coordBlock, { alignItems: "center", paddingVertical: 24 }]}>
+                      <Text style={{ fontSize: 32, marginBottom: 8 }}>📭</Text>
+                      <Text style={{ color: "#a0aec0", fontSize: 13 }}>Assignez des prospects à cette campagne depuis leur fiche</Text>
+                    </View>
+                  ) : (
+                    campProspects.sort((a, b) => b.score_bant - a.score_bant).map(p => (
+                      <TouchableOpacity key={p.id} style={styles.prospectCard} onPress={() => { setSelectedCampagne(null); setTimeout(() => openProspect(p), 300); }}>
+                        <View style={styles.prospectInfo}>
+                          <Text style={styles.prospectNom}>{p.nom}</Text>
+                          <Text style={styles.prospectSeg}>{p.segment}</Text>
+                          <View style={[styles.niveauBadge, { backgroundColor: (NIVEAU_COLORS[p.niveau] ?? "#a0aec0") + "20" }]}>
+                            <Text style={[styles.niveauBadgeTxt, { color: NIVEAU_COLORS[p.niveau] ?? "#a0aec0" }]}>{p.niveau}</Text>
+                          </View>
+                        </View>
+                        <View style={styles.prospectRight}>
+                          <Text style={styles.prospectScore}>{p.score_bant}</Text>
+                          <View style={[styles.statutBadge, { backgroundColor: (STATUT_COLORS[p.statut] ?? "#a0aec0") + "20" }]}>
+                            <Text style={[styles.statutText, { color: STATUT_COLORS[p.statut] ?? "#a0aec0" }]}>{p.statut}</Text>
+                          </View>
+                        </View>
+                      </TouchableOpacity>
+                    ))
+                  )}
+                  <View style={{ height: 40 }} />
+                </ScrollView>
+              </>
+            );
+          })()}
+        </SafeAreaView>
       </Modal>
 
       {/* ── NOUVELLE CAMPAGNE ── */}
