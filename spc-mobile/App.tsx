@@ -10,6 +10,7 @@ type Prospect = {
   valeur_potentielle?: string; derniere_interaction?: string;
   campagne_id?: string;
 };
+type Campagne = { id: string; nom: string; perimetre: string; statut: string; score: number; nombre_prospects: number; tres_chaudes: number; jours_restants: number };
 
 function getRelanceStatus(dateStr: string): { color: string; label: string; bg: string; border: string } {
   if (!dateStr) return { color: "#a0aec0", label: "", bg: "#fffbeb", border: "#fde68a" };
@@ -23,7 +24,30 @@ function getRelanceStatus(dateStr: string): { color: string; label: string; bg: 
   if (diff === 1) return { color: "#f6ad55", label: "⏰ Demain", bg: "#fffbeb", border: "#f6ad55" };
   return { color: "#38a169", label: `✅ Dans ${diff} jours`, bg: "#f0fff4", border: "#9ae6b4" };
 }
-type Campagne = { id: string; nom: string; perimetre: string; statut: string; score: number; nombre_prospects: number; tres_chaudes: number; jours_restants: number };
+
+function parseMontant(str?: string): number {
+  if (!str) return 0;
+  const n = parseInt(str.replace(/\s/g, "").replace(/[^0-9]/g, ""));
+  return isNaN(n) ? 0 : n;
+}
+
+function formatMontant(n: number): string {
+  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M€`;
+  if (n >= 1000) return `${Math.round(n / 1000)}k€`;
+  return `${n}€`;
+}
+
+function computeBANT(p: Prospect, tel: string, contact: string, fonction: string, valeur: string, relance: string): number {
+  let s = 0;
+  if (parseMontant(valeur) > 0) s += 2.5;
+  if (contact) s += 1.5;
+  if (fonction) s += 1;
+  const np: Record<string, number> = { "Très chaud": 2.5, "Chaud": 1.5, "Tiède": 0.75, "Froid": 0 };
+  s += np[p.niveau] ?? 0;
+  if (tel) s += 1;
+  if (relance) s += 1.5;
+  return Math.min(Math.round(s * 10) / 10, 10);
+}
 
 const STATUT_COLORS: Record<string, string> = { "Non contacté": "#a0aec0", "En cours": "#4a90d9", "RDV fixé": "#38a169", "Converti": "#1a6b7e" };
 const NIVEAU_COLORS: Record<string, string> = { "Très chaud": "#f6ad55", "Chaud": "#fc8181", "Tiède": "#4a90d9", "Froid": "#a0aec0" };
@@ -61,7 +85,7 @@ export default function App() {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [campagnes, setCampagnes] = useState<Campagne[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [stats, setStats] = useState({ total: 0, tresChaudes: 0, scoreMoyen: 0, rdvFixes: 0 });
+  const [stats, setStats] = useState({ total: 0, tresChaudes: 0, rdvFixes: 0, pipelineTotal: 0 });
   const [selected, setSelected] = useState<Prospect | null>(null);
   const [selectedCampagne, setSelectedCampagne] = useState<Campagne | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -98,8 +122,8 @@ export default function App() {
       setStats({
         total: data.length,
         tresChaudes: data.filter(p => p.niveau === "Très chaud").length,
-        scoreMoyen: data.length > 0 ? Math.round(data.reduce((s, p) => s + p.score_bant, 0) / data.length * 10) / 10 : 0,
         rdvFixes: data.filter(p => p.statut === "RDV fixé" || p.statut === "Converti").length,
+        pipelineTotal: data.reduce((s, p) => s + parseMontant(p.valeur_potentielle), 0),
       });
     }
   }
@@ -113,11 +137,7 @@ export default function App() {
   async function load() { await Promise.all([loadProspects(), loadCampagnes()]); }
   async function onRefresh() { setRefreshing(true); await load(); setRefreshing(false); }
 
-  useEffect(() => {
-    load().then(() => {
-      // Alerte relances du jour au démarrage — vérifiée après chargement des données
-    });
-  }, []);
+  useEffect(() => { load(); }, []);
 
   useEffect(() => {
     if (prospects.length === 0) return;
@@ -161,6 +181,34 @@ export default function App() {
     setEditCampagneId(p.campagne_id ?? "");
   }
 
+  function navigateToFilter(filter: string) {
+    setActiveFilter(filter);
+    setTab("prospects");
+  }
+
+  async function logInteraction(p: Prospect, type: string) {
+    const today = new Date().toLocaleDateString("fr-FR");
+    const val = `${type} — ${today}`;
+    const { error } = await supabase.from("prospects").update({ derniere_interaction: val }).eq("id", p.id);
+    if (!error) {
+      setEditInteraction(val);
+      setSelected(prev => prev ? { ...prev, derniere_interaction: val } : null);
+      await loadProspects();
+      Alert.alert("✅ Enregistré", val);
+    }
+  }
+
+  function showLogPicker(p: Prospect) {
+    Alert.alert("Logger un contact", undefined, [
+      { text: "📞 Appel — Pas de réponse", onPress: () => logInteraction(p, "📞 Appel sans réponse") },
+      { text: "📞 Appel — Message vocal", onPress: () => logInteraction(p, "📞 Message vocal laissé") },
+      { text: "📞 Appel — Conversation", onPress: () => logInteraction(p, "📞 Conversation tél.") },
+      { text: "✉️ Email envoyé", onPress: () => logInteraction(p, "✉️ Email envoyé") },
+      { text: "📅 RDV fixé", onPress: () => { logInteraction(p, "📅 RDV fixé"); updateProspectStatut(p.id, "RDV fixé"); } },
+      { text: "Annuler", style: "cancel" },
+    ]);
+  }
+
   async function createProspect() {
     if (!newNom.trim()) { Alert.alert("Erreur", "Le nom est obligatoire"); return; }
     const { error } = await supabase.from("prospects").insert({
@@ -186,17 +234,19 @@ export default function App() {
   async function saveProspect() {
     if (!selected) return;
     setSaving(true);
+    const bantAuto = computeBANT(selected, editTelephone, editContact, editFonction, editValeur, editRelance);
     const { error } = await supabase.from("prospects").update({
       notes: editNotes, telephone: editTelephone,
       contact_principal: editContact, fonction_contact: editFonction,
       prochaine_relance: editRelance, valeur_potentielle: editValeur,
       derniere_interaction: editInteraction, campagne_id: editCampagneId || null,
+      score_bant: bantAuto,
     }).eq("id", selected.id);
     if (error) { Alert.alert("Erreur", error.message); }
     else {
-      setSelected(prev => prev ? { ...prev, notes: editNotes, telephone: editTelephone, contact_principal: editContact, fonction_contact: editFonction, prochaine_relance: editRelance, valeur_potentielle: editValeur, derniere_interaction: editInteraction } : null);
+      setSelected(prev => prev ? { ...prev, notes: editNotes, telephone: editTelephone, contact_principal: editContact, fonction_contact: editFonction, prochaine_relance: editRelance, valeur_potentielle: editValeur, derniere_interaction: editInteraction, score_bant: bantAuto } : null);
       await loadProspects();
-      Alert.alert("✅ Sauvegardé", editRelance ? `Relance enregistrée pour le ${editRelance}` : "Fiche mise à jour.");
+      Alert.alert("✅ Sauvegardé", `Score BANT recalculé : ${bantAuto}/10${editRelance ? `\nRelance : ${editRelance}` : ""}`);
     }
     setSaving(false);
   }
@@ -221,6 +271,17 @@ export default function App() {
       { text: "🌶 Chaud", onPress: () => updateProspectNiveau(p.id, "Chaud") },
       { text: "🌊 Tiède", onPress: () => updateProspectNiveau(p.id, "Tiède") },
       { text: "❄️ Froid", onPress: () => updateProspectNiveau(p.id, "Froid") },
+      { text: "Annuler", style: "cancel" },
+    ]);
+  }
+
+  function showProspectMenu(p: Prospect) {
+    Alert.alert(p.nom, undefined, [
+      { text: "📞 Appeler", onPress: () => callProspect(p) },
+      { text: "✉️ Email", onPress: () => emailProspect(p.email, p.nom) },
+      { text: "📝 Logger un contact", onPress: () => showLogPicker(p) },
+      { text: "🌡 Changer chaleur", onPress: () => showNiveauPicker(p) },
+      { text: "🗑 Supprimer", style: "destructive", onPress: () => deleteProspect(p.id) },
       { text: "Annuler", style: "cancel" },
     ]);
   }
@@ -263,12 +324,13 @@ export default function App() {
 
   function shareProspect(p: Prospect) {
     const today = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    const bantAuto = computeBANT(p, editTelephone, editContact, editFonction, editValeur, editRelance);
     const lines = [
       `📋 FICHE PROSPECT SPC — ${p.nom}`,
       `Généré le ${today}`,
       ``,
       `Segment : ${p.segment || "—"}`,
-      `Score BANT : ${p.score_bant}/10`,
+      `Score BANT : ${bantAuto}/10`,
       `Niveau : ${p.niveau}`,
       `Statut pipeline : ${p.statut}`,
       editTelephone ? `📞 ${editTelephone}` : null,
@@ -287,22 +349,13 @@ export default function App() {
     Linking.openURL(`mailto:${email}?subject=SPC — Surveillance d'examens&body=Bonjour,\n\nJe me permets de vous contacter au sujet de la gestion de vos surveillances d'examens...\n\nCordialement,`);
   }
 
-  const ScoreGauge = ({ score }: { score: number }) => {
-    const pct = Math.min(score / 10, 1);
-    const color = score >= 8 ? "#38a169" : score >= 5 ? "#f6ad55" : "#fc8181";
-    return (
-      <View style={styles.gaugeWrap}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <Text style={styles.gaugeLabel}>Score BANT</Text>
-          <Text style={[styles.gaugeValue, { color }]}>{score}<Text style={styles.gaugeMax}>/10</Text></Text>
-        </View>
-        <View style={styles.gaugeTrack}><View style={[styles.gaugeFill, { width: `${pct * 100}%` as any, backgroundColor: color }]} /></View>
-      </View>
-    );
-  };
-
   const ProspectCard = ({ p, showNiveau }: { p: Prospect; showNiveau?: boolean }) => (
-    <TouchableOpacity style={styles.prospectCard} onPress={() => openProspect(p)}>
+    <TouchableOpacity
+      style={styles.prospectCard}
+      onPress={() => openProspect(p)}
+      onLongPress={() => showProspectMenu(p)}
+      delayLongPress={400}
+    >
       <View style={styles.prospectInfo}>
         <Text style={styles.prospectNom}>{p.nom}</Text>
         <Text style={styles.prospectSeg}>{p.segment}</Text>
@@ -325,29 +378,37 @@ export default function App() {
             <Text style={styles.headerSub}>{new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</Text>
           </View>
 
-          {/* KPIs */}
+          {/* Pipeline revenue banner */}
+          {stats.pipelineTotal > 0 && (
+            <TouchableOpacity style={styles.pipelineBanner} onPress={() => navigateToFilter("Tous")} activeOpacity={0.8}>
+              <Text style={styles.pipelineBannerLabel}>PIPELINE TOTAL</Text>
+              <Text style={styles.pipelineBannerValue}>{formatMontant(stats.pipelineTotal)}</Text>
+              <Text style={styles.pipelineBannerSub}>{stats.total} prospects · voir tout →</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* KPIs cliquables */}
           {(() => {
             const nonContactes = prospects.filter(p => p.statut === "Non contacté").length;
             const enCours = prospects.filter(p => p.statut === "En cours").length;
             const convertis = prospects.filter(p => p.statut === "Converti").length;
             const aRelancer = prospects.filter(p => p.statut === "Non contacté" || p.statut === "En cours").length;
-            const tauxPct = stats.total > 0 ? Math.round((stats.rdvFixes / stats.total) * 100) : 0;
             const kpis = [
-              { label: "Prospects", value: stats.total, color: "#1a202c", sub: `${nonContactes} à contacter` },
-              { label: "Opportunités 🔥", value: stats.tresChaudes, color: "#f6ad55", sub: `${enCours} en cours` },
-              { label: "Taux conv.", value: tauxPct + "%", color: "#38a169", sub: `${convertis} convertis` },
-              { label: "RDV / Conv.", value: stats.rdvFixes, color: "#1a6b7e", sub: `${aRelancer} à relancer` },
+              { label: "Prospects", value: stats.total, color: "#1a202c", sub: `${nonContactes} à contacter`, filter: "Tous" },
+              { label: "Priorité haute", value: stats.tresChaudes, color: "#f6ad55", sub: `${enCours} en cours`, filter: "Très chaud" },
+              { label: "RDV fixés", value: stats.rdvFixes, color: "#38a169", sub: `${convertis} convertis`, filter: "RDV fixé" },
+              { label: "À relancer", value: aRelancer, color: "#1a6b7e", sub: "voir l'agenda →", filter: "AGENDA" },
             ];
             return (
-          <View style={styles.kpiGrid}>
-            {kpis.map(k => (
-              <View key={k.label} style={styles.kpiCard}>
-                <Text style={[styles.kpiValue, { color: k.color }]}>{k.value}</Text>
-                <Text style={styles.kpiLabel}>{k.label}</Text>
-                <Text style={styles.kpiSub}>{k.sub}</Text>
+              <View style={styles.kpiGrid}>
+                {kpis.map(k => (
+                  <TouchableOpacity key={k.label} style={styles.kpiCard} onPress={() => k.filter === "AGENDA" ? setTab("agenda") : navigateToFilter(k.filter)} activeOpacity={0.75}>
+                    <Text style={[styles.kpiValue, { color: k.color }]}>{k.value}</Text>
+                    <Text style={styles.kpiLabel}>{k.label}</Text>
+                    <Text style={styles.kpiSub}>{k.sub}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
-            ))}
-          </View>
             );
           })()}
 
@@ -371,8 +432,6 @@ export default function App() {
                 </View>
                 <Text style={styles.iaRecNom}>{rec.nom}</Text>
                 <Text style={styles.iaRecSub}>{rec.segment} · Score {rec.score_bant}/10 · {rec.statut}</Text>
-
-                {/* Pourquoi ? */}
                 <View style={styles.iaRecWhy}>
                   <Text style={styles.iaRecWhyTitle}>Pourquoi ?</Text>
                   {whyReasons.map((r, i) => (
@@ -382,7 +441,6 @@ export default function App() {
                     </View>
                   ))}
                 </View>
-
                 <View style={styles.iaRecProba}>
                   <Text style={styles.iaRecProbaLabel}>Probabilité de conversion</Text>
                   <Text style={styles.iaRecProbaVal}>{proba}%</Text>
@@ -402,8 +460,31 @@ export default function App() {
             );
           })()}
 
-          <Text style={styles.sectionTitle}>Top prospects</Text>
-          {prospects.slice(0, 5).map(p => <ProspectCard key={p.id} p={p} />)}
+          {/* File d'action du jour */}
+          {(() => {
+            const file = [...prospects].filter(p => p.statut !== "Converti" && p.statut !== "RDV fixé").sort((a, b) => b.score_bant - a.score_bant).slice(1, 4);
+            if (file.length === 0) return null;
+            return (
+              <>
+                <Text style={styles.sectionTitle}>File d'action</Text>
+                {file.map(p => (
+                  <View key={p.id} style={styles.actionCard}>
+                    <TouchableOpacity style={{ flex: 1 }} onPress={() => openProspect(p)}>
+                      <Text style={styles.actionCardNom}>{p.nom}</Text>
+                      <Text style={styles.actionCardSeg}>{p.segment} · Score {p.score_bant}/10</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.actionCardCall} onPress={() => callProspect(p)}>
+                      <Text style={{ fontSize: 18 }}>📞</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.actionCardLog} onPress={() => showLogPicker(p)}>
+                      <Text style={{ fontSize: 11, color: "#4a90d9", fontWeight: "700" }}>Logger</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </>
+            );
+          })()}
+
           <View style={{ height: 80 }} />
         </ScrollView>
       )}
@@ -422,7 +503,9 @@ export default function App() {
             ))}
           </ScrollView>
           <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1a6b7e" />}>
-            <View style={{ paddingHorizontal: 12, paddingTop: 8, paddingBottom: 4 }}><Text style={styles.resultsCount}>{filteredProspects.length} résultat{filteredProspects.length !== 1 ? "s" : ""}</Text></View>
+            <View style={{ paddingHorizontal: 12, paddingTop: 8, paddingBottom: 4 }}>
+              <Text style={styles.resultsCount}>{filteredProspects.length} résultat{filteredProspects.length !== 1 ? "s" : ""} · <Text style={{ color: "#38a169" }}>Pipeline : {formatMontant(filteredProspects.reduce((s, p) => s + parseMontant(p.valeur_potentielle), 0))}</Text></Text>
+            </View>
             {filteredProspects.map(p => <ProspectCard key={p.id} p={p} />)}
             <View style={{ height: 80 }} />
           </ScrollView>
@@ -434,7 +517,6 @@ export default function App() {
       {tab === "campagnes" && (
         <View style={{ flex: 1 }}>
           <ScrollView style={[styles.container, { backgroundColor: "#f8fafc" }]} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1a5c6e" />}>
-            {/* Header enrichi */}
             <View style={[styles.header, { backgroundColor: "#1a5c6e", paddingBottom: 16 }]}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <View>
@@ -463,61 +545,54 @@ export default function App() {
                 );
               })()}
             </View>
-
             {(() => {
               const topScore = Math.max(...campagnes.map(c => c.score), 0);
               return campagnes.map(c => {
-              const pct = c.nombre_prospects > 0 ? Math.round((c.tres_chaudes / c.nombre_prospects) * 100) : 0;
-              const badgeColor = CAMP_COLORS[c.statut] ?? "#a0aec0";
-              const isTop = c.score === topScore && campagnes.length > 1;
-              const barColor = pct >= 70 ? "#38a169" : pct >= 40 ? "#f6ad55" : "#fc8181";
-              const scoreColor = c.score >= 9 ? "#38a169" : c.score >= 7 ? "#4a90d9" : "#f6ad55";
-              const scoreLabel = c.score >= 9 ? "Excellent" : c.score >= 7 ? "Bon" : "Moyen";
-              return (
-                <TouchableOpacity key={c.id} style={[styles.campCard, isTop && { borderColor: "#f6ad55", borderWidth: 1.5 }]} activeOpacity={0.85} onPress={() => setSelectedCampagne(c)}>
-                  {isTop && (
-                    <View style={styles.topBadge}><Text style={styles.topBadgeTxt}>🏆 Recommandée</Text></View>
-                  )}
-                  <View style={styles.campTop}>
-                    <Text style={styles.campNom} numberOfLines={1}>{c.nom}</Text>
-                    <TouchableOpacity onPress={() => showStatutCampagnePicker(c)} style={[styles.statutBadge, { backgroundColor: badgeColor + "20" }]}>
-                      <Text style={[styles.statutText, { color: badgeColor }]}>{CAMP_EMOJI[c.statut] ?? ""} {c.statut} ✎</Text>
-                    </TouchableOpacity>
-                  </View>
-                  {c.perimetre ? <Text style={styles.campPerim}>{c.perimetre}</Text> : null}
-
-                  {/* Barre sémantique avec % grand */}
-                  {c.nombre_prospects > 0 && (
-                    <View style={{ marginBottom: 10 }}>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                        <Text style={{ fontSize: 10, color: "#718096" }}>Indice d'intérêt</Text>
-                        <Text style={{ fontSize: 22, fontWeight: "900", color: barColor }}>{pct}%</Text>
-                      </View>
-                      <View style={styles.campProgressTrack}>
-                        <View style={[styles.campProgressFill, { width: `${pct}%` as any, backgroundColor: barColor }]} />
-                      </View>
+                const pct = c.nombre_prospects > 0 ? Math.round((c.tres_chaudes / c.nombre_prospects) * 100) : 0;
+                const badgeColor = CAMP_COLORS[c.statut] ?? "#a0aec0";
+                const isTop = c.score === topScore && campagnes.length > 1;
+                const barColor = pct >= 70 ? "#38a169" : pct >= 40 ? "#f6ad55" : "#fc8181";
+                const scoreColor = c.score >= 9 ? "#38a169" : c.score >= 7 ? "#4a90d9" : "#f6ad55";
+                const scoreLabel = c.score >= 9 ? "Excellent" : c.score >= 7 ? "Bon" : "Moyen";
+                const campPipeline = prospects.filter(p => p.campagne_id === c.id).reduce((s, p) => s + parseMontant(p.valeur_potentielle), 0);
+                return (
+                  <TouchableOpacity key={c.id} style={[styles.campCard, isTop && { borderColor: "#f6ad55", borderWidth: 1.5 }]} activeOpacity={0.85} onPress={() => setSelectedCampagne(c)}>
+                    {isTop && <View style={styles.topBadge}><Text style={styles.topBadgeTxt}>🏆 Recommandée</Text></View>}
+                    <View style={styles.campTop}>
+                      <Text style={styles.campNom} numberOfLines={1}>{c.nom}</Text>
+                      <TouchableOpacity onPress={() => showStatutCampagnePicker(c)} style={[styles.statutBadge, { backgroundColor: badgeColor + "20" }]}>
+                        <Text style={[styles.statutText, { color: badgeColor }]}>{CAMP_EMOJI[c.statut] ?? ""} {c.statut} ✎</Text>
+                      </TouchableOpacity>
                     </View>
-                  )}
-
-                  {/* Stats ligne */}
-                  <View style={styles.campStatsLine}>
-                    <Text style={styles.campStatItem}>👥 {c.nombre_prospects}</Text>
-                    <Text style={styles.campStatSep}>·</Text>
-                    <Text style={styles.campStatItem}>🔥 {c.tres_chaudes}</Text>
-                    <Text style={styles.campStatSep}>·</Text>
-                    <Text style={[styles.campStatItem, { color: barColor }]}>🎯 {pct}%</Text>
-                  </View>
-
-                  {/* Score IA badge + jours */}
-                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-                    <View style={[styles.scoreIABadge, { backgroundColor: scoreColor + "15", borderColor: scoreColor + "40" }]}>
-                      <Text style={[styles.scoreIATxt, { color: scoreColor }]}>🤖 {c.score}/10 · {scoreLabel}</Text>
+                    {c.perimetre ? <Text style={styles.campPerim}>{c.perimetre}</Text> : null}
+                    {campPipeline > 0 && <Text style={styles.campPipeline}>💰 Pipeline : {formatMontant(campPipeline)}</Text>}
+                    {c.nombre_prospects > 0 && (
+                      <View style={{ marginBottom: 10 }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                          <Text style={{ fontSize: 10, color: "#718096" }}>Indice d'intérêt</Text>
+                          <Text style={{ fontSize: 22, fontWeight: "900", color: barColor }}>{pct}%</Text>
+                        </View>
+                        <View style={styles.campProgressTrack}>
+                          <View style={[styles.campProgressFill, { width: `${pct}%` as any, backgroundColor: barColor }]} />
+                        </View>
+                      </View>
+                    )}
+                    <View style={styles.campStatsLine}>
+                      <Text style={styles.campStatItem}>👥 {c.nombre_prospects}</Text>
+                      <Text style={styles.campStatSep}>·</Text>
+                      <Text style={styles.campStatItem}>🔥 {c.tres_chaudes}</Text>
+                      <Text style={styles.campStatSep}>·</Text>
+                      <Text style={[styles.campStatItem, { color: barColor }]}>🎯 {pct}%</Text>
                     </View>
-                    {c.jours_restants > 0 && <Text style={styles.campJours}>⏳ {c.jours_restants}j</Text>}
-                  </View>
-                </TouchableOpacity>
-              );
-            });
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+                      <View style={[styles.scoreIABadge, { backgroundColor: scoreColor + "15", borderColor: scoreColor + "40" }]}>
+                        <Text style={[styles.scoreIATxt, { color: scoreColor }]}>🤖 {c.score}/10 · {scoreLabel}</Text>
+                      </View>
+                      {c.jours_restants > 0 && <Text style={styles.campJours}>⏳ {c.jours_restants}j</Text>}
+                    </View>
+                  </TouchableOpacity>
+                );
+              });
             })()}
             <View style={{ height: 40 }} />
           </ScrollView>
@@ -566,6 +641,9 @@ export default function App() {
                 <Text style={styles.modalNom} numberOfLines={2}>{selected?.nom}</Text>
                 <Text style={styles.modalSeg}>{selected?.segment}</Text>
               </View>
+              <TouchableOpacity onPress={() => selected && showProspectMenu(selected)} style={styles.menuBtn}>
+                <Text style={styles.menuTxt}>•••</Text>
+              </TouchableOpacity>
               <TouchableOpacity onPress={() => setSelected(null)} style={styles.closeBtn}><Text style={styles.closeTxt}>✕</Text></TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
@@ -573,7 +651,7 @@ export default function App() {
               {/* Pipeline */}
               {selected && <PipelineBar statut={selected.statut} onPress={(s) => updateProspectStatut(selected.id, s)} />}
 
-              {/* Niveau + Score */}
+              {/* Niveau + Score BANT auto */}
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <TouchableOpacity
                   style={[styles.niveauCard, { backgroundColor: (NIVEAU_COLORS[selected?.niveau ?? ""] ?? "#a0aec0") + "18", flex: 1 }]}
@@ -583,13 +661,14 @@ export default function App() {
                   <Text style={[styles.niveauCardValue, { color: NIVEAU_COLORS[selected?.niveau ?? ""] ?? "#a0aec0" }]}>{selected?.niveau}</Text>
                 </TouchableOpacity>
                 <View style={[styles.niveauCard, { backgroundColor: "#f0f9ff", flex: 1 }]}>
-                  <Text style={styles.niveauCardLabel}>SCORE BANT</Text>
+                  <Text style={styles.niveauCardLabel}>SCORE BANT AUTO</Text>
                   {selected && (() => {
-                    const color = selected.score_bant >= 8 ? "#38a169" : selected.score_bant >= 5 ? "#f6ad55" : "#fc8181";
+                    const auto = computeBANT(selected, editTelephone, editContact, editFonction, editValeur, editRelance);
+                    const color = auto >= 8 ? "#38a169" : auto >= 5 ? "#f6ad55" : "#fc8181";
                     return (
                       <View>
-                        <Text style={[styles.niveauCardValue, { color }]}>{selected.score_bant}<Text style={{ fontSize: 14, color: "#a0aec0" }}>/10</Text></Text>
-                        <View style={styles.gaugeTrack}><View style={[styles.gaugeFill, { width: `${(selected.score_bant / 10) * 100}%` as any, backgroundColor: color }]} /></View>
+                        <Text style={[styles.niveauCardValue, { color }]}>{auto}<Text style={{ fontSize: 14, color: "#a0aec0" }}>/10</Text></Text>
+                        <View style={styles.gaugeTrack}><View style={[styles.gaugeFill, { width: `${(auto / 10) * 100}%` as any, backgroundColor: color }]} /></View>
                       </View>
                     );
                   })()}
@@ -606,9 +685,9 @@ export default function App() {
                   <Text style={styles.actionIcon}>✉️</Text>
                   <Text style={[styles.actionTxt, { color: "#276749" }]}>Email</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: "#fff5f5" }]} onPress={() => selected && showNiveauPicker(selected)}>
-                  <Text style={styles.actionIcon}>🌡</Text>
-                  <Text style={[styles.actionTxt, { color: "#c53030" }]}>Chaleur</Text>
+                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: "#ebf8ff" }]} onPress={() => selected && showLogPicker(selected)}>
+                  <Text style={styles.actionIcon}>📝</Text>
+                  <Text style={[styles.actionTxt, { color: "#2b6cb0" }]}>Logger</Text>
                 </TouchableOpacity>
               </View>
 
@@ -655,7 +734,7 @@ export default function App() {
                 </View>
                 <View style={styles.coordRow}>
                   <Text style={styles.coordLabel}>Valeur €</Text>
-                  <TextInput style={styles.coordInput} value={editValeur} onChangeText={setEditValeur} placeholder="ex : 45 000 €" placeholderTextColor="#c0cfe0" />
+                  <TextInput style={styles.coordInput} value={editValeur} onChangeText={setEditValeur} placeholder="ex : 45000" placeholderTextColor="#c0cfe0" keyboardType="numeric" />
                 </View>
                 <View style={styles.coordRow}>
                   <Text style={styles.coordLabel}>Dernier contact</Text>
@@ -706,10 +785,6 @@ export default function App() {
                 <Text style={styles.shareTxt}>📤  Partager la fiche</Text>
               </TouchableOpacity>
 
-              {/* Delete */}
-              <TouchableOpacity style={styles.deleteBtn} onPress={() => selected && deleteProspect(selected.id)}>
-                <Text style={styles.deleteTxt}>🗑  Supprimer ce prospect</Text>
-              </TouchableOpacity>
             </ScrollView>
           </SafeAreaView>
         </KeyboardAvoidingView>
@@ -724,6 +799,7 @@ export default function App() {
             const pct = selectedCampagne.nombre_prospects > 0 ? Math.round((selectedCampagne.tres_chaudes / selectedCampagne.nombre_prospects) * 100) : 0;
             const convertis = campProspects.filter(p => p.statut === "Converti").length;
             const rdv = campProspects.filter(p => p.statut === "RDV fixé").length;
+            const pipeline = campProspects.reduce((s, p) => s + parseMontant(p.valeur_potentielle), 0);
             return (
               <>
                 <View style={[styles.modalHeader, { backgroundColor: "#1a5c6e", paddingBottom: 16 }]}>
@@ -737,22 +813,19 @@ export default function App() {
                   <TouchableOpacity onPress={() => setSelectedCampagne(null)} style={styles.closeBtn}><Text style={styles.closeTxt}>✕</Text></TouchableOpacity>
                 </View>
                 <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
-                  {/* KPIs campagne */}
                   <View style={{ flexDirection: "row", gap: 8 }}>
                     {[
                       { label: "Prospects", value: campProspects.length, color: "#1a202c" },
                       { label: "Très chauds", value: campProspects.filter(p => p.niveau === "Très chaud").length, color: "#f6ad55" },
                       { label: "RDV / Conv.", value: rdv + convertis, color: "#38a169" },
-                      { label: "Score IA", value: selectedCampagne.score + "/10", color: "#1a6b7e" },
+                      { label: "Pipeline", value: pipeline > 0 ? formatMontant(pipeline) : "—", color: "#1a6b7e" },
                     ].map(k => (
                       <View key={k.label} style={[styles.kpiCard, { flex: 1, padding: 10 }]}>
-                        <Text style={[styles.kpiValue, { color: k.color, fontSize: 20 }]}>{k.value}</Text>
+                        <Text style={[styles.kpiValue, { color: k.color, fontSize: 18 }]}>{k.value}</Text>
                         <Text style={[styles.kpiLabel, { fontSize: 9 }]}>{k.label}</Text>
                       </View>
                     ))}
                   </View>
-
-                  {/* Barre d'intérêt */}
                   {selectedCampagne.nombre_prospects > 0 && (
                     <View style={styles.coordBlock}>
                       <Text style={styles.blockTitle}>INDICE D'INTÉRÊT</Text>
@@ -764,22 +837,20 @@ export default function App() {
                       </View>
                     </View>
                   )}
-
-                  {/* Prospects liés */}
                   <Text style={styles.sectionTitle}>
                     {campProspects.length > 0 ? `${campProspects.length} prospect${campProspects.length > 1 ? "s" : ""} dans cette campagne` : "Aucun prospect lié"}
                   </Text>
                   {campProspects.length === 0 ? (
                     <View style={[styles.coordBlock, { alignItems: "center", paddingVertical: 24 }]}>
                       <Text style={{ fontSize: 32, marginBottom: 8 }}>📭</Text>
-                      <Text style={{ color: "#a0aec0", fontSize: 13 }}>Assignez des prospects à cette campagne depuis leur fiche</Text>
+                      <Text style={{ color: "#a0aec0", fontSize: 13 }}>Assignez des prospects depuis leur fiche</Text>
                     </View>
                   ) : (
                     campProspects.sort((a, b) => b.score_bant - a.score_bant).map(p => (
                       <TouchableOpacity key={p.id} style={styles.prospectCard} onPress={() => { setSelectedCampagne(null); setTimeout(() => openProspect(p), 300); }}>
                         <View style={styles.prospectInfo}>
                           <Text style={styles.prospectNom}>{p.nom}</Text>
-                          <Text style={styles.prospectSeg}>{p.segment}</Text>
+                          <Text style={styles.prospectSeg}>{p.segment}{parseMontant(p.valeur_potentielle) > 0 ? ` · ${formatMontant(parseMontant(p.valeur_potentielle))}` : ""}</Text>
                           <View style={[styles.niveauBadge, { backgroundColor: (NIVEAU_COLORS[p.niveau] ?? "#a0aec0") + "20" }]}>
                             <Text style={[styles.niveauBadgeTxt, { color: NIVEAU_COLORS[p.niveau] ?? "#a0aec0" }]}>{p.niveau}</Text>
                           </View>
@@ -846,17 +917,26 @@ const styles = StyleSheet.create({
   headerGreeting: { fontSize: 22, fontWeight: "800", color: "#fff" },
   headerTitle: { fontSize: 16, fontWeight: "700", color: "rgba(255,255,255,0.85)", marginTop: 2 },
   headerSub: { fontSize: 13, color: "rgba(255,255,255,0.6)", marginTop: 2 },
+  pipelineBanner: { marginHorizontal: 12, marginTop: 12, backgroundColor: "#0d4a5a", borderRadius: 12, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 },
+  pipelineBannerLabel: { fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: "700", letterSpacing: 0.8 },
+  pipelineBannerValue: { fontSize: 22, fontWeight: "900", color: "#68d391", flex: 1 },
+  pipelineBannerSub: { fontSize: 11, color: "rgba(255,255,255,0.5)" },
   kpiGrid: { flexDirection: "row", flexWrap: "wrap", padding: 12, gap: 8 },
   kpiCard: { flex: 1, minWidth: "45%", backgroundColor: "#fff", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: "#e2e8f0" },
   kpiValue: { fontSize: 26, fontWeight: "800" },
   kpiLabel: { fontSize: 11, color: "#718096", marginTop: 2 },
   kpiSub: { fontSize: 10, color: "#a0aec0", marginTop: 4, fontWeight: "500" },
+  sectionTitle: { fontSize: 13, fontWeight: "700", color: "#1a202c", marginHorizontal: 16, marginBottom: 8, marginTop: 4 },
+  actionCard: { flexDirection: "row", alignItems: "center", backgroundColor: "#fff", marginHorizontal: 12, marginBottom: 6, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: "#e2e8f0", gap: 8 },
+  actionCardNom: { fontSize: 13, fontWeight: "700", color: "#1a202c" },
+  actionCardSeg: { fontSize: 11, color: "#718096", marginTop: 1 },
+  actionCardCall: { backgroundColor: "#f0fff4", borderRadius: 10, width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  actionCardLog: { backgroundColor: "#ebf8ff", borderRadius: 10, paddingHorizontal: 10, height: 40, alignItems: "center", justifyContent: "center" },
   iaRecWhy: { backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 10, padding: 12, marginBottom: 14, marginTop: 4 },
   iaRecWhyTitle: { fontSize: 10, color: "rgba(255,255,255,0.5)", fontWeight: "700", letterSpacing: 0.6, marginBottom: 8 },
   iaRecWhyRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 5 },
   iaRecWhyCheck: { fontSize: 12, color: "#68d391", fontWeight: "800", lineHeight: 17 },
   iaRecWhyTxt: { fontSize: 12, color: "rgba(255,255,255,0.85)", flex: 1, lineHeight: 17 },
-  sectionTitle: { fontSize: 13, fontWeight: "700", color: "#1a202c", marginHorizontal: 16, marginBottom: 8, marginTop: 4 },
   iaRec: { marginHorizontal: 12, marginTop: 4, marginBottom: 4, backgroundColor: "#0d4a5a", borderRadius: 14, padding: 16, shadowColor: "#1a6b7e", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
   iaRecTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
   iaRecLabel: { fontSize: 11, fontWeight: "700", color: "rgba(255,255,255,0.6)", letterSpacing: 0.8 },
@@ -892,7 +972,8 @@ const styles = StyleSheet.create({
   campCard: { backgroundColor: "#fff", marginHorizontal: 12, marginBottom: 10, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: "#edf2f7", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
   campTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 2 },
   campNom: { fontSize: 15, fontWeight: "800", color: "#1a202c", flex: 1, marginRight: 8 },
-  campPerim: { fontSize: 11, color: "#718096", marginBottom: 8 },
+  campPerim: { fontSize: 11, color: "#718096", marginBottom: 4 },
+  campPipeline: { fontSize: 12, color: "#38a169", fontWeight: "700", marginBottom: 8 },
   campProgressTrack: { height: 6, backgroundColor: "#edf2f7", borderRadius: 3, overflow: "hidden" },
   campProgressFill: { height: "100%", borderRadius: 3 },
   campStatsLine: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 4, marginTop: 4 },
@@ -901,8 +982,6 @@ const styles = StyleSheet.create({
   campJours: { fontSize: 11, color: "#b7791f", backgroundColor: "#fffbeb", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: "#fde68a" },
   scoreIABadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, borderWidth: 1 },
   scoreIATxt: { fontSize: 12, fontWeight: "800" },
-  campStats: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
-  campStat: { fontSize: 11, color: "#4a5568", backgroundColor: "#f8fafc", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: "#edf2f7" },
   headerAddBtn: { backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginTop: 4 },
   headerAddTxt: { color: "#fff", fontWeight: "700", fontSize: 13 },
   topBadge: { backgroundColor: "#fffbeb", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, alignSelf: "flex-start", marginBottom: 8, borderWidth: 1, borderColor: "#f6ad55" },
@@ -929,7 +1008,9 @@ const styles = StyleSheet.create({
   modalHeader: { flexDirection: "row", alignItems: "flex-start", backgroundColor: "#1a6b7e", padding: 20, paddingTop: 28, paddingBottom: 20 },
   modalNom: { fontSize: 18, fontWeight: "800", color: "#fff", flexShrink: 1, flexWrap: "wrap" },
   modalSeg: { fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 },
-  closeBtn: { backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 20, width: 32, height: 32, alignItems: "center", justifyContent: "center", marginLeft: 12 },
+  menuBtn: { backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 20, width: 32, height: 32, alignItems: "center", justifyContent: "center", marginLeft: 8 },
+  menuTxt: { color: "#fff", fontSize: 12, fontWeight: "800", letterSpacing: 1 },
+  closeBtn: { backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 20, width: 32, height: 32, alignItems: "center", justifyContent: "center", marginLeft: 8 },
   closeTxt: { color: "#fff", fontSize: 14, fontWeight: "700" },
   pipelineWrap: { backgroundColor: "#fff", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#e2e8f0" },
   pipelineTitle: { fontSize: 10, color: "#a0aec0", fontWeight: "700", letterSpacing: 0.8, marginBottom: 14 },
@@ -950,7 +1031,7 @@ const styles = StyleSheet.create({
   coordBlock: { backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 14, paddingTop: 12, paddingBottom: 4, borderWidth: 1, borderColor: "#e2e8f0" },
   blockTitle: { fontSize: 10, color: "#a0aec0", fontWeight: "700", letterSpacing: 0.8, marginBottom: 10 },
   coordRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#f0f4f8" },
-  coordLabel: { fontSize: 12, color: "#718096", width: 72, fontWeight: "600" },
+  coordLabel: { fontSize: 12, color: "#718096", width: 80, fontWeight: "600" },
   coordValue: { fontSize: 13, fontWeight: "600", flex: 1 },
   coordInput: { flex: 1, fontSize: 13, color: "#1a202c", padding: 0 },
   relanceBlock: { borderRadius: 12, padding: 14, borderWidth: 1 },
@@ -967,10 +1048,12 @@ const styles = StyleSheet.create({
   saveTxt: { color: "#fff", fontWeight: "700", fontSize: 14 },
   shareBtn: { backgroundColor: "#f0fff4", borderRadius: 10, padding: 13, borderWidth: 1, borderColor: "#9ae6b4", alignItems: "center" },
   shareTxt: { color: "#276749", fontWeight: "700", fontSize: 14 },
-  deleteBtn: { backgroundColor: "#fff5f5", borderRadius: 10, padding: 13, borderWidth: 1, borderColor: "#feb2b2", alignItems: "center" },
-  deleteTxt: { color: "#e53e3e", fontWeight: "700", fontSize: 14 },
   inputLabel: { fontSize: 12, color: "#718096", marginBottom: 6, fontWeight: "600" },
   input: { backgroundColor: "#fff", borderRadius: 10, padding: 14, borderWidth: 1, borderColor: "#e2e8f0", fontSize: 15, color: "#1a202c" },
   createBtn: { backgroundColor: "#1a6b7e", borderRadius: 10, padding: 16, alignItems: "center", marginTop: 8 },
   createTxt: { color: "#fff", fontWeight: "800", fontSize: 16 },
+  gaugeWrap: { backgroundColor: "#fff", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: "#e2e8f0" },
+  gaugeLabel: { fontSize: 12, color: "#718096", fontWeight: "600" },
+  gaugeValue: { fontSize: 22, fontWeight: "900" },
+  gaugeMax: { fontSize: 13, color: "#a0aec0" },
 });
