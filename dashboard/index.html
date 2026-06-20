@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPC Cockpit — Pilotage Prospection B2B</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;color:#1a202c;display:flex;height:100vh;overflow:hidden;font-size:14px}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;background:#0d1e2e;color:#a0aec0;display:flex;flex-direction:column;flex-shrink:0;user-select:none}
+.logo{padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.logo-name{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:#4a90d9;flex-shrink:0}
+.logo-sub{font-size:10px;color:#4a90d9;text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;padding-left:16px}
+.nav{flex:1;padding:10px 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 18px;cursor:pointer;font-size:13px;color:#7a8fa0;transition:all .15s;border-left:3px solid transparent;line-height:1}
+.nav-item:hover{background:rgba(255,255,255,.05);color:#c8d8e8}
+.nav-item.active{background:rgba(74,144,217,.13);color:#fff;border-left-color:#4a90d9}
+.nav-item svg{width:15px;height:15px;flex-shrink:0}
+.nav-sep{height:1px;background:rgba(255,255,255,.06);margin:8px 0}
+.sidebar-info{padding:14px;border-top:1px solid rgba(255,255,255,.08)}
+.si-label{font-size:10px;color:#4a90d9;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.si-name{font-size:13px;font-weight:600;color:#e2e8f0;line-height:1.3}
+.si-meta{font-size:11px;color:#8899aa;margin-top:3px}
+.si-box{margin-top:10px;background:rgba(74,144,217,.12);border-radius:8px;padding:8px 10px;text-align:center}
+.si-days{font-size:24px;font-weight:800;color:#4a90d9;line-height:1}
+.si-days-lbl{font-size:11px;color:#8899aa;margin-top:2px}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* ── TOPBAR ── */
+.topbar{height:54px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0}
+.tb-context{font-size:11px;color:#a0aec0}
+.tb-title{font-size:15px;font-weight:700;color:#1a202c}
+.tb-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:#ebf8ff;color:#2b6cb0}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.icon-btn{width:32px;height:32px;border-radius:8px;background:#f7fafc;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#718096;position:relative}
+.icon-btn .notif-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;background:#e53e3e;border-radius:50%;border:1.5px solid #fff}
+.avatar{width:32px;height:32px;border-radius:50%;background:#1a6b7e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.btn-primary{background:#1a6b7e;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-secondary{background:#fff;color:#4a5568;border:1px solid #e2e8f0;padding:6px 13px;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px}
+.tb-sep{color:#e2e8f0;font-size:18px}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow-y:auto;padding:20px 22px}
+.view{display:none}
+.view.active{display:block}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:500}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.b-vert{background:#f0fff4;color:#276749}.b-vert::before{background:#38a169}
+.b-orange{background:#fffbeb;color:#b7791f}.b-orange::before{background:#ecc94b}
+.b-rouge{background:#fff5f5;color:#9b2c2c}.b-rouge::before{background:#e53e3e}
+.b-bleu{background:#ebf8ff;color:#2b6cb0}.b-bleu::before{background:#4299e1}
+.b-violet{background:#faf5ff;color:#553c9a}.b-violet::before{background:#805ad5}
+.b-gray{background:#f7fafc;color:#4a5568}.b-gray::before{background:#a0aec0}
+.score-tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:700}
+.st-green{background:#f0fff4;color:#276749}
+.st-orange{background:#fffbeb;color:#b7791f}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi-card{padding:18px 18px 14px}
+.kpi-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.kpi-icon.ic-blue{background:#ebf8ff;color:#2b6cb0}
+.kpi-icon.ic-teal{background:#e6fffa;color:#2c7a7b}
+.kpi-icon.ic-orange{background:#fffaf0;color:#c05621}
+.kpi-icon.ic-red{background:#fff5f5;color:#c53030}
+.kpi-num{font-size:26px;font-weight:800;color:#1a202c;line-height:1}
+.kpi-lbl{font-size:12.5px;color:#718096;margin-top:4px}
+.kpi-link{font-size:11.5px;color:#4a90d9;margin-top:10px;cursor:pointer}
+.kpi-link:hover{text-decoration:underline}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sh-title{font-size:14px;font-weight:600;color:#1a202c}
+
+/* ── TABLE ── */
+.tbl-card{overflow:hidden;margin-bottom:18px}
+.tbl-card table{width:100%;border-collapse:collapse}
+.tbl-card th{padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:#718096;text-transform:uppercase;letter-spacing:.5px;background:#f7fafc;border-bottom:1px solid #e2e8f0}
+.tbl-card td{padding:12px 14px;font-size:13px;color:#2d3748;border-bottom:1px solid #f0f4f8}
+.tbl-card tr:last-child td{border-bottom:none}
+.tbl-card tr:hover td{background:#fafbfc;cursor:pointer}
+.td-arrow{color:#e2e8f0;text-align:right}
+
+/* ── DASHBOARD LAYOUT ── */
+.dash-layout{display:grid;grid-template-columns:1fr 252px;gap:18px}
+.dash-left{}
+.dash-right{}
+
+/* Bottom 3-col */
+.bottom3{display:grid;grid-template-columns:200px 1fr 200px;gap:14px}
+
+.chart-card{padding:16px}
+.ct-title{font-size:12.5px;font-weight:600;color:#2d3748;margin-bottom:12px}
+.donut-wrap{position:relative;width:110px;height:110px;margin:0 auto 10px}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:12px;color:#4a5568;margin-bottom:5px}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.leg-count{margin-left:auto;font-weight:600;color:#2d3748}
+
+.bar-item{margin-bottom:9px}
+.bar-lbl{display:flex;justify-content:space-between;font-size:11.5px;color:#4a5568;margin-bottom:3px}
+.bar-track{height:5px;background:#edf2f7;border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;background:#1a6b7e;transition:width .5s}
+
+.act-item{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid #f0f4f8;cursor:pointer}
+.act-item:last-child{border-bottom:none}
+.act-ico{width:26px;height:26px;border-radius:6px;background:#f7fafc;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px}
+.act-txt{font-size:12px;color:#4a5568;line-height:1.4;flex:1}
+.act-arr{color:#e2e8f0;margin-left:auto;flex-shrink:0}
+
+/* Alert panel right */
+.alert-panel-card{padding:16px;margin-bottom:14px}
+.ap-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.ap-title.red{color:#e53e3e}
+.ap-title.teal{color:#2c7a7b}
+.alert-item{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border-radius:8px;margin-bottom:7px;cursor:pointer}
+.alert-item.r{background:#fff5f5}
+.alert-item.o{background:#fffaf0}
+.alert-item.y{background:#fffff0}
+.al-ico{font-size:16px;flex-shrink:0;margin-top:1px}
+.al-name{font-size:12px;font-weight:600;color:#2d3748}
+.al-desc{font-size:11px;color:#718096;margin-top:2px;line-height:1.4}
+.al-cnt{min-width:20px;height:20px;border-radius:10px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;margin-left:auto;flex-shrink:0}
+.al-cnt.r{background:#e53e3e;color:#fff}
+.al-cnt.o{background:#dd6b20;color:#fff}
+.al-cnt.y{background:#d69e2e;color:#fff}
+.ap-link{font-size:11.5px;color:#4a90d9;cursor:pointer;margin-top:3px;display:block}
+
+.ech-item{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #f0f4f8;font-size:12px}
+.ech-item:last-child{border-bottom:none}
+.ech-date{font-weight:700;color:#2d3748;min-width:30px}
+.ech-name{color:#4a5568;flex:1}
+.ech-tag{font-size:11px;color:#4a90d9;font-weight:500}
+
+/* ── CAMPAGNE DETAIL ── */
+.camp-layout{display:grid;grid-template-columns:1fr 290px;gap:18px}
+.plan-card{overflow:hidden}
+.plan-header{padding:14px 18px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+.plan-header-title{font-size:14px;font-weight:600;color:#2d3748;display:flex;align-items:center;gap:8px}
+.plan-row{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid #f0f4f8;cursor:pointer}
+.plan-row:last-child{border-bottom:none}
+.plan-row:hover{background:#fafbfc}
+.drag{color:#d0d9e3;font-size:12px}
+.pnum{width:26px;height:26px;border-radius:50%;border:2px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#718096;flex-shrink:0}
+.pinfo{flex:1}
+.pname{font-size:13.5px;font-weight:500;color:#1a202c}
+.psub{font-size:11.5px;color:#718096;margin-top:2px}
+.parr{color:#e2e8f0}
+
+.reinf-card{border:2px solid #fed7aa;padding:16px;margin-bottom:14px;border-radius:12px;background:#fff}
+.reinf-warn{font-size:12px;font-weight:600;color:#c05621;display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.reinf-h{font-size:14px;font-weight:700;color:#1a202c;margin-bottom:5px}
+.reinf-p{font-size:12px;color:#4a5568;line-height:1.5;margin-bottom:12px}
+.reinf-reco{font-size:11px;font-weight:700;color:#c05621;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.reinf-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:9px}
+.reinf-ico{width:26px;height:26px;border-radius:6px;background:#fff7ed;border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
+.reinf-txt{font-size:12px;color:#4a5568;line-height:1.4}
+.reinf-txt b{display:block;color:#2d3748;margin-bottom:1px}
+.reinf-bon{background:#fffbeb;border:1px solid #fbd38d;border-radius:8px;padding:10px 12px;margin-top:8px;font-size:11.5px;color:#7b6008;line-height:1.5}
+.reinf-bon::before{content:'💡 Bon à savoir  ';font-weight:600}
+.reinf-btn{width:100%;padding:9px;border-radius:8px;background:#1a6b7e;color:#fff;border:none;font-size:13px;font-weight:500;cursor:pointer;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px}
+
+.conf-card{padding:16px}
+.conf-title{font-size:13px;font-weight:600;color:#2d3748;margin-bottom:14px}
+.conf-ring{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.conf-ring-wrap{position:relative;width:76px;height:76px;flex-shrink:0}
+.conf-pct{font-size:22px;font-weight:800;color:#2d3748}
+.conf-sub{font-size:11px;color:#718096}
+.conf-next{font-size:11.5px;color:#4a5568;margin-top:6px}
+.conf-next b{color:#2d3748}
+.conf-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid #f0f4f8;font-size:12.5px;cursor:pointer}
+.conf-row:last-child{border-bottom:none}
+.conf-lbl{flex:1;color:#4a5568}
+.conf-val{font-weight:600;margin-right:6px}
+.conf-val.g{color:#38a169}
+.conf-val.o{color:#dd6b20}
+.conf-val.r{color:#e53e3e}
+.conf-arr{color:#e2e8f0}
+
+/* ── QUALIFICATION BANT ── */
+.qual-layout{display:grid;grid-template-columns:1fr 252px;gap:18px}
+.bant-card{padding:18px;margin-bottom:16px}
+.bant-top{display:flex;gap:20px;align-items:flex-start}
+.bant-info{flex:1}
+.bant-name{font-size:16px;font-weight:700;color:#1a202c}
+.bant-ref{font-size:12px;color:#718096;margin-top:2px}
+.bant-buyer{font-size:12px;color:#4a5568;margin-top:1px}
+.bant-tags{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
+.btag{font-size:11px;padding:3px 9px;border-radius:20px;background:#f7fafc;border:1px solid #e2e8f0;color:#4a5568}
+.btag.deadline{color:#e53e3e;background:#fff5f5;border-color:#fed7d7}
+
+.gauge-area{text-align:center;min-width:140px}
+.gauge-canvas-wrap{width:140px;height:80px;margin:0 auto;overflow:hidden;position:relative}
+.gauge-num{font-size:26px;font-weight:800;color:#1a202c;text-align:center;margin-top:2px}
+.gauge-chip{display:inline-block;background:#f0fff4;color:#276749;font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;margin-top:2px}
+
+.subscore-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.sbox{border:1px solid #e2e8f0;border-radius:10px;padding:12px 10px;text-align:center}
+.sbox-lbl{font-size:10px;font-weight:600;color:#a0aec0;text-transform:uppercase;letter-spacing:.5px}
+.sbox-name{font-size:11.5px;font-weight:600;color:#4a5568;margin:4px 0 8px}
+.sbox-val{font-size:20px;font-weight:800;color:#1a202c}
+.sbox-max{font-size:11px;color:#a0aec0}
+.sbox-bar{height:4px;background:#edf2f7;border-radius:2px;margin-top:8px;overflow:hidden}
+.sbox-fill{height:100%;border-radius:2px}
+.fill-green{background:#38a169}
+.fill-teal{background:#1a6b7e}
+.fill-yellow{background:#ecc94b}
+
+.matrix-card{overflow:hidden}
+.matrix-head{padding:12px 16px;border-bottom:1px solid #e2e8f0;font-size:13.5px;font-weight:600;color:#2d3748;display:flex;align-items:center;gap:8px}
+.matrix-card table{width:100%;border-collapse:collapse}
+.matrix-card th{padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:#718096;text-transform:uppercase;letter-spacing:.5px;background:#f7fafc;border-bottom:1px solid #e2e8f0}
+.matrix-card td{padding:11px 14px;font-size:12.5px;color:#2d3748;border-bottom:1px solid #f0f4f8}
+.matrix-card tr:last-child td{border-bottom:none}
+.matrix-card tr:hover td{background:#fafbfc}
+.etat-ok{color:#38a169;font-weight:600;font-size:12px}
+.etat-risk{color:#e53e3e;font-weight:600;font-size:12px}
+.etat-partial{color:#dd6b20;font-weight:600;font-size:12px}
+
+.risk-panel-card{padding:16px;margin-bottom:14px}
+.rp-title{font-size:13px;font-weight:600;color:#2d3748;margin-bottom:12px}
+.risk-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f0f4f8}
+.risk-item:last-child{border-bottom:none}
+.rk-ico{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.rk-ico.r{background:#fff5f5}
+.rk-ico.o{background:#fffaf0}
+.rk-ico.y{background:#fffff0}
+.rk-body{}
+.rk-name{font-size:12px;font-weight:600;color:#2d3748}
+.rk-desc{font-size:11.5px;color:#718096;margin-top:2px;line-height:1.4}
+.rk-lvl{font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px;display:inline-block;margin-top:4px}
+.rk-lvl.h{background:#fff5f5;color:#e53e3e}
+.rk-lvl.m{background:#fffaf0;color:#c05621}
+
+.pts-forts{padding:16px;margin-bottom:14px}
+.pf-title{font-size:13px;font-weight:600;color:#2d3748;margin-bottom:10px}
+.pf-item{display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;font-size:12px;color:#4a5568}
+.pf-check{color:#38a169;flex-shrink:0;margin-top:1px;font-size:13px}
+
+.next-card{background:#1a6b7e;border-radius:12px;padding:16px;color:#fff}
+.nc-pre{font-size:10.5px;opacity:.7;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.nc-title{font-size:13px;font-weight:600;margin-bottom:12px;line-height:1.4}
+.nc-btn{width:100%;padding:9px;border-radius:8px;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.25);font-size:12.5px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+
+/* ── CONSEIL BAR ── */
+.conseil{background:#fff;border-top:1px solid #e2e8f0;padding:10px 22px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.conseil-icon{font-size:18px}
+.conseil-txt{font-size:12.5px;color:#4a5568}
+.conseil-txt strong{color:#1a6b7e}
+.conseil-btn{margin-left:auto;padding:5px 13px;border-radius:7px;border:1px solid #e2e8f0;background:#fff;color:#4a5568;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════ -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-name">
+      <div class="logo-dot"></div>
+      SPC COCKPIT
+    </div>
+    <div class="logo-sub">Prospection B2B</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="showView('dashboard', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Tableau de bord
+    </div>
+    <div class="nav-item" onclick="showView('campagne', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Campagnes
+    </div>
+    <div class="nav-item" onclick="showView('qualification', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
+      Qualification BANT
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-item" onclick="showView('livrables', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Livrables
+    </div>
+    <div class="nav-item" onclick="showView('planning', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Planning
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reporting
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Paramètres
+    </div>
+  </nav>
+  <div class="sidebar-info">
+    <div class="si-label">Campagne active</div>
+    <div class="si-name">IDF Complète 2026</div>
+    <div class="si-meta">43 établissements · 14 Très chaud</div>
+    <div class="si-box">
+      <div class="si-days">J - 8</div>
+      <div class="si-days-lbl">Fin Vague 1</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MAIN
+════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar" id="topbar">
+    <div>
+      <div class="tb-context">Campagnes en cours</div>
+      <div class="tb-title" id="tb-title">Tableau de bord</div>
+    </div>
+    <span class="tb-badge" id="tb-badge">Actif</span>
+    <div class="tb-right">
+      <div class="icon-btn" title="Notifications">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="notif-dot"></span>
+      </div>
+      <div class="icon-btn" title="Aide">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <span style="color:#e2e8f0;font-size:18px">|</span>
+      <span style="font-size:13px;color:#4a5568">Jean-Marc Clio</span>
+      <div class="avatar">JC</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ═══ VIEW : TABLEAU DE BORD ═══ -->
+    <div class="view active" id="view-dashboard">
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="card kpi-card">
+          <div class="kpi-icon ic-blue">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div class="kpi-num">75</div>
+          <div class="kpi-lbl">établissements ciblés</div>
+          <div class="kpi-link" onclick="showView('campagne', document.querySelectorAll('.nav-item')[1])">Voir tous →</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-icon ic-teal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="kpi-num">37</div>
+          <div class="kpi-lbl">prospects Très chaud</div>
+          <div class="kpi-link" onclick="showView('qualification', document.querySelectorAll('.nav-item')[2])">Voir la liste →</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-icon ic-orange">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          </div>
+          <div class="kpi-num">9,4<span style="font-size:16px;font-weight:500;color:#718096">/10</span></div>
+          <div class="kpi-lbl">Score BANT moyen</div>
+          <div class="kpi-link">Voir l'analyse →</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-icon ic-red">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="kpi-num">5</div>
+          <div class="kpi-lbl">actions urgentes</div>
+          <div class="kpi-link">Voir le détail →</div>
+        </div>
+      </div>
+
+      <!-- Main layout -->
+      <div class="dash-layout">
+        <div class="dash-left">
+          <!-- Table campagnes -->
+          <div class="sh">
+            <span class="sh-title">Mes campagnes en cours</span>
+            <button class="btn-secondary">Voir toutes les campagnes</button>
+          </div>
+          <div class="card tbl-card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Campagne</th>
+                  <th>Périmètre</th>
+                  <th>Deadline</th>
+                  <th>Score</th>
+                  <th>Statut</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="showView('campagne', document.querySelectorAll('.nav-item')[1])">
+                  <td><strong>IDF Complète 2026</strong></td>
+                  <td>Paris · Île-de-France · Paris-Saclay</td>
+                  <td style="color:#e53e3e;font-weight:600">J+8<br><span style="font-size:11px;color:#718096">30/06/2026</span></td>
+                  <td><span class="score-tag st-green">9,4 / 10</span></td>
+                  <td><span class="badge b-vert">Très chaud</span></td>
+                  <td class="td-arrow">›</td>
+                </tr>
+                <tr onclick="showView('campagne', document.querySelectorAll('.nav-item')[1])">
+                  <td><strong>National Écoles 2026</strong></td>
+                  <td>Lyon · Lille · Bordeaux · Marseille · Nancy</td>
+                  <td>J+20<br><span style="font-size:11px;color:#718096">08/07/2026</span></td>
+                  <td><span class="score-tag st-green">9,2 / 10</span></td>
+                  <td><span class="badge b-bleu">En cours</span></td>
+                  <td class="td-arrow">›</td>
+                </tr>
+                <tr>
+                  <td><strong>Paris-Saclay Juin 2026</strong></td>
+                  <td>Cluster Paris-Saclay · 29 cibles</td>
+                  <td style="color:#38a169;font-weight:600">Terminé<br><span style="font-size:11px;color:#718096">15/06/2026</span></td>
+                  <td><span class="score-tag st-green">9,1 / 10</span></td>
+                  <td><span class="badge b-vert">Validé</span></td>
+                  <td class="td-arrow">›</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Bottom 3-col -->
+          <div class="bottom3">
+            <div class="card chart-card">
+              <div class="ct-title">Répartition par segment</div>
+              <div class="donut-wrap">
+                <canvas id="donutChart"></canvas>
+              </div>
+              <div>
+                <div class="legend-item"><div class="leg-dot" style="background:#1a6b7e"></div>Business schools<span class="leg-count">29</span></div>
+                <div class="legend-item"><div class="leg-dot" style="background:#4a90d9"></div>CPGE<span class="leg-count">9</span></div>
+                <div class="legend-item"><div class="leg-dot" style="background:#38a169"></div>Santé<span class="leg-count">15</span></div>
+                <div class="legend-item"><div class="leg-dot" style="background:#805ad5"></div>Universités<span class="leg-count">22</span></div>
+              </div>
+            </div>
+            <div class="card chart-card">
+              <div class="ct-title">Scores BANT moyens par cluster</div>
+              <div class="bar-item"><div class="bar-lbl"><span>Lyon / Rhône-Alpes</span><span style="font-weight:600">9,8</span></div><div class="bar-track"><div class="bar-fill" style="width:98%"></div></div></div>
+              <div class="bar-item"><div class="bar-lbl"><span>Paris IDF</span><span style="font-weight:600">9,6</span></div><div class="bar-track"><div class="bar-fill" style="width:96%"></div></div></div>
+              <div class="bar-item"><div class="bar-lbl"><span>Lille / HdF</span><span style="font-weight:600">9,5</span></div><div class="bar-track"><div class="bar-fill" style="width:95%"></div></div></div>
+              <div class="bar-item"><div class="bar-lbl"><span>Bordeaux / NA</span><span style="font-weight:600">9,2</span></div><div class="bar-track"><div class="bar-fill" style="width:92%"></div></div></div>
+              <div class="bar-item"><div class="bar-lbl"><span>Marseille / PACA</span><span style="font-weight:600">9,0</span></div><div class="bar-track"><div class="bar-fill" style="width:90%"></div></div></div>
+              <div class="bar-item"><div class="bar-lbl"><span>Nancy / Grand Est</span><span style="font-weight:600">8,7</span></div><div class="bar-track"><div class="bar-fill" style="width:87%"></div></div></div>
+            </div>
+            <div class="card chart-card">
+              <div class="ct-title">Actions recommandées</div>
+              <div class="act-item"><div class="act-ico">📞</div><div class="act-txt">Appeler IFSI CHU Lyon — urgent semaine 1</div><div class="act-arr">›</div></div>
+              <div class="act-item"><div class="act-ico">📧</div><div class="act-txt">Envoyer email relance CPGE Lyon</div><div class="act-arr">›</div></div>
+              <div class="act-item"><div class="act-ico">🔗</div><div class="act-txt">LinkedIn Kedge Bordeaux J+3</div><div class="act-arr">›</div></div>
+              <div class="act-item"><div class="act-ico">📅</div><div class="act-txt">Planifier /analyse à J+30</div><div class="act-arr">›</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="dash-right">
+          <div class="card alert-panel-card">
+            <div class="ap-title red">⚠ Alertes critiques</div>
+            <div class="alert-item r">
+              <div class="al-ico">📁</div>
+              <div>
+                <div class="al-name">Contacts manquants</div>
+                <div class="al-desc">7 établissements sans interlocuteur nominatif identifié</div>
+                <a class="ap-link">Voir les dossiers concernés →</a>
+              </div>
+              <div class="al-cnt r">7</div>
+            </div>
+            <div class="alert-item o">
+              <div class="al-ico">⏰</div>
+              <div>
+                <div class="al-name">Relances J+7 dues</div>
+                <div class="al-desc">2 établissements sans réponse depuis la vague 1</div>
+                <a class="ap-link">Voir les dossiers concernés →</a>
+              </div>
+              <div class="al-cnt o">2</div>
+            </div>
+            <div class="alert-item y">
+              <div class="al-ico">📊</div>
+              <div>
+                <div class="al-name">Analytics J+30 à prévoir</div>
+                <div class="al-desc">3 campagnes en attente de rapport de performance</div>
+                <a class="ap-link">Voir les dossiers concernés →</a>
+              </div>
+              <div class="al-cnt y">3</div>
+            </div>
+          </div>
+
+          <div class="card alert-panel-card">
+            <div class="ap-title teal">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Échéances à venir
+            </div>
+            <div class="ech-item"><span class="ech-date">24/06</span><span class="ech-name">Relances CPGE Lyon</span><span class="ech-tag">J+7</span></div>
+            <div class="ech-item"><span class="ech-date">26/06</span><span class="ech-name">Email IFSI CHU Bordeaux</span><span class="ech-tag">J+3</span></div>
+            <div class="ech-item"><span class="ech-date">30/06</span><span class="ech-name">Fin Vague 1 IDF</span><span class="ech-tag" style="color:#e53e3e">Deadline</span></div>
+            <div class="ech-item"><span class="ech-date">01/09</span><span class="ech-name">Lancement Vague 2</span><span class="ech-tag">National</span></div>
+            <a class="ap-link" style="margin-top:8px;display:block">Voir toutes les échéances →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW : CAMPAGNE DÉTAIL ═══ -->
+    <div class="view" id="view-campagne">
+      <div class="camp-layout">
+        <!-- LEFT : plan -->
+        <div>
+          <div class="card plan-card">
+            <div class="plan-header">
+              <div class="plan-header-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4a5568" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Plan de campagne
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" stroke-width="2" style="cursor:pointer"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <button class="btn-secondary">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Réorganiser
+              </button>
+            </div>
+            <div class="plan-row">
+              <span class="drag">⠿</span><div class="pnum">1</div>
+              <div class="pinfo"><div class="pname">Ciblage commercial</div><div class="psub">Identification et priorisation des cibles A/B/C</div></div>
+              <span class="badge b-vert">Validé</span>
+              <span class="parr">›</span>
+            </div>
+            <div class="plan-row">
+              <span class="drag">⠿</span><div class="pnum">2</div>
+              <div class="pinfo"><div class="pname">Qualification BANT</div><div class="psub">Scoring Budget · Autorité · Besoin · Timing</div></div>
+              <span class="badge b-vert">Validé</span>
+              <span class="parr">›</span>
+            </div>
+            <div class="plan-row">
+              <span class="drag">⠿</span><div class="pnum">3</div>
+              <div class="pinfo"><div class="pname">Emails de prospection</div><div class="psub">8 emails · Vague 1 (juin) + Vague 2 (sept.)</div></div>
+              <span class="badge b-vert">Validé</span>
+              <span class="parr">›</span>
+            </div>
+            <div class="plan-row">
+              <span class="drag">⠿</span><div class="pnum">4</div>
+              <div class="pinfo"><div class="pname">Séquences LinkedIn</div><div class="psub">8 séquences J+0 / J+3 / J+10</div></div>
+              <span class="badge b-vert">Validé</span>
+              <span class="parr">›</span>
+            </div>
+            <div class="plan-row">
+              <span class="drag">⠿</span><div class="pnum">5</div>
+              <div class="pinfo"><div class="pname">Scripts d'appel</div><div class="psub">3 scripts + tableau 6 objections</div></div>
+              <span class="badge b-vert">Validé</span>
+              <span class="parr">›</span>
+            </div>
+            <div class="plan-row">
+              <span class="drag">⠿</span><div class="pnum">6</div>
+              <div class="pinfo"><div class="pname">Relances J+3 / J+7 / J+15</div><div class="psub">14 prospects Très chaud · séquences par établissement</div></div>
+              <span class="badge b-vert">Validé</span>
+              <span class="parr">›</span>
+            </div>
+            <div class="plan-row">
+              <span class="drag">⠿</span><div class="pnum">7</div>
+              <div class="pinfo"><div class="pname">Deck commercial</div><div class="psub">15 slides · SCQA · Audit gratuit CTA</div></div>
+              <span class="badge b-vert">Validé</span>
+              <span class="parr">›</span>
+            </div>
+            <div class="plan-row">
+              <span class="drag">⠿</span><div class="pnum">8</div>
+              <div class="pinfo"><div class="pname">Analytics J+30</div><div class="psub">Rapport de performance · mi-juillet 2026</div></div>
+              <span class="badge b-violet">À rédiger</span>
+              <span class="parr">›</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div>
+          <div class="reinf-card">
+            <div class="reinf-warn">⚠ Section à compléter</div>
+            <div class="reinf-h">Analytics J+30</div>
+            <div class="reinf-p">Cette étape est déterminante pour mesurer la performance de la campagne et optimiser les messages pour la vague 2 de septembre.</div>
+            <div class="reinf-reco">Recommandations clés</div>
+            <div class="reinf-item">
+              <div class="reinf-ico">📊</div>
+              <div class="reinf-txt"><b>Mesurer le taux de réponse</b>Collecter les taux de réponse email et LinkedIn par segment et par cluster.</div>
+            </div>
+            <div class="reinf-item">
+              <div class="reinf-ico">📞</div>
+              <div class="reinf-txt"><b>Objection dominante</b>Identifier l'objection principale par segment pour ajuster les scripts vague 2.</div>
+            </div>
+            <div class="reinf-item">
+              <div class="reinf-ico">📅</div>
+              <div class="reinf-txt"><b>Convertir les RDV</b>Bascule des contacts sans RDV en séquence de relance vague 2 (septembre).</div>
+            </div>
+            <div class="reinf-bon">Mi-juillet 2026 est la fenêtre idéale pour lancer l'analyse avant la coupure estivale.</div>
+            <button class="reinf-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Lancer l'analyse J+30
+            </button>
+          </div>
+
+          <div class="card conf-card">
+            <div class="conf-title">Conformité globale de la campagne</div>
+            <div class="conf-ring">
+              <div class="conf-ring-wrap">
+                <canvas id="confChart"></canvas>
+              </div>
+              <div>
+                <div class="conf-pct">87%</div>
+                <div class="conf-sub">7 / 8 livrables produits</div>
+                <div class="conf-next" style="margin-top:6px">Prochaine étape<br><b>Analytics J+30</b></div>
+              </div>
+            </div>
+            <div class="conf-row"><span class="conf-lbl">Ciblage</span><span class="conf-val g">✓</span><span class="conf-arr">›</span></div>
+            <div class="conf-row"><span class="conf-lbl">Qualification BANT</span><span class="conf-val g">100%</span><span class="conf-arr">›</span></div>
+            <div class="conf-row"><span class="conf-lbl">Emails</span><span class="conf-val g">100%</span><span class="conf-arr">›</span></div>
+            <div class="conf-row"><span class="conf-lbl">LinkedIn</span><span class="conf-val g">100%</span><span class="conf-arr">›</span></div>
+            <div class="conf-row"><span class="conf-lbl">Scripts d'appel</span><span class="conf-val g">100%</span><span class="conf-arr">›</span></div>
+            <div class="conf-row"><span class="conf-lbl">Relances</span><span class="conf-val g">100%</span><span class="conf-arr">›</span></div>
+            <div class="conf-row"><span class="conf-lbl">Analytics J+30</span><span class="conf-val r">0%</span><span class="conf-arr">›</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW : QUALIFICATION BANT ═══ -->
+    <div class="view" id="view-qualification">
+      <div class="qual-layout">
+        <div>
+          <!-- BANT Header card -->
+          <div class="card bant-card">
+            <div class="bant-top">
+              <div class="bant-info">
+                <div class="bant-name">EM Lyon — Analyse BANT</div>
+                <div class="bant-ref">Réf : national-ecoles-2026 · Segment : Grandes écoles de commerce</div>
+                <div class="bant-buyer">Cluster Lyon / Rhône-Alpes · Écully (69)</div>
+                <div class="bant-tags">
+                  <span class="btag">Vague 1 — Juin 2026</span>
+                  <span class="btag">Priorité A</span>
+                  <span class="btag deadline">Deadline Vague 1 : J+8</span>
+                  <span class="btag">Concours BCE</span>
+                </div>
+              </div>
+              <div class="gauge-area">
+                <div class="gauge-canvas-wrap">
+                  <canvas id="gaugeChart" width="140" height="140"></canvas>
+                </div>
+                <div class="gauge-num">10 <span style="font-size:14px;color:#a0aec0;font-weight:400">/ 10</span></div>
+                <div class="gauge-chip">Très chaud</div>
+              </div>
+            </div>
+            <!-- Sub-scores -->
+            <div class="subscore-grid">
+              <div class="sbox">
+                <div class="sbox-lbl">B</div>
+                <div class="sbox-name">Budget</div>
+                <div class="sbox-val">2,5 <span class="sbox-max">/ 2,5</span></div>
+                <div class="sbox-bar"><div class="sbox-fill fill-green" style="width:100%"></div></div>
+              </div>
+              <div class="sbox">
+                <div class="sbox-lbl">A</div>
+                <div class="sbox-name">Autorité</div>
+                <div class="sbox-val">2,5 <span class="sbox-max">/ 2,5</span></div>
+                <div class="sbox-bar"><div class="sbox-fill fill-green" style="width:100%"></div></div>
+              </div>
+              <div class="sbox">
+                <div class="sbox-lbl">N</div>
+                <div class="sbox-name">Besoin</div>
+                <div class="sbox-val">2,5 <span class="sbox-max">/ 2,5</span></div>
+                <div class="sbox-bar"><div class="sbox-fill fill-green" style="width:100%"></div></div>
+              </div>
+              <div class="sbox">
+                <div class="sbox-lbl">T</div>
+                <div class="sbox-name">Timing</div>
+                <div class="sbox-val">2,5 <span class="sbox-max">/ 2,5</span></div>
+                <div class="sbox-bar"><div class="sbox-fill fill-green" style="width:100%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matrix -->
+          <div class="card matrix-card">
+            <div class="matrix-head">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a5568" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Top 10 — Matrice des priorités Vague 1
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Établissement</th>
+                  <th>Segment</th>
+                  <th>Cluster</th>
+                  <th>Score</th>
+                  <th>Canal</th>
+                  <th>État</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>1</td><td><strong>EM Lyon</strong></td><td>Commerce</td><td>Lyon/RA</td><td><span class="score-tag st-green">10</span></td><td>Appel + Email</td><td class="etat-risk">Non contacté</td><td>Appel sortant →</td></tr>
+                <tr><td>2</td><td><strong>IFSI CHU Lyon</strong></td><td>Santé</td><td>Lyon/RA</td><td><span class="score-tag st-green">10</span></td><td>Email + Appel</td><td class="etat-risk">Non contacté</td><td>Email J+1 →</td></tr>
+                <tr><td>3</td><td><strong>IFSI CHU Lille</strong></td><td>Santé</td><td>Lille/HdF</td><td><span class="score-tag st-green">10</span></td><td>Email + Appel</td><td class="etat-partial">En cours</td><td>Relance J+3 →</td></tr>
+                <tr><td>4</td><td><strong>Kedge Bordeaux</strong></td><td>Commerce</td><td>Bordeaux/NA</td><td><span class="score-tag st-green">10</span></td><td>Email réseau</td><td class="etat-risk">Non contacté</td><td>Email réseau →</td></tr>
+                <tr><td>5</td><td><strong>Skema Lille</strong></td><td>Commerce</td><td>Lille/HdF</td><td><span class="score-tag st-green">10</span></td><td>Appel + Email</td><td class="etat-risk">Non contacté</td><td>Appel sortant →</td></tr>
+                <tr><td>6</td><td><strong>IFSI CHU Bordeaux</strong></td><td>Santé</td><td>Bordeaux/NA</td><td><span class="score-tag st-green">10</span></td><td>Email + Appel</td><td class="etat-risk">Non contacté</td><td>Email J+1 →</td></tr>
+                <tr><td>7</td><td><strong>ICN Nancy</strong></td><td>Commerce</td><td>Nancy/GE</td><td><span class="score-tag st-green">10</span></td><td>Appel + Email</td><td class="etat-risk">Non contacté</td><td>Appel sortant →</td></tr>
+                <tr><td>8</td><td><strong>Grenoble EM</strong></td><td>Commerce</td><td>Lyon/RA</td><td><span class="score-tag st-green">10</span></td><td>Appel + Email</td><td class="etat-ok">RDV fixé</td><td>Confirmer →</td></tr>
+                <tr><td>9</td><td><strong>CPGE Lyon</strong></td><td>CPGE</td><td>Lyon/RA</td><td><span class="score-tag st-green">9,5</span></td><td>Email dir. études</td><td class="etat-risk">Non contacté</td><td>Email J+2 →</td></tr>
+                <tr><td>10</td><td><strong>CPGE Lille</strong></td><td>CPGE</td><td>Lille/HdF</td><td><span class="score-tag st-green">9,5</span></td><td>Email dir. études</td><td class="etat-risk">Non contacté</td><td>Email J+2 →</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div>
+          <div class="card risk-panel-card">
+            <div class="rp-title">Risques majeurs</div>
+            <div class="risk-item">
+              <div class="rk-ico r">⏱</div>
+              <div class="rk-body">
+                <div class="rk-name">Deadline Vague 1</div>
+                <div class="rk-desc">J+8 seulement pour déclencher les 10 appels sortants prioritaires.</div>
+                <span class="rk-lvl h">Élevé</span>
+              </div>
+            </div>
+            <div class="risk-item">
+              <div class="rk-ico o">📍</div>
+              <div class="rk-body">
+                <div class="rk-name">Présence régionale</div>
+                <div class="rk-desc">Objection principale attendue : « Êtes-vous présents dans notre région ? »</div>
+                <span class="rk-lvl m">Moyen</span>
+              </div>
+            </div>
+            <div class="risk-item">
+              <div class="rk-ico o">🔒</div>
+              <div class="rk-body">
+                <div class="rk-name">Marchés CHU</div>
+                <div class="rk-desc">IFSI CHU peuvent nécessiter un bon de commande ou marché public.</div>
+                <span class="rk-lvl m">Moyen</span>
+              </div>
+            </div>
+            <a class="ap-link" style="margin-top:8px;display:block">Voir tous les risques (5) →</a>
+          </div>
+
+          <div class="card pts-forts">
+            <div class="pf-title">Points forts</div>
+            <div class="pf-item"><span class="pf-check">✓</span>Score BANT maximal (10/10) sur 7 établissements</div>
+            <div class="pf-item"><span class="pf-check">✓</span>Cluster Lyon/RA concentre 3 cibles A simultanées</div>
+            <div class="pf-item"><span class="pf-check">✓</span>Argument mutualisation réseau Kedge (Bordeaux + Marseille)</div>
+            <div class="pf-item"><span class="pf-check">✓</span>Douleur opérationnelle maximale en juin — fenêtre idéale</div>
+            <div class="pf-item"><span class="pf-check">✓</span>0 cible Froide sur les 32 établissements qualifiés</div>
+          </div>
+
+          <div class="next-card">
+            <div class="nc-pre">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Prochaine étape recommandée
+            </div>
+            <div class="nc-title">Lancer les appels sortants bloc IFSI CHU en semaine 1 simultanément</div>
+            <button class="nc-btn">
+              Lancer les scripts d'appel
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW : LIVRABLES (placeholder) ═══ -->
+    <div class="view" id="view-livrables">
+      <div class="card" style="padding:40px;text-align:center;color:#718096">
+        <div style="font-size:40px;margin-bottom:12px">📁</div>
+        <div style="font-size:16px;font-weight:600;color:#2d3748;margin-bottom:6px">Bibliothèque de livrables</div>
+        <div style="font-size:13px">18 livrables produits — emails, scripts, séquences LinkedIn, decks, relances</div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW : PLANNING (placeholder) ═══ -->
+    <div class="view" id="view-planning">
+      <div class="card" style="padding:40px;text-align:center;color:#718096">
+        <div style="font-size:40px;margin-bottom:12px">📅</div>
+        <div style="font-size:16px;font-weight:600;color:#2d3748;margin-bottom:6px">Planning des campagnes</div>
+        <div style="font-size:13px">Vague 1 : juin 2026 · Vague 2 : septembre 2026 · Analytics : mi-juillet 2026</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- CONSEIL BAR -->
+  <div class="conseil">
+    <span class="conseil-icon">✨</span>
+    <span class="conseil-txt"><strong>Conseil SPC</strong> — Lancez les appels IFSI CHU (Lyon, Lille, Bordeaux, Marseille) simultanément en semaine 1. Une réponse positive crée une référence CHU exploitable pour les autres dès J+5.</span>
+    <button class="conseil-btn">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+      Voir les critères BANT
+    </button>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ── Navigation ──
+function showView(name, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  const titles = {
+    dashboard: ['Tableau de bord', 'Actif'],
+    campagne: ['IDF Complète 2026 — Campagne détail', 'En cours'],
+    qualification: ['Qualification BANT — Top prospects', 'Actif'],
+    livrables: ['Bibliothèque de livrables', 'Actif'],
+    planning: ['Planning des campagnes', 'Actif']
+  };
+  if (titles[name]) {
+    document.getElementById('tb-title').textContent = titles[name][0];
+    document.getElementById('tb-badge').textContent = titles[name][1];
+  }
+}
+
+// ── Charts ──
+window.addEventListener('DOMContentLoaded', () => {
+  // Donut chart
+  new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Business schools', 'CPGE', 'Santé', 'Universités'],
+      datasets: [{
+        data: [29, 9, 15, 22],
+        backgroundColor: ['#1a6b7e', '#4a90d9', '#38a169', '#805ad5'],
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      cutout: '70%',
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` } } }
+    }
+  });
+
+  // Conformité ring
+  new Chart(document.getElementById('confChart'), {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [87, 13],
+        backgroundColor: ['#1a6b7e', '#edf2f7'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      cutout: '72%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } }
+    }
+  });
+
+  // Gauge semi-circle
+  const gaugeCtx = document.getElementById('gaugeChart').getContext('2d');
+  new Chart(gaugeCtx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [100, 0],
+        backgroundColor: ['#38a169', '#edf2f7'],
+        borderWidth: 0,
+        circumference: 180,
+        rotation: -90
+      }]
+    },
+    options: {
+      cutout: '68%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } }
+    }
+  });
+});
+</script>
+</body>
+</html>
