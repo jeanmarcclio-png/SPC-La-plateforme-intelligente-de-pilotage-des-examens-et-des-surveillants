@@ -1,0 +1,18 @@
+{
+  "name": "SPC Cockpit",
+  "short_name": "SPC",
+  "description": "Pilotage prospection B2B surveillance d'examens",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0d1e2e",
+  "theme_color": "#1a6b7e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
