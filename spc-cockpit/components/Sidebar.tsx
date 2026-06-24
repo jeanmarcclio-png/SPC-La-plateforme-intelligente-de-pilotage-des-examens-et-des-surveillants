@@ -76,20 +76,94 @@ const navItems2 = [
   },
 ];
 
+const mobileNavItems = [
+  {
+    href: "/dashboard",
+    label: "Accueil",
+    icon: (active: boolean) => (
+      <svg viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? 0 : 1.8} className="w-[22px] h-[22px]">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" opacity={active ? 1 : 0.9} />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" opacity={active ? 0.6 : 0.9} />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" opacity={active ? 0.6 : 0.9} />
+        <rect x="14" y="14" width="7" height="7" rx="1.5" opacity={active ? 1 : 0.9} />
+      </svg>
+    ),
+  },
+  {
+    href: "/qualification",
+    label: "Prospects",
+    icon: (active: boolean) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} className="w-[22px] h-[22px]">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    href: "/campagnes",
+    label: "Campagnes",
+    icon: (active: boolean) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} className="w-[22px] h-[22px]">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" strokeLinejoin="round" />
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" strokeLinecap="round" />
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    href: "/planning",
+    label: "Planning",
+    icon: (active: boolean) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} className="w-[22px] h-[22px]">
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <line x1="16" y1="2" x2="16" y2="6" strokeLinecap="round" />
+        <line x1="8" y1="2" x2="8" y2="6" strokeLinecap="round" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+        {active && <rect x="7" y="14" width="3" height="3" rx="0.5" fill="currentColor" stroke="none" />}
+        {active && <rect x="11" y="14" width="3" height="3" rx="0.5" fill="currentColor" stroke="none" />}
+      </svg>
+    ),
+  },
+  {
+    href: "/livrables",
+    label: "Livrables",
+    icon: (active: boolean) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} className="w-[22px] h-[22px]">
+        <polyline points="9 11 12 14 22 4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+];
+
 export function MobileNav() {
   const pathname = usePathname();
-  const allItems = [...navItems, ...navItems2].slice(0, 5);
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t border-white/10" style={{ background: "#0d1e2e" }}>
-      {allItems.map((item) => {
-        const active = pathname === item.href;
-        return (
-          <Link key={item.href} href={item.href} className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[9px] transition-colors ${active ? "text-[#4a90d9]" : "text-[#7a8fa0]"}`}>
-            {item.icon}
-            <span className="leading-none">{item.label.split(" ")[0]}</span>
-          </Link>
-        );
-      })}
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.08]"
+      style={{ background: "#0d1e2e", paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
+      <div className="flex h-[58px]">
+        {mobileNavItems.map((item) => {
+          const active = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex-1 flex flex-col items-center justify-center gap-[3px] text-[10px] font-medium tracking-tight transition-colors relative ${
+                active ? "text-[#4a90d9]" : "text-[#5a6e82]"
+              }`}
+            >
+              {active && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2.5px] rounded-full bg-[#4a90d9]" />
+              )}
+              {item.icon(active)}
+              <span className="leading-none">{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }
