@@ -15,6 +15,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SPC Cockpit — Pilotage Prospection B2B",
   description: "Plateforme de pilotage commercial SPC — surveillance d'examens",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "SPC Cockpit",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "theme-color": "#1a6b7e",
+  },
 };
 
 export default function RootLayout({

@@ -15,9 +15,107 @@ export default async function QualificationPage() {
 
   return (
     <>
-      <Topbar context="Qualification BANT" title="Analyse Go / No-Go" badge={`${tresChaudes} Très chaud`} badgeColor="orange" />
+      <div className="hidden md:block">
+        <Topbar context="Qualification BANT" title="Analyse Go / No-Go" badge={`${tresChaudes} Très chaud`} badgeColor="orange" />
+      </div>
 
-      <main className="flex-1 overflow-y-auto p-5">
+      <main className="flex-1 overflow-y-auto">
+
+        {/* ── MOBILE ── */}
+        <div className="md:hidden">
+          <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+            <div className="text-[22px] font-extrabold text-white">Qualification BANT</div>
+            <div className="text-[13px] text-white/70 mt-0.5">{tresChaudes} très chaud · {prospects.length} prospects</div>
+          </div>
+          <div className="p-4 space-y-3">
+            {/* Hero prospect */}
+            <div className="bg-white rounded-2xl border border-[#1a6b7e]/30 shadow-sm p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="text-[11px] text-gray-400 mb-0.5">Priorité A · Vague 1</div>
+                  <div className="text-[18px] font-extrabold text-gray-900">{emLyon.nom}</div>
+                  <div className="text-[12px] text-gray-500">{emLyon.segment} · {emLyon.cluster}</div>
+                </div>
+                <Badge variant="tres-chaud">{emLyon.niveau}</Badge>
+              </div>
+              {/* BANT score ring */}
+              <div className="flex items-center gap-4 mb-3">
+                <div className="relative w-16 h-16 flex-shrink-0">
+                  <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90">
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#edf2f7" strokeWidth="3.5" />
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#1a6b7e" strokeWidth="3.5"
+                      strokeDasharray={`${(emLyon.scoreBANT / 10) * 100} 100`} strokeLinecap="round" />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-[17px] font-extrabold text-gray-900">{emLyon.scoreBANT}</span>
+                  </div>
+                </div>
+                <div className="flex-1 grid grid-cols-2 gap-1.5">
+                  {[{ label: "Budget", icon: "💰" }, { label: "Autorité", icon: "👤" }, { label: "Besoin", icon: "🎯" }, { label: "Timing", icon: "⏱" }].map((b) => (
+                    <div key={b.label} className="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                      <span className="text-[11px]">{b.icon}</span>
+                      <div className="text-[10px] text-gray-400">{b.label}</div>
+                      <div className="text-[13px] font-extrabold text-[#1a6b7e]">2.5</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[12px] mb-3 pt-3 border-t border-gray-100">
+                <div><div className="text-gray-400 mb-0.5">Interlocuteur</div><div className="font-semibold text-gray-700">{emLyon.interlocuteur}</div></div>
+                <div><div className="text-gray-400 mb-0.5">Canal</div><div className="font-semibold text-gray-700">{emLyon.canal}</div></div>
+              </div>
+              <Link href="/planning" className="block w-full py-3 rounded-xl text-center text-[13px] font-bold text-white" style={{ background: "#1a6b7e" }}>
+                📞 Lancer le script d&apos;appel →
+              </Link>
+            </div>
+
+            {/* Points forts / risques */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-red-50 rounded-2xl p-3 border border-red-100">
+                <div className="text-[11px] font-bold text-red-600 mb-2">⚠ Risques</div>
+                {["Interlocuteur non nominatif", "Cycle décision long", "Prestataire sortant"].map((r, i) => (
+                  <div key={i} className="text-[11px] text-gray-600 py-1 border-b border-red-100/50 last:border-0">· {r}</div>
+                ))}
+              </div>
+              <div className="bg-teal-50 rounded-2xl p-3 border border-teal-100">
+                <div className="text-[11px] font-bold text-[#1a6b7e] mb-2">✓ Points forts</div>
+                {["1 200+ étudiants", "Budget confirmé", "Tiers-temps non géré", "Réseau CHU x4"].map((p, i) => (
+                  <div key={i} className="text-[11px] text-gray-600 py-1 border-b border-teal-100/50 last:border-0">· {p}</div>
+                ))}
+              </div>
+            </div>
+
+            {/* Prospects list mobile */}
+            <div className="text-[14px] font-bold text-gray-900 pt-1">Tous les prospects</div>
+            {prospects.map((p) => {
+              const bantColor = p.scoreBANT >= 8 ? "#38a169" : p.scoreBANT >= 5 ? "#f6ad55" : "#fc8181";
+              const niveauBg = p.niveau === "Très chaud" ? "bg-red-100 text-red-700" : p.niveau === "Chaud" ? "bg-orange-100 text-orange-700" : p.niveau === "Tiède" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500";
+              return (
+                <div key={p.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[14px] font-bold text-gray-900 truncate">{p.nom}</div>
+                      <div className="text-[11px] text-gray-400">{p.segment} · {p.cluster}</div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${niveauBg}`}>{p.niveau}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 flex-1">
+                      <div className="h-1.5 flex-1 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${(p.scoreBANT / 10) * 100}%`, background: bantColor }} />
+                      </div>
+                      <span className="text-[13px] font-extrabold text-gray-800 min-w-[20px]">{p.scoreBANT}</span>
+                    </div>
+                    <span className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full ${p.statut === "Converti" ? "bg-green-100 text-green-700" : p.statut === "RDV fixé" ? "bg-orange-100 text-orange-700" : p.statut === "En cours" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-500"}`}>{p.statut}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── DESKTOP ── */}
+        <div className="hidden md:block p-5">
         {/* Top: Selected prospect hero + BANT sub-scores */}
         <div className="grid grid-cols-[1fr_280px] gap-4 mb-4">
           {/* Hero card */}
@@ -155,9 +253,12 @@ export default async function QualificationPage() {
             </div>
           </div>
         </div>
+        </div>
       </main>
 
-      <ConseilBar text="EM Lyon, IFSI CHU Lyon, Kedge Bordeaux : 3 prospects à 10/10 — démarrer les appels lundi matin pour maximiser le taux de conversion Vague 1." />
+      <div className="hidden md:block">
+        <ConseilBar text="EM Lyon, IFSI CHU Lyon, Kedge Bordeaux : 3 prospects à 10/10 — démarrer les appels lundi matin pour maximiser le taux de conversion Vague 1." />
+      </div>
     </>
   );
 }
