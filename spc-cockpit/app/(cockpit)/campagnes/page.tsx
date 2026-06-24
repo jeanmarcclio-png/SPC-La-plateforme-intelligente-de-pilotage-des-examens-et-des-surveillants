@@ -28,9 +28,56 @@ export default async function CampagnesPage() {
 
   return (
     <>
-      <Topbar context="Prospection B2B" title="Mes campagnes" badge={`${campagnes.filter(c => c.statut === "Actif" || c.statut === "En cours").length} actives`} badgeColor="green" />
+      <div className="hidden md:block">
+        <Topbar context="Prospection B2B" title="Mes campagnes" badge={`${campagnes.filter(c => c.statut === "Actif" || c.statut === "En cours").length} actives`} badgeColor="green" />
+      </div>
 
-      <main className="flex-1 overflow-y-auto p-5">
+      <main className="flex-1 overflow-y-auto">
+
+        {/* ── MOBILE ── */}
+        <div className="md:hidden">
+          <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+            <div className="text-[22px] font-extrabold text-white">Mes campagnes</div>
+            <div className="text-[13px] text-white/70 mt-0.5">{campagnes.filter(c => c.statut === "Actif" || c.statut === "En cours").length} actives · {campagnes.length} au total</div>
+          </div>
+          <div className="p-4 space-y-3">
+            {campagnes.map((c) => (
+              <div key={c.id} className={`bg-white rounded-2xl border shadow-sm p-4 ${c.statut === "Actif" ? "border-[#1a6b7e]/40" : "border-gray-100"}`}>
+                <div className="flex items-start justify-between mb-3">
+                  <div><div className="text-[15px] font-extrabold text-gray-900">{c.nom}</div><div className="text-[12px] text-gray-400 mt-0.5">{c.perimetre}</div></div>
+                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${c.statut === "Actif" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{c.statut}</span>
+                </div>
+                <div className="flex gap-3 mb-3">
+                  <div className="flex-1 text-center bg-gray-50 rounded-xl py-2"><div className="text-[22px] font-extrabold text-gray-900">{c.nombreProspects}</div><div className="text-[10px] text-gray-400">cibles</div></div>
+                  <div className="flex-1 text-center bg-teal-50 rounded-xl py-2"><div className="text-[22px] font-extrabold text-[#1a6b7e]">{c.tresChaudes}</div><div className="text-[10px] text-[#1a6b7e]">très chaud</div></div>
+                  <div className="flex-1 text-center bg-gray-50 rounded-xl py-2"><div className="text-[22px] font-extrabold text-gray-900">{c.score}</div><div className="text-[10px] text-gray-400">score/10</div></div>
+                </div>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-gray-400">Deadline : {c.deadline}</span>
+                  <span className={`font-bold ${c.joursRestants <= 10 && c.joursRestants > 0 ? "text-red-600" : "text-[#1a6b7e]"}`}>{c.joursRestants > 0 ? `J - ${c.joursRestants}` : "Terminé"}</span>
+                </div>
+              </div>
+            ))}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[14px] font-bold text-gray-900">Livrables</span>
+                <span className="text-[12px] text-gray-400">{validated}/{total} validés</span>
+              </div>
+              <div className="space-y-2">
+                {livraisonIDF.map((l, i) => (
+                  <div key={l.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${l.statut === "Validé" ? "bg-[#1a6b7e] text-white" : "bg-gray-100 text-gray-400"}`}>{l.statut === "Validé" ? "✓" : i + 1}</div>
+                    <span className="text-[12.5px] text-gray-700 flex-1 truncate">{l.nom}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${l.statut === "Validé" ? "bg-teal-50 text-[#1a6b7e]" : "bg-gray-100 text-gray-400"}`}>{l.statut}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── DESKTOP ── */}
+        <div className="hidden md:block p-5">
         {/* Campaign cards */}
         <div className="flex items-center justify-between mb-3">
           <span className="text-[14px] font-semibold text-gray-900">{campagnes.length} campagne{campagnes.length > 1 ? "s" : ""}</span>
@@ -176,9 +223,11 @@ export default async function CampagnesPage() {
             </div>
           </div>
         </div>
+        </div>{/* end desktop */}
       </main>
-
-      <ConseilBar text="La campagne IDF Complète 2026 est à J-8 de sa deadline. Priorité : décrocher les RDV EM Lyon, CPGE Versailles et IFSI CHU Paris cette semaine." />
+      <div className="hidden md:block">
+        <ConseilBar text="La campagne IDF Complète 2026 est à J-8 de sa deadline. Priorité : décrocher les RDV EM Lyon, CPGE Versailles et IFSI CHU Paris cette semaine." />
+      </div>
     </>
   );
 }
