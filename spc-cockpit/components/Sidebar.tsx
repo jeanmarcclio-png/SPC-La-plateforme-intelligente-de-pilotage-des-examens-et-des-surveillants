@@ -76,11 +76,29 @@ const navItems2 = [
   },
 ];
 
+export function MobileNav() {
+  const pathname = usePathname();
+  const allItems = [...navItems, ...navItems2].slice(0, 5);
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t border-white/10" style={{ background: "#0d1e2e" }}>
+      {allItems.map((item) => {
+        const active = pathname === item.href;
+        return (
+          <Link key={item.href} href={item.href} className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[9px] transition-colors ${active ? "text-[#4a90d9]" : "text-[#7a8fa0]"}`}>
+            {item.icon}
+            <span className="leading-none">{item.label.split(" ")[0]}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-[220px] flex-shrink-0 flex flex-col" style={{ background: "#0d1e2e" }}>
+    <aside className="hidden md:flex w-[220px] flex-shrink-0 flex-col" style={{ background: "#0d1e2e" }}>
       {/* Logo */}
       <div className="px-[18px] py-[18px] pb-3.5 border-b border-white/[0.08]">
         <div className="flex items-center gap-2 text-white font-extrabold text-base tracking-tight">
