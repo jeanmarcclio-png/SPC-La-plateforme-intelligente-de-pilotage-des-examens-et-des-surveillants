@@ -54,7 +54,7 @@ export default async function LivrablesPage() {
                   <tr key={l.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 cursor-pointer">
                     <td className="px-4 py-3 text-[13px] font-semibold text-gray-800">{l.nom}</td>
                     <td className="px-4 py-3 text-[12.5px] text-gray-500">{l.description}</td>
-                    <td className="px-4 py-3 text-[12.5px] text-gray-600">IDF Complète 2026</td>
+                    <td className="px-4 py-3 text-[12.5px] text-gray-600">{l.campagneNom ?? "—"}</td>
                     <td className="px-4 py-3"><LivrableStatutSelect id={l.id} statut={l.statut} /></td>
                     <td className="px-4 py-3 text-right text-[11.5px]">
                       {l.fichier ? <Link href="/campagnes" className="text-[#4a90d9] hover:underline">Ouvrir →</Link> : <span className="text-gray-300">—</span>}

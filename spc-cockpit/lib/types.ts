@@ -54,6 +54,8 @@ export interface Livrable {
   description: string;
   statut: StatutLivrable;
   fichier?: string;
+  campagneId?: string;
+  campagneNom?: string;
 }
 
 export interface Alerte {

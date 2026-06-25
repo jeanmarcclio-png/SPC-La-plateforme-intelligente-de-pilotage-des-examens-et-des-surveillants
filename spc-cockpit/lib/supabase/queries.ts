@@ -69,7 +69,7 @@ export async function getEcheances() {
 export async function getLivrables(campagneId?: string): Promise<Livrable[]> {
   try {
     const supabase = await createClient();
-    let query = supabase.from("livrables").select("*").order("id");
+    let query = supabase.from("livrables").select("*, campagnes(nom)").order("id");
     if (campagneId) query = query.eq("campagne_id", campagneId);
     const { data, error } = await query;
     if (error || !data?.length) return mockLivrables;
@@ -79,6 +79,8 @@ export async function getLivrables(campagneId?: string): Promise<Livrable[]> {
       description: r.description ?? "",
       statut: r.statut as Livrable["statut"],
       fichier: r.fichier ?? undefined,
+      campagneId: r.campagne_id ?? undefined,
+      campagneNom: (r.campagnes as { nom?: string } | null)?.nom ?? undefined,
     }));
   } catch {
     return mockLivrables;

@@ -59,14 +59,14 @@ export const top10Prospects: Prospect[] = [
 ];
 
 export const livraisonIDF: Livrable[] = [
-  { id: 1, nom: "Ciblage commercial", description: "Identification et priorisation des cibles A/B/C", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_ciblage.md" },
-  { id: 2, nom: "Qualification BANT", description: "Scoring Budget · Autorité · Besoin · Timing", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_qualification.md" },
-  { id: 3, nom: "Emails de prospection", description: "8 emails · Vague 1 (juin) + Vague 2 (sept.)", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_emails.md" },
-  { id: 4, nom: "Séquences LinkedIn", description: "8 séquences J+0 / J+3 / J+10", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_linkedin.md" },
-  { id: 5, nom: "Scripts d'appel", description: "3 scripts + tableau 6 objections", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_script-appel.md" },
-  { id: 6, nom: "Relances J+3 / J+7 / J+15", description: "14 prospects Très chaud · séquences par établissement", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_relances.md" },
-  { id: 7, nom: "Deck commercial", description: "15 slides · SCQA · Audit gratuit CTA", statut: "Validé", fichier: "decks/2026-06-17_idf-complete-2026_deck.md" },
-  { id: 8, nom: "Analytics J+30", description: "Rapport de performance · mi-juillet 2026", statut: "À rédiger" },
+  { id: 1, nom: "Ciblage commercial", description: "Identification et priorisation des cibles A/B/C", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_ciblage.md", campagneId: "idf-2026", campagneNom: "IDF Complète 2026" },
+  { id: 2, nom: "Qualification BANT", description: "Scoring Budget · Autorité · Besoin · Timing", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_qualification.md", campagneId: "idf-2026", campagneNom: "IDF Complète 2026" },
+  { id: 3, nom: "Emails de prospection", description: "8 emails · Vague 1 (juin) + Vague 2 (sept.)", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_emails.md", campagneId: "idf-2026", campagneNom: "IDF Complète 2026" },
+  { id: 4, nom: "Séquences LinkedIn", description: "8 séquences J+0 / J+3 / J+10", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_linkedin.md", campagneId: "idf-2026", campagneNom: "IDF Complète 2026" },
+  { id: 5, nom: "Scripts d'appel", description: "3 scripts + tableau 6 objections", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_script-appel.md", campagneId: "idf-2026", campagneNom: "IDF Complète 2026" },
+  { id: 6, nom: "Relances J+3 / J+7 / J+15", description: "14 prospects Très chaud · séquences par établissement", statut: "Validé", fichier: "prospects/2026-06-17_idf-complete-2026_relances.md", campagneId: "idf-2026", campagneNom: "IDF Complète 2026" },
+  { id: 7, nom: "Deck commercial", description: "15 slides · SCQA · Audit gratuit CTA", statut: "Validé", fichier: "decks/2026-06-17_idf-complete-2026_deck.md", campagneId: "idf-2026", campagneNom: "IDF Complète 2026" },
+  { id: 8, nom: "Analytics J+30", description: "Rapport de performance · mi-juillet 2026", statut: "À rédiger", campagneId: "idf-2026", campagneNom: "IDF Complète 2026" },
 ];
 
 export const alertes: Alerte[] = [
