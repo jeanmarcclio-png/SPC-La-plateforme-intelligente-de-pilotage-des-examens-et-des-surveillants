@@ -1,6 +1,7 @@
 import { Sidebar, MobileNav } from "@/components/Sidebar";
 import { Toaster } from "@/components/Toast";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 export default function CockpitLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -14,6 +15,7 @@ export default function CockpitLayout({ children }: { children: React.ReactNode 
       <MobileNav />
       <Toaster />
       <PullToRefresh />
+      <GlobalSearch />
     </div>
   );
 }
