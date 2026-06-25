@@ -33,10 +33,93 @@ export default async function ReportingPage() {
     "Converti": "#1a6b7e",
   };
 
+  const tauxConversion = totalProspects > 0 ? Math.round(((rdvFixes + convertis) / totalProspects) * 100) : 0;
+
   return (
     <>
-      <Topbar context="Reporting" title="Performance commerciale" badge={`${campagnes.length} campagnes`} badgeColor="blue" />
-      <main className="flex-1 overflow-y-auto p-5">
+      <div className="hidden md:block">
+        <Topbar context="Reporting" title="Performance commerciale" badge={`${campagnes.length} campagnes`} badgeColor="blue" />
+      </div>
+      <main className="flex-1 overflow-y-auto">
+
+        {/* ── MOBILE ── */}
+        <div className="md:hidden">
+          <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+            <div className="text-[22px] font-extrabold text-white">Performance</div>
+            <div className="text-[13px] text-white/70 mt-0.5">{campagnes.length} campagnes · {totalProspects} prospects</div>
+          </div>
+          <div className="p-4 space-y-3">
+            {/* 2×2 KPIs */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: "Prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, color: "text-gray-900" },
+                { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, color: "text-orange-500" },
+                { label: "Score BANT", value: `${scoreMoyen}/10`, sub: "moyenne", color: "text-[#1a6b7e]" },
+                { label: "RDV + Convertis", value: rdvFixes + convertis, sub: `taux ${tauxConversion}%`, color: "text-green-600" },
+              ].map((kpi, i) => (
+                <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                  <div className={`text-[26px] font-extrabold leading-none ${kpi.color}`}>{kpi.value}</div>
+                  <div className="text-[12px] font-semibold text-gray-700 mt-1.5">{kpi.label}</div>
+                  <div className="text-[11px] text-gray-400 mt-0.5">{kpi.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Statuts pipeline */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <div className="text-[13px] font-bold text-gray-800 mb-3">Pipeline prospects</div>
+              <div className="space-y-3">
+                {statutEntries.map(([s, count]) => (
+                  <div key={s}>
+                    <div className="flex justify-between text-[12px] mb-1">
+                      <span className="text-gray-600">{s}</span>
+                      <span className="font-bold text-gray-800">{count} <span className="font-normal text-gray-400">({Math.round((count / totalProspects) * 100)}%)</span></span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${(count / totalProspects) * 100}%`, background: statutColors[s] ?? "#a0aec0" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Segments */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <div className="text-[13px] font-bold text-gray-800 mb-3">Segments</div>
+              <div className="space-y-2">
+                {segmentRepartition.map((s) => (
+                  <div key={s.nom} className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: s.color }} />
+                    <span className="text-[12px] text-gray-600 flex-1">{s.nom}</span>
+                    <span className="text-[13px] font-bold text-gray-800">{s.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Livrables */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <div className="flex justify-between mb-3">
+                <div className="text-[13px] font-bold text-gray-800">Livrables</div>
+                <span className="text-[12px] text-gray-400">{livrablesValides}/{livrables.length} validés</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
+                <div className="h-full rounded-full bg-[#1a6b7e] transition-all" style={{ width: `${(livrablesValides / (livrables.length || 1)) * 100}%` }} />
+              </div>
+              <div className="space-y-1.5">
+                {livrables.map((l) => (
+                  <div key={l.id} className="flex items-center justify-between text-[12px]">
+                    <span className="text-gray-700 truncate flex-1">{l.nom}</span>
+                    <span className={`ml-2 flex-shrink-0 font-semibold ${l.statut === "Validé" ? "text-[#1a6b7e]" : l.statut === "En cours" ? "text-blue-600" : "text-gray-400"}`}>{l.statut === "Validé" ? "✓" : l.statut === "En cours" ? "…" : "—"}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── DESKTOP ── */}
+        <div className="hidden md:block p-5">
 
         {/* KPIs */}
         <div className="grid grid-cols-4 gap-3.5 mb-5">
@@ -152,8 +235,11 @@ export default async function ReportingPage() {
           </div>
         </div>
 
+        </div>{/* end desktop */}
       </main>
-      <ConseilBar text={`${tresChaudes} prospects très chaud · score BANT moyen ${scoreMoyen}/10 · ${rdvFixes} RDV fixés. Lancez /analyse à J+30 pour le rapport complet.`} />
+      <div className="hidden md:block">
+        <ConseilBar text={`${tresChaudes} prospects très chaud · score BANT moyen ${scoreMoyen}/10 · ${rdvFixes} RDV fixés. Lancez /analyse à J+30 pour le rapport complet.`} />
+      </div>
     </>
   );
 }
