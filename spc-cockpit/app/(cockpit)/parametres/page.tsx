@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { CompteSection, NotificationsSection } from "@/components/ParametresForm";
 import { TeamSection } from "@/components/TeamSection";
 import { getNotificationPrefs, getTeamMembers } from "@/app/actions/parametres";
+import { PushNotificationToggle } from "@/components/PushNotificationBanner";
 
 export default async function ParametresPage() {
   const supabase = await createClient();
@@ -64,6 +65,9 @@ export default async function ParametresPage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
               <div className="text-[13px] font-bold text-gray-800 mb-3">Notifications</div>
               <NotificationsSection saved={notifPrefs} />
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <PushNotificationToggle />
+              </div>
             </div>
 
             {/* Intégrations */}
