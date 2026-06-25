@@ -10,6 +10,7 @@ export interface Prospect {
   segment: Segment;
   cluster: string;
   scoreBANT: number;
+  bant?: ScoreBANT;
   niveau: NiveauChaleur;
   priorite: "A" | "B" | "C";
   vague: Vague;

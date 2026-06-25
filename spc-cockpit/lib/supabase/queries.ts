@@ -94,31 +94,43 @@ export async function getProspects(campagneId?: string): Promise<Prospect[]> {
     if (campagneId) query = query.eq("campagne_id", campagneId);
     const { data, error } = await query;
     if (error || !data?.length) return mockProspects;
-    return data.map((r) => ({
-      id: r.id,
-      nom: r.nom,
-      email: r.email ?? undefined,
-      segment: r.segment as Prospect["segment"],
-      cluster: r.cluster ?? "",
-      scoreBANT: r.score_bant ?? 0,
-      niveau: r.niveau as Prospect["niveau"],
-      priorite: r.priorite as Prospect["priorite"],
-      vague: r.vague as Prospect["vague"],
-      interlocuteur: r.interlocuteur ?? "",
-      canal: r.canal ?? "",
-      statut: r.statut as Prospect["statut"],
-      action: r.action ?? "",
-      notes: r.notes ?? undefined,
-      telephone: r.telephone ?? undefined,
-      contactPrincipal: r.contact_principal ?? undefined,
-      fonctionContact: r.fonction_contact ?? undefined,
-      prochaineRelance: r.prochaine_relance ?? undefined,
-      valeurPotentielle: r.valeur_potentielle ?? undefined,
-      derniereInteraction: r.derniere_interaction ?? undefined,
-      nbEtudiants: r.nb_etudiants ?? undefined,
-      sessionsParAn: r.sessions_par_an ?? undefined,
-      campagneId: r.campagne_id ?? undefined,
-    }));
+    return data.map((r) => {
+      const score = r.score_bant ?? 0;
+      const quarter = Math.round((score / 4) * 10) / 10;
+      return {
+        id: r.id,
+        nom: r.nom,
+        email: r.email ?? undefined,
+        segment: r.segment as Prospect["segment"],
+        cluster: r.cluster ?? "",
+        scoreBANT: score,
+        bant: (r.score_budget != null || r.score_autorite != null || r.score_besoin != null || r.score_timing != null)
+          ? {
+              budget: r.score_budget ?? quarter,
+              autorite: r.score_autorite ?? quarter,
+              besoin: r.score_besoin ?? quarter,
+              timing: r.score_timing ?? quarter,
+            }
+          : undefined,
+        niveau: r.niveau as Prospect["niveau"],
+        priorite: r.priorite as Prospect["priorite"],
+        vague: r.vague as Prospect["vague"],
+        interlocuteur: r.interlocuteur ?? "",
+        canal: r.canal ?? "",
+        statut: r.statut as Prospect["statut"],
+        action: r.action ?? "",
+        notes: r.notes ?? undefined,
+        telephone: r.telephone ?? undefined,
+        contactPrincipal: r.contact_principal ?? undefined,
+        fonctionContact: r.fonction_contact ?? undefined,
+        prochaineRelance: r.prochaine_relance ?? undefined,
+        valeurPotentielle: r.valeur_potentielle ?? undefined,
+        derniereInteraction: r.derniere_interaction ?? undefined,
+        nbEtudiants: r.nb_etudiants ?? undefined,
+        sessionsParAn: r.sessions_par_an ?? undefined,
+        campagneId: r.campagne_id ?? undefined,
+      };
+    });
   } catch {
     return mockProspects;
   }

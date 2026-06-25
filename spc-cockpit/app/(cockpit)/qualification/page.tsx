@@ -52,11 +52,16 @@ export default async function QualificationPage() {
                   </div>
                 </div>
                 <div className="flex-1 grid grid-cols-2 gap-1.5">
-                  {[{ label: "Budget", icon: "💰" }, { label: "Autorité", icon: "👤" }, { label: "Besoin", icon: "🎯" }, { label: "Timing", icon: "⏱" }].map((b) => (
+                  {[
+                    { label: "Budget", icon: "💰", score: emLyon.bant?.budget ?? emLyon.scoreBANT / 4 },
+                    { label: "Autorité", icon: "👤", score: emLyon.bant?.autorite ?? emLyon.scoreBANT / 4 },
+                    { label: "Besoin", icon: "🎯", score: emLyon.bant?.besoin ?? emLyon.scoreBANT / 4 },
+                    { label: "Timing", icon: "⏱", score: emLyon.bant?.timing ?? emLyon.scoreBANT / 4 },
+                  ].map((b) => (
                     <div key={b.label} className="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
                       <span className="text-[11px]">{b.icon}</span>
                       <div className="text-[10px] text-gray-400">{b.label}</div>
-                      <div className="text-[13px] font-extrabold text-[#1a6b7e]">2.5</div>
+                      <div className="text-[13px] font-extrabold text-[#1a6b7e]">{b.score}</div>
                     </div>
                   ))}
                 </div>
@@ -114,10 +119,10 @@ export default async function QualificationPage() {
             {/* BANT breakdown */}
             <div className="grid grid-cols-4 gap-3 mt-2">
               {[
-                { label: "Budget", score: 2.5, max: 2.5, icon: "💰" },
-                { label: "Autorité", score: 2.5, max: 2.5, icon: "👤" },
-                { label: "Besoin", score: 2.5, max: 2.5, icon: "🎯" },
-                { label: "Timing", score: 2.5, max: 2.5, icon: "⏱" },
+                { label: "Budget", score: emLyon.bant?.budget ?? emLyon.scoreBANT / 4, max: 2.5, icon: "💰" },
+                { label: "Autorité", score: emLyon.bant?.autorite ?? emLyon.scoreBANT / 4, max: 2.5, icon: "👤" },
+                { label: "Besoin", score: emLyon.bant?.besoin ?? emLyon.scoreBANT / 4, max: 2.5, icon: "🎯" },
+                { label: "Timing", score: emLyon.bant?.timing ?? emLyon.scoreBANT / 4, max: 2.5, icon: "⏱" },
               ].map((b) => (
                 <div key={b.label} className="bg-gray-50 rounded-lg p-3 text-center">
                   <div className="text-lg mb-1">{b.icon}</div>
