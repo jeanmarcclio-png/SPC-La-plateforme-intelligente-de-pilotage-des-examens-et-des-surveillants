@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateLivrableStatut } from "@/app/actions/livrables";
+import { showToast } from "@/components/Toast";
 
 const STATUTS = ["À rédiger", "En cours", "Validé", "À renforcer"] as const;
 
@@ -19,7 +20,10 @@ export function LivrableStatutSelect({ id, statut }: { id: number; statut: strin
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.target.value;
     setCurrent(next);
-    startTransition(() => updateLivrableStatut(id, next));
+    startTransition(async () => {
+      await updateLivrableStatut(id, next);
+      showToast(`Livrable → ${next}`);
+    });
   }
 
   return (

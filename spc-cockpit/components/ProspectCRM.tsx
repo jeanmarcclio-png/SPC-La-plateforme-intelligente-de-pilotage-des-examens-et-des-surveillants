@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateProspectStatut, updateProspectNotes, deleteProspect } from "@/app/actions/prospects";
+import { showToast } from "@/components/Toast";
 
 const STATUTS = ["Non contacté", "En cours", "RDV fixé", "Converti"] as const;
 
@@ -19,7 +20,10 @@ export function ProspectStatutSelect({ id, statut }: { id: string; statut: strin
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.target.value;
     setCurrent(next);
-    startTransition(() => updateProspectStatut(id, next));
+    startTransition(async () => {
+      await updateProspectStatut(id, next);
+      showToast(`Statut → ${next}`);
+    });
   }
 
   return (
