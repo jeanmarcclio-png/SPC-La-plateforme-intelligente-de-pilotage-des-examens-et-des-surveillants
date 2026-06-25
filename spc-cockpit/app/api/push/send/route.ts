@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import webpush from "web-push";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT ?? "mailto:admin@spc.fr",
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "",
-  process.env.VAPID_PRIVATE_KEY ?? ""
-);
-
 export async function POST(req: NextRequest) {
+  const webpush = (await import("web-push")).default;
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT ?? "mailto:admin@spc.fr",
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "",
+    process.env.VAPID_PRIVATE_KEY ?? ""
+  );
   try {
     const body = await req.json().catch(() => ({}));
     const title   = body.title   ?? "SPC Cockpit";
