@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
 import { createClient } from "@/lib/supabase/server";
 
+export const runtime = "nodejs";
+
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT ?? "mailto:admin@spc.fr",
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "",
