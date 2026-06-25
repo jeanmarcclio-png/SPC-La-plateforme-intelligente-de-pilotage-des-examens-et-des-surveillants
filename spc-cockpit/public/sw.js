@@ -1,4 +1,4 @@
-const CACHE = "spc-v2";
+const CACHE = "spc-v3";
 
 const SHELL = [
   "/offline",
@@ -83,5 +83,33 @@ self.addEventListener("fetch", (event) => {
   // Everything else → network-first with cache fallback
   event.respondWith(
     fetch(request).catch(() => caches.match(request))
+  );
+});
+
+// ─── Push notifications ───────────────────────────────────────────────────────
+self.addEventListener("push", (event) => {
+  const data = event.data?.json() ?? {};
+  const title = data.title ?? "SPC Cockpit";
+  const options = {
+    body:      data.body   ?? "Vous avez des relances à traiter.",
+    icon:      "/globe.svg",
+    badge:     "/globe.svg",
+    tag:       data.tag    ?? "spc",
+    renotify:  true,
+    data:      { url: data.url ?? "/dashboard" },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url ?? "/dashboard";
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if ("focus" in client) return client.focus();
+      }
+      return clients.openWindow(url);
+    })
   );
 });
