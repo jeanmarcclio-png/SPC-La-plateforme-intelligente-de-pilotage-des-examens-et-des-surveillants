@@ -21,8 +21,82 @@ export default async function ParametresPage() {
 
   return (
     <>
-      <Topbar context="Configuration" title="Paramètres" />
-      <main className="flex-1 overflow-y-auto p-5">
+      <div className="hidden md:block">
+        <Topbar context="Configuration" title="Paramètres" />
+      </div>
+      <main className="flex-1 overflow-y-auto">
+
+        {/* ── MOBILE ── */}
+        <div className="md:hidden">
+          <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+            <div className="text-[22px] font-extrabold text-white">Paramètres</div>
+            <div className="text-[13px] text-white/70 mt-0.5">{displayName}</div>
+          </div>
+          <div className="p-4 space-y-3">
+
+            {/* Compte */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div className="text-[13px] font-bold text-gray-800 mb-3">Compte utilisateur</div>
+              <CompteSection email={email} displayName={displayName} />
+            </div>
+
+            {/* Campagne active */}
+            {campagneActive && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                <div className="text-[13px] font-bold text-gray-800 mb-3">Campagne active</div>
+                <div className="space-y-2.5">
+                  {[
+                    { label: "Nom", value: campagneActive.nom },
+                    { label: "Deadline", value: campagneActive.deadline },
+                    { label: "Prospects", value: `${campagneActive.nombreProspects} cibles` },
+                    { label: "Score BANT", value: `${campagneActive.score} / 10` },
+                  ].map((row) => (
+                    <div key={row.label} className="flex justify-between text-[12.5px]">
+                      <span className="text-gray-400">{row.label}</span>
+                      <span className="font-semibold text-gray-700">{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Notifications */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div className="text-[13px] font-bold text-gray-800 mb-3">Notifications</div>
+              <NotificationsSection saved={notifPrefs} />
+            </div>
+
+            {/* Intégrations */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div className="text-[13px] font-bold text-gray-800 mb-3">Intégrations</div>
+              <div className="space-y-2.5">
+                {[
+                  { label: "Base de données", value: "Supabase", ok: true },
+                  { label: "Déploiement", value: "Vercel", ok: true },
+                  { label: "Agent IA", value: "Claude", ok: true },
+                  { label: "Analytics J+30", value: "À configurer", ok: false },
+                ].map((row) => (
+                  <div key={row.label} className="flex justify-between text-[12.5px]">
+                    <span className="text-gray-400">{row.label}</span>
+                    <span className={`font-semibold flex items-center gap-1.5 ${row.ok ? "text-[#1a6b7e]" : "text-gray-400"}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${row.ok ? "bg-green-400" : "bg-gray-300"}`} />
+                      {row.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Équipe */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div className="text-[13px] font-bold text-gray-800 mb-3">Équipe</div>
+              <TeamSection members={teamMembers} />
+            </div>
+          </div>
+        </div>
+
+        {/* ── DESKTOP ── */}
+        <div className="hidden md:block p-5">
         <div className="grid grid-cols-2 gap-4">
 
           {/* Compte utilisateur */}
@@ -92,8 +166,11 @@ export default async function ParametresPage() {
           </div>
 
         </div>
+        </div>{/* end desktop */}
       </main>
-      <ConseilBar text="Modifiez votre nom affiché et votre mot de passe directement depuis cette page. Les toggles de notifications seront connectés à Supabase à la prochaine version." />
+      <div className="hidden md:block">
+        <ConseilBar text="Modifiez votre nom affiché et votre mot de passe directement depuis cette page. Les toggles de notifications seront connectés à Supabase à la prochaine version." />
+      </div>
     </>
   );
 }
