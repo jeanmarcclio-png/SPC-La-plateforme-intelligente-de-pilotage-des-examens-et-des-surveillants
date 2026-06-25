@@ -92,8 +92,8 @@ self.addEventListener("push", (event) => {
   const title = data.title ?? "SPC Cockpit";
   const options = {
     body:      data.body   ?? "Vous avez des relances à traiter.",
-    icon:      "/globe.svg",
-    badge:     "/globe.svg",
+    icon:      "/icon-192.png",
+    badge:     "/icon-192.png",
     tag:       data.tag    ?? "spc",
     renotify:  true,
     data:      { url: data.url ?? "/dashboard" },
