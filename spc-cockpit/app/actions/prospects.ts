@@ -7,6 +7,8 @@ function revalidateAll() {
   revalidatePath("/qualification");
   revalidatePath("/dashboard");
   revalidatePath("/campagnes");
+  revalidatePath("/reporting");
+  revalidatePath("/planning");
 }
 
 export async function updateProspectStatut(id: string, statut: string) {

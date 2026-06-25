@@ -7,6 +7,7 @@ function revalidateAll() {
   revalidatePath("/livrables");
   revalidatePath("/campagnes");
   revalidatePath("/dashboard");
+  revalidatePath("/reporting");
 }
 
 export async function updateLivrableStatut(id: number, statut: string) {

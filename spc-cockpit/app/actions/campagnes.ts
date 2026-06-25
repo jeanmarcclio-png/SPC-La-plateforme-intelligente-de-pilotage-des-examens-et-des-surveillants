@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 function revalidateAll() {
   revalidatePath("/campagnes");
   revalidatePath("/dashboard");
+  revalidatePath("/reporting");
+  revalidatePath("/qualification");
 }
 
 export async function updateCampagneStatut(id: string, statut: string) {
