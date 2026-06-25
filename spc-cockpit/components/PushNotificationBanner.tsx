@@ -18,7 +18,7 @@ export function PushNotificationBanner() {
     const isStandalone = ("standalone" in navigator) && (navigator as { standalone?: boolean }).standalone;
     if (isIOS && !isStandalone) {
       setPerm("ios-browser");
-      if (!localStorage.getItem("spc-push-dismissed")) setDismissed(false);
+      setDismissed(false); // Always show iOS instructions — no localStorage check
       return;
     }
 
@@ -185,25 +185,31 @@ export function PushNotificationToggle() {
     perm === "denied"  ? "text-red-500"   : "text-gray-400";
 
   return (
-    <div className="flex items-center justify-between py-1">
-      <div>
-        <div className="text-[13px] font-semibold text-gray-800">Notifications push</div>
-        <div className={`text-[11px] mt-0.5 ${statusColor}`}>{statusLabel}</div>
-        {isIOS && !isStandalone && (
-          <div className="text-[10.5px] text-gray-400 mt-1">
-            Partage Safari ↑ → Sur l&apos;écran d&apos;accueil
-          </div>
+    <div className="py-1 space-y-2">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-[13px] font-semibold text-gray-800">Notifications push</div>
+          <div className={`text-[11px] mt-0.5 ${statusColor}`}>{statusLabel}</div>
+        </div>
+        {perm !== "granted" && perm !== "denied" && perm !== "unsupported" && !isIOS && (
+          <button
+            onClick={subscribe}
+            disabled={loading}
+            className="text-[12px] font-bold text-white px-4 py-2 rounded-xl disabled:opacity-60"
+            style={{ background: "#1a6b7e" }}
+          >
+            {loading ? "…" : "Activer"}
+          </button>
         )}
       </div>
-      {perm !== "granted" && perm !== "denied" && perm !== "unsupported" && !(isIOS && !isStandalone) && (
-        <button
-          onClick={subscribe}
-          disabled={loading}
-          className="text-[12px] font-bold text-white px-4 py-2 rounded-xl disabled:opacity-60"
-          style={{ background: "#1a6b7e" }}
-        >
-          {loading ? "…" : "Activer"}
-        </button>
+      {isIOS && !isStandalone && (
+        <div className="bg-blue-50 rounded-xl p-3 text-[11.5px] text-gray-700 space-y-1">
+          <div className="font-bold text-[#1a6b7e] mb-1.5">Comment activer sur iPhone :</div>
+          <div>1. Dans Safari → appuyez sur <strong>↑</strong> (bouton partage)</div>
+          <div>2. Choisissez <strong>"Sur l'écran d'accueil"</strong></div>
+          <div>3. Ouvrez l'app depuis la nouvelle icône</div>
+          <div>4. Revenez dans Paramètres → bouton Activer apparaît</div>
+        </div>
       )}
     </div>
   );
