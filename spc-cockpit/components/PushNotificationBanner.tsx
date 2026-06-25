@@ -191,11 +191,11 @@ export function PushNotificationToggle() {
           <div className="text-[13px] font-semibold text-gray-800">Notifications push</div>
           <div className={`text-[11px] mt-0.5 ${statusColor}`}>{statusLabel}</div>
         </div>
-        {perm !== "denied" && perm !== "unsupported" && !(isIOS && !isStandalone) && (
+        {perm !== "denied" && perm !== "unsupported" && (
           <button
             onClick={subscribe}
-            disabled={loading}
-            className="text-[12px] font-bold text-white px-4 py-2 rounded-xl disabled:opacity-60"
+            disabled={loading || (isIOS && !isStandalone)}
+            className="text-[12px] font-bold text-white px-4 py-2 rounded-xl disabled:opacity-40"
             style={{ background: "#1a6b7e" }}
           >
             {loading ? "…" : perm === "granted" ? "Renouveler" : "Activer"}
