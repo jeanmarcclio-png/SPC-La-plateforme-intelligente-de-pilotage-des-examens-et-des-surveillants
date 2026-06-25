@@ -30,9 +30,7 @@ export default async function LivrablesPage() {
                   <div className="text-[13px] font-semibold text-gray-800 truncate">{l.nom}</div>
                   <div className="text-[11px] text-gray-400 truncate">{l.description}</div>
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${l.statut === "Validé" ? "bg-teal-50 text-[#1a6b7e]" : l.statut === "En cours" ? "bg-blue-50 text-blue-600" : "bg-gray-100 text-gray-500"}`}>
-                  {l.statut}
-                </span>
+                <LivrableStatutSelect id={l.id} statut={l.statut} />
               </div>
             ))}
           </div>

@@ -37,15 +37,20 @@ export default async function CampagnesPage() {
         {/* ── MOBILE ── */}
         <div className="md:hidden">
           <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
-            <div className="text-[22px] font-extrabold text-white">Mes campagnes</div>
-            <div className="text-[13px] text-white/70 mt-0.5">{campagnes.filter(c => c.statut === "Actif" || c.statut === "En cours").length} actives · {campagnes.length} au total</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[22px] font-extrabold text-white">Mes campagnes</div>
+                <div className="text-[13px] text-white/70 mt-0.5">{campagnes.filter(c => c.statut === "Actif" || c.statut === "En cours").length} actives · {campagnes.length} au total</div>
+              </div>
+              <AddCampagneButton />
+            </div>
           </div>
           <div className="p-4 space-y-3">
             {campagnes.map((c) => (
               <div key={c.id} className={`bg-white rounded-2xl border shadow-sm p-4 ${c.statut === "Actif" ? "border-[#1a6b7e]/40" : "border-gray-100"}`}>
                 <div className="flex items-start justify-between mb-3">
                   <div><div className="text-[15px] font-extrabold text-gray-900">{c.nom}</div><div className="text-[12px] text-gray-400 mt-0.5">{c.perimetre}</div></div>
-                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${c.statut === "Actif" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{c.statut}</span>
+                  <CampagneStatutSelect id={c.id} statut={c.statut} />
                 </div>
                 <div className="flex gap-3 mb-3">
                   <div className="flex-1 text-center bg-gray-50 rounded-xl py-2"><div className="text-[22px] font-extrabold text-gray-900">{c.nombreProspects}</div><div className="text-[10px] text-gray-400">cibles</div></div>

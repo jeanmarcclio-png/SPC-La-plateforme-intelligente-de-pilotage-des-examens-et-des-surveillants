@@ -17,8 +17,13 @@ export default async function PlanningPage() {
         {/* ── MOBILE ── */}
         <div className="md:hidden">
           <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
-            <div className="text-[22px] font-extrabold text-white">Planning</div>
-            <div className="text-[13px] text-white/70 mt-0.5">{urgentes > 0 ? `${urgentes} échéance${urgentes > 1 ? "s" : ""} urgente${urgentes > 1 ? "s" : ""}` : "Calendrier opérationnel"}</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[22px] font-extrabold text-white">Planning</div>
+                <div className="text-[13px] text-white/70 mt-0.5">{urgentes > 0 ? `${urgentes} échéance${urgentes > 1 ? "s" : ""} urgente${urgentes > 1 ? "s" : ""}` : "Calendrier opérationnel"}</div>
+              </div>
+              <AddEcheanceButton />
+            </div>
           </div>
           <div className="p-4 space-y-2">
             {echeances.length === 0 && (
@@ -26,7 +31,7 @@ export default async function PlanningPage() {
             )}
             {echeances.map((e) => (
               <div key={e.id} className={`flex items-center gap-3 p-4 rounded-2xl border ${e.urgent ? "border-red-200 bg-red-50" : "border-gray-100 bg-white"}`}>
-                <div className={`w-12 text-center flex-shrink-0`}>
+                <div className="w-12 text-center flex-shrink-0">
                   <div className={`text-[17px] font-extrabold ${e.urgent ? "text-red-600" : "text-[#1a6b7e]"}`}>{e.date.split(" ")[0]}</div>
                   <div className="text-[10px] text-gray-400">{e.date.split(" ").slice(1).join(" ")}</div>
                 </div>
@@ -35,6 +40,7 @@ export default async function PlanningPage() {
                   <span className={`text-[11px] font-semibold ${e.urgent ? "text-red-500" : "text-[#4a90d9]"}`}>{e.tag}</span>
                 </div>
                 {e.urgent && <span className="text-[10px] font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full flex-shrink-0">URGENT</span>}
+                <EcheanceActions echeance={e} />
               </div>
             ))}
           </div>
