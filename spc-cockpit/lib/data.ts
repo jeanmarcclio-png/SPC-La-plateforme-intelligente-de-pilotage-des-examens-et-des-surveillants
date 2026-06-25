@@ -1,12 +1,21 @@
 import type { Campagne, Prospect, Livrable, Alerte } from "./types";
 
+export function calcJoursRestants(deadline: string): number {
+  const [d, m, y] = deadline.split("/").map(Number);
+  if (!d || !m || !y) return 0;
+  const target = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.ceil((target.getTime() - today.getTime()) / 86400000));
+}
+
 export const campagnes: Campagne[] = [
   {
     id: "idf-2026",
     nom: "IDF Complète 2026",
     perimetre: "Paris · Île-de-France · Paris-Saclay",
     deadline: "30/06/2026",
-    joursRestants: 8,
+    joursRestants: calcJoursRestants("30/06/2026"),
     score: 9.4,
     statut: "Actif",
     nombreProspects: 43,
@@ -17,7 +26,7 @@ export const campagnes: Campagne[] = [
     nom: "National Écoles 2026",
     perimetre: "Lyon · Lille · Bordeaux · Marseille · Nancy",
     deadline: "08/07/2026",
-    joursRestants: 20,
+    joursRestants: calcJoursRestants("08/07/2026"),
     score: 9.2,
     statut: "En cours",
     nombreProspects: 32,
@@ -28,7 +37,7 @@ export const campagnes: Campagne[] = [
     nom: "Paris-Saclay Juin 2026",
     perimetre: "Cluster Paris-Saclay · 29 cibles",
     deadline: "15/06/2026",
-    joursRestants: 0,
+    joursRestants: calcJoursRestants("15/06/2026"),
     score: 9.1,
     statut: "Terminé",
     nombreProspects: 29,

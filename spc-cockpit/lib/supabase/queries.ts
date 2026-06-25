@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Campagne, Alerte, Livrable, Prospect } from "@/lib/types";
+import { calcJoursRestants } from "@/lib/data";
 import {
   campagnes as mockCampagnes,
   alertes as mockAlertes,
@@ -20,7 +21,7 @@ export async function getCampagnes(): Promise<Campagne[]> {
       nom: r.nom,
       perimetre: r.perimetre ?? "",
       deadline: r.deadline ?? "",
-      joursRestants: r.jours_restants ?? 0,
+      joursRestants: r.deadline ? calcJoursRestants(r.deadline) : (r.jours_restants ?? 0),
       score: r.score ?? 0,
       statut: r.statut ?? "En cours",
       nombreProspects: r.nombre_prospects ?? 0,
