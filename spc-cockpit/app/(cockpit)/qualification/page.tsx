@@ -7,6 +7,7 @@ import { getProspects } from "@/lib/supabase/queries";
 import { ProspectStatutSelect, ProspectNotesInput } from "@/components/ProspectCRM";
 import { ProspectFilteredTable } from "@/components/ProspectFilteredTable";
 import { MobileProspectList } from "@/components/MobileProspectList";
+import { AddProspectButton } from "@/components/AddProspectModal";
 
 export default async function QualificationPage() {
   const prospects = await getProspects();
@@ -69,6 +70,17 @@ export default async function QualificationPage() {
               <div className="grid grid-cols-2 gap-2 text-[12px] mb-3 pt-3 border-t border-gray-100">
                 <div><div className="text-gray-400 mb-0.5">Interlocuteur</div><div className="font-semibold text-gray-700">{emLyon.interlocuteur}</div></div>
                 <div><div className="text-gray-400 mb-0.5">Canal</div><div className="font-semibold text-gray-700">{emLyon.canal}</div></div>
+              </div>
+              {/* Statut + Notes inline sur mobile */}
+              <div className="grid grid-cols-2 gap-2 mb-3 pt-3 border-t border-gray-100 text-[12px]">
+                <div>
+                  <div className="text-gray-400 mb-1">Statut</div>
+                  <ProspectStatutSelect id={emLyon.id} statut={emLyon.statut} />
+                </div>
+                <div>
+                  <div className="text-gray-400 mb-1">Notes</div>
+                  <ProspectNotesInput id={emLyon.id} notes={emLyon.notes} />
+                </div>
               </div>
               <Link href="/planning" className="block w-full py-3 rounded-xl text-center text-[13px] font-bold text-white" style={{ background: "#1a6b7e" }}>
                 📞 Lancer le script d&apos;appel →
