@@ -1,4 +1,4 @@
-const CACHE = "spc-v3";
+const CACHE = "spc-v4";
 
 const SHELL = [
   "/offline",
