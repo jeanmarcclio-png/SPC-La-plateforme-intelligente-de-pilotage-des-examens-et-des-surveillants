@@ -6,6 +6,7 @@ import { clusterScores } from "@/lib/data";
 import { getProspects } from "@/lib/supabase/queries";
 import { ProspectStatutSelect, ProspectNotesInput } from "@/components/ProspectCRM";
 import { ProspectFilteredTable } from "@/components/ProspectFilteredTable";
+import { MobileProspectList } from "@/components/MobileProspectList";
 
 export default async function QualificationPage() {
   const prospects = await getProspects();
@@ -86,31 +87,7 @@ export default async function QualificationPage() {
             </div>
 
             {/* Prospects list mobile */}
-            <div className="text-[14px] font-bold text-gray-900 pt-1">Tous les prospects</div>
-            {prospects.map((p) => {
-              const bantColor = p.scoreBANT >= 8 ? "#38a169" : p.scoreBANT >= 5 ? "#f6ad55" : "#fc8181";
-              const niveauBg = p.niveau === "Très chaud" ? "bg-red-100 text-red-700" : p.niveau === "Chaud" ? "bg-orange-100 text-orange-700" : p.niveau === "Tiède" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500";
-              return (
-                <div key={p.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[14px] font-bold text-gray-900 truncate">{p.nom}</div>
-                      <div className="text-[11px] text-gray-400">{p.segment} · {p.cluster}</div>
-                    </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${niveauBg}`}>{p.niveau}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 flex-1">
-                      <div className="h-1.5 flex-1 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${(p.scoreBANT / 10) * 100}%`, background: bantColor }} />
-                      </div>
-                      <span className="text-[13px] font-extrabold text-gray-800 min-w-[20px]">{p.scoreBANT}</span>
-                    </div>
-                    <span className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full ${p.statut === "Converti" ? "bg-green-100 text-green-700" : p.statut === "RDV fixé" ? "bg-orange-100 text-orange-700" : p.statut === "En cours" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-500"}`}>{p.statut}</span>
-                  </div>
-                </div>
-              );
-            })}
+            <MobileProspectList prospects={prospects} />
           </div>
         </div>
 
