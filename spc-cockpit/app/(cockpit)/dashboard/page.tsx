@@ -4,6 +4,7 @@ import { Badge, ScoreTag } from "@/components/Badge";
 import Link from "next/link";
 import { getCampagnes, getAlertes, getEcheances, getClusterScores, getSegmentRepartition, getProspects } from "@/lib/supabase/queries";
 import { RealtimeRefresh } from "@/components/RealtimeRefresh";
+import { DashboardFileAction } from "@/components/DashboardFileAction";
 
 export default async function DashboardPage() {
   const [campagnes, alertes, echeances, clusterScores, segmentRepartition, prospects] = await Promise.all([
@@ -133,32 +134,9 @@ export default async function DashboardPage() {
               </div>
             )}
 
-            {/* File d'action mobile */}
+            {/* File d'action mobile — tap → drawer */}
             {fileAction.length > 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <span>🔔</span>
-                  <span className="text-[13px] font-bold text-orange-800">File d&apos;action du jour</span>
-                  <span className="text-[10px] font-bold bg-orange-400 text-white rounded-full px-1.5 py-0.5">{fileAction.length}</span>
-                </div>
-                <div className="space-y-2">
-                  {fileAction.map((p) => {
-                    const d = parseFRDate(p.prochaineRelance)!;
-                    const diff = Math.floor((d.getTime() - today.getTime()) / 86400000);
-                    return (
-                      <Link key={p.id} href="/qualification" className="flex items-center justify-between bg-white rounded-xl p-3 border border-orange-100">
-                        <div>
-                          <div className="text-[13px] font-semibold text-gray-800">{p.nom}</div>
-                          <div className="text-[11px] text-gray-500">{p.segment} · {p.cluster}</div>
-                        </div>
-                        <span className={`text-[10.5px] font-bold px-2 py-1 rounded-lg ${diff < 0 ? "bg-red-100 text-red-600" : "bg-orange-100 text-orange-600"}`}>
-                          {diff < 0 ? `J+${Math.abs(diff)}` : "Auj."}
-                        </span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
+              <DashboardFileAction prospects={fileAction} today={today.getTime()} />
             )}
 
             {/* Alertes mobile */}

@@ -83,15 +83,40 @@ export default async function ReportingPage() {
               </div>
             </div>
 
-            {/* Segments */}
+            {/* Segments — donut chart */}
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-              <div className="text-[13px] font-bold text-gray-800 mb-3">Segments</div>
-              <div className="space-y-2">
-                {segmentRepartition.map((s) => (
-                  <div key={s.nom} className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: s.color }} />
-                    <span className="text-[12px] text-gray-600 flex-1">{s.nom}</span>
-                    <span className="text-[13px] font-bold text-gray-800">{s.count}</span>
+              <div className="text-[13px] font-bold text-gray-800 mb-3">Répartition segments</div>
+              <div className="flex items-center gap-4">
+                <DonutChart data={segmentRepartition} total={totalProspects} />
+                <div className="flex-1 space-y-2">
+                  {segmentRepartition.map((s) => (
+                    <div key={s.nom} className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: s.color }} />
+                      <span className="text-[12px] text-gray-600 flex-1">{s.nom}</span>
+                      <span className="text-[12px] font-bold text-gray-800">{s.count}</span>
+                      <span className="text-[11px] text-gray-400">({Math.round((s.count / totalProspects) * 100)}%)</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Clusters */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <div className="text-[13px] font-bold text-gray-800 mb-3">Score BANT / cluster</div>
+              <div className="space-y-2.5">
+                {clusterScores.map((c) => (
+                  <div key={c.nom}>
+                    <div className="flex justify-between text-[12px] mb-1">
+                      <span className="text-gray-600 truncate flex-1">{c.nom}</span>
+                      <span className="font-bold text-gray-800 ml-2">{c.score}</span>
+                    </div>
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{
+                        width: `${(c.score / 10) * 100}%`,
+                        background: c.score >= 9.5 ? "#1a6b7e" : c.score >= 9 ? "#4a90d9" : "#a0aec0",
+                      }} />
+                    </div>
                   </div>
                 ))}
               </div>
