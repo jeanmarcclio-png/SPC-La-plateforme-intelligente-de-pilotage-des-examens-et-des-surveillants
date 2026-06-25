@@ -3,6 +3,7 @@ import { Toaster } from "@/components/Toast";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { PushNotificationBanner } from "@/components/PushNotificationBanner";
+import { CopiloteDrawer } from "@/components/CopiloteDrawer";
 
 export default function CockpitLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,6 +19,7 @@ export default function CockpitLayout({ children }: { children: React.ReactNode 
       <Toaster />
       <PullToRefresh />
       <GlobalSearch />
+      <CopiloteDrawer />
     </div>
   );
 }

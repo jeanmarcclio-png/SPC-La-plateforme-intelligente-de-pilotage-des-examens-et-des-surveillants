@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getCampagnes, getAlertes, getEcheances, getClusterScores, getSegmentRepartition, getProspects } from "@/lib/supabase/queries";
 import { RealtimeRefresh } from "@/components/RealtimeRefresh";
 import { DashboardFileAction } from "@/components/DashboardFileAction";
+import { computeRecommendations, detectRisks } from "@/lib/ai/engine";
 
 export default async function DashboardPage() {
   const [campagnes, alertes, echeances, clusterScores, segmentRepartition, prospects] = await Promise.all([
@@ -46,6 +47,10 @@ export default async function DashboardPage() {
 
   const iaRec = [...prospects].filter((p) => p.statut !== "Converti" && p.statut !== "RDV fixé").sort((a, b) => b.scoreBANT - a.scoreBANT)[0];
   const iaProba = iaRec ? Math.min(Math.round(iaRec.scoreBANT * 8 + 15), 95) : 0;
+
+  const recommendations = computeRecommendations(prospects);
+  const urgentEcheances = echeances.filter((e) => (e as { urgent?: boolean }).urgent).length;
+  const risks = detectRisks({ prospects, totalAlertes: actionsUrgentes, urgentEcheances });
 
   const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 
@@ -176,6 +181,59 @@ export default async function DashboardPage() {
               </div>
             ))}
           </div>
+
+          {/* ── COCKPIT DIRIGEANT ── */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[13px] font-semibold text-gray-800">Cockpit dirigeant</span>
+              <span className="text-[11px] text-gray-400">Détection proactive des risques</span>
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {risks.map((r, i) => (
+                <div key={i} className={`rounded-lg p-2.5 border ${r.level === "ok" ? "bg-green-50 border-green-200" : r.level === "warning" ? "bg-orange-50 border-orange-200" : "bg-red-50 border-red-200"}`}>
+                  <div className="text-base mb-1">{r.icon}</div>
+                  <div className="text-[11.5px] font-semibold text-gray-800 leading-tight">{r.label}</div>
+                  <div className={`text-[10.5px] mt-0.5 leading-tight ${r.level === "ok" ? "text-green-700" : r.level === "warning" ? "text-orange-700" : "text-red-700"}`}>{r.detail}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── TOP RECOMMANDATIONS IA ── */}
+          {recommendations.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[13px] font-semibold text-gray-800">🤖 Recommandations IA</span>
+                <span className="text-[11px] text-gray-400">Moteur de décision assistée</span>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                {recommendations.slice(0, 3).map((rec, i) => (
+                  <Link key={i} href="/qualification" className="border border-gray-200 rounded-xl p-3 hover:border-[#1a6b7e] hover:bg-blue-50 transition-colors block">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${rec.urgency === "critical" ? "bg-red-100 text-red-700" : rec.urgency === "high" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"}`}>
+                        {rec.urgency === "critical" ? "URGENT" : rec.urgency === "high" ? "PRIORITÉ" : "CONSEILLÉ"}
+                      </span>
+                      <span className="text-[12px] font-extrabold text-[#1a6b7e]">{rec.confidence}%</span>
+                    </div>
+                    <div className="text-[12.5px] font-semibold text-gray-900 leading-tight mb-1">{rec.prospect.nom}</div>
+                    <div className="text-[11px] text-gray-500 mb-2">{rec.prospect.segment} · Score {rec.prospect.scoreBANT}/10</div>
+                    <div className="h-1 bg-gray-100 rounded-full overflow-hidden mb-2">
+                      <div className="h-full rounded-full" style={{ width: `${rec.confidence}%`, background: "#1a6b7e" }} />
+                    </div>
+                    <div className="space-y-0.5">
+                      {rec.reasons.slice(0, 2).map((r, j) => (
+                        <div key={j} className="flex items-start gap-1.5 text-[10.5px] text-gray-600">
+                          <span className="text-green-500 font-bold flex-shrink-0">✓</span>
+                          <span className="leading-snug">{r}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-[11px] font-bold text-[#1a6b7e]">→ {rec.action}</div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Pipeline banner */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
