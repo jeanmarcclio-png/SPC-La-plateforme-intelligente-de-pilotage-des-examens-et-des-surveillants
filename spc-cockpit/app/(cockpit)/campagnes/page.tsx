@@ -19,10 +19,9 @@ const clockIcon = (
 );
 
 export default async function CampagnesPage() {
-  const [campagnes, livraisonIDF] = await Promise.all([
-    getCampagnes(),
-    getLivrables("idf-2026"),
-  ]);
+  const campagnes = await getCampagnes();
+  const activeCampagne = campagnes.find((c) => c.statut === "Actif" || c.statut === "En cours") ?? campagnes[0];
+  const livraisonIDF = await getLivrables(activeCampagne?.id);
   const healthMap = Object.fromEntries(campagnes.map((c) => [c.id, computeCampagneHealth(c)]));
   const validated = livraisonIDF.filter((l) => l.statut === "Validé").length;
   const total = livraisonIDF.length;

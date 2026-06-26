@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -8,6 +9,10 @@ interface TopbarProps {
   title: string;
   badge?: string;
   badgeColor?: "blue" | "green" | "orange" | "red";
+}
+
+function getInitials(name: string): string {
+  return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
 }
 
 export function Topbar({ context = "Campagnes en cours", title, badge, badgeColor = "blue" }: TopbarProps) {
@@ -19,6 +24,18 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
   };
   const router = useRouter();
   const supabase = createClient();
+  const [userName, setUserName] = useState("");
+  const [userInitials, setUserInitials] = useState("…");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      const name = user.user_metadata?.full_name ?? user.email ?? "";
+      setUserName(name);
+      setUserInitials(getInitials(name) || name.slice(0, 2).toUpperCase());
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -53,9 +70,9 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
           </svg>
         </button>
         <span className="text-gray-200 text-lg">|</span>
-        <span className="text-[13px] text-gray-600">Jean-Marc Clio</span>
+        {userName && <span className="text-[13px] text-gray-600">{userName}</span>}
         <div className="w-8 h-8 rounded-full bg-[#1a6b7e] text-white flex items-center justify-center text-[11px] font-bold">
-          JC
+          {userInitials}
         </div>
         <button
           onClick={handleLogout}

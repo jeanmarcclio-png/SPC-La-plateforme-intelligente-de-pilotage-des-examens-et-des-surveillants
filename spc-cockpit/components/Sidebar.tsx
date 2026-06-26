@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -199,9 +200,39 @@ export function MobileNav() {
   );
 }
 
+interface CampagneInfo {
+  nom: string;
+  nombreProspects: number;
+  tresChaudes: number;
+  joursRestants: number;
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const router   = useRouter();
+  const [campagne, setCampagne] = useState<CampagneInfo | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.from("campagnes")
+      .select("nom, nombre_prospects, tres_chaudes, jours_restants, statut, deadline")
+      .in("statut", ["Actif", "En cours"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single()
+      .then(({ data }) => {
+        if (!data) return;
+        const joursRestants = data.deadline
+          ? Math.max(0, Math.ceil((new Date(data.deadline).getTime() - Date.now()) / 86400000))
+          : (data.jours_restants ?? 0);
+        setCampagne({
+          nom: data.nom,
+          nombreProspects: data.nombre_prospects ?? 0,
+          tresChaudes: data.tres_chaudes ?? 0,
+          joursRestants,
+        });
+      });
+  }, []);
 
   async function signOut() {
     const supabase = createClient();
@@ -285,15 +316,17 @@ export function Sidebar() {
           Campagne active
         </div>
         <div className="text-[13px] font-semibold text-[#e2e8f0] leading-snug">
-          IDF Complète 2026
+          {campagne?.nom ?? "—"}
         </div>
         <div className="text-[11px] text-[#8899aa] mt-0.5">
-          43 établissements · 14 Très chaud
+          {campagne ? `${campagne.nombreProspects} établissements · ${campagne.tresChaudes} Très chaud` : "Chargement…"}
         </div>
-        <div className="mt-2.5 bg-[#4a90d9]/[0.12] rounded-lg p-2 text-center">
-          <div className="text-2xl font-extrabold text-[#4a90d9] leading-none">J - 8</div>
-          <div className="text-[11px] text-[#8899aa] mt-0.5">Fin Vague 1</div>
-        </div>
+        {campagne && (
+          <div className="mt-2.5 bg-[#4a90d9]/[0.12] rounded-lg p-2 text-center">
+            <div className="text-2xl font-extrabold text-[#4a90d9] leading-none">J - {campagne.joursRestants}</div>
+            <div className="text-[11px] text-[#8899aa] mt-0.5">Fin Vague 1</div>
+          </div>
+        )}
       </div>
     </aside>
   );
