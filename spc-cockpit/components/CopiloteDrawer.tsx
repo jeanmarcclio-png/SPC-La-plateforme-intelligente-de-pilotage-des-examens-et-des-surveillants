@@ -35,10 +35,43 @@ export function CopiloteDrawer() {
         body: JSON.stringify({ messages: next }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || `Erreur API (${res.status})`);
-      const assistantText: string = data.text ?? "";
-      setMessages((m) => [...m, { role: "assistant", content: assistantText }]);
+      if (!res.ok || !res.body) {
+        const body = await res.text().catch(() => "");
+        let detail = "";
+        try { detail = JSON.parse(body).error ?? ""; } catch { detail = body.slice(0, 200); }
+        throw new Error(detail || `Erreur API (${res.status})`);
+      }
+
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantText = "";
+      setMessages((m) => [...m, { role: "assistant", content: "" }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        for (const line of chunk.split("\n")) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6);
+          if (data === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.error) throw new Error(parsed.error);
+            const delta = parsed.delta?.text ?? "";
+            if (delta) {
+              assistantText += delta;
+              setMessages((m) => {
+                const updated = [...m];
+                updated[updated.length - 1] = { role: "assistant", content: assistantText };
+                return updated;
+              });
+            }
+          } catch (e) {
+            if (e instanceof Error && e.message !== "Unexpected token") throw e;
+          }
+        }
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erreur inconnue";
       setMessages((m) => [...m, { role: "assistant", content: `⚠️ ${msg}` }]);

@@ -47,15 +47,47 @@ Tu peux :
 
 Réponds toujours en français. Sois direct, concis, actionnable. Maximum 200 mots. Utilise des bullets quand c'est plus clair.`;
 
-    const response = await client.messages.create({
+    const anthropicStream = client.messages.stream({
       model: "claude-sonnet-4-6",
       max_tokens: 512,
       system: systemPrompt,
       messages,
     });
 
-    const text = response.content[0]?.type === "text" ? response.content[0].text : "";
-    return NextResponse.json({ text });
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const event of anthropicStream) {
+            if (
+              event.type === "content_block_delta" &&
+              event.delta.type === "text_delta" &&
+              event.delta.text
+            ) {
+              const data = `data: ${JSON.stringify({ delta: { text: event.delta.text } })}\n\n`;
+              controller.enqueue(encoder.encode(data));
+            }
+          }
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Erreur stream";
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: msg })}\n\n`));
+        } finally {
+          controller.close();
+        }
+      },
+      cancel() {
+        anthropicStream.abort();
+      },
+    });
+
+    return new Response(readable, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erreur inconnue";
     return NextResponse.json({ error: msg }, { status: 500 });
