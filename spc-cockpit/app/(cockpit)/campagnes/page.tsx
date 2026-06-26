@@ -93,7 +93,7 @@ export default async function CampagnesPage() {
               </div>
             ))}
             {/* Livrables */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
+            <div className="bg-white rounded-2xl border border-gray-100 pt-5 px-5 pb-36" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[14px] font-bold text-gray-900">Livrables</span>
                 <span className="text-[12px] font-semibold text-[#1a6b7e]">{validated}/{total} validés</span>
