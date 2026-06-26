@@ -6,6 +6,16 @@ import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   {
+    href: "/cockpit",
+    label: "Cockpit Dirigeant",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    ),
+  },
+  {
     href: "/dashboard",
     label: "Tableau de bord",
     icon: (
@@ -87,6 +97,16 @@ const mobileNavItems = [
         <rect x="14" y="3" width="7" height="7" rx="1.5" opacity={active ? 0.6 : 0.9} />
         <rect x="3" y="14" width="7" height="7" rx="1.5" opacity={active ? 0.6 : 0.9} />
         <rect x="14" y="14" width="7" height="7" rx="1.5" opacity={active ? 1 : 0.9} />
+      </svg>
+    ),
+  },
+  {
+    href: "/cockpit",
+    label: "Cockpit",
+    icon: (active: boolean) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} className="w-[28px] h-[28px]">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },

@@ -4,6 +4,7 @@ import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
 import { getCampagnes, getLivrables } from "@/lib/supabase/queries";
 import { CampagneStatutSelect, AddCampagneButton } from "@/components/CampagneActions";
+import { computeCampagneHealth } from "@/lib/ai/engine";
 
 const checkIcon = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3.5 h-3.5">
@@ -22,6 +23,7 @@ export default async function CampagnesPage() {
     getCampagnes(),
     getLivrables("idf-2026"),
   ]);
+  const healthMap = Object.fromEntries(campagnes.map((c) => [c.id, computeCampagneHealth(c)]));
   const validated = livraisonIDF.filter((l) => l.statut === "Validé").length;
   const total = livraisonIDF.length;
   const pct = Math.round((validated / total) * 100);
@@ -57,9 +59,21 @@ export default async function CampagnesPage() {
                   <div className="flex-1 text-center bg-teal-50 rounded-xl py-2"><div className="text-[22px] font-extrabold text-[#1a6b7e]">{c.tresChaudes}</div><div className="text-[10px] text-[#1a6b7e]">très chaud</div></div>
                   <div className="flex-1 text-center bg-gray-50 rounded-xl py-2"><div className="text-[22px] font-extrabold text-gray-900">{c.score}</div><div className="text-[10px] text-gray-400">score/10</div></div>
                 </div>
-                <div className="flex justify-between text-[12px]">
+                <div className="flex justify-between text-[12px] mb-2.5">
                   <span className="text-gray-400">Deadline : {c.deadline}</span>
                   <span className={`font-bold ${c.joursRestants <= 10 && c.joursRestants > 0 ? "text-red-600" : "text-[#1a6b7e]"}`}>{c.joursRestants > 0 ? `J - ${c.joursRestants}` : "Terminé"}</span>
+                </div>
+                {/* Health score */}
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bar-fill"
+                      style={{ width: `${healthMap[c.id].score}%`, background: healthMap[c.id].color }}
+                    />
+                  </div>
+                  <span className="text-[11px] font-bold flex-shrink-0" style={{ color: healthMap[c.id].color }}>
+                    {healthMap[c.id].label}
+                  </span>
                 </div>
               </div>
             ))}
@@ -115,10 +129,22 @@ export default async function CampagnesPage() {
                   <div className="text-[10px] text-gray-400">score /10</div>
                 </div>
               </div>
-              <div className="mt-3 flex items-center justify-between">
+              <div className="mt-3 flex items-center justify-between mb-2.5">
                 <span className="text-[11px] text-gray-400">Deadline : {c.deadline}</span>
                 <span className={`text-[12px] font-bold ${c.joursRestants <= 10 && c.joursRestants > 0 ? "text-red-600" : c.joursRestants === 0 ? "text-gray-400" : "text-[#1a6b7e]"}`}>
                   {c.joursRestants > 0 ? `J - ${c.joursRestants}` : "Terminé"}
+                </span>
+              </div>
+              {/* Health score bar */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bar-fill"
+                    style={{ width: `${healthMap[c.id].score}%`, background: healthMap[c.id].color }}
+                  />
+                </div>
+                <span className="text-[10.5px] font-bold whitespace-nowrap" style={{ color: healthMap[c.id].color }}>
+                  {healthMap[c.id].score}/100
                 </span>
               </div>
             </div>

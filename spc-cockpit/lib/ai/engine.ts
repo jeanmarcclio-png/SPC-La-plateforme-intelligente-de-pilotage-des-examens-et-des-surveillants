@@ -1,5 +1,95 @@
 import type { Prospect, Campagne } from "@/lib/types";
 
+export interface CampagneHealth {
+  score: number;
+  label: "Excellent" | "Bon" | "À surveiller" | "Critique";
+  color: string;
+  signals: { ok: boolean; text: string }[];
+}
+
+export interface ExecutiveSummary {
+  headline: string;
+  subline: string;
+  forecast: string;
+  actions: string[];
+}
+
+export function computeCampagneHealth(campagne: Campagne): CampagneHealth {
+  const { score, tresChaudes, nombreProspects, joursRestants, statut } = campagne;
+  let h = 0;
+  const signals: { ok: boolean; text: string }[] = [];
+
+  // BANT quality (40 pts)
+  h += Math.min((score / 10) * 40, 40);
+  signals.push({ ok: score >= 7, text: `Score BANT ${score}/10` });
+
+  // Hot prospects ratio (30 pts)
+  const hotRatio = nombreProspects > 0 ? (tresChaudes / nombreProspects) * 100 : 0;
+  h += Math.min((hotRatio / 60) * 30, 30);
+  signals.push({ ok: tresChaudes >= 5, text: `${tresChaudes}/${nombreProspects} "Très chaud"` });
+
+  // Deadline (20 pts)
+  const dPts = statut === "Terminé" ? 10 : joursRestants > 14 ? 20 : joursRestants > 7 ? 12 : joursRestants > 3 ? 6 : 2;
+  h += dPts;
+  signals.push({ ok: joursRestants > 7 || statut === "Terminé", text: statut === "Terminé" ? "Campagne terminée" : `J − ${joursRestants} avant deadline` });
+
+  // Status (10 pts)
+  h += statut === "Actif" ? 10 : statut === "En cours" ? 7 : 5;
+  signals.push({ ok: statut === "Actif" || statut === "En cours", text: `Statut : ${statut}` });
+
+  const rounded = Math.round(h);
+  const label = rounded >= 80 ? "Excellent" : rounded >= 60 ? "Bon" : rounded >= 40 ? "À surveiller" : "Critique";
+  const color = rounded >= 80 ? "#1a6b7e" : rounded >= 60 ? "#4a90d9" : rounded >= 40 ? "#f6ad55" : "#fc8181";
+  return { score: rounded, label, color, signals };
+}
+
+export function generateExecutiveSummary(data: {
+  prospects: Prospect[];
+  campagnes: Campagne[];
+  totalAlertes: number;
+  urgentEcheances: number;
+}): ExecutiveSummary {
+  const { prospects, campagnes, totalAlertes, urgentEcheances } = data;
+  const total        = prospects.length;
+  const nonContactes = prospects.filter((p) => p.statut === "Non contacté").length;
+  const convertis    = prospects.filter((p) => p.statut === "Converti").length;
+  const enCours      = prospects.filter((p) => p.statut === "En cours").length;
+  const tresChaudes  = prospects.filter((p) => p.niveau === "Très chaud").length;
+  const campActives  = campagnes.filter((c) => c.statut === "Actif" || c.statut === "En cours").length;
+  const contactRate  = total > 0 ? Math.round(((total - nonContactes) / total) * 100) : 0;
+  const urgentCamp   = campagnes.find((c) => c.joursRestants <= 7 && c.joursRestants > 0 && c.statut !== "Terminé");
+
+  let headline: string;
+  let subline: string;
+  if (contactRate < 40) {
+    headline = "Pipeline à accélérer";
+    subline  = `${nonContactes} prospects non contactés — taux de contact ${contactRate}% sous le seuil critique.`;
+  } else if (tresChaudes >= 5) {
+    headline = "Fenêtre d'opportunité ouverte";
+    subline  = `${tresChaudes} prospects "Très chaud" actifs — priorité absolue au contact cette semaine.`;
+  } else if (convertis > 0) {
+    headline = "Conversions en cours";
+    subline  = `${convertis} prospect${convertis > 1 ? "s" : ""} converti${convertis > 1 ? "s" : ""} · ${enCours} en discussion active.`;
+  } else {
+    headline = "Prospection en bonne voie";
+    subline  = `${campActives} campagne${campActives > 1 ? "s" : ""} active${campActives > 1 ? "s" : ""} · ${total} établissements ciblés.`;
+  }
+
+  const forecast = urgentCamp
+    ? `Campagne "${urgentCamp.nom}" arrive à échéance dans ${urgentCamp.joursRestants} jour${urgentCamp.joursRestants > 1 ? "s" : ""}. Accélérer les relances sur les ${tresChaudes} "Très chaud" non convertis.`
+    : totalAlertes > 0
+    ? `${totalAlertes} alertes actives à traiter. Pipeline global : ${contactRate}% de taux de contact.`
+    : `Prochaine cible : taux de contact 80% et ${Math.max(3, Math.ceil(total * 0.15))} RDV qualifiés.`;
+
+  const actions: string[] = [];
+  if (nonContactes > 0) actions.push(`Contacter ${Math.min(nonContactes, 5)} prospects prioritaires`);
+  if (enCours > 0)      actions.push(`Relancer ${enCours} prospect${enCours > 1 ? "s" : ""} en cours`);
+  if (urgentEcheances > 0) actions.push(`Traiter ${urgentEcheances} deadline${urgentEcheances > 1 ? "s" : ""} urgente${urgentEcheances > 1 ? "s" : ""}`);
+  if (totalAlertes > 0) actions.push(`Résoudre ${totalAlertes} alerte${totalAlertes > 1 ? "s" : ""}`);
+
+  return { headline, subline, forecast, actions: actions.slice(0, 3) };
+}
+
 export type Urgency  = "critical" | "high" | "medium";
 export type RiskLevel = "ok" | "warning" | "critical";
 
