@@ -96,7 +96,7 @@ export default async function CampagnesPage() {
               {livraisonIDF.length === 0 ? (
                 <div className="text-[12px] text-gray-400 text-center py-4">Aucun livrable pour cette campagne</div>
               ) : (
-                <div className="space-y-1 pr-14">
+                <div className="space-y-1 pr-20">
                   {livraisonIDF.map((l, i) => (
                     <div key={l.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${l.statut === "Validé" ? "bg-[#1a6b7e] text-white" : "bg-gray-100 text-gray-400"}`}>
