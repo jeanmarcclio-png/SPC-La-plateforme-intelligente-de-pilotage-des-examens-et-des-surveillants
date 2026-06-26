@@ -96,14 +96,16 @@ export default async function CampagnesPage() {
               {livraisonIDF.length === 0 ? (
                 <div className="text-[12px] text-gray-400 text-center py-4">Aucun livrable pour cette campagne</div>
               ) : (
-                <div className="space-y-1 pr-20">
+                <div className="space-y-0.5">
                   {livraisonIDF.map((l, i) => (
-                    <div key={l.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${l.statut === "Validé" ? "bg-[#1a6b7e] text-white" : "bg-gray-100 text-gray-400"}`}>
+                    <div key={l.id} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5 ${l.statut === "Validé" ? "bg-[#1a6b7e] text-white" : "bg-gray-100 text-gray-400"}`}>
                         {l.statut === "Validé" ? "✓" : i + 1}
                       </div>
-                      <span className="text-[12.5px] text-gray-700 flex-1 min-w-0 truncate">{l.nom}</span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${l.statut === "Validé" ? "bg-teal-50 text-[#1a6b7e]" : "bg-gray-100 text-gray-400"}`}>{l.statut}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[12.5px] text-gray-700 truncate">{l.nom}</div>
+                        <div className={`text-[10px] font-semibold mt-0.5 ${l.statut === "Validé" ? "text-[#1a6b7e]" : "text-gray-400"}`}>{l.statut}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
