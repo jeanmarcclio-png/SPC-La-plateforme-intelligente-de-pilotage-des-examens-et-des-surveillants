@@ -35,7 +35,12 @@ export function CopiloteDrawer() {
         body: JSON.stringify({ messages: next }),
       });
 
-      if (!res.ok || !res.body) throw new Error("Erreur API");
+      if (!res.ok || !res.body) {
+        const body = await res.text().catch(() => "");
+        let detail = "";
+        try { detail = JSON.parse(body).error ?? ""; } catch { detail = body; }
+        throw new Error(detail || `Erreur API (${res.status})`);
+      }
 
       const reader  = res.body.getReader();
       const decoder = new TextDecoder();
@@ -64,8 +69,9 @@ export function CopiloteDrawer() {
           } catch { /* skip malformed */ }
         }
       }
-    } catch {
-      setMessages((m) => [...m, { role: "assistant", content: "Désolé, une erreur est survenue. Réessaie." }]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erreur inconnue";
+      setMessages((m) => [...m, { role: "assistant", content: `⚠️ ${msg}` }]);
     } finally {
       setLoading(false);
     }

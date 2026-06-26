@@ -7,22 +7,27 @@ export const runtime = "nodejs";
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST(req: NextRequest) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ error: "ANTHROPIC_API_KEY non configurée sur Vercel" }, { status: 503 });
+  }
+
   const { messages } = await req.json();
   if (!messages?.length) return NextResponse.json({ error: "No messages" }, { status: 400 });
 
-  const supabase = await createClient();
-  const [{ data: prospects }, { data: campagnes }] = await Promise.all([
-    supabase.from("prospects").select("nom,segment,scoreBANT,statut,niveau,cluster,priorite").limit(20),
-    supabase.from("campagnes").select("nom,statut,score,deadline,nombre_prospects"),
-  ]);
+  try {
+    const supabase = await createClient();
+    const [{ data: prospects }, { data: campagnes }] = await Promise.all([
+      supabase.from("prospects").select("nom,segment,scoreBANT,statut,niveau,cluster,priorite").limit(20),
+      supabase.from("campagnes").select("nom,statut,score,deadline,nombre_prospects"),
+    ]);
 
-  const scoreMoyen = prospects?.length
-    ? (prospects.reduce((s, p) => s + (p.scoreBANT ?? 0), 0) / prospects.length).toFixed(1)
-    : "—";
-  const convertis = prospects?.filter((p) => p.statut === "Converti").length ?? 0;
-  const tresChaudes = prospects?.filter((p) => p.niveau === "Très chaud").length ?? 0;
+    const scoreMoyen = prospects?.length
+      ? (prospects.reduce((s, p) => s + (p.scoreBANT ?? 0), 0) / prospects.length).toFixed(1)
+      : "—";
+    const convertis = prospects?.filter((p) => p.statut === "Converti").length ?? 0;
+    const tresChaudes = prospects?.filter((p) => p.niveau === "Très chaud").length ?? 0;
 
-  const systemPrompt = `Tu es le copilote IA de SPC Cockpit, assistant personnel du directeur commercial de SPC.
+    const systemPrompt = `Tu es le copilote IA de SPC Cockpit, assistant personnel du directeur commercial de SPC.
 SPC est spécialisé dans la surveillance d'examens pour l'enseignement supérieur (business schools, universités, grandes écoles).
 
 DONNÉES TEMPS RÉEL :
@@ -42,18 +47,22 @@ Tu peux :
 
 Réponds toujours en français. Sois direct, concis, actionnable. Maximum 200 mots. Utilise des bullets quand c'est plus clair.`;
 
-  const stream = await client.messages.stream({
-    model: "claude-sonnet-4-6",
-    max_tokens: 512,
-    system: systemPrompt,
-    messages,
-  });
+    const stream = await client.messages.stream({
+      model: "claude-sonnet-4-6",
+      max_tokens: 512,
+      system: systemPrompt,
+      messages,
+    });
 
-  return new Response(stream.toReadableStream(), {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    },
-  });
+    return new Response(stream.toReadableStream(), {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Erreur inconnue";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }
