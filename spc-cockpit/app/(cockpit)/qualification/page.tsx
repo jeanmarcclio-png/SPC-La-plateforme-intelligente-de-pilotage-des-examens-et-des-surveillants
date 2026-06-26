@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
@@ -11,6 +10,7 @@ import { ProspectFilteredTable } from "@/components/ProspectFilteredTable";
 import { MobileProspectList } from "@/components/MobileProspectList";
 import { AddProspectButton } from "@/components/AddProspectModal";
 import { ModeDecisionButtons } from "@/components/ModeDecisionButtons";
+import { LancerScriptButton } from "@/components/LancerScriptButton";
 
 export default async function QualificationPage() {
   const prospects = await getProspects();
@@ -67,25 +67,39 @@ export default async function QualificationPage() {
                 </div>
                 <div className="flex-1 grid grid-cols-2 gap-1.5">
                   {[
-                    { label: "Budget", icon: "💰", score: emLyon.bant?.budget ?? emLyon.scoreBANT / 4 },
-                    { label: "Autorité", icon: "👤", score: emLyon.bant?.autorite ?? emLyon.scoreBANT / 4 },
-                    { label: "Besoin", icon: "🎯", score: emLyon.bant?.besoin ?? emLyon.scoreBANT / 4 },
-                    { label: "Timing", icon: "⏱", score: emLyon.bant?.timing ?? emLyon.scoreBANT / 4 },
+                    { label: "Budget", icon: "💰", score: emLyon.bant?.budget, estimated: !emLyon.bant },
+                    { label: "Autorité", icon: "👤", score: emLyon.bant?.autorite, estimated: !emLyon.bant },
+                    { label: "Besoin", icon: "🎯", score: emLyon.bant?.besoin, estimated: !emLyon.bant },
+                    { label: "Timing", icon: "⏱", score: emLyon.bant?.timing, estimated: !emLyon.bant },
                   ].map((b) => (
-                    <div key={b.label} className="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                    <div key={b.label} className={`rounded-lg px-2 py-1.5 text-center ${b.estimated ? "bg-gray-50/70" : "bg-gray-50"}`}>
                       <span className="text-[11px]">{b.icon}</span>
                       <div className="text-[10px] text-gray-400">{b.label}</div>
-                      <div className="text-[13px] font-extrabold text-[#1a6b7e]">{b.score}</div>
+                      {b.estimated
+                        ? <div className="text-[11px] font-semibold text-gray-300 mt-0.5">—</div>
+                        : <div className="text-[13px] font-extrabold text-[#1a6b7e]">{b.score}</div>
+                      }
                     </div>
                   ))}
                 </div>
               </div>
+              {emLyon.bant === undefined && (
+                <div className="text-[10px] text-gray-400 text-center mb-2 -mt-1">
+                  Sous-scores non renseignés — à compléter dans la fiche prospect
+                </div>
+              )}
+
+              {/* Mode Décision IA — remonté avant statut/notes */}
+              <div className="mb-3">
+                <ModeDecisionButtons prospect={emLyon} />
+              </div>
+
               <div className="grid grid-cols-2 gap-2 text-[12px] mb-3 pt-3 border-t border-gray-100">
                 <div><div className="text-gray-400 mb-0.5">Interlocuteur</div><div className="font-semibold text-gray-700">{emLyon.interlocuteur}</div></div>
                 <div><div className="text-gray-400 mb-0.5">Canal</div><div className="font-semibold text-gray-700">{emLyon.canal}</div></div>
               </div>
               {/* Statut + Notes inline sur mobile */}
-              <div className="grid grid-cols-2 gap-2 mb-3 pt-3 border-t border-gray-100 text-[12px]">
+              <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 text-[12px]">
                 <div>
                   <div className="text-gray-400 mb-1">Statut</div>
                   <ProspectStatutSelect id={emLyon.id} statut={emLyon.statut} />
@@ -95,7 +109,6 @@ export default async function QualificationPage() {
                   <ProspectNotesInput id={emLyon.id} notes={emLyon.notes} />
                 </div>
               </div>
-              <ModeDecisionButtons prospect={emLyon} />
             </div>
 
             {/* Points forts / risques */}
@@ -142,19 +155,26 @@ export default async function QualificationPage() {
             {/* BANT breakdown */}
             <div className="grid grid-cols-4 gap-3 mt-2">
               {[
-                { label: "Budget", score: emLyon.bant?.budget ?? emLyon.scoreBANT / 4, max: 2.5, icon: "💰" },
-                { label: "Autorité", score: emLyon.bant?.autorite ?? emLyon.scoreBANT / 4, max: 2.5, icon: "👤" },
-                { label: "Besoin", score: emLyon.bant?.besoin ?? emLyon.scoreBANT / 4, max: 2.5, icon: "🎯" },
-                { label: "Timing", score: emLyon.bant?.timing ?? emLyon.scoreBANT / 4, max: 2.5, icon: "⏱" },
+                { label: "Budget", score: emLyon.bant?.budget, max: 2.5, icon: "💰" },
+                { label: "Autorité", score: emLyon.bant?.autorite, max: 2.5, icon: "👤" },
+                { label: "Besoin", score: emLyon.bant?.besoin, max: 2.5, icon: "🎯" },
+                { label: "Timing", score: emLyon.bant?.timing, max: 2.5, icon: "⏱" },
               ].map((b) => (
-                <div key={b.label} className="bg-gray-50 rounded-lg p-3 text-center">
+                <div key={b.label} className={`rounded-lg p-3 text-center ${b.score === undefined ? "bg-gray-50/60 border border-dashed border-gray-200" : "bg-gray-50"}`}>
                   <div className="text-lg mb-1">{b.icon}</div>
-                  <div className="text-[18px] font-extrabold text-[#1a6b7e]">{b.score}</div>
-                  <div className="text-[9px] text-gray-400 uppercase tracking-wide mt-0.5">/{b.max}</div>
+                  {b.score !== undefined
+                    ? <><div className="text-[18px] font-extrabold text-[#1a6b7e]">{b.score}</div><div className="text-[9px] text-gray-400 uppercase tracking-wide mt-0.5">/{b.max}</div></>
+                    : <div className="text-[13px] font-semibold text-gray-300 mt-1">—</div>
+                  }
                   <div className="text-[11px] font-semibold text-gray-600 mt-1">{b.label}</div>
                 </div>
               ))}
             </div>
+            {!emLyon.bant && (
+              <div className="text-[11px] text-gray-400 mt-2 text-center">
+                Sous-scores BANT non renseignés — à compléter dans la fiche prospect
+              </div>
+            )}
 
             {/* Contact info */}
             <div className="mt-4 pt-3 border-t border-gray-100 grid grid-cols-3 gap-3 text-[12px]">
@@ -216,9 +236,7 @@ export default async function QualificationPage() {
               <div className="text-[12px] text-white/70 mb-1">Prochaine étape recommandée</div>
               <div className="text-[13.5px] font-bold text-white">Appel sortant — Lundi matin</div>
               <div className="text-[12px] text-white/80 mt-1.5 leading-snug">Demander le responsable des examens · Script : segment Commerce · Proposer audit gratuit 30 min.</div>
-              <Link href="/planning" className="mt-3 w-full bg-white/[0.15] hover:bg-white/[0.25] text-white text-[12px] font-semibold py-2 rounded-lg transition-colors flex items-center justify-center">
-                Lancer le script d&apos;appel →
-              </Link>
+              <LancerScriptButton prospect={emLyon} />
             </div>
           </div>
         </div>

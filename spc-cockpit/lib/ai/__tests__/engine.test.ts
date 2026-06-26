@@ -28,7 +28,7 @@ const baseProspect: Prospect = {
   scoreBANT: 9.5,
   niveau: "Très chaud",
   priorite: "A",
-  vague: "Vague 1",
+  vague: 1,
   interlocuteur: "DAF",
   canal: "Téléphone",
   statut: "Non contacté",
