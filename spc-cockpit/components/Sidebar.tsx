@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   {
@@ -180,6 +181,14 @@ export function MobileNav() {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router   = useRouter();
+
+  async function signOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <aside className="hidden md:flex w-[220px] flex-shrink-0 flex-col" style={{ background: "#0d1e2e" }}>
@@ -234,6 +243,21 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Sign out */}
+      <div className="px-3.5 pb-2">
+        <button
+          onClick={signOut}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] text-[#7a8fa0] hover:text-red-400 hover:bg-white/[0.05] transition-colors"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5 flex-shrink-0">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" />
+            <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round" />
+            <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" />
+          </svg>
+          Déconnexion
+        </button>
+      </div>
 
       {/* Campaign info */}
       <div className="p-3.5 border-t border-white/[0.08]">
