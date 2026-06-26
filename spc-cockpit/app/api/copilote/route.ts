@@ -47,20 +47,15 @@ Tu peux :
 
 Réponds toujours en français. Sois direct, concis, actionnable. Maximum 200 mots. Utilise des bullets quand c'est plus clair.`;
 
-    const stream = await client.messages.stream({
+    const response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 512,
       system: systemPrompt,
       messages,
     });
 
-    return new Response(stream.toReadableStream(), {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-      },
-    });
+    const text = response.content[0]?.type === "text" ? response.content[0].text : "";
+    return NextResponse.json({ text });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erreur inconnue";
     return NextResponse.json({ error: msg }, { status: 500 });
