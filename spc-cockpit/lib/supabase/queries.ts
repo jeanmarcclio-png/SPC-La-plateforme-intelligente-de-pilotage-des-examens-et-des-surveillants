@@ -52,7 +52,7 @@ export async function getAlertes(): Promise<Alerte[]> {
 export async function getEcheances() {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.from("echeances").select("*").order("id");
+    const { data, error } = await supabase.from("echeances").select("*").order("date");
     if (error || !data?.length) return mockEcheances.map((e, i) => ({ id: i + 1, ...e, urgent: (e as { urgent?: boolean }).urgent ?? false }));
     return data.map((r) => ({
       id: r.id as number,

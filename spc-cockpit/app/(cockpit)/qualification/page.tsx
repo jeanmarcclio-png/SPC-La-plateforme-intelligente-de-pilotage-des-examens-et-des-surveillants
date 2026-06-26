@@ -12,6 +12,17 @@ import { ModeDecisionButtons } from "@/components/ModeDecisionButtons";
 
 export default async function QualificationPage() {
   const prospects = await getProspects();
+  if (!prospects.length) {
+    return (
+      <main className="flex-1 flex items-center justify-center p-8 text-center text-gray-400">
+        <div>
+          <div className="text-4xl mb-3">📋</div>
+          <div className="text-[15px] font-semibold text-gray-600">Aucun prospect</div>
+          <div className="text-[13px] mt-1">Ajoutez des prospects pour commencer la qualification BANT.</div>
+        </div>
+      </main>
+    );
+  }
   const emLyon = prospects[0];
   const autresProspects = prospects.slice(1);
   const tresChaudes = prospects.filter((p) => p.niveau === "Très chaud").length;

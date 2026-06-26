@@ -13,7 +13,7 @@ function parseMontant(str?: string): number {
   return isNaN(n) ? 0 : n;
 }
 
-function computeBANT(p: {
+function computeProfileCompleteness(p: {
   niveau: string; telephone?: string; contactPrincipal?: string;
   fonctionContact?: string; valeurPotentielle?: string; prochaineRelance?: string;
 }): number {
@@ -89,7 +89,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose, hasPrev, hasNext, allProspects, currentIndex, onNavigate]);
 
-  const bantAuto = computeBANT({ niveau, telephone, contactPrincipal: contact, fonctionContact: fonction, valeurPotentielle: valeur, prochaineRelance: relance });
+  const bantAuto = computeProfileCompleteness({ niveau, telephone, contactPrincipal: contact, fonctionContact: fonction, valeurPotentielle: valeur, prochaineRelance: relance });
   const bantColor = bantAuto >= 8 ? "#38a169" : bantAuto >= 5 ? "#f6ad55" : "#fc8181";
   const relanceStatus = getRelanceStatus(relance);
   const timelineEntries = interaction.split("\n").filter(Boolean);
@@ -122,7 +122,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
       await updateProspectFiche(prospect.id, {
         telephone, contact_principal: contact, fonction_contact: fonction,
         valeur_potentielle: valeur, prochaine_relance: relance,
-        derniere_interaction: interaction, notes, score_bant: bantAuto,
+        derniere_interaction: interaction, notes,
         nb_etudiants: nbEtudiants ? parseInt(nbEtudiants) : null,
         sessions_par_an: sessionsParAn ? parseInt(sessionsParAn) : null,
       });
@@ -130,7 +130,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
       onUpdated?.(prospect.id, {
         telephone, contactPrincipal: contact, fonctionContact: fonction,
         valeurPotentielle: valeur, prochaineRelance: relance,
-        derniereInteraction: interaction, notes, scoreBANT: bantAuto,
+        derniereInteraction: interaction, notes,
         nbEtudiants: nbEtudiants ? parseInt(nbEtudiants) : undefined,
         sessionsParAn: sessionsParAn ? parseInt(sessionsParAn) : undefined,
       });
@@ -172,7 +172,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
         {/* BANT + Chaleur */}
         <div className="flex gap-2">
           <div className="bg-white/10 rounded-xl px-3 py-2 flex-1">
-            <div className="text-white/50 text-[9px] uppercase tracking-wider">BANT AUTO</div>
+            <div className="text-white/50 text-[9px] uppercase tracking-wider">COMPLÉTUDE</div>
             <div className="text-white text-[20px] font-black">{bantAuto}<span className="text-[11px] font-normal text-white/40">/10</span></div>
             <div className="h-1 bg-white/20 rounded-full mt-1">
               <div className="h-full rounded-full transition-all" style={{ width: `${(bantAuto / 10) * 100}%`, backgroundColor: bantColor }} />

@@ -131,10 +131,10 @@ export function computeRecommendations(prospects: Prospect[]): Recommendation[] 
       if (p.priorite === "A") { score = Math.min(score + 8, 99); reasons.push("Priorité A — cible stratégique"); }
 
       if (p.bant) {
-        if (p.bant.besoin   >= 8) reasons.push(`Besoin fort (${p.bant.besoin}/10)`);
-        if (p.bant.timing   >= 8) reasons.push(`Timing favorable (${p.bant.timing}/10)`);
-        if (p.bant.budget   >= 7) reasons.push(`Budget probable (${p.bant.budget}/10)`);
-        if (p.bant.autorite >= 8) reasons.push(`Décideur identifié (${p.bant.autorite}/10)`);
+        if (p.bant.besoin   >= 2.0) reasons.push(`Besoin fort (${p.bant.besoin}/2.5)`);
+        if (p.bant.timing   >= 2.0) reasons.push(`Timing favorable (${p.bant.timing}/2.5)`);
+        if (p.bant.budget   >= 1.75) reasons.push(`Budget probable (${p.bant.budget}/2.5)`);
+        if (p.bant.autorite >= 2.0) reasons.push(`Décideur identifié (${p.bant.autorite}/2.5)`);
       }
 
       if (p.statut === "En cours") reasons.push("Discussion en cours — à relancer");

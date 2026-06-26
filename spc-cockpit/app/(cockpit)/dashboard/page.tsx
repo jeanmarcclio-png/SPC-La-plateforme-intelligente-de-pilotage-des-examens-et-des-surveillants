@@ -47,7 +47,7 @@ export default async function DashboardPage() {
 
   const fileAction = prospects
     .filter((p) => { const d = parseFRDate(p.prochaineRelance); return d && d.getTime() <= today.getTime(); })
-    .sort((a, b) => { const da = parseFRDate(a.prochaineRelance)!.getTime(); const db = parseFRDate(b.prochaineRelance)!.getTime(); return da !== db ? da - db : b.scoreBANT - a.scoreBANT; })
+    .sort((a, b) => { const da = parseFRDate(a.prochaineRelance)?.getTime() ?? 0; const db = parseFRDate(b.prochaineRelance)?.getTime() ?? 0; return da !== db ? da - db : b.scoreBANT - a.scoreBANT; })
     .slice(0, 6);
 
   const iaRec   = [...prospects].filter((p) => p.statut !== "Converti" && p.statut !== "RDV fixé").sort((a, b) => b.scoreBANT - a.scoreBANT)[0];
