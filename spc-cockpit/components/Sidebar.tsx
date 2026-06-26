@@ -214,13 +214,14 @@ export function Sidebar() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("campagnes")
-      .select("nom, nombre_prospects, tres_chaudes, jours_restants, statut, deadline")
-      .in("statut", ["Actif", "En cours"])
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single()
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase.from("campagnes")
+          .select("nom, nombre_prospects, tres_chaudes, jours_restants, statut, deadline")
+          .in("statut", ["Actif", "En cours"])
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
         if (!data) return;
         const joursRestants = data.deadline
           ? Math.max(0, Math.ceil((new Date(data.deadline).getTime() - Date.now()) / 86400000))
@@ -231,7 +232,8 @@ export function Sidebar() {
           tresChaudes: data.tres_chaudes ?? 0,
           joursRestants,
         });
-      });
+      } catch { /* sidebar reste en état null — pas bloquant */ }
+    })();
   }, []);
 
   async function signOut() {

@@ -12,6 +12,7 @@ interface TopbarProps {
 }
 
 function getInitials(name: string): string {
+  if (name.includes("@")) return name.split("@")[0].slice(0, 2).toUpperCase();
   return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
 }
 
@@ -23,21 +24,21 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
     red: "bg-red-50 text-red-600",
   };
   const router = useRouter();
-  const supabase = createClient();
   const [userName, setUserName] = useState("");
   const [userInitials, setUserInitials] = useState("…");
 
   useEffect(() => {
+    const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
       const name = user.user_metadata?.full_name ?? user.email ?? "";
       setUserName(name);
-      setUserInitials(getInitials(name) || name.slice(0, 2).toUpperCase());
+      setUserInitials(getInitials(name) || "—");
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleLogout() {
+    const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();

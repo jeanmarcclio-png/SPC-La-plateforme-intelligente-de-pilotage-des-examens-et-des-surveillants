@@ -23,11 +23,13 @@ const clockIcon = (
 export default async function CampagnesPage() {
   const campagnes = await getCampagnes();
   const activeCampagne = campagnes.find((c) => c.statut === "Actif" || c.statut === "En cours") ?? campagnes[0];
-  const livraisonIDF = await getLivrables(activeCampagne?.id);
-  const healthMap = Object.fromEntries(campagnes.map((c) => [c.id, computeCampagneHealth(c)]));
+  const [livraisonIDF, healthMap] = await Promise.all([
+    activeCampagne ? getLivrables(activeCampagne.id) : Promise.resolve([]),
+    Promise.resolve(Object.fromEntries(campagnes.map((c) => [c.id, computeCampagneHealth(c)]))),
+  ]);
   const validated = livraisonIDF.filter((l) => l.statut === "Validé").length;
   const total = livraisonIDF.length;
-  const pct = Math.round((validated / total) * 100);
+  const pct = total > 0 ? Math.round((validated / total) * 100) : 0;
 
   return (
     <>

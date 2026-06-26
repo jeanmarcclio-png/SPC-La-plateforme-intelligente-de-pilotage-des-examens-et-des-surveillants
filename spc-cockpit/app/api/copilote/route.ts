@@ -9,17 +9,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "ANTHROPIC_API_KEY manquante sur Vercel" }, { status: 503 });
   }
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-
   const { messages } = await req.json();
   if (!messages?.length) return NextResponse.json({ error: "No messages" }, { status: 400 });
 
   try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const [{ data: prospects }, { data: campagnes }] = await Promise.all([
       supabase.from("prospects").select("nom,segment,scoreBANT,statut,niveau,cluster,priorite").limit(20),
       supabase.from("campagnes").select("nom,statut,score,deadline,nombre_prospects"),
