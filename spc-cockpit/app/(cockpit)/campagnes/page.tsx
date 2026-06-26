@@ -62,12 +62,12 @@ export default async function CampagnesPage() {
                   <div className="flex-1 text-center bg-teal-50 rounded-xl py-2"><div className="text-[22px] font-extrabold text-[#1a6b7e]">{c.tresChaudes}</div><div className="text-[10px] text-[#1a6b7e]">très chaud</div></div>
                   <div className="flex-1 text-center bg-gray-50 rounded-xl py-2"><div className="text-[22px] font-extrabold text-gray-900">{c.score}</div><div className="text-[10px] text-gray-400">score/10</div></div>
                 </div>
-                <div className="flex justify-between text-[12px] mb-2.5">
+                <div className="flex justify-between text-[12px] mb-2.5 pr-14">
                   <span className="text-gray-400">Deadline : {c.deadline}</span>
                   <span className={`font-bold ${c.joursRestants === 0 ? "text-gray-400" : c.joursRestants <= 10 ? "text-red-600" : "text-[#1a6b7e]"}`}>{c.joursRestants > 0 ? `J - ${c.joursRestants}` : "Terminé"}</span>
                 </div>
                 {/* Health score */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 pr-14">
                   <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full bar-fill"
