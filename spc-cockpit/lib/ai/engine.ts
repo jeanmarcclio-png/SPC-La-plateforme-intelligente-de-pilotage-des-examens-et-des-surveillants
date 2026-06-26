@@ -1,6 +1,6 @@
-import type { Prospect } from "@/lib/types";
+import type { Prospect, Campagne } from "@/lib/types";
 
-export type Urgency = "critical" | "high" | "medium";
+export type Urgency  = "critical" | "high" | "medium";
 export type RiskLevel = "ok" | "warning" | "critical";
 
 export interface Recommendation {
@@ -9,6 +9,8 @@ export interface Recommendation {
   action: string;
   reasons: string[];
   urgency: Urgency;
+  todayBoost: number;
+  delayPenalty: number;
 }
 
 export interface RiskSignal {
@@ -18,6 +20,14 @@ export interface RiskSignal {
   icon: string;
 }
 
+export interface ProactiveInsight {
+  type: "critical" | "opportunity" | "info";
+  icon: string;
+  message: string;
+  metric: string;
+  href: string;
+}
+
 export function computeRecommendations(prospects: Prospect[]): Recommendation[] {
   return prospects
     .filter((p) => p.statut !== "Converti")
@@ -25,15 +35,15 @@ export function computeRecommendations(prospects: Prospect[]): Recommendation[] 
       let score = Math.min(p.scoreBANT * 8 + 15, 95);
       const reasons: string[] = [];
 
-      if (p.niveau === "Très chaud") { score = Math.min(score + 10, 99); reasons.push(`Très chaud — intérêt fort confirmé`); }
-      else if (p.niveau === "Chaud")  { score = Math.min(score + 5,  99); reasons.push(`Chaud — engagement récent`); }
+      if (p.niveau === "Très chaud") { score = Math.min(score + 10, 99); reasons.push("Très chaud — intérêt fort confirmé"); }
+      else if (p.niveau === "Chaud") { score = Math.min(score + 5,  99); reasons.push("Chaud — engagement récent"); }
 
       if (p.priorite === "A") { score = Math.min(score + 8, 99); reasons.push("Priorité A — cible stratégique"); }
 
       if (p.bant) {
-        if (p.bant.besoin  >= 8) reasons.push(`Besoin fort (${p.bant.besoin}/10)`);
-        if (p.bant.timing  >= 8) reasons.push(`Timing favorable (${p.bant.timing}/10)`);
-        if (p.bant.budget  >= 7) reasons.push(`Budget probable (${p.bant.budget}/10)`);
+        if (p.bant.besoin   >= 8) reasons.push(`Besoin fort (${p.bant.besoin}/10)`);
+        if (p.bant.timing   >= 8) reasons.push(`Timing favorable (${p.bant.timing}/10)`);
+        if (p.bant.budget   >= 7) reasons.push(`Budget probable (${p.bant.budget}/10)`);
         if (p.bant.autorite >= 8) reasons.push(`Décideur identifié (${p.bant.autorite}/10)`);
       }
 
@@ -41,13 +51,24 @@ export function computeRecommendations(prospects: Prospect[]): Recommendation[] 
       if (p.statut === "RDV fixé") reasons.push("RDV confirmé");
       reasons.push(`Segment ${p.segment} — cible prioritaire SPC`);
 
-      let action = "Contacter";
+      let action  = "Contacter";
       let urgency: Urgency = "medium";
-      if (p.statut === "Non contacté") { action = "Premier contact"; urgency = p.priorite === "A" ? "critical" : "high"; }
-      else if (p.statut === "En cours") { action = "Relancer maintenant"; urgency = "high"; }
-      else if (p.statut === "RDV fixé") { action = "Préparer le RDV"; urgency = "medium"; }
+      if      (p.statut === "Non contacté") { action = "Premier contact";   urgency = p.priorite === "A" ? "critical" : "high"; }
+      else if (p.statut === "En cours")     { action = "Relancer maintenant"; urgency = "high"; }
+      else if (p.statut === "RDV fixé")     { action = "Préparer le RDV";    urgency = "medium"; }
 
-      return { prospect: p, confidence: Math.round(score), action, reasons: reasons.slice(0, 4), urgency };
+      const todayBoost    = p.niveau === "Très chaud" ? 11 : p.niveau === "Chaud" ? 7 : 4;
+      const delayPenalty  = p.niveau === "Très chaud" ? -8 : p.niveau === "Chaud" ? -5 : -3;
+
+      return {
+        prospect:     p,
+        confidence:   Math.round(score),
+        action,
+        reasons:      reasons.slice(0, 4),
+        urgency,
+        todayBoost,
+        delayPenalty,
+      };
     })
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, 5);
@@ -59,42 +80,155 @@ export function detectRisks(data: {
   urgentEcheances: number;
 }): RiskSignal[] {
   const { prospects, totalAlertes, urgentEcheances } = data;
-  const total = prospects.length;
-  const nonContacted = prospects.filter((p) => p.statut === "Non contacté").length;
-  const convertis    = prospects.filter((p) => p.statut === "Converti").length;
-  const contactRate  = total > 0 ? ((total - nonContacted) / total) * 100 : 0;
+  const total          = prospects.length;
+  const nonContacted   = prospects.filter((p) => p.statut === "Non contacté").length;
+  const convertis      = prospects.filter((p) => p.statut === "Converti").length;
+  const contactRate    = total > 0 ? ((total - nonContacted) / total) * 100 : 0;
   const conversionRate = total > 0 ? (convertis / total) * 100 : 0;
-  const scoreMoyen   = total > 0 ? prospects.reduce((s, p) => s + p.scoreBANT, 0) / total : 0;
+  const scoreMoyen     = total > 0 ? prospects.reduce((s, p) => s + p.scoreBANT, 0) / total : 0;
 
   return [
     contactRate >= 70
-      ? { level: "ok",       label: "Taux de contact",     detail: `${Math.round(contactRate)}% des prospects contactés`,     icon: "🟢" }
+      ? { level: "ok",       label: "Taux de contact",    detail: `${Math.round(contactRate)}% des prospects contactés`,          icon: "🟢" }
       : contactRate >= 40
-      ? { level: "warning",  label: "Taux de contact",     detail: `${Math.round(contactRate)}% seulement — accélérer`,       icon: "🟠" }
-      : { level: "critical", label: "Taux de contact",     detail: `${Math.round(contactRate)}% — campagne à relancer`,       icon: "🔴" },
+      ? { level: "warning",  label: "Taux de contact",    detail: `${Math.round(contactRate)}% seulement — accélérer`,            icon: "🟠" }
+      : { level: "critical", label: "Taux de contact",    detail: `${Math.round(contactRate)}% — campagne à relancer`,            icon: "🔴" },
 
     scoreMoyen >= 7
-      ? { level: "ok",       label: "Qualité pipeline",    detail: `Score BANT moyen ${scoreMoyen.toFixed(1)}/10 — excellent`, icon: "🟢" }
+      ? { level: "ok",       label: "Qualité pipeline",   detail: `Score BANT moyen ${scoreMoyen.toFixed(1)}/10 — excellent`,     icon: "🟢" }
       : scoreMoyen >= 5
-      ? { level: "warning",  label: "Qualité pipeline",    detail: `Score ${scoreMoyen.toFixed(1)}/10 — qualification à renforcer`, icon: "🟠" }
-      : { level: "critical", label: "Qualité pipeline",    detail: `Score ${scoreMoyen.toFixed(1)}/10 — pipeline faible`,    icon: "🔴" },
+      ? { level: "warning",  label: "Qualité pipeline",   detail: `Score ${scoreMoyen.toFixed(1)}/10 — à renforcer`,             icon: "🟠" }
+      : { level: "critical", label: "Qualité pipeline",   detail: `Score ${scoreMoyen.toFixed(1)}/10 — pipeline faible`,         icon: "🔴" },
 
     conversionRate >= 15
-      ? { level: "ok",       label: "Taux de conversion",  detail: `${Math.round(conversionRate)}% convertis — excellent`,   icon: "🟢" }
+      ? { level: "ok",       label: "Taux de conversion", detail: `${Math.round(conversionRate)}% convertis — excellent`,        icon: "🟢" }
       : conversionRate >= 5
-      ? { level: "warning",  label: "Taux de conversion",  detail: `${Math.round(conversionRate)}% — à améliorer`,           icon: "🟠" }
-      : { level: "critical", label: "Taux de conversion",  detail: `${Math.round(conversionRate)}% — relancer la machine`,   icon: "🔴" },
+      ? { level: "warning",  label: "Taux de conversion", detail: `${Math.round(conversionRate)}% — à améliorer`,                icon: "🟠" }
+      : { level: "critical", label: "Taux de conversion", detail: `${Math.round(conversionRate)}% — relancer la machine`,        icon: "🔴" },
 
     totalAlertes === 0
-      ? { level: "ok",       label: "Alertes actives",     detail: "Aucune alerte — opérations sous contrôle",               icon: "🟢" }
+      ? { level: "ok",       label: "Alertes actives",    detail: "Aucune alerte — opérations sous contrôle",                    icon: "🟢" }
       : totalAlertes <= 3
-      ? { level: "warning",  label: "Alertes actives",     detail: `${totalAlertes} alertes en cours`,                       icon: "🟠" }
-      : { level: "critical", label: "Alertes actives",     detail: `${totalAlertes} alertes — action requise`,               icon: "🔴" },
+      ? { level: "warning",  label: "Alertes actives",    detail: `${totalAlertes} alertes en cours`,                            icon: "🟠" }
+      : { level: "critical", label: "Alertes actives",    detail: `${totalAlertes} alertes — action requise`,                    icon: "🔴" },
 
     urgentEcheances === 0
-      ? { level: "ok",       label: "Échéances urgentes",  detail: "Planning sous contrôle",                                 icon: "🟢" }
+      ? { level: "ok",       label: "Échéances urgentes", detail: "Planning sous contrôle",                                      icon: "🟢" }
       : urgentEcheances === 1
-      ? { level: "warning",  label: "Échéances urgentes",  detail: `${urgentEcheances} deadline urgente à traiter`,          icon: "🟠" }
-      : { level: "critical", label: "Échéances urgentes",  detail: `${urgentEcheances} deadlines urgentes`,                  icon: "🔴" },
+      ? { level: "warning",  label: "Échéances urgentes", detail: `${urgentEcheances} deadline urgente à traiter`,               icon: "🟠" }
+      : { level: "critical", label: "Échéances urgentes", detail: `${urgentEcheances} deadlines urgentes`,                       icon: "🔴" },
   ];
+}
+
+export function generateInsights(data: {
+  prospects: Prospect[];
+  campagnes: Pick<Campagne, "nom" | "statut" | "score" | "joursRestants">[];
+  totalAlertes: number;
+  urgentEcheances: number;
+}): ProactiveInsight[] {
+  const { prospects, campagnes, totalAlertes, urgentEcheances } = data;
+  const insights: ProactiveInsight[] = [];
+
+  const total        = prospects.length;
+  const nonContactes = prospects.filter((p) => p.statut === "Non contacté").length;
+  const enCours      = prospects.filter((p) => p.statut === "En cours").length;
+  const convertis    = prospects.filter((p) => p.statut === "Converti").length;
+  const tresChaudes  = prospects.filter((p) => p.niveau === "Très chaud").length;
+  const convRate     = total > 0 ? (convertis / total) * 100 : 0;
+
+  const hotUncontacted = prospects.filter((p) => p.statut === "Non contacté" && p.scoreBANT >= 7);
+
+  if (hotUncontacted.length > 0) {
+    const avgScore = (hotUncontacted.reduce((s, p) => s + p.scoreBANT, 0) / hotUncontacted.length).toFixed(1);
+    insights.push({
+      type:    "opportunity",
+      icon:    "🚀",
+      message: `${hotUncontacted.length} prospect${hotUncontacted.length > 1 ? "s" : ""} à fort potentiel non contacté${hotUncontacted.length > 1 ? "s" : ""}`,
+      metric:  `Score BANT moyen ${avgScore}/10 — contacter maintenant`,
+      href:    "/qualification",
+    });
+  }
+
+  if (tresChaudes >= 2) {
+    insights.push({
+      type:    "opportunity",
+      icon:    "🔥",
+      message: `${tresChaudes} prospects "Très chaud" — fenêtre d'opportunité ouverte`,
+      metric:  "Probabilité de conversion +11% si contact aujourd'hui",
+      href:    "/qualification",
+    });
+  }
+
+  if (enCours >= 3) {
+    insights.push({
+      type:    "critical",
+      icon:    "⚠️",
+      message: `${enCours} prospects en cours sans relance planifiée`,
+      metric:  "Risque de perte d'intérêt — relancer cette semaine",
+      href:    "/qualification",
+    });
+  }
+
+  if (nonContactes > total * 0.5 && total > 5) {
+    insights.push({
+      type:    "critical",
+      icon:    "📉",
+      message: `${Math.round((nonContactes / total) * 100)}% du pipeline non contacté — campagne à accélérer`,
+      metric:  `${nonContactes} établissements en attente de premier contact`,
+      href:    "/qualification",
+    });
+  }
+
+  if (convRate < 5 && total > 8) {
+    insights.push({
+      type:    "critical",
+      icon:    "🎯",
+      message: `Taux de conversion faible (${convRate.toFixed(0)}%) — qualifier davantage les leads`,
+      metric:  `${convertis} convertis sur ${total} prospects`,
+      href:    "/qualification",
+    });
+  }
+
+  if (totalAlertes >= 4) {
+    insights.push({
+      type:    "critical",
+      icon:    "🚨",
+      message: `${totalAlertes} alertes critiques actives — action immédiate requise`,
+      metric:  "Livrables et dossiers en retard",
+      href:    "/livrables",
+    });
+  }
+
+  if (urgentEcheances >= 2) {
+    insights.push({
+      type:    "critical",
+      icon:    "⏰",
+      message: `${urgentEcheances} deadlines urgentes cette semaine`,
+      metric:  "Planning critique — vérifier le calendrier",
+      href:    "/planning",
+    });
+  }
+
+  const urgentCampagne = campagnes.find((c) => c.joursRestants <= 7 && c.joursRestants > 0 && c.statut !== "Terminé");
+  if (urgentCampagne) {
+    insights.push({
+      type:    "critical",
+      icon:    "📅",
+      message: `Campagne "${urgentCampagne.nom}" se termine dans ${urgentCampagne.joursRestants} jour${urgentCampagne.joursRestants > 1 ? "s" : ""}`,
+      metric:  "Accélérer les relances pour maximiser les conversions",
+      href:    "/campagnes",
+    });
+  }
+
+  if (insights.length === 0) {
+    insights.push({
+      type:    "info",
+      icon:    "✅",
+      message: "Pipeline en bonne santé — continuez sur cette lancée",
+      metric:  "Aucun risque critique détecté",
+      href:    "/dashboard",
+    });
+  }
+
+  return insights.slice(0, 3);
 }
