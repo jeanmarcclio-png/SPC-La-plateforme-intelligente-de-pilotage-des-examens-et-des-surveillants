@@ -51,7 +51,7 @@ export function GlobalSearch() {
       {/* FAB */}
       <button
         onClick={() => setOpen(true)}
-        className="md:hidden fixed bottom-[88px] left-4 z-[45] w-10 h-10 rounded-full shadow-lg flex items-center justify-center"
+        className="md:hidden fixed bottom-[88px] right-4 z-[45] w-10 h-10 rounded-full shadow-lg flex items-center justify-center"
         style={{ background: "#1a6b7e" }}
         aria-label="Recherche globale"
       >
