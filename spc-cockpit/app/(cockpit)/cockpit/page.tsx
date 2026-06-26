@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
 import { CountUp } from "@/components/CountUp";

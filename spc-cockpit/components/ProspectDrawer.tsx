@@ -139,7 +139,12 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
   }
 
   return (
-    <div className="fixed right-0 top-0 bottom-0 w-full md:w-[440px] bg-white shadow-2xl z-50 flex flex-col">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Fiche prospect — ${prospect.nom}`}
+      className="fixed right-0 top-0 bottom-0 w-full md:w-[440px] bg-white shadow-2xl z-50 flex flex-col"
+    >
 
       {/* Header */}
       <div className="bg-[#1a6b7e] px-5 pt-4 pb-4 flex-shrink-0">

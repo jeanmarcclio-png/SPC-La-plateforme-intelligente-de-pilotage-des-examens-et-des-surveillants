@@ -31,8 +31,11 @@ export async function POST(req: NextRequest) {
     const convertis = prospects?.filter((p) => p.statut === "Converti").length ?? 0;
     const tresChaudes = prospects?.filter((p) => p.niveau === "Très chaud").length ?? 0;
 
+    const today = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
     const systemPrompt = `Tu es le copilote IA de SPC Cockpit, assistant personnel du directeur commercial de SPC.
 SPC est spécialisé dans la surveillance d'examens pour l'enseignement supérieur (business schools, universités, grandes écoles).
+
+AUJOURD'HUI : ${today}
 
 DONNÉES TEMPS RÉEL :
 - ${prospects?.length ?? 0} prospects au total

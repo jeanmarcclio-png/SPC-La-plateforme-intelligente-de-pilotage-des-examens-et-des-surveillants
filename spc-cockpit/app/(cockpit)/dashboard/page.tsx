@@ -1,7 +1,10 @@
+export const dynamic = "force-dynamic";
+
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge, ScoreTag } from "@/components/Badge";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 import { getCampagnes, getAlertes, getEcheances, getClusterScores, getSegmentRepartition, getProspects } from "@/lib/supabase/queries";
 import { RealtimeRefresh } from "@/components/RealtimeRefresh";
 import { DashboardFileAction } from "@/components/DashboardFileAction";
@@ -11,6 +14,12 @@ import { CountUp } from "@/components/CountUp";
 import { ContactDuJour } from "@/components/ContactDuJour";
 
 export default async function DashboardPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const userFirstName = user?.user_metadata?.full_name?.split(" ")[0]
+    ?? user?.email?.split("@")[0]
+    ?? "vous";
+
   const [campagnes, alertes, echeances, clusterScores, segmentRepartition, prospects] = await Promise.all([
     getCampagnes(),
     getAlertes(),
@@ -75,7 +84,7 @@ export default async function DashboardPage() {
         <div className="md:hidden">
           {/* Header teal */}
           <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
-            <div className="text-[22px] font-extrabold text-white">Bonjour Jean-Marc 👋</div>
+            <div className="text-[22px] font-extrabold text-white">Bonjour {userFirstName} 👋</div>
             <div className="text-[13px] text-white/70 mt-0.5">{dateStr}</div>
           </div>
 

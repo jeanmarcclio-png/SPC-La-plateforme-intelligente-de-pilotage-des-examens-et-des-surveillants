@@ -111,9 +111,14 @@ export function CopiloteDrawer() {
 
       {/* Drawer */}
       {open && (
-        <div className="fixed bottom-0 right-0 z-50 flex flex-col bg-white shadow-2xl
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Copilote IA SPC"
+          className="fixed bottom-0 right-0 z-50 flex flex-col bg-white shadow-2xl
           w-full h-[88vh] rounded-t-2xl
-          md:w-[420px] md:h-[620px] md:rounded-2xl md:bottom-20 md:right-6">
+          md:w-[420px] md:h-[620px] md:rounded-2xl md:bottom-20 md:right-6"
+        >
 
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100" style={{ background: "#1a6b7e" }}>
@@ -124,7 +129,19 @@ export function CopiloteDrawer() {
                 <div className="text-[10px] text-white/70">Alimenté par Claude</div>
               </div>
             </div>
-            <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white text-xl leading-none">×</button>
+            <div className="flex items-center gap-2">
+              {messages.length > 0 && (
+                <button
+                  onClick={() => setMessages([])}
+                  aria-label="Effacer la conversation"
+                  title="Nouvelle conversation"
+                  className="text-[11px] text-white/60 hover:text-white border border-white/20 rounded-lg px-2 py-1 transition-colors"
+                >
+                  Effacer
+                </button>
+              )}
+              <button onClick={() => setOpen(false)} aria-label="Fermer le copilote" className="text-white/70 hover:text-white text-xl leading-none">×</button>
+            </div>
           </div>
 
           {/* Messages */}
