@@ -97,7 +97,7 @@ export function CopiloteDrawer() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-[148px] right-4 md:bottom-6 md:right-6 z-40 w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-white text-xl"
+        className="fixed bottom-[148px] right-4 md:bottom-6 md:right-6 z-40 w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-white text-lg"
         style={{ background: "#1a6b7e" }}
         aria-label="Copilote IA"
       >
