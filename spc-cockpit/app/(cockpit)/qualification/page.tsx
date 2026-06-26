@@ -26,7 +26,6 @@ export default async function QualificationPage() {
     );
   }
   const emLyon = prospects[0];
-  const autresProspects = prospects.slice(1);
   const tresChaudes = prospects.filter((p) => p.niveau === "Très chaud").length;
 
   return (
