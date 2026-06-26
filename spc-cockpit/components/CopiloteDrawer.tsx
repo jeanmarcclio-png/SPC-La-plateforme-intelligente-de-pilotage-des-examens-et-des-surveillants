@@ -20,6 +20,18 @@ export function CopiloteDrawer() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
 
+  // Mode Décision : écouter les actions pré-remplies depuis les cartes prospect
+  useEffect(() => {
+    function onCopiloteOpen(e: Event) {
+      const prefill = (e as CustomEvent<string>).detail;
+      setOpen(true);
+      if (prefill) setTimeout(() => send(prefill), 120);
+    }
+    window.addEventListener("copilote:open", onCopiloteOpen);
+    return () => window.removeEventListener("copilote:open", onCopiloteOpen);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function send(text?: string) {
     const content = (text ?? input).trim();
     if (!content || loading) return;

@@ -190,6 +190,41 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3.5">
 
+        {/* ── Mode Décision IA ── */}
+        <div className="rounded-xl border border-[#1a6b7e]/20 overflow-hidden">
+          <div className="bg-[#1a6b7e]/[0.06] px-3 py-2 flex items-center gap-2">
+            <span className="text-[10.5px] font-bold text-[#1a6b7e] uppercase tracking-wider">🧠 Mode Décision IA</span>
+          </div>
+          <div className="grid grid-cols-3 divide-x divide-[#1a6b7e]/10">
+            {[
+              {
+                icon: "📞",
+                label: "Script appel",
+                prompt: `Génère un script d'appel à froid pour contacter ${prospect.nom} (${prospect.segment} · ${prospect.cluster}). Score BANT ${bantAuto}/10, statut actuel : ${statut}. Interlocuteur cible : ${prospect.interlocuteur}. Canal recommandé : ${prospect.canal}. Objectif : décrocher un RDV ou audit gratuit 30 min.`,
+              },
+              {
+                icon: "📧",
+                label: "Email IA",
+                prompt: `Rédige un email de prospection B2B pour ${prospect.nom} (${prospect.segment}). Score BANT ${bantAuto}/10, niveau : ${niveau}. Notes : ${prospect.notes ?? "aucune note"}. Ton : professionnel institutionnel. CTA : proposer un appel découverte de 15 minutes.`,
+              },
+              {
+                icon: "📅",
+                label: "Préparer RDV",
+                prompt: `Aide-moi à préparer mon RDV avec ${prospect.nom} (${prospect.segment} · ${prospect.cluster}). Score BANT ${bantAuto}/10. Donne-moi 5 questions clés à poser, les 3 objections probables et comment les surmonter, et un pitch de 2 minutes sur la valeur SPC.`,
+              },
+            ].map(({ icon, label, prompt }) => (
+              <button
+                key={label}
+                onClick={() => window.dispatchEvent(new CustomEvent("copilote:open", { detail: prompt }))}
+                className="flex flex-col items-center gap-1.5 py-3 hover:bg-[#1a6b7e]/[0.08] transition-colors"
+              >
+                <span className="text-xl">{icon}</span>
+                <span className="text-[10.5px] font-semibold text-[#1a6b7e] text-center leading-tight px-1">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Quick actions */}
         <div className="flex gap-2">
           {telephone && (

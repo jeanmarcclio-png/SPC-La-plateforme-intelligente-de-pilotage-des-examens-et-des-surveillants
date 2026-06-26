@@ -8,6 +8,7 @@ import { ProspectStatutSelect, ProspectNotesInput } from "@/components/ProspectC
 import { ProspectFilteredTable } from "@/components/ProspectFilteredTable";
 import { MobileProspectList } from "@/components/MobileProspectList";
 import { AddProspectButton } from "@/components/AddProspectModal";
+import { ModeDecisionButtons } from "@/components/ModeDecisionButtons";
 
 export default async function QualificationPage() {
   const prospects = await getProspects();
@@ -82,9 +83,7 @@ export default async function QualificationPage() {
                   <ProspectNotesInput id={emLyon.id} notes={emLyon.notes} />
                 </div>
               </div>
-              <Link href="/planning" className="block w-full py-3 rounded-xl text-center text-[13px] font-bold text-white" style={{ background: "#1a6b7e" }}>
-                📞 Lancer le script d&apos;appel →
-              </Link>
+              <ModeDecisionButtons prospect={emLyon} />
             </div>
 
             {/* Points forts / risques */}

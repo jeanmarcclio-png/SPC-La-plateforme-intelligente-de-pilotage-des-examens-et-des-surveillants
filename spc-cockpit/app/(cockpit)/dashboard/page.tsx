@@ -8,6 +8,7 @@ import { DashboardFileAction } from "@/components/DashboardFileAction";
 import { computeRecommendations, detectRisks, generateInsights } from "@/lib/ai/engine";
 import { InsightsBanner, InsightsBannerMobile } from "@/components/InsightsBanner";
 import { CountUp } from "@/components/CountUp";
+import { ContactDuJour } from "@/components/ContactDuJour";
 
 export default async function DashboardPage() {
   const [campagnes, alertes, echeances, clusterScores, segmentRepartition, prospects] = await Promise.all([
@@ -109,58 +110,13 @@ export default async function DashboardPage() {
               ))}
             </div>
 
-            {/* IA Recommendation */}
+            {/* Contact du Jour — Mode Décision IA */}
             {iaRec && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">🤖 Recommandation IA</span>
-                  <span className="text-[10px] font-bold bg-orange-500 text-white px-2 py-0.5 rounded-full">PRIORITÉ 1</span>
-                </div>
-                <div className="text-[18px] font-extrabold text-gray-900 leading-snug">{iaRec.nom}</div>
-                <div className="text-[12px] text-gray-500 mt-0.5 mb-3">{iaRec.segment} · Score {iaRec.scoreBANT}/10 · {iaRec.statut}</div>
-
-                {/* Timing impact */}
-                <div className="flex gap-2 mb-3">
-                  <div className="flex-1 bg-teal-50 border border-teal-200 rounded-xl p-2.5 text-center">
-                    <div className="text-[10px] font-semibold text-teal-600 mb-0.5">Appel aujourd'hui</div>
-                    <div className="text-[16px] font-extrabold text-teal-700">+11%</div>
-                  </div>
-                  <div className="flex-1 bg-red-50 border border-red-200 rounded-xl p-2.5 text-center">
-                    <div className="text-[10px] font-semibold text-red-500 mb-0.5">Dans 3 jours</div>
-                    <div className="text-[16px] font-extrabold text-red-600">−8%</div>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 rounded-xl p-3 mb-3 space-y-1.5">
-                  <div className="text-[11px] font-bold text-gray-500 mb-1">Pourquoi ?</div>
-                  {[
-                    `Score BANT ${iaRec.scoreBANT}/10 — priorité haute`,
-                    iaRec.niveau === "Très chaud" || iaRec.niveau === "Chaud" ? `Niveau ${iaRec.niveau} — intérêt confirmé` : `Statut "${iaRec.statut}" — à activer`,
-                    iaRec.segment ? `Segment ${iaRec.segment} — cible prioritaire SPC` : "Établissement à fort potentiel",
-                  ].map((r, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <span className="text-[#38a169] font-bold text-[12px] mt-px">✓</span>
-                      <span className="text-[12px] text-gray-600 leading-snug">{r}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] text-gray-500">Probabilité de conversion</span>
-                  <span className="text-[13px] font-extrabold text-[#1a6b7e]">{iaProba}%</span>
-                </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
-                  <div className="h-full rounded-full bg-[#1a6b7e] bar-fill" style={{ width: `${iaProba}%` }} />
-                </div>
-                <div className="flex gap-2">
-                  <Link href="/qualification" className="flex-1 py-3 rounded-xl bg-[#68d391] text-center text-[13px] font-bold text-gray-900">
-                    📞 Appeler maintenant
-                  </Link>
-                  <Link href="/qualification" className="px-4 py-3 rounded-xl bg-[#1a6b7e] text-center text-[13px] font-bold text-white">
-                    Fiche →
-                  </Link>
-                </div>
-              </div>
+              <ContactDuJour
+                prospect={iaRec}
+                confidence={iaProba}
+                action={recommendations[0]?.action ?? "Contacter"}
+              />
             )}
 
             {/* File d'action mobile — tap → drawer */}
