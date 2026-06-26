@@ -4,17 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
 export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "ANTHROPIC_API_KEY non configurée sur Vercel" }, { status: 503 });
+    return NextResponse.json({ error: "ANTHROPIC_API_KEY manquante sur Vercel" }, { status: 503 });
   }
 
   const { messages } = await req.json();
   if (!messages?.length) return NextResponse.json({ error: "No messages" }, { status: 400 });
 
   try {
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
     const supabase = await createClient();
     const [{ data: prospects }, { data: campagnes }] = await Promise.all([
       supabase.from("prospects").select("nom,segment,scoreBANT,statut,niveau,cluster,priorite").limit(20),
