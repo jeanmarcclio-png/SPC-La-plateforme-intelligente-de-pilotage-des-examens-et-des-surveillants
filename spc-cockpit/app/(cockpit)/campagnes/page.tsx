@@ -50,7 +50,7 @@ export default async function CampagnesPage() {
               <AddCampagneButton />
             </div>
           </div>
-          <div className="p-4 space-y-3">
+          <div className="p-4 pb-36 space-y-3">
             {campagnes.map((c) => (
               <div key={c.id} className={`bg-white rounded-2xl border shadow-sm p-4 ${c.statut === "Actif" ? "border-[#1a6b7e]/40" : "border-gray-100"}`}>
                 <div className="flex items-start justify-between mb-3">
@@ -64,7 +64,7 @@ export default async function CampagnesPage() {
                 </div>
                 <div className="flex justify-between text-[12px] mb-2.5">
                   <span className="text-gray-400">Deadline : {c.deadline}</span>
-                  <span className={`font-bold ${c.joursRestants <= 10 && c.joursRestants > 0 ? "text-red-600" : "text-[#1a6b7e]"}`}>{c.joursRestants > 0 ? `J - ${c.joursRestants}` : "Terminé"}</span>
+                  <span className={`font-bold ${c.joursRestants === 0 ? "text-gray-400" : c.joursRestants <= 10 ? "text-red-600" : "text-[#1a6b7e]"}`}>{c.joursRestants > 0 ? `J - ${c.joursRestants}` : "Terminé"}</span>
                 </div>
                 {/* Health score */}
                 <div className="flex items-center gap-2">
@@ -81,19 +81,33 @@ export default async function CampagnesPage() {
               </div>
             ))}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-1">
                 <span className="text-[14px] font-bold text-gray-900">Livrables</span>
-                <span className="text-[12px] text-gray-400">{validated}/{total} validés</span>
+                <span className="text-[12px] font-semibold text-[#1a6b7e]">{validated}/{total} validés</span>
               </div>
-              <div className="space-y-2">
-                {livraisonIDF.map((l, i) => (
-                  <div key={l.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${l.statut === "Validé" ? "bg-[#1a6b7e] text-white" : "bg-gray-100 text-gray-400"}`}>{l.statut === "Validé" ? "✓" : i + 1}</div>
-                    <span className="text-[12.5px] text-gray-700 flex-1 truncate">{l.nom}</span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${l.statut === "Validé" ? "bg-teal-50 text-[#1a6b7e]" : "bg-gray-100 text-gray-400"}`}>{l.statut}</span>
-                  </div>
-                ))}
-              </div>
+              {activeCampagne && (
+                <div className="text-[11px] text-gray-400 mb-3 truncate">{activeCampagne.nom}</div>
+              )}
+              {total > 0 && (
+                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mb-3">
+                  <div className="h-full bg-[#1a6b7e] rounded-full bar-fill" style={{ width: `${pct}%` }} />
+                </div>
+              )}
+              {livraisonIDF.length === 0 ? (
+                <div className="text-[12px] text-gray-400 text-center py-4">Aucun livrable pour cette campagne</div>
+              ) : (
+                <div className="space-y-1">
+                  {livraisonIDF.map((l, i) => (
+                    <div key={l.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${l.statut === "Validé" ? "bg-[#1a6b7e] text-white" : "bg-gray-100 text-gray-400"}`}>
+                        {l.statut === "Validé" ? "✓" : i + 1}
+                      </div>
+                      <span className="text-[12.5px] text-gray-700 flex-1 min-w-0 truncate">{l.nom}</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${l.statut === "Validé" ? "bg-teal-50 text-[#1a6b7e]" : "bg-gray-100 text-gray-400"}`}>{l.statut}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
