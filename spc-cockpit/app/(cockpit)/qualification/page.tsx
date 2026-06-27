@@ -3,8 +3,7 @@ export const dynamic = "force-dynamic";
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
-import { clusterScores } from "@/lib/data";
-import { getProspects } from "@/lib/supabase/queries";
+import { getProspects, getClusterScores } from "@/lib/supabase/queries";
 import { ProspectStatutSelect, ProspectNotesInput } from "@/components/ProspectCRM";
 import { ProspectFilteredTable } from "@/components/ProspectFilteredTable";
 import { MobileProspectList } from "@/components/MobileProspectList";
@@ -13,7 +12,7 @@ import { ModeDecisionButtons } from "@/components/ModeDecisionButtons";
 import { LancerScriptButton } from "@/components/LancerScriptButton";
 
 export default async function QualificationPage() {
-  const prospects = await getProspects();
+  const [prospects, clusterScores] = await Promise.all([getProspects(), getClusterScores()]);
   if (!prospects.length) {
     return (
       <main className="flex-1 flex items-center justify-center p-8 text-center text-gray-400">

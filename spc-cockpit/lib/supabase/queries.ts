@@ -1,6 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Campagne, Alerte, Livrable, Prospect } from "@/lib/types";
-import { calcJoursRestants } from "@/lib/data";
+function calcJoursRestantsISO(deadline: string): number {
+  // Handles both ISO (YYYY-MM-DD) and legacy DD/MM/YYYY formats
+  let target: Date;
+  if (deadline.includes("-")) {
+    target = new Date(deadline + "T00:00:00");
+  } else {
+    const [d, m, y] = deadline.split("/").map(Number);
+    if (!d || !m || !y) return 0;
+    target = new Date(y, m - 1, d);
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.ceil((target.getTime() - today.getTime()) / 86400000));
+}
+
 import {
   campagnes as mockCampagnes,
   alertes as mockAlertes,
@@ -21,7 +35,7 @@ export async function getCampagnes(): Promise<Campagne[]> {
       nom: r.nom,
       perimetre: r.perimetre ?? "",
       deadline: r.deadline ?? "",
-      joursRestants: r.deadline ? calcJoursRestants(r.deadline) : (r.jours_restants ?? 0),
+      joursRestants: r.deadline ? calcJoursRestantsISO(r.deadline) : (r.jours_restants ?? 0),
       score: r.score ?? 0,
       statut: r.statut ?? "En cours",
       nombreProspects: r.nombre_prospects ?? 0,
