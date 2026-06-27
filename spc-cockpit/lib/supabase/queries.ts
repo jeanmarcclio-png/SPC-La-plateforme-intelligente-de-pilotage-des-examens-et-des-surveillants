@@ -101,6 +101,14 @@ export async function getLivrables(campagneId?: string): Promise<Livrable[]> {
   }
 }
 
+function estimateCA(segment: string, scoreBant: number): string {
+  const base: Record<string, number> = {
+    Commerce: 38, Santé: 32, CPGE: 20, Université: 48,
+  };
+  const b = base[segment] ?? 30;
+  return String(Math.round(b * (0.6 + scoreBant * 0.04)));
+}
+
 export async function getProspects(campagneId?: string): Promise<Prospect[]> {
   try {
     const supabase = await createClient();
@@ -138,7 +146,7 @@ export async function getProspects(campagneId?: string): Promise<Prospect[]> {
         contactPrincipal: r.contact_principal ?? undefined,
         fonctionContact: r.fonction_contact ?? undefined,
         prochaineRelance: r.prochaine_relance ?? undefined,
-        valeurPotentielle: r.valeur_potentielle ?? undefined,
+        valeurPotentielle: r.valeur_potentielle ?? estimateCA(r.segment, r.score_bant ?? 0),
         derniereInteraction: r.derniere_interaction ?? undefined,
         nbEtudiants: r.nb_etudiants ?? undefined,
         sessionsParAn: r.sessions_par_an ?? undefined,
