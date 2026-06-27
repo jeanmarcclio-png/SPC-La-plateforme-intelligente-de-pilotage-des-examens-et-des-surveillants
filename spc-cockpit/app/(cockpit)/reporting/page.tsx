@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { getCampagnes, getProspects, getClusterScores, getSegmentRepartition, getLivrables } from "@/lib/supabase/queries";

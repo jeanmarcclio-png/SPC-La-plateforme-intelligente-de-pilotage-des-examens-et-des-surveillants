@@ -4,6 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  const supabaseAuth = await createClient();
+  const { data: { user } } = await supabaseAuth.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const webpush = (await import("web-push")).default;
   webpush.setVapidDetails(
     process.env.VAPID_SUBJECT ?? "mailto:admin@spc.fr",

@@ -12,6 +12,7 @@ function revalidateAll() {
 
 export async function updateLivrableStatut(id: number, statut: string) {
   const supabase = await createClient();
-  await supabase.from("livrables").update({ statut }).eq("id", id);
+  const { error } = await supabase.from("livrables").update({ statut }).eq("id", id);
+  if (error) throw new Error(`Mise à jour statut livrable échouée : ${error.message}`);
   revalidateAll();
 }
