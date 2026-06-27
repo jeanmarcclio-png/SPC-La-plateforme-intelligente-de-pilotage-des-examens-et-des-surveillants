@@ -37,7 +37,13 @@ export default async function DashboardPage() {
   const actionsUrgentes = alertes.reduce((s, a) => s + a.count, 0);
   const rdvFixes        = prospects.filter((p) => p.statut === "RDV fixé").length;
   const aRelancer       = prospects.filter((p) => p.statut === "Non contacté" || p.statut === "En cours").length;
-  const pipelineTotal   = prospects.reduce((s, p) => s + (parseFloat(p.valeurPotentielle ?? "0") || 0), 0);
+  const CA_BASE: Record<string, number> = { Commerce: 38, Santé: 32, CPGE: 20, Université: 48 };
+  const pipelineTotal   = prospects.reduce((s, p) => {
+    const raw = parseFloat(p.valeurPotentielle ?? "0") || 0;
+    if (raw > 0) return s + raw;
+    const b = CA_BASE[p.segment] ?? 30;
+    return s + Math.round(b * (0.6 + p.scoreBANT * 0.04));
+  }, 0);
 
   const pipelineSteps = [
     { label: "Non contacté", count: prospects.filter((p) => p.statut === "Non contacté").length, color: "#a0aec0" },
@@ -519,7 +525,7 @@ export default async function DashboardPage() {
         <ConseilBar
           text="Lancez les appels IFSI CHU (Lyon, Lille, Bordeaux, Marseille) simultanément en semaine 1. Une réponse positive crée une référence CHU exploitable pour les autres dès J+5."
           stats={[
-            { label: "Impact", value: pipelineTotal > 0 ? `+${Math.round(pipelineTotal * 0.3 / 1000)}k€` : "+18k€" },
+            { label: "Impact", value: pipelineTotal > 0 ? `+${Math.round(pipelineTotal * 0.3)}k€` : "+18k€" },
             { label: "Confiance IA", value: `${aiConfidencePct}%`, highlight: true },
           ]}
         />
