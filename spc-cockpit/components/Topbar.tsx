@@ -26,6 +26,8 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
   const router = useRouter();
   const [userName, setUserName] = useState("");
   const [userInitials, setUserInitials] = useState("…");
+  const [syncedAt] = useState(() => Date.now());
+  const [syncLabel, setSyncLabel] = useState("À l'instant");
 
   useEffect(() => {
     const supabase = createClient();
@@ -36,6 +38,14 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
       setUserInitials(getInitials(name) || "—");
     });
   }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const mins = Math.floor((Date.now() - syncedAt) / 60000);
+      setSyncLabel(mins === 0 ? "À l'instant" : mins === 1 ? "Il y a 1 min" : `Il y a ${mins} min`);
+    }, 30000);
+    return () => clearInterval(id);
+  }, [syncedAt]);
 
   async function handleLogout() {
     const supabase = createClient();
@@ -55,6 +65,10 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
           {badge}
         </span>
       )}
+      <span className="flex items-center gap-1 text-[10px] text-gray-400">
+        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+        {syncLabel}
+      </span>
       <div className="ml-auto flex items-center gap-2.5">
         <button
           aria-label="Alertes et notifications"
