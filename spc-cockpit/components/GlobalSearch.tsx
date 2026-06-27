@@ -19,6 +19,12 @@ export function GlobalSearch() {
     if (open) setTimeout(() => inputRef.current?.focus(), 80);
   }, [open]);
 
+  useEffect(() => {
+    function onSearchOpen() { setOpen(true); }
+    window.addEventListener("search:open", onSearchOpen);
+    return () => window.removeEventListener("search:open", onSearchOpen);
+  }, []);
+
   const handleQuery = useCallback((q: string) => {
     setQuery(q);
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -48,19 +54,6 @@ export function GlobalSearch() {
 
   return (
     <>
-      {/* FAB */}
-      <button
-        onClick={() => setOpen(true)}
-        className="md:hidden fixed bottom-[88px] right-4 z-[45] w-10 h-10 rounded-full shadow-lg flex items-center justify-center"
-        style={{ background: "#1a6b7e" }}
-        aria-label="Recherche globale"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5} className="w-5 h-5">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" strokeLinecap="round" />
-        </svg>
-      </button>
-
       {/* Modal */}
       {open && (
         <div className="md:hidden fixed inset-0 z-[70] flex flex-col" style={{ background: "rgba(13,30,46,0.7)" }}>
