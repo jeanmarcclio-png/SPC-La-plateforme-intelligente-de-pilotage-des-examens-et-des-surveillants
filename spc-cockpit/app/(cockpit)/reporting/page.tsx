@@ -60,7 +60,7 @@ export default async function ReportingPage() {
                 <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
                   <div className={`text-[26px] font-extrabold leading-none ${kpi.color}`}>{kpi.value}</div>
                   <div className="text-[12px] font-semibold text-gray-700 mt-1.5">{kpi.label}</div>
-                  <div className="text-[11px] text-gray-400 mt-0.5">{kpi.sub}</div>
+                  <div className="text-[12px] text-gray-400 mt-0.5">{kpi.sub}</div>
                 </div>
               ))}
             </div>
@@ -94,7 +94,7 @@ export default async function ReportingPage() {
                       <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: s.color }} />
                       <span className="text-[12px] text-gray-600 flex-1">{s.nom}</span>
                       <span className="text-[12px] font-bold text-gray-800">{s.count}</span>
-                      <span className="text-[11px] text-gray-400">({Math.round((s.count / totalProspects) * 100)}%)</span>
+                      <span className="text-[12px] text-gray-400">({Math.round((s.count / totalProspects) * 100)}%)</span>
                     </div>
                   ))}
                 </div>

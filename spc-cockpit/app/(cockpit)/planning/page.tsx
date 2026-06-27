@@ -97,19 +97,19 @@ export default async function PlanningPage() {
                     <span className="text-[11px] text-gray-400 ml-auto">{items.length}</span>
                   </div>
                   {/* IA hint */}
-                  <div className={`text-[11.5px] ${c.label} opacity-70 mb-2 pl-4 italic`}>{SLOT_IA[slot]}</div>
+                  <div className={`text-[12px] ${c.label} opacity-70 mb-2 pl-4 italic`}>{SLOT_IA[slot]}</div>
                   <div className="space-y-2">
                     {items.map((e) => (
                       <div key={e.id} className={`flex items-center gap-3 p-3.5 rounded-2xl border ${e.urgent ? "border-red-200 bg-red-50" : `${c.border} bg-white`}`}>
                         <div className="w-11 text-center flex-shrink-0">
                           <div className={`text-[16px] font-extrabold ${e.urgent ? "text-red-600" : "text-[#1a6b7e]"}`}>{e.date.split(" ")[0]}</div>
-                          <div className="text-[9.5px] text-gray-400">{e.date.split(" ").slice(1).join(" ")}</div>
+                          <div className="text-[10px] text-gray-400">{e.date.split(" ").slice(1).join(" ")}</div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-[13px] font-semibold text-gray-800 truncate">{e.nom}</div>
                           <span className={`text-[11px] font-semibold ${e.urgent ? "text-red-500" : "text-[#4a90d9]"}`}>{e.tag}</span>
                         </div>
-                        {e.urgent && <span className="text-[10px] font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full flex-shrink-0">URGENT</span>}
+                        {e.urgent && <span className="text-[11px] font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full flex-shrink-0">URGENT</span>}
                         <EcheanceActions echeance={e} />
                       </div>
                     ))}

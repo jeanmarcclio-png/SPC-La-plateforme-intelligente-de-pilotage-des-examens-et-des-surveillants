@@ -28,7 +28,7 @@ export default async function LivrablesPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-semibold text-gray-800 truncate">{l.nom}</div>
-                  <div className="text-[11px] text-gray-400 truncate">{l.description}</div>
+                  <div className="text-[12px] text-gray-400 truncate">{l.description}</div>
                 </div>
                 <LivrableStatutSelect id={l.id} statut={l.statut} />
               </div>

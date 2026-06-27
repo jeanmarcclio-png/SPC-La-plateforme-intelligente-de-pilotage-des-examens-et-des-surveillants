@@ -74,7 +74,7 @@ export default async function QualificationPage() {
                   ].map((b) => (
                     <div key={b.label} className={`rounded-lg px-2 py-1.5 text-center ${b.estimated ? "bg-gray-50/70" : "bg-gray-50"}`}>
                       <span className="text-[11px]">{b.icon}</span>
-                      <div className="text-[10px] text-gray-400">{b.label}</div>
+                      <div className="text-[11px] text-gray-400">{b.label}</div>
                       {b.estimated || b.score === undefined
                         ? <div className="text-[11px] font-semibold text-gray-300 mt-0.5">—</div>
                         : <div className="text-[13px] font-extrabold text-[#1a6b7e]">{b.score}</div>
@@ -84,7 +84,7 @@ export default async function QualificationPage() {
                 </div>
               </div>
               {emLyon.bant === undefined && (
-                <div className="text-[10px] text-gray-400 text-center mb-2 -mt-1">
+                <div className="text-[11px] text-gray-400 text-center mb-2 -mt-1">
                   Sous-scores non renseignés — à compléter dans la fiche prospect
                 </div>
               )}

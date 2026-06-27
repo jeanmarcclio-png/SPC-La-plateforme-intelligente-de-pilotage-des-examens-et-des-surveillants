@@ -94,7 +94,7 @@ export default async function DashboardPage() {
 
             {/* Pipeline banner */}
             <Link href="/qualification" className="block rounded-2xl p-4" style={{ background: "#0d1e2e" }}>
-              <div className="text-[11px] font-bold text-white/50 uppercase tracking-widest mb-1">Pipeline total</div>
+              <div className="text-[12px] font-bold text-white/50 uppercase tracking-widest mb-1">Pipeline total</div>
               <div className="text-[32px] font-extrabold text-[#4a90d9] leading-none">
                 {pipelineTotal > 0 ? `${(pipelineTotal / 1000).toFixed(0)}k €` : `${total} prospects`}
               </div>
@@ -114,7 +114,7 @@ export default async function DashboardPage() {
                     <CountUp value={k.value} />
                   </div>
                   <div className="text-[13px] font-semibold text-gray-700 mt-1">{k.label}</div>
-                  <div className="text-[11px] text-gray-400 mt-0.5">{k.sub}</div>
+                  <div className="text-[12px] text-gray-400 mt-0.5">{k.sub}</div>
                 </Link>
               ))}
             </div>
@@ -141,10 +141,10 @@ export default async function DashboardPage() {
                   <Link key={a.id} href="/livrables" className={`flex items-center gap-3 p-2.5 rounded-xl mb-2 last:mb-0 ${a.type === "rouge" ? "bg-red-50" : a.type === "orange" ? "bg-orange-50" : "bg-yellow-50"}`}>
                     <span className="text-base">{a.type === "rouge" ? "📁" : a.type === "orange" ? "⏰" : "📊"}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-semibold text-gray-800 truncate">{a.titre}</div>
-                      <div className="text-[11px] text-gray-500 truncate">{a.description}</div>
+                      <div className="text-[13px] font-semibold text-gray-800 truncate">{a.titre}</div>
+                      <div className="text-[12px] text-gray-500 truncate">{a.description}</div>
                     </div>
-                    <span className={`min-w-[20px] h-5 rounded-full text-[10px] font-bold flex items-center justify-center px-1 text-white ${a.type === "rouge" ? "bg-red-500" : a.type === "orange" ? "bg-orange-500" : "bg-yellow-500"}`}>{a.count}</span>
+                    <span className={`min-w-[20px] h-5 rounded-full text-[11px] font-bold flex items-center justify-center px-1 text-white ${a.type === "rouge" ? "bg-red-500" : a.type === "orange" ? "bg-orange-500" : "bg-yellow-500"}`}>{a.count}</span>
                   </Link>
                 ))}
               </div>
