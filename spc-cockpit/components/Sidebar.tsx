@@ -176,14 +176,14 @@ export function MobileNav() {
       className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.08]"
       style={{ background: "#0d1e2e", paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="flex h-[76px]">
+      <div className="flex h-[76px] px-1">
         {mobileNavItems.map((item) => {
           const active = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex-1 flex flex-col items-center justify-center gap-[5px] text-[11.5px] font-semibold tracking-tight transition-colors relative ${
+              className={`flex-1 flex flex-col items-center justify-center gap-[5px] text-[10px] font-semibold tracking-tight transition-colors relative min-w-0 ${
                 active ? "text-[#4a90d9]" : "text-[#5a6e82]"
               }`}
             >
