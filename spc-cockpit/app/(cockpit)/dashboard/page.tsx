@@ -37,12 +37,12 @@ export default async function DashboardPage() {
   const actionsUrgentes = alertes.reduce((s, a) => s + a.count, 0);
   const rdvFixes        = prospects.filter((p) => p.statut === "RDV fixé").length;
   const aRelancer       = prospects.filter((p) => p.statut === "Non contacté" || p.statut === "En cours").length;
-  const CA_BASE: Record<string, number> = { Commerce: 38, Santé: 32, CPGE: 20, Université: 48 };
-  const pipelineTotal   = prospects.reduce((s, p) => {
-    const raw = parseFloat(p.valeurPotentielle ?? "0") || 0;
-    if (raw > 0) return s + raw;
-    const b = CA_BASE[p.segment] ?? 30;
-    return s + Math.round(b * (0.6 + p.scoreBANT * 0.04));
+  const _CA: Record<string, number> = { Commerce: 38, Santé: 32, CPGE: 20, Université: 48 };
+  const pipelineTotal = prospects.reduce((s, p) => {
+    const fromDB   = parseFloat(p.valeurPotentielle ?? "") || 0;
+    const b        = _CA[p.segment as string] ?? 30;
+    const estimate = Math.round(b * (0.6 + (Number(p.scoreBANT) || 0) * 0.04));
+    return s + Math.max(fromDB, estimate);
   }, 0);
 
   const pipelineSteps = [
