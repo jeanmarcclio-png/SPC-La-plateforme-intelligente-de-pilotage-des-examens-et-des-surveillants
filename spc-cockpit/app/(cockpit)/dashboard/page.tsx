@@ -37,7 +37,7 @@ export default async function DashboardPage() {
   const actionsUrgentes = alertes.reduce((s, a) => s + a.count, 0);
   const rdvFixes        = prospects.filter((p) => p.statut === "RDV fixé").length;
   const aRelancer       = prospects.filter((p) => p.statut === "Non contacté" || p.statut === "En cours").length;
-  const pipelineTotal   = prospects.reduce((s, p) => s + (typeof p.valeurPotentielle === "number" ? p.valeurPotentielle : 0), 0);
+  const pipelineTotal   = prospects.reduce((s, p) => s + (parseFloat(p.valeurPotentielle ?? "0") || 0), 0);
 
   const pipelineSteps = [
     { label: "Non contacté", count: prospects.filter((p) => p.statut === "Non contacté").length, color: "#a0aec0" },
@@ -310,8 +310,8 @@ export default async function DashboardPage() {
                       <span className="text-[10px] text-[#1a6b7e]/70 font-medium">Impact estimé</span>
                       <span className="text-[12.5px] font-extrabold text-[#1a6b7e]">
                         +{Math.round(
-                          (typeof rec.prospect.valeurPotentielle === "number" && rec.prospect.valeurPotentielle > 0
-                            ? rec.prospect.valeurPotentielle
+                          (parseFloat(rec.prospect.valeurPotentielle ?? "0") > 0
+                            ? parseFloat(rec.prospect.valeurPotentielle!)
                             : rec.prospect.scoreBANT * 3.2 + 4
                           ) * rec.confidence / 100
                         )}k€
@@ -423,7 +423,7 @@ export default async function DashboardPage() {
                         <td className="px-3.5 py-3 text-[13px] text-gray-600">{c.perimetre}</td>
                         <td className="px-3.5 py-3">
                           <span className={`text-[13px] font-semibold ${c.joursRestants <= 10 && c.joursRestants > 0 ? "text-red-600" : "text-gray-800"}`}>
-                            {c.joursRestants > 0 ? `J+${c.joursRestants}` : "Terminé"}
+                            {c.joursRestants > 0 ? `J-${c.joursRestants}` : "Terminé"}
                           </span>
                           <div className="text-[11px] text-gray-400">{c.deadline}</div>
                         </td>

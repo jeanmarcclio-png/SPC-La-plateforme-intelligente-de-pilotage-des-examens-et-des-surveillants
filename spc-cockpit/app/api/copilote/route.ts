@@ -19,15 +19,16 @@ export async function POST(req: NextRequest) {
 
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const [{ data: prospects }, { data: campagnes }] = await Promise.all([
-      supabase.from("prospects").select("nom,segment,scoreBANT,statut,niveau,cluster,priorite").limit(20),
-      supabase.from("campagnes").select("nom,statut,score,deadline,nombre_prospects"),
+      supabase.from("prospects").select("nom,segment,score_bant,statut,niveau,cluster,priorite,valeur_potentielle").limit(20),
+      supabase.from("campagnes").select("nom,statut,score,deadline,nombre_prospects,tres_chaudes"),
     ]);
 
     const scoreMoyen = prospects?.length
-      ? (prospects.reduce((s, p) => s + (p.scoreBANT ?? 0), 0) / prospects.length).toFixed(1)
+      ? (prospects.reduce((s, p) => s + (p.score_bant ?? 0), 0) / prospects.length).toFixed(1)
       : "—";
     const convertis = prospects?.filter((p) => p.statut === "Converti").length ?? 0;
     const tresChaudes = prospects?.filter((p) => p.niveau === "Très chaud").length ?? 0;
+    const pipelineCA = prospects?.reduce((s, p) => s + (parseFloat(p.valeur_potentielle ?? "0") || 0), 0) ?? 0;
 
     const today = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
     const systemPrompt = `Tu es le copilote IA de SPC Cockpit, assistant personnel du directeur commercial de SPC.
@@ -40,8 +41,9 @@ DONNÉES TEMPS RÉEL :
 - ${tresChaudes} prospects "Très chaud"
 - ${convertis} convertis
 - Score BANT moyen : ${scoreMoyen}/10
-- Campagnes : ${campagnes?.map((c) => `${c.nom} (${c.statut})`).join(", ") ?? "aucune"}
-- Top prospects : ${prospects?.slice(0, 5).map((p) => `${p.nom} [${p.segment}, BANT ${p.scoreBANT}, ${p.statut}]`).join(" | ") ?? "aucun"}
+- Pipeline CA estimé : ${pipelineCA > 0 ? `${pipelineCA}k€` : "non renseigné"}
+- Campagnes : ${campagnes?.map((c) => `${c.nom} (${c.statut}, score ${c.score})`).join(", ") ?? "aucune"}
+- Top prospects : ${prospects?.slice(0, 5).map((p) => `${p.nom} [${p.segment}, BANT ${p.score_bant}, ${p.statut}${p.valeur_potentielle ? `, ${p.valeur_potentielle}k€` : ""}]`).join(" | ") ?? "aucun"}
 
 Tu peux :
 - Analyser le pipeline et identifier les priorités

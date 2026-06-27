@@ -35,7 +35,7 @@ export default async function ReportingPage() {
 
   const tauxConversion = totalProspects > 0 ? Math.round(((rdvFixes + convertis) / totalProspects) * 100) : 0;
 
-  const currentPipelineCA = prospects.reduce((s, p) => s + (typeof p.valeurPotentielle === "number" ? p.valeurPotentielle : 0), 0);
+  const currentPipelineCA = prospects.reduce((s, p) => s + (parseFloat(p.valeurPotentielle ?? "0") || 0), 0);
   const forecastConversions = Math.max(convertis, Math.ceil(totalProspects * Math.max(tauxConversion / 100, 0.08)));
   const forecastCABase = currentPipelineCA > 0 ? Math.round(currentPipelineCA * Math.max(tauxConversion / 100, 0.08)) : 0;
   const forecastConversionsBoosted = Math.min(Math.ceil(forecastConversions * 1.6), totalProspects);

@@ -25,7 +25,7 @@ export default async function CockpitPage() {
   const convertis    = prospects.filter((p) => p.statut === "Converti").length;
   const tresChaudes  = prospects.filter((p) => p.niveau === "Très chaud").length;
 
-  const pipelineCA = prospects.reduce((s, p) => s + (typeof p.valeurPotentielle === "number" ? p.valeurPotentielle : 0), 0);
+  const pipelineCA = prospects.reduce((s, p) => s + (parseFloat(p.valeurPotentielle ?? "0") || 0), 0);
   const conversionRate = total > 0 ? Math.round(((rdvFixes + convertis) / total) * 100) : 0;
   const baseObjectif = Math.max(conversionRate, 12);
   const boostedObjectif = Math.min(baseObjectif + 29, 96);
