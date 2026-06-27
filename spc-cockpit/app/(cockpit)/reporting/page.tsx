@@ -172,7 +172,7 @@ export default async function ReportingPage() {
                 </div>
                 {forecastCABase > 0 && (
                   <div className="text-right pb-0.5">
-                    <div className="text-[22px] font-extrabold text-gray-500">{Math.round(forecastCABase / 1000)}k€</div>
+                    <div className="text-[22px] font-extrabold text-gray-500">{Math.round(forecastCABase)}k€</div>
                     <div className="text-[10px] text-gray-400">CA potentiel</div>
                   </div>
                 )}
@@ -188,7 +188,7 @@ export default async function ReportingPage() {
                 </div>
                 {forecastCABoosted > 0 && (
                   <div className="text-right pb-0.5">
-                    <div className="text-[22px] font-extrabold text-[#1a6b7e]">{Math.round(forecastCABoosted / 1000)}k€</div>
+                    <div className="text-[22px] font-extrabold text-[#1a6b7e]">{Math.round(forecastCABoosted)}k€</div>
                     <div className="text-[10px] text-[#1a6b7e]/70">CA potentiel</div>
                   </div>
                 )}

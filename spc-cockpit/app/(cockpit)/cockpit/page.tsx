@@ -32,7 +32,7 @@ export default async function CockpitPage() {
 
   const kpis = [
     { label: "Prospects total",  value: total,      color: "#1a202c", sub: "établissements ciblés", delta: null },
-    { label: pipelineCA > 0 ? "Pipeline CA" : "Contactés", value: pipelineCA > 0 ? `${Math.round(pipelineCA / 1000)}k€` : contactes, color: pipelineCA > 0 ? "#6b46c1" : "#4a90d9", sub: pipelineCA > 0 ? "CA estimé total" : `${total > 0 ? Math.round((contactes / total) * 100) : 0}% du pipeline`, delta: pipelineCA > 0 ? `${contactes} contactés` : null },
+    { label: pipelineCA > 0 ? "Pipeline CA" : "Contactés", value: pipelineCA > 0 ? `${Math.round(pipelineCA)}k€` : contactes, color: pipelineCA > 0 ? "#6b46c1" : "#4a90d9", sub: pipelineCA > 0 ? "CA estimé total" : `${total > 0 ? Math.round((contactes / total) * 100) : 0}% du pipeline`, delta: pipelineCA > 0 ? `${contactes} contactés` : null },
     { label: "RDV fixés",        value: rdvFixes,   color: "#38a169", sub: "en discussion avancée", delta: rdvFixes > 0 ? `${Math.round((rdvFixes / total) * 100)}% du pipeline` : null },
     { label: "Convertis",        value: convertis,  color: "#1a6b7e", sub: "clients signés", delta: convertis > 0 ? "↑ Signature confirmée" : null },
   ];
