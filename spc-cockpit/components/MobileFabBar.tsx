@@ -13,14 +13,15 @@ export function MobileFabBar() {
       {/* Search pill */}
       <button
         onClick={openSearch}
-        className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+        className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl transition-colors text-left"
+        style={{ background: "rgba(26,107,126,0.08)" }}
         aria-label="Recherche globale"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth={2.5} className="w-4 h-4 flex-shrink-0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1a6b7e" strokeWidth={2.5} className="w-4 h-4 flex-shrink-0">
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" strokeLinecap="round" />
         </svg>
-        <span className="text-[13px] text-gray-400">Rechercher…</span>
+        <span className="text-[13px] font-medium" style={{ color: "#1a6b7e" }}>Rechercher…</span>
       </button>
 
       {/* Divider */}
