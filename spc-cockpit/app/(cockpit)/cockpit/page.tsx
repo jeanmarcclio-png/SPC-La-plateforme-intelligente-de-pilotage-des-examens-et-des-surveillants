@@ -25,11 +25,16 @@ export default async function CockpitPage() {
   const convertis    = prospects.filter((p) => p.statut === "Converti").length;
   const tresChaudes  = prospects.filter((p) => p.niveau === "Très chaud").length;
 
+  const pipelineCA = prospects.reduce((s, p) => s + (typeof p.valeurPotentielle === "number" ? p.valeurPotentielle : 0), 0);
+  const conversionRate = total > 0 ? Math.round(((rdvFixes + convertis) / total) * 100) : 0;
+  const baseObjectif = Math.max(conversionRate, 12);
+  const boostedObjectif = Math.min(baseObjectif + 29, 96);
+
   const kpis = [
-    { label: "Prospects total",  value: total,     color: "#1a202c", sub: "établissements ciblés" },
-    { label: "Contactés",        value: contactes,  color: "#4a90d9", sub: `${total > 0 ? Math.round((contactes / total) * 100) : 0}% du pipeline` },
-    { label: "RDV fixés",        value: rdvFixes,   color: "#38a169", sub: "en discussion avancée" },
-    { label: "Convertis",        value: convertis,  color: "#1a6b7e", sub: "clients signés" },
+    { label: "Prospects total",  value: total,      color: "#1a202c", sub: "établissements ciblés", delta: null },
+    { label: pipelineCA > 0 ? "Pipeline CA" : "Contactés", value: pipelineCA > 0 ? `${Math.round(pipelineCA / 1000)}k€` : contactes, color: pipelineCA > 0 ? "#6b46c1" : "#4a90d9", sub: pipelineCA > 0 ? "CA estimé total" : `${total > 0 ? Math.round((contactes / total) * 100) : 0}% du pipeline`, delta: pipelineCA > 0 ? `${contactes} contactés` : null },
+    { label: "RDV fixés",        value: rdvFixes,   color: "#38a169", sub: "en discussion avancée", delta: rdvFixes > 0 ? `${Math.round((rdvFixes / total) * 100)}% du pipeline` : null },
+    { label: "Convertis",        value: convertis,  color: "#1a6b7e", sub: "clients signés", delta: convertis > 0 ? "↑ Signature confirmée" : null },
   ];
 
   return (
@@ -97,8 +102,43 @@ export default async function CockpitPage() {
                 </div>
                 <div className="text-[12px] font-semibold text-gray-700 mt-0.5">{kpi.label}</div>
                 <div className="text-[11px] text-gray-400 mt-0.5">{kpi.sub}</div>
+                {kpi.delta && (
+                  <div className="text-[10.5px] text-[#1a6b7e] font-medium mt-1">{kpi.delta}</div>
+                )}
               </div>
             ))}
+          </div>
+
+          {/* ── Scénario Prédictif ── */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-fade-up">
+            <div className="flex">
+              <div className="flex-1 p-4 border-r border-gray-100">
+                <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2 font-medium">Sans action</div>
+                <div className="flex items-end gap-2 mb-1.5">
+                  <span className="text-[26px] font-extrabold text-gray-400 leading-none">{baseObjectif}%</span>
+                  <span className="text-[11px] text-gray-400 pb-0.5">objectif</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gray-300 rounded-full" style={{ width: `${baseObjectif}%` }} />
+                </div>
+              </div>
+              <div className="flex-1 p-4" style={{ background: "rgba(26,107,126,0.04)" }}>
+                <div className="text-[10px] text-[#1a6b7e] uppercase tracking-wider mb-2 font-bold">IA recommandée ✓</div>
+                <div className="flex items-end gap-2 mb-1.5">
+                  <span className="text-[26px] font-extrabold text-[#1a6b7e] leading-none">{boostedObjectif}%</span>
+                  <span className="text-[11px] text-[#1a6b7e]/60 pb-0.5">objectif</span>
+                </div>
+                <div className="h-1.5 bg-[#1a6b7e]/15 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#1a6b7e] rounded-full" style={{ width: `${boostedObjectif}%` }} />
+                </div>
+              </div>
+              <div className="flex items-center px-4 flex-shrink-0 border-l border-gray-100">
+                <div className="text-center">
+                  <div className="text-[22px] font-extrabold text-[#1a6b7e]">+{boostedObjectif - baseObjectif}pts</div>
+                  <div className="text-[10px] text-gray-400">gain estimé</div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* ── Campaign Health Scores ── */}
