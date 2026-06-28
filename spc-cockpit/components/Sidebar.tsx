@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { calcJoursRestants } from "@/lib/utils/date";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -224,7 +225,7 @@ export function Sidebar() {
           .single();
         if (!data) return;
         const joursRestants = data.deadline
-          ? Math.max(0, Math.ceil((new Date(data.deadline).getTime() - Date.now()) / 86400000))
+          ? calcJoursRestants(data.deadline)
           : (data.jours_restants ?? 0);
         setCampagne({
           nom: data.nom,
