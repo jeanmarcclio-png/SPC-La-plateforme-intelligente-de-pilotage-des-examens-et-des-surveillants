@@ -4,8 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import type { Prospect } from "@/lib/types";
 import { logProspectInteraction, updateProspectFiche, updateProspectNiveau, updateProspectStatut } from "@/app/actions/prospects";
 
-const STATUT_PIPELINE = ["Non contacté", "En cours", "RDV fixé", "Converti"];
-const NIVEAUX = ["Très chaud", "Chaud", "Tiède", "Froid"] as const;
+import { STATUT_PROSPECT as STATUT_PIPELINE, NIVEAU_CHALEUR as NIVEAUX } from "@/lib/constants";
 
 function parseMontant(str?: string): number {
   if (!str) return 0;

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { updateLivrableStatut } from "@/app/actions/livrables";
 import { showToast } from "@/components/Toast";
 
-const STATUTS = ["À rédiger", "En cours", "Validé", "À renforcer"] as const;
+import { STATUT_LIVRABLE as STATUTS } from "@/lib/constants";
 
 const statutColors: Record<string, string> = {
   "Validé":      "bg-green-50 text-green-700",

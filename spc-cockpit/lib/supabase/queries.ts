@@ -1,19 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Campagne, Alerte, Livrable, Prospect } from "@/lib/types";
-function calcJoursRestantsISO(deadline: string): number {
-  // Handles both ISO (YYYY-MM-DD) and legacy DD/MM/YYYY formats
-  let target: Date;
-  if (deadline.includes("-")) {
-    target = new Date(deadline + "T00:00:00");
-  } else {
-    const [d, m, y] = deadline.split("/").map(Number);
-    if (!d || !m || !y) return 0;
-    target = new Date(y, m - 1, d);
-  }
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.max(0, Math.ceil((target.getTime() - today.getTime()) / 86400000));
-}
+import { SEGMENT_CA } from "@/lib/constants";
+import { calcJoursRestants } from "@/lib/utils/date";
 
 import {
   campagnes as mockCampagnes,
@@ -35,7 +23,7 @@ export async function getCampagnes(): Promise<Campagne[]> {
       nom: r.nom,
       perimetre: r.perimetre ?? "",
       deadline: r.deadline ?? "",
-      joursRestants: r.deadline ? calcJoursRestantsISO(r.deadline) : (r.jours_restants ?? 0),
+      joursRestants: r.deadline ? calcJoursRestants(r.deadline) : (r.jours_restants ?? 0),
       score: r.score ?? 0,
       statut: r.statut ?? "En cours",
       nombreProspects: r.nombre_prospects ?? 0,
@@ -102,17 +90,14 @@ export async function getLivrables(campagneId?: string): Promise<Livrable[]> {
 }
 
 function estimateCA(segment: string, scoreBant: number): string {
-  const base: Record<string, number> = {
-    Commerce: 38, Santé: 32, CPGE: 20, Université: 48,
-  };
-  const b = base[segment] ?? 30;
+  const b = SEGMENT_CA[segment] ?? 30;
   return String(Math.round(b * (0.6 + scoreBant * 0.04)));
 }
 
-export async function getProspects(campagneId?: string): Promise<Prospect[]> {
+export async function getProspects(campagneId?: string, limit = 500): Promise<Prospect[]> {
   try {
     const supabase = await createClient();
-    let query = supabase.from("prospects").select("*").order("score_bant", { ascending: false });
+    let query = supabase.from("prospects").select("*").order("score_bant", { ascending: false }).limit(limit);
     if (campagneId) query = query.eq("campagne_id", campagneId);
     const { data, error } = await query;
     if (error || !data?.length) return mockProspects;

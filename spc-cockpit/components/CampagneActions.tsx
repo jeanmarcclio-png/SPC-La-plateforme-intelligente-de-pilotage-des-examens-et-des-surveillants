@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { updateCampagneStatut, createCampagne } from "@/app/actions/campagnes";
 
-const STATUTS = ["Actif", "En cours", "Terminé", "Archivé"] as const;
+import { STATUT_CAMPAGNE as STATUTS } from "@/lib/constants";
 
 const statutColors: Record<string, string> = {
   "Actif":    "bg-[#1a6b7e]/10 text-[#1a6b7e]",
