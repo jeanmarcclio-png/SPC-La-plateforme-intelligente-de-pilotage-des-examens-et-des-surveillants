@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 function revalidateAll() {
   revalidatePath("/qualification");
@@ -11,7 +12,20 @@ function revalidateAll() {
   revalidatePath("/planning");
 }
 
+async function getUserId(): Promise<string> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id ?? "anon";
+}
+
+async function guardRateLimit() {
+  const userId = await getUserId();
+  const { allowed, retryAfter } = checkRateLimit(userId);
+  if (!allowed) throw new Error(`Trop de requêtes — réessayez dans ${retryAfter}s`);
+}
+
 export async function updateProspectStatut(id: string, statut: string) {
+  await guardRateLimit();
   const supabase = await createClient();
   const { error } = await supabase.from("prospects").update({ statut }).eq("id", id);
   if (error) throw new Error(`Mise à jour statut échouée : ${error.message}`);
@@ -19,6 +33,7 @@ export async function updateProspectStatut(id: string, statut: string) {
 }
 
 export async function updateProspectNotes(id: string, notes: string) {
+  await guardRateLimit();
   const supabase = await createClient();
   const { error } = await supabase.from("prospects").update({ notes }).eq("id", id);
   if (error) throw new Error(`Mise à jour notes échouée : ${error.message}`);
@@ -26,6 +41,7 @@ export async function updateProspectNotes(id: string, notes: string) {
 }
 
 export async function updateProspectNiveau(id: string, niveau: string) {
+  await guardRateLimit();
   const supabase = await createClient();
   const { error } = await supabase.from("prospects").update({ niveau }).eq("id", id);
   if (error) throw new Error(`Mise à jour niveau échouée : ${error.message}`);
@@ -33,6 +49,7 @@ export async function updateProspectNiveau(id: string, niveau: string) {
 }
 
 export async function logProspectInteraction(id: string, interaction: string) {
+  await guardRateLimit();
   const supabase = await createClient();
   const { error } = await supabase.from("prospects").update({ derniere_interaction: interaction }).eq("id", id);
   if (error) throw new Error(`Enregistrement interaction échoué : ${error.message}`);
@@ -51,13 +68,21 @@ export async function updateProspectFiche(id: string, fields: {
   nb_etudiants?: number | null;
   sessions_par_an?: number | null;
 }) {
+  await guardRateLimit();
+  const sanitized = { ...fields };
+  // Normalize valeur_potentielle: strip non-numeric suffixes, keep only the numeric part
+  if (sanitized.valeur_potentielle !== undefined) {
+    const num = parseFloat(sanitized.valeur_potentielle);
+    sanitized.valeur_potentielle = isNaN(num) ? "" : String(num);
+  }
   const supabase = await createClient();
-  const { error } = await supabase.from("prospects").update(fields).eq("id", id);
+  const { error } = await supabase.from("prospects").update(sanitized).eq("id", id);
   if (error) throw new Error(`Mise à jour fiche échouée : ${error.message}`);
   revalidateAll();
 }
 
 export async function deleteProspect(id: string) {
+  await guardRateLimit();
   const supabase = await createClient();
   const { error } = await supabase.from("prospects").delete().eq("id", id);
   if (error) throw new Error(`Suppression prospect échouée : ${error.message}`);
@@ -65,6 +90,7 @@ export async function deleteProspect(id: string) {
 }
 
 export async function createProspect(formData: FormData) {
+  await guardRateLimit();
   const supabase = await createClient();
   const id = crypto.randomUUID();
   const { error } = await supabase.from("prospects").insert({
