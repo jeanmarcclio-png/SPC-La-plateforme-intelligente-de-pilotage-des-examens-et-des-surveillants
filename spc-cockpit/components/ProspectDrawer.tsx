@@ -246,7 +246,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
               <span className="text-xl">📝</span><span className="text-[11px] font-semibold">Logger ▾</span>
             </button>
             {loggerOpen && (
-              <div className="absolute bottom-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-10 mb-1 overflow-hidden">
+              <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 mt-1 overflow-hidden">
                 {LOG_TYPES.map((type) => (
                   <button key={type} onClick={() => handleLog(type)} className="w-full text-left px-3.5 py-2.5 text-[12px] text-gray-700 hover:bg-gray-50 border-b border-gray-100 last:border-0">
                     {type}
