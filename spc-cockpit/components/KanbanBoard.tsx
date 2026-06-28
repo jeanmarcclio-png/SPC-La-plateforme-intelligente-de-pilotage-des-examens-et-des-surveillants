@@ -4,19 +4,8 @@ import { useState, useTransition } from "react";
 import type { Prospect } from "@/lib/types";
 import { updateProspectStatut } from "@/app/actions/prospects";
 
-const COLONNES: { key: Prospect["statut"]; label: string; color: string }[] = [
-  { key: "Non contacté", label: "Non contacté", color: "#a0aec0" },
-  { key: "En cours",     label: "En cours",     color: "#4a90d9" },
-  { key: "RDV fixé",     label: "RDV fixé",     color: "#d97706" },
-  { key: "Converti",     label: "Converti",     color: "#38a169" },
-];
-
-function parseFRDate(s?: string) {
-  if (!s) return null;
-  const p = s.split("/");
-  if (p.length !== 3) return null;
-  return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
-}
+import { COLONNES_PIPELINE as COLONNES } from "@/lib/constants";
+import { parseFRDate } from "@/lib/utils/date";
 
 const NIVEAU_ICO: Record<string, string> = {
   "Très chaud": "🔥", "Chaud": "♨️", "Tiède": "〰", "Froid": "❄️",

@@ -4,12 +4,7 @@ import { useState } from "react";
 import type { Prospect } from "@/lib/types";
 import { ProspectDrawer } from "@/components/ProspectDrawer";
 
-function parseFRDate(s?: string): Date | null {
-  if (!s) return null;
-  const p = s.split("/");
-  if (p.length !== 3) return null;
-  return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
-}
+import { parseFRDate } from "@/lib/utils/date";
 
 export function DashboardFileAction({
   prospects,

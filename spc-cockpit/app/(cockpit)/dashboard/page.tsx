@@ -6,6 +6,8 @@ import { Badge, ScoreTag } from "@/components/Badge";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCampagnes, getAlertes, getEcheances, getClusterScores, getSegmentRepartition, getProspects } from "@/lib/supabase/queries";
+import { SEGMENT_CA } from "@/lib/constants";
+import { parseFRDate } from "@/lib/utils/date";
 import { RealtimeRefresh } from "@/components/RealtimeRefresh";
 import { DashboardFileAction } from "@/components/DashboardFileAction";
 import { computeRecommendations, detectRisks, generateInsights } from "@/lib/ai/engine";
@@ -37,10 +39,9 @@ export default async function DashboardPage() {
   const actionsUrgentes = alertes.reduce((s, a) => s + a.count, 0);
   const rdvFixes        = prospects.filter((p) => p.statut === "RDV fixé").length;
   const aRelancer       = prospects.filter((p) => p.statut === "Non contacté" || p.statut === "En cours").length;
-  const _CA: Record<string, number> = { Commerce: 38, Santé: 32, CPGE: 20, Université: 48 };
   const pipelineTotal = prospects.reduce((s, p) => {
     const fromDB   = parseFloat(p.valeurPotentielle ?? "") || 0;
-    const b        = _CA[p.segment as string] ?? 30;
+    const b        = SEGMENT_CA[p.segment as string] ?? 30;
     const estimate = Math.round(b * (0.6 + (Number(p.scoreBANT) || 0) * 0.04));
     return s + Math.max(fromDB, estimate);
   }, 0);
@@ -62,12 +63,6 @@ export default async function DashboardPage() {
   const riskLevel: "faible" | "moyen" | "critique" = baseObjectif >= 50 ? "faible" : baseObjectif >= 25 ? "moyen" : "critique";
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  function parseFRDate(s?: string): Date | null {
-    if (!s) return null;
-    const parts = s.split("/");
-    if (parts.length !== 3) return null;
-    return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-  }
 
   const fileAction = prospects
     .filter((p) => { const d = parseFRDate(p.prochaineRelance); return d && d.getTime() <= today.getTime(); })

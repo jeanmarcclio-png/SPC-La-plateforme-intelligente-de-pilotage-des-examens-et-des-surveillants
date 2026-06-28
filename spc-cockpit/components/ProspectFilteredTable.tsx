@@ -8,12 +8,7 @@ import { EmailSequenceButton } from "@/components/EmailSequenceButton";
 import { ProspectDrawer } from "@/components/ProspectDrawer";
 import { KanbanBoard } from "@/components/KanbanBoard";
 
-function parseFRDate(s?: string) {
-  if (!s) return null;
-  const p = s.split("/");
-  if (p.length !== 3) return null;
-  return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
-}
+import { parseFRDate } from "@/lib/utils/date";
 
 function RelanceBadge({ date }: { date?: string }) {
   if (!date) return <span className="text-[11px] text-gray-300">—</span>;

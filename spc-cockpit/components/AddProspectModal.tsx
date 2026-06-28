@@ -3,9 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { createProspect } from "@/app/actions/prospects";
 
-const SEGMENTS = ["Commerce", "Santé", "CPGE", "Université"];
-const CLUSTERS = ["Lyon/RA", "Paris IDF", "Lille/HdF", "Bordeaux/NA", "Nancy/GE", "PACA"];
-const NIVEAUX  = ["Très chaud", "Chaud", "Tiède", "Froid"];
+import { SEGMENTS, CLUSTERS, NIVEAU_CHALEUR as NIVEAUX } from "@/lib/constants";
 const CAMPAGNES = [
   { id: "idf-2026",      nom: "IDF Complète 2026" },
   { id: "national-2026", nom: "National Écoles 2026" },

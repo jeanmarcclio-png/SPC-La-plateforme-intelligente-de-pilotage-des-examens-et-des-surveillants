@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { updateProspectStatut, updateProspectNotes, deleteProspect } from "@/app/actions/prospects";
 import { showToast } from "@/components/Toast";
 
-const STATUTS = ["Non contacté", "En cours", "RDV fixé", "Converti"] as const;
+import { STATUT_PROSPECT as STATUTS } from "@/lib/constants";
 
 const statutColors: Record<string, string> = {
   "Non contacté": "bg-gray-100 text-gray-600",
