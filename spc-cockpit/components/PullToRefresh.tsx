@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { RotateCcw } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 
 const THRESHOLD = 65;
@@ -87,10 +88,7 @@ export function PullToRefresh() {
           animation: refreshing ? "spin 0.7s linear infinite" : "none",
         }}
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="#1a6b7e" strokeWidth={2.5} className="w-[18px] h-[18px]">
-          <path d="M4 4v5h5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M4.07 9A8 8 0 1 1 4 12" strokeLinecap="round" />
-        </svg>
+        <RotateCcw className="w-[18px] h-[18px] text-[#1a6b7e]" strokeWidth={2.5} />
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { X } from "lucide-react";
 import { inviteTeamMember, updateTeamMemberRole, removeTeamMember } from "@/app/actions/parametres";
 
 type Member = { id: string; email: string; nom: string; role: string };
@@ -60,9 +61,7 @@ export function TeamSection({ members }: { members: Member[] }) {
             disabled={pending}
             className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       ))}

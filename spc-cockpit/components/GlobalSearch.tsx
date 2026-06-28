@@ -3,6 +3,7 @@
 import { useState, useRef, useTransition, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { searchAll, type SearchResults } from "@/app/actions/search";
+import { Search, User, Megaphone, ClipboardCheck } from "lucide-react";
 
 const BANT_COLOR = (s: number) => s >= 8 ? "#38a169" : s >= 5 ? "#f6ad55" : "#fc8181";
 
@@ -64,10 +65,7 @@ export function GlobalSearch() {
           <div className="bg-white rounded-t-3xl flex flex-col max-h-[85vh]">
             {/* Search input */}
             <div className="flex items-center gap-3 px-4 pt-5 pb-3 border-b border-gray-100">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#1a6b7e" strokeWidth={2.5} className="w-5 h-5 flex-shrink-0">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" strokeLinecap="round" />
-              </svg>
+              <Search className="w-5 h-5 flex-shrink-0 text-[#1a6b7e]" />
               <input
                 ref={inputRef}
                 type="search"
@@ -113,9 +111,7 @@ export function GlobalSearch() {
                           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 text-left"
                         >
                           <div className="w-8 h-8 rounded-full bg-[#1a6b7e]/10 flex items-center justify-center flex-shrink-0">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#1a6b7e" strokeWidth={2} className="w-4 h-4">
-                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-                            </svg>
+                            <User className="w-4 h-4 text-[#1a6b7e]" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-[13px] font-semibold text-gray-900 truncate">{p.nom}</div>
@@ -145,10 +141,7 @@ export function GlobalSearch() {
                           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 text-left"
                         >
                           <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#4a90d9" strokeWidth={2} className="w-4 h-4">
-                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" strokeLinejoin="round" />
-                              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" strokeLinecap="round" />
-                            </svg>
+                            <Megaphone className="w-4 h-4 text-[#4a90d9]" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-[13px] font-semibold text-gray-900 truncate">{c.nom}</div>
@@ -173,10 +166,7 @@ export function GlobalSearch() {
                           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 text-left"
                         >
                           <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#38a169" strokeWidth={2} className="w-4 h-4">
-                              <polyline points="9 11 12 14 22 4" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" strokeLinecap="round" />
-                            </svg>
+                            <ClipboardCheck className="w-4 h-4 text-[#38a169]" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-[13px] font-semibold text-gray-900 truncate">{l.nom}</div>

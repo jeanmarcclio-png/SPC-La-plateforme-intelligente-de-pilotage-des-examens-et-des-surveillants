@@ -1,13 +1,12 @@
 "use client";
 
+import { AlertCircle } from "lucide-react";
+
 export function PageError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
       <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#e53e3e" strokeWidth={2} className="w-6 h-6">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 8v4m0 4h.01" strokeLinecap="round" />
-        </svg>
+        <AlertCircle className="w-6 h-6 text-red-500" />
       </div>
       <div className="text-[15px] font-bold text-gray-800 mb-1">Une erreur est survenue</div>
       <div className="text-[12.5px] text-gray-400 mb-5 max-w-[260px]">

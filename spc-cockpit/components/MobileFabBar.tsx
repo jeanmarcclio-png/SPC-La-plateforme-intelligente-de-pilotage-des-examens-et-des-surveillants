@@ -1,5 +1,7 @@
 "use client";
 
+import { Search } from "lucide-react";
+
 export function MobileFabBar() {
   function openSearch() {
     window.dispatchEvent(new CustomEvent("search:open"));
@@ -17,10 +19,7 @@ export function MobileFabBar() {
         style={{ background: "rgba(26,107,126,0.08)" }}
         aria-label="Recherche globale"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="#1a6b7e" strokeWidth={2.5} className="w-4 h-4 flex-shrink-0">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" strokeLinecap="round" />
-        </svg>
+        <Search className="w-4 h-4 flex-shrink-0 text-[#1a6b7e]" strokeWidth={2.5} />
         <span className="text-[13px] font-medium" style={{ color: "#1a6b7e" }}>Rechercher…</span>
       </button>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Bell, HelpCircle, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -75,10 +76,7 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
           onClick={() => window.dispatchEvent(new CustomEvent("copilote:open", { detail: "Quelles sont mes alertes et actions urgentes du jour ? Donne-moi une liste priorisée." }))}
           className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100 relative"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
+          <Bell className="w-3.5 h-3.5" />
           <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
         </button>
         <button
@@ -86,11 +84,7 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
           onClick={() => window.dispatchEvent(new CustomEvent("copilote:open", { detail: "Aide-moi à utiliser SPC Cockpit : que puis-je faire depuis ce tableau de bord ? Quelles fonctionnalités sont disponibles ?" }))}
           className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
-          </svg>
+          <HelpCircle className="w-3.5 h-3.5" />
         </button>
         <span className="text-gray-200 text-lg">|</span>
         {userName && <span className="text-[13px] text-gray-600">{userName}</span>}
@@ -102,11 +96,7 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
           title="Déconnexion"
           className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
+          <LogOut className="w-3.5 h-3.5" />
         </button>
       </div>
     </header>

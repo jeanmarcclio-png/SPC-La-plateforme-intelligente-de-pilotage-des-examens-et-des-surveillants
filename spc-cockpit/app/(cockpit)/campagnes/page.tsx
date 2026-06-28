@@ -7,18 +7,10 @@ import { Badge } from "@/components/Badge";
 import { getCampagnes, getLivrables } from "@/lib/supabase/queries";
 import { CampagneStatutSelect, AddCampagneButton } from "@/components/CampagneActions";
 import { computeCampagneHealth } from "@/lib/ai/engine";
+import { Check, Clock } from "lucide-react";
 
-const checkIcon = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3.5 h-3.5">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-
-const clockIcon = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-  </svg>
-);
+const checkIcon = <Check className="w-3.5 h-3.5" strokeWidth={2.5} />;
+const clockIcon = <Clock className="w-3.5 h-3.5" />;
 
 export default async function CampagnesPage() {
   const campagnes = await getCampagnes();
