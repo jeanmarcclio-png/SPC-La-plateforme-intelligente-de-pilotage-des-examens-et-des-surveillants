@@ -88,7 +88,7 @@ function SwipeableProspectCard({
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
             <circle cx="12" cy="12" r="3" />
           </svg>
-          <span className="text-[9px] font-bold text-white uppercase tracking-wide">Fiche</span>
+          <span className="text-[11px] font-bold text-white uppercase tracking-wide">Fiche</span>
         </button>
       </div>
 
@@ -98,7 +98,7 @@ function SwipeableProspectCard({
           <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5} className="w-5 h-5">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12 19.79 19.79 0 0 1 1.07 3.4 2 2 0 0 1 3.04 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 8 8l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 23 18v-.08z" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <span className="text-[9px] font-bold text-white uppercase tracking-wide">En cours</span>
+          <span className="text-[11px] font-bold text-white uppercase tracking-wide">En cours</span>
         </button>
       </div>
 
@@ -121,7 +121,7 @@ function SwipeableProspectCard({
             <div className="text-[14px] font-bold text-gray-900 truncate">{p.nom}</div>
             <div className="text-[11px] text-gray-400">{p.segment} · {p.cluster}</div>
           </div>
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${niveauBg[p.niveau] ?? "bg-gray-100 text-gray-500"}`}>
+          <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${niveauBg[p.niveau] ?? "bg-gray-100 text-gray-500"}`}>
             {p.niveau}
           </span>
         </div>
@@ -167,7 +167,7 @@ function KanbanView({
             <div className={`flex items-center gap-2 px-3 py-2 rounded-t-xl ${col.bg}`}>
               <span className={`w-2 h-2 rounded-full flex-shrink-0`} style={{ background: col.dot }} />
               <span className={`text-[11.5px] font-bold flex-1 ${col.text}`}>{col.label}</span>
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/60 ${col.text}`}>
+              <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-white/60 ${col.text}`}>
                 {items.length}
               </span>
             </div>
@@ -185,7 +185,7 @@ function KanbanView({
                     className="w-full text-left bg-white rounded-xl p-3 border border-gray-100 shadow-sm active:bg-gray-50"
                   >
                     <div className="text-[12.5px] font-bold text-gray-900 truncate">{p.nom}</div>
-                    <div className="text-[10px] text-gray-400 mt-0.5 truncate">{p.segment}</div>
+                    <div className="text-[11px] text-gray-400 mt-0.5 truncate">{p.segment}</div>
                     <div className="flex items-center gap-1.5 mt-2">
                       <div className="h-1 flex-1 bg-gray-100 rounded-full overflow-hidden">
                         <div className="h-full rounded-full" style={{ width: `${(p.scoreBANT / 10) * 100}%`, background: bantColor(p.scoreBANT) }} />
@@ -193,7 +193,7 @@ function KanbanView({
                       <span className="text-[11px] font-bold text-gray-700">{p.scoreBANT}</span>
                     </div>
                     {p.niveau && (
-                      <span className={`inline-block mt-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${niveauBg[p.niveau] ?? "bg-gray-100 text-gray-500"}`}>
+                      <span className={`inline-block mt-1.5 text-[11px] font-bold px-1.5 py-0.5 rounded-full ${niveauBg[p.niveau] ?? "bg-gray-100 text-gray-500"}`}>
                         {p.niveau}
                       </span>
                     )}
@@ -281,7 +281,7 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
             <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" />
           </svg>
           {activeFilters > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-orange-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-orange-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center">
               {activeFilters}
             </span>
           )}
@@ -295,7 +295,7 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
         <div className="bg-white rounded-2xl border border-gray-100 p-3 space-y-2">
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Segment</div>
+              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">Segment</div>
               <select value={segment} onChange={(e) => setSegment(e.target.value)}
                 className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a6b7e]/30">
                 <option value="">Tous</option>
@@ -303,7 +303,7 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
               </select>
             </div>
             <div>
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Cluster</div>
+              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">Cluster</div>
               <select value={cluster} onChange={(e) => setCluster(e.target.value)}
                 className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a6b7e]/30">
                 <option value="">Tous</option>
@@ -311,7 +311,7 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
               </select>
             </div>
             <div>
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Statut</div>
+              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">Statut</div>
               <select value={statut} onChange={(e) => setStatut(e.target.value)}
                 className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a6b7e]/30">
                 <option value="">Tous</option>
@@ -383,7 +383,7 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
       {/* Kanban view */}
       {viewMode === "kanban" && (
         <>
-          <div className="text-[10.5px] text-gray-400 px-1">
+          <div className="text-[11px] text-gray-400 px-1">
             Balayez horizontalement pour voir les colonnes ←→
           </div>
           <KanbanView prospects={filtered} onOpen={(p) => setSelected(p)} />
@@ -400,7 +400,7 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
           ) : (
             <>
               <div className="flex items-center justify-between px-1">
-                <span className="text-[10.5px] text-gray-400 flex items-center gap-1">
+                <span className="text-[11px] text-gray-400 flex items-center gap-1">
                   <span className="text-[#1a6b7e]/40">←</span> fiche · en cours <span className="text-orange-300/80">→</span>
                 </span>
               </div>

@@ -64,7 +64,7 @@ export function ProspectNotesInput({ id, notes }: { id: string; notes?: string }
         className="w-full text-[12px] text-gray-600 placeholder-gray-300 border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 focus:border-[#4a90d9]"
       />
       {saved && (
-        <span className="absolute bottom-2 right-2 text-[10px] text-green-500 font-medium">Sauvegardé ✓</span>
+        <span className="absolute bottom-2 right-2 text-[11px] text-green-500 font-medium">Sauvegardé ✓</span>
       )}
     </div>
   );

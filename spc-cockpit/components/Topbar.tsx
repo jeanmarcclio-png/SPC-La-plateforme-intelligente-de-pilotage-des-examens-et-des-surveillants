@@ -65,7 +65,7 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
           {badge}
         </span>
       )}
-      <span className="flex items-center gap-1 text-[10px] text-gray-400">
+      <span className="flex items-center gap-1 text-[11px] text-gray-400">
         <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
         {syncLabel}
       </span>

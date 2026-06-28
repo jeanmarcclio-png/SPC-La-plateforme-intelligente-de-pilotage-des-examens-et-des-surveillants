@@ -32,7 +32,7 @@ export function DashboardFileAction({
         <div className="flex items-center gap-2 mb-3">
           <span>🔔</span>
           <span className="text-[13px] font-bold text-orange-800">File d&apos;action du jour</span>
-          <span className="text-[10px] font-bold bg-orange-400 text-white rounded-full px-1.5 py-0.5">{localProspects.length}</span>
+          <span className="text-[11px] font-bold bg-orange-400 text-white rounded-full px-1.5 py-0.5">{localProspects.length}</span>
         </div>
         <div className="space-y-2">
           {localProspects.map((p) => {
@@ -49,7 +49,7 @@ export function DashboardFileAction({
                   <div className="text-[11px] text-gray-500">{p.segment} · {p.cluster}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10.5px] font-bold px-2 py-1 rounded-lg ${diff < 0 ? "bg-red-100 text-red-600" : "bg-orange-100 text-orange-600"}`}>
+                  <span className={`text-[11px] font-bold px-2 py-1 rounded-lg ${diff < 0 ? "bg-red-100 text-red-600" : "bg-orange-100 text-orange-600"}`}>
                     {diff < 0 ? `J+${Math.abs(diff)}` : "Auj."}
                   </span>
                   <span className="text-[11px] text-[#1a6b7e] font-semibold">→</span>

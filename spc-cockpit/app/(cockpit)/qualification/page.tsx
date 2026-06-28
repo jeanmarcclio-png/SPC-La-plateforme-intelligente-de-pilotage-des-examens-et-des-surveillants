@@ -161,7 +161,7 @@ export default async function QualificationPage() {
                 <div key={b.label} className={`rounded-lg p-3 text-center ${b.score === undefined ? "bg-gray-50/60 border border-dashed border-gray-200" : "bg-gray-50"}`}>
                   <div className="text-lg mb-1">{b.icon}</div>
                   {b.score !== undefined
-                    ? <><div className="text-[18px] font-extrabold text-[#1a6b7e]">{b.score}</div><div className="text-[9px] text-gray-400 uppercase tracking-wide mt-0.5">/{b.max}</div></>
+                    ? <><div className="text-[18px] font-extrabold text-[#1a6b7e]">{b.score}</div><div className="text-[11px] text-gray-400 uppercase tracking-wide mt-0.5">/{b.max}</div></>
                     : <div className="text-[13px] font-semibold text-gray-300 mt-1">—</div>
                   }
                   <div className="text-[11px] font-semibold text-gray-600 mt-1">{b.label}</div>

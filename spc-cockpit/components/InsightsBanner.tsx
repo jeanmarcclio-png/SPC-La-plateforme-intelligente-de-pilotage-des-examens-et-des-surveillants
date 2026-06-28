@@ -16,7 +16,7 @@ export function InsightsBanner({ insights }: { insights: ProactiveInsight[] }) {
     <div className="mb-5">
       <div className="flex items-center gap-2 mb-2.5">
         <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">IA Proactive</span>
-        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#1a6b7e] bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1a6b7e] bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
           <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
           Analyse en temps réel
         </span>
@@ -63,7 +63,7 @@ export function InsightsBannerMobile({ insights }: { insights: ProactiveInsight[
         <p className={`text-[11px] mt-0.5 ${c.metric}`}>{ins.metric}</p>
       </div>
       {insights.length > 1 && (
-        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white flex-shrink-0 mt-0.5 ${ins.type === "critical" ? "bg-red-500" : "bg-teal-500"}`}>
+        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full text-white flex-shrink-0 mt-0.5 ${ins.type === "critical" ? "bg-red-500" : "bg-teal-500"}`}>
           +{insights.length - 1}
         </span>
       )}

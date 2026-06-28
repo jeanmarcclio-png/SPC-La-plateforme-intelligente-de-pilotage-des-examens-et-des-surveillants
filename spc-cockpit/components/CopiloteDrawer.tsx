@@ -126,7 +126,7 @@ export function CopiloteDrawer() {
               <span className="text-xl">🤖</span>
               <div>
                 <div className="text-[13px] font-bold text-white">Copilote SPC</div>
-                <div className="text-[10px] text-white/70">Alimenté par Claude</div>
+                <div className="text-[11px] text-white/70">Alimenté par Claude</div>
               </div>
             </div>
             <div className="flex items-center gap-2">

@@ -103,7 +103,7 @@ export default async function CockpitPage() {
                 <div className="text-[12px] font-semibold text-gray-700 mt-0.5">{kpi.label}</div>
                 <div className="text-[11px] text-gray-400 mt-0.5">{kpi.sub}</div>
                 {kpi.delta && (
-                  <div className="text-[10.5px] text-[#1a6b7e] font-medium mt-1">{kpi.delta}</div>
+                  <div className="text-[11px] text-[#1a6b7e] font-medium mt-1">{kpi.delta}</div>
                 )}
               </div>
             ))}
@@ -113,7 +113,7 @@ export default async function CockpitPage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-fade-up">
             <div className="flex">
               <div className="flex-1 p-4 border-r border-gray-100">
-                <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2 font-medium">Sans action</div>
+                <div className="text-[11px] text-gray-400 uppercase tracking-wider mb-2 font-medium">Sans action</div>
                 <div className="flex items-end gap-2 mb-1.5">
                   <span className="text-[26px] font-extrabold text-gray-400 leading-none">{baseObjectif}%</span>
                   <span className="text-[11px] text-gray-400 pb-0.5">objectif</span>
@@ -123,7 +123,7 @@ export default async function CockpitPage() {
                 </div>
               </div>
               <div className="flex-1 p-4" style={{ background: "rgba(26,107,126,0.04)" }}>
-                <div className="text-[10px] text-[#1a6b7e] uppercase tracking-wider mb-2 font-bold">IA recommandée ✓</div>
+                <div className="text-[11px] text-[#1a6b7e] uppercase tracking-wider mb-2 font-bold">IA recommandée ✓</div>
                 <div className="flex items-end gap-2 mb-1.5">
                   <span className="text-[26px] font-extrabold text-[#1a6b7e] leading-none">{boostedObjectif}%</span>
                   <span className="text-[11px] text-[#1a6b7e]/60 pb-0.5">objectif</span>
@@ -135,7 +135,7 @@ export default async function CockpitPage() {
               <div className="flex items-center px-4 flex-shrink-0 border-l border-gray-100">
                 <div className="text-center">
                   <div className="text-[22px] font-extrabold text-[#1a6b7e]">+{boostedObjectif - baseObjectif}pts</div>
-                  <div className="text-[10px] text-gray-400">gain estimé</div>
+                  <div className="text-[11px] text-gray-400">gain estimé</div>
                 </div>
               </div>
             </div>
@@ -212,7 +212,7 @@ export default async function CockpitPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-[14px] font-extrabold text-[#1a6b7e]">{p.scoreBANT}</div>
-                        <div className="text-[10px] text-gray-400">BANT</div>
+                        <div className="text-[11px] text-gray-400">BANT</div>
                       </div>
                     </div>
                   ))}

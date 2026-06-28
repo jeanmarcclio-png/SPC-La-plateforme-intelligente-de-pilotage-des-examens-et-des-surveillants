@@ -18,7 +18,7 @@ function RelanceBadge({ date }: { date?: string }) {
   const diff = Math.floor((d.getTime() - today.getTime()) / 86400000);
   const cls = diff < 0 ? "bg-red-100 text-red-600" : diff === 0 ? "bg-orange-100 text-orange-600" : diff <= 3 ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500";
   const label = diff < 0 ? `J+${Math.abs(diff)}` : diff === 0 ? "Auj." : diff === 1 ? "Demain" : date;
-  return <span className={`text-[10.5px] font-bold px-1.5 py-0.5 rounded ${cls}`}>{label}</span>;
+  return <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${cls}`}>{label}</span>;
 }
 
 function exportCSV(prospects: Prospect[]) {
@@ -158,7 +158,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 {["#", "Établissement", "Segment", "Score", "Relance", "Statut", "Email", ""].map((h) => (
-                  <th key={h} className="text-left px-3 py-2.5 text-[10.5px] font-semibold text-gray-500 uppercase tracking-[.5px]">{h}</th>
+                  <th key={h} className="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-[.5px]">{h}</th>
                 ))}
               </tr>
             </thead>

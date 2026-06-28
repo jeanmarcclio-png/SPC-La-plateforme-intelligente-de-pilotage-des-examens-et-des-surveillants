@@ -68,7 +68,7 @@ export function EmailHistoryButton({ prospectId, prospectNom }: { prospectId: st
                         {new Date(log.sent_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </div>
                     </div>
-                    <span className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${statusColors[log.status] ?? "bg-gray-100 text-gray-500"}`}>
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${statusColors[log.status] ?? "bg-gray-100 text-gray-500"}`}>
                       {log.status === "sent" ? "Envoyé" : log.status === "simulated" ? "Simulé" : "Erreur"}
                     </span>
                   </div>

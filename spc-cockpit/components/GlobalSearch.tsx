@@ -103,7 +103,7 @@ export function GlobalSearch() {
                   {/* Prospects */}
                   {results.prospects.length > 0 && (
                     <div>
-                      <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                      <div className="px-4 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
                         Prospects
                       </div>
                       {results.prospects.map((p) => (
@@ -135,7 +135,7 @@ export function GlobalSearch() {
                   {/* Campagnes */}
                   {results.campagnes.length > 0 && (
                     <div>
-                      <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                      <div className="px-4 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
                         Campagnes
                       </div>
                       {results.campagnes.map((c) => (
@@ -163,7 +163,7 @@ export function GlobalSearch() {
                   {/* Livrables */}
                   {results.livrables.length > 0 && (
                     <div>
-                      <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                      <div className="px-4 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
                         Livrables
                       </div>
                       {results.livrables.map((l) => (

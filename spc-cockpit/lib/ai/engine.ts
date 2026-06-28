@@ -51,12 +51,22 @@ export function generateExecutiveSummary(data: {
 }): ExecutiveSummary {
   const { prospects, campagnes, totalAlertes, urgentEcheances } = data;
   const total        = prospects.length;
+
+  if (total === 0) {
+    return {
+      headline: "Aucun prospect chargé",
+      subline:  "Importez ou saisissez vos premiers établissements cibles pour démarrer.",
+      forecast: "Lancez une campagne de ciblage pour alimenter le pipeline.",
+      actions:  ["Créer une campagne", "Importer des prospects"],
+    };
+  }
+
   const nonContactes = prospects.filter((p) => p.statut === "Non contacté").length;
   const convertis    = prospects.filter((p) => p.statut === "Converti").length;
   const enCours      = prospects.filter((p) => p.statut === "En cours").length;
   const tresChaudes  = prospects.filter((p) => p.niveau === "Très chaud").length;
   const campActives  = campagnes.filter((c) => c.statut === "Actif" || c.statut === "En cours").length;
-  const contactRate  = total > 0 ? Math.round(((total - nonContactes) / total) * 100) : 0;
+  const contactRate  = Math.round(((total - nonContactes) / total) * 100);
   const urgentCamp   = campagnes.find((c) => c.joursRestants <= 7 && c.joursRestants > 0 && c.statut !== "Terminé");
 
   let headline: string;
@@ -220,6 +230,16 @@ export function generateInsights(data: {
   const insights: ProactiveInsight[] = [];
 
   const total        = prospects.length;
+  if (total === 0) {
+    return [{
+      type:    "info",
+      icon:    "📋",
+      message: "Aucun prospect dans le pipeline",
+      metric:  "Créez une campagne pour commencer la prospection",
+      href:    "/campagnes",
+    }];
+  }
+
   const nonContactes = prospects.filter((p) => p.statut === "Non contacté").length;
   const enCours      = prospects.filter((p) => p.statut === "En cours").length;
   const convertis    = prospects.filter((p) => p.statut === "Converti").length;
