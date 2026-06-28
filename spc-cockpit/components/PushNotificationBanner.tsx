@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Bell } from "lucide-react";
 
 type PermState = "default" | "granted" | "denied" | "unsupported" | "ios-browser";
 
@@ -73,10 +74,7 @@ export function PushNotificationBanner() {
       <div className="mx-4 mb-3 bg-blue-50 border border-blue-200 rounded-2xl p-3">
         <div className="flex items-start gap-3">
           <div className="w-9 h-9 rounded-xl bg-[#1a6b7e] flex items-center justify-center flex-shrink-0 mt-0.5">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} className="w-5 h-5">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" />
-            </svg>
+            <Bell className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-[12.5px] font-bold text-[#1a6b7e]">Activer les rappels (iOS)</div>
@@ -105,10 +103,7 @@ export function PushNotificationBanner() {
   return (
     <div className="mx-4 mb-3 bg-[#1a6b7e]/10 border border-[#1a6b7e]/20 rounded-2xl p-3 flex items-center gap-3">
       <div className="w-9 h-9 rounded-xl bg-[#1a6b7e] flex items-center justify-center flex-shrink-0">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} className="w-5 h-5">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" />
-        </svg>
+        <Bell className="w-5 h-5 text-white" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-[12.5px] font-bold text-[#1a6b7e]">Activer les rappels</div>

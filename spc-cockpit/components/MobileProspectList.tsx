@@ -5,6 +5,7 @@ import type { Prospect } from "@/lib/types";
 import { ProspectStatutSelect } from "@/components/ProspectCRM";
 import { ProspectDrawer } from "@/components/ProspectDrawer";
 import { AddProspectButton } from "@/components/AddProspectModal";
+import { Eye, Phone, Search, Filter, List, Columns } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const niveauBg: Record<string, string> = {
@@ -84,10 +85,7 @@ function SwipeableProspectCard({
       {/* Left reveal: Voir fiche */}
       <div className="absolute inset-y-0 left-0 flex items-center justify-center bg-[#1a6b7e] rounded-l-2xl" style={{ width: SWIPE_REVEAL }}>
         <button onClick={(e) => { e.stopPropagation(); setOffset(0); onOpen(); }} className="flex flex-col items-center gap-1">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5} className="w-5 h-5">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
+          <Eye className="w-5 h-5 text-white" strokeWidth={2.5} />
           <span className="text-[11px] font-bold text-white uppercase tracking-wide">Fiche</span>
         </button>
       </div>
@@ -95,9 +93,7 @@ function SwipeableProspectCard({
       {/* Right reveal: En cours */}
       <div className="absolute inset-y-0 right-0 flex items-center justify-center bg-orange-400 rounded-r-2xl" style={{ width: SWIPE_REVEAL }}>
         <button onClick={(e) => { e.stopPropagation(); setOffset(0); onQuickAction(); }} className="flex flex-col items-center gap-1">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5} className="w-5 h-5">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12 19.79 19.79 0 0 1 1.07 3.4 2 2 0 0 1 3.04 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 8 8l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 23 18v-.08z" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <Phone className="w-5 h-5 text-white" strokeWidth={2.5} />
           <span className="text-[11px] font-bold text-white uppercase tracking-wide">En cours</span>
         </button>
       </div>
@@ -255,10 +251,7 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
       {/* Row 1: search + filters + add */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none">
-            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" strokeLinecap="round" />
-          </svg>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           <input
             type="search"
             value={search}
@@ -277,9 +270,7 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
           onClick={() => setFiltersOpen(o => !o)}
           className={`relative flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-[12.5px] font-semibold transition-colors ${filtersOpen || activeFilters > 0 ? "bg-[#1a6b7e] border-[#1a6b7e] text-white" : "bg-white border-gray-200 text-gray-600"}`}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-            <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" />
-          </svg>
+          <Filter className="w-4 h-4" />
           {activeFilters > 0 && (
             <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-orange-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center">
               {activeFilters}
@@ -364,18 +355,13 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
             onClick={() => setViewMode("list")}
             className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${viewMode === "list" ? "bg-[#1a6b7e] text-white" : "text-gray-500"}`}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3.5 h-3.5">
-              <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
-              <line x1="3" y1="6" x2="3.01" y2="6" strokeLinecap="round" /><line x1="3" y1="12" x2="3.01" y2="12" strokeLinecap="round" /><line x1="3" y1="18" x2="3.01" y2="18" strokeLinecap="round" />
-            </svg>
+            <List className="w-3.5 h-3.5" strokeWidth={2.5} />
           </button>
           <button
             onClick={() => setViewMode("kanban")}
             className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${viewMode === "kanban" ? "bg-[#1a6b7e] text-white" : "text-gray-500"}`}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3.5 h-3.5">
-              <rect x="3" y="3" width="5" height="18" rx="1" /><rect x="10" y="3" width="5" height="12" rx="1" /><rect x="17" y="3" width="5" height="15" rx="1" />
-            </svg>
+            <Columns className="w-3.5 h-3.5" strokeWidth={2.5} />
           </button>
         </div>
       </div>
