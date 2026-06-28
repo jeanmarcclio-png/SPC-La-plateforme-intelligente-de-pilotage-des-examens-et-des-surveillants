@@ -184,7 +184,7 @@ export function MobileNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex-1 flex flex-col items-center justify-center gap-[5px] text-[10px] font-semibold tracking-tight transition-colors relative min-w-0 ${
+              className={`flex-1 flex flex-col items-center justify-center gap-[5px] text-[11px] font-semibold tracking-tight transition-colors relative min-w-0 ${
                 active ? "text-[#4a90d9]" : "text-[#5a6e82]"
               }`}
             >
@@ -252,7 +252,7 @@ export function Sidebar() {
           <span className="w-2 h-2 rounded-full bg-[#4a90d9] flex-shrink-0" />
           SPC COCKPIT
         </div>
-        <div className="text-[10px] text-[#4a90d9] uppercase tracking-[1.5px] mt-0.5 pl-4">
+        <div className="text-[11px] text-[#4a90d9] uppercase tracking-[1.5px] mt-0.5 pl-4">
           Prospection B2B
         </div>
       </div>
@@ -315,7 +315,7 @@ export function Sidebar() {
 
       {/* Campaign info */}
       <div className="p-3.5 border-t border-white/[0.08]">
-        <div className="text-[10px] text-[#4a90d9] uppercase tracking-[1px] mb-1.5">
+        <div className="text-[11px] text-[#4a90d9] uppercase tracking-[1px] mb-1.5">
           Campagne active
         </div>
         <div className="text-[13px] font-semibold text-[#e2e8f0] leading-snug">

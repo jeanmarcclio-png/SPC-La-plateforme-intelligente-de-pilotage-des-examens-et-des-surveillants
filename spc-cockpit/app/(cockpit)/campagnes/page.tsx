@@ -170,15 +170,15 @@ export default async function CampagnesPage() {
               <div className="grid grid-cols-3 gap-2 mt-3">
                 <div className="text-center">
                   <div className="text-[20px] font-extrabold text-gray-900">{c.nombreProspects}</div>
-                  <div className="text-[10px] text-gray-400">cibles</div>
+                  <div className="text-[11px] text-gray-400">cibles</div>
                 </div>
                 <div className="text-center border-x border-gray-100">
                   <div className="text-[20px] font-extrabold text-[#1a6b7e]">{c.tresChaudes}</div>
-                  <div className="text-[10px] text-gray-400">très chaud</div>
+                  <div className="text-[11px] text-gray-400">très chaud</div>
                 </div>
                 <div className="text-center">
                   <div className="text-[20px] font-extrabold text-gray-900">{c.score}</div>
-                  <div className="text-[10px] text-gray-400">score /10</div>
+                  <div className="text-[11px] text-gray-400">score /10</div>
                 </div>
               </div>
               <div className="mt-3 flex items-center justify-between mb-2.5">
@@ -195,7 +195,7 @@ export default async function CampagnesPage() {
                     style={{ width: `${healthMap[c.id].score}%`, background: healthMap[c.id].color }}
                   />
                 </div>
-                <span className="text-[10.5px] font-bold whitespace-nowrap" style={{ color: healthMap[c.id].color }}>
+                <span className="text-[11px] font-bold whitespace-nowrap" style={{ color: healthMap[c.id].color }}>
                   {healthMap[c.id].score}/100
                 </span>
               </div>

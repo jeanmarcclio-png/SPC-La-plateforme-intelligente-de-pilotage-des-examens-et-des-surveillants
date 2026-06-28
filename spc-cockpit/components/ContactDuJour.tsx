@@ -46,7 +46,7 @@ export function ContactDuJour({
     >
       {/* Header */}
       <div className="px-4 pt-4 pb-3">
-        <div className="text-[10px] text-[#4a90d9] font-bold uppercase tracking-[1.2px] mb-1">
+        <div className="text-[11px] text-[#4a90d9] font-bold uppercase tracking-[1.2px] mb-1">
           🎯 Contact du Jour · IA
         </div>
         <div className="flex items-start justify-between gap-2">
@@ -56,14 +56,14 @@ export function ContactDuJour({
           </div>
           <div className="text-center flex-shrink-0">
             <div className="text-[26px] font-black text-[#4a90d9] leading-none">{confidence}%</div>
-            <div className="text-[9px] text-white/40 uppercase tracking-wide">confiance</div>
+            <div className="text-[11px] text-white/40 uppercase tracking-wide">confiance</div>
           </div>
         </div>
       </div>
 
       {/* Action recommandée */}
       <div className="mx-4 mb-3 bg-white/[0.08] rounded-xl px-3 py-2.5 border border-white/[0.1]">
-        <div className="text-[10px] text-white/40 uppercase tracking-wider mb-0.5">Action recommandée</div>
+        <div className="text-[11px] text-white/40 uppercase tracking-wider mb-0.5">Action recommandée</div>
         <div className="text-[13px] font-semibold text-white">{action} — {prospect.nom}</div>
         <div className="text-[11px] text-white/50 mt-0.5">{prospect.interlocuteur}</div>
       </div>
@@ -77,7 +77,7 @@ export function ContactDuJour({
             className={`flex flex-col items-center gap-1.5 py-3 rounded-xl ${color} transition-opacity active:opacity-70`}
           >
             <span className="text-xl">{icon}</span>
-            <span className="text-[10.5px] font-semibold text-center leading-tight">{label}</span>
+            <span className="text-[11px] font-semibold text-center leading-tight">{label}</span>
           </button>
         ))}
       </div>

@@ -54,7 +54,7 @@ export function KanbanBoard({ prospects, onSelect, selectedId }: {
             <div className="px-3 py-2.5 border-b border-gray-200 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: col.color }} />
               <span className="text-[12px] font-semibold text-gray-700 flex-1">{col.label}</span>
-              <span className="text-[10.5px] font-bold text-gray-500 bg-white border border-gray-200 rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
+              <span className="text-[11px] font-bold text-gray-500 bg-white border border-gray-200 rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
                 {cards.length}
               </span>
             </div>
@@ -77,25 +77,25 @@ export function KanbanBoard({ prospects, onSelect, selectedId }: {
                   >
                     <div className="flex items-start gap-1.5 mb-1">
                       <span className="text-[11.5px] font-semibold text-gray-800 leading-snug flex-1 min-w-0 truncate">{p.nom}</span>
-                      <span className={`text-[9px] font-bold px-1 py-0.5 rounded flex-shrink-0 ${NIVEAU_CLS[p.niveau] ?? ""}`}>
+                      <span className={`text-[11px] font-bold px-1 py-0.5 rounded flex-shrink-0 ${NIVEAU_CLS[p.niveau] ?? ""}`}>
                         {NIVEAU_ICO[p.niveau]}
                       </span>
                     </div>
-                    <div className="text-[10px] text-gray-400 mb-2 truncate">{p.segment} · {p.cluster}</div>
+                    <div className="text-[11px] text-gray-400 mb-2 truncate">{p.segment} · {p.cluster}</div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <div className="h-1 w-10 bg-gray-100 rounded-full overflow-hidden">
                           <div className="h-full rounded-full" style={{ width: `${(p.scoreBANT / 10) * 100}%`, background: bantColor }} />
                         </div>
-                        <span className="text-[10px] font-bold text-gray-700">{p.scoreBANT}</span>
+                        <span className="text-[11px] font-bold text-gray-700">{p.scoreBANT}</span>
                       </div>
                       {diff !== null && (
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${diff < 0 ? "bg-red-100 text-red-600" : diff === 0 ? "bg-orange-100 text-orange-600" : "bg-green-50 text-green-600"}`}>
+                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${diff < 0 ? "bg-red-100 text-red-600" : diff === 0 ? "bg-orange-100 text-orange-600" : "bg-green-50 text-green-600"}`}>
                           {diff < 0 ? `J+${Math.abs(diff)}` : diff === 0 ? "Auj." : `J-${diff}`}
                         </span>
                       )}
                     </div>
-                    {p.canal && <div className="text-[9.5px] text-gray-400 mt-1.5 truncate">{p.canal}</div>}
+                    {p.canal && <div className="text-[11px] text-gray-400 mt-1.5 truncate">{p.canal}</div>}
                   </div>
                 );
               })}

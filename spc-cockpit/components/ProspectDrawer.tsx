@@ -149,25 +149,25 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
       <div className="bg-[#1a6b7e] px-5 pt-4 pb-4 flex-shrink-0">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0 mr-2">
-            <div className="text-white/60 text-[10px] uppercase tracking-wider mb-0.5">{prospect.segment} · {prospect.cluster}</div>
+            <div className="text-white/60 text-[11px] uppercase tracking-wider mb-0.5">{prospect.segment} · {prospect.cluster}</div>
             <div className="text-white text-[16px] font-extrabold leading-tight truncate">{prospect.nom}</div>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
             {allProspects && (
               <>
-                <button onClick={() => hasPrev && onNavigate?.(allProspects[currentIndex! - 1])} disabled={!hasPrev} title="Précédent (←)" className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white text-base hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">‹</button>
-                <span className="text-white/40 text-[10px] min-w-[30px] text-center">{currentIndex !== undefined ? `${currentIndex + 1}/${allProspects.length}` : ""}</span>
-                <button onClick={() => hasNext && onNavigate?.(allProspects[currentIndex! + 1])} disabled={!hasNext} title="Suivant (→)" className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white text-base hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">›</button>
+                <button onClick={() => hasPrev && onNavigate?.(allProspects[currentIndex! - 1])} disabled={!hasPrev} title="Précédent (←)" className="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center text-white text-base hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">‹</button>
+                <span className="text-white/40 text-[11px] min-w-[30px] text-center">{currentIndex !== undefined ? `${currentIndex + 1}/${allProspects.length}` : ""}</span>
+                <button onClick={() => hasNext && onNavigate?.(allProspects[currentIndex! + 1])} disabled={!hasNext} title="Suivant (→)" className="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center text-white text-base hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">›</button>
               </>
             )}
-            <button onClick={onClose} title="Fermer (Échap)" className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 ml-1 transition-colors text-[12px]">✕</button>
+            <button onClick={onClose} title="Fermer (Échap)" className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 ml-1 transition-colors text-[12px]">✕</button>
           </div>
         </div>
 
         {/* Pipeline steps */}
         <div className="flex items-center gap-1 mb-3">
           {STATUT_PIPELINE.map((s, i) => (
-            <button key={s} onClick={() => handleStatut(s)} className={`flex-1 text-[9px] font-bold py-1 rounded transition-colors ${i === pipelineIdx ? "bg-white text-[#1a6b7e]" : i < pipelineIdx ? "bg-white/30 text-white" : "bg-white/10 text-white/40 hover:bg-white/20"}`}>
+            <button key={s} onClick={() => handleStatut(s)} className={`flex-1 text-[11px] font-bold py-1 rounded transition-colors ${i === pipelineIdx ? "bg-white text-[#1a6b7e]" : i < pipelineIdx ? "bg-white/30 text-white" : "bg-white/10 text-white/40 hover:bg-white/20"}`}>
               {i < pipelineIdx ? "✓" : s.split(" ")[0]}
             </button>
           ))}
@@ -176,14 +176,14 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
         {/* BANT + Chaleur */}
         <div className="flex gap-2">
           <div className="bg-white/10 rounded-xl px-3 py-2 flex-1">
-            <div className="text-white/50 text-[9px] uppercase tracking-wider">COMPLÉTUDE</div>
+            <div className="text-white/50 text-[11px] uppercase tracking-wider">COMPLÉTUDE</div>
             <div className="text-white text-[20px] font-black">{bantAuto}<span className="text-[11px] font-normal text-white/40">/10</span></div>
             <div className="h-1 bg-white/20 rounded-full mt-1">
               <div className="h-full rounded-full transition-all" style={{ width: `${(bantAuto / 10) * 100}%`, backgroundColor: bantColor }} />
             </div>
           </div>
           <div className="bg-white/10 rounded-xl px-3 py-2 flex-1">
-            <div className="text-white/50 text-[9px] uppercase tracking-wider mb-1">CHALEUR</div>
+            <div className="text-white/50 text-[11px] uppercase tracking-wider mb-1">CHALEUR</div>
             <select value={niveau} onChange={(e) => handleNiveau(e.target.value)} className="bg-transparent text-white text-[13px] font-bold border-0 outline-none cursor-pointer w-full">
               {NIVEAUX.map(n => <option key={n} value={n} className="text-black">{n}</option>)}
             </select>
@@ -197,7 +197,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
         {/* ── Mode Décision IA ── */}
         <div className="rounded-xl border border-[#1a6b7e]/20 overflow-hidden">
           <div className="bg-[#1a6b7e]/[0.06] px-3 py-2 flex items-center gap-2">
-            <span className="text-[10.5px] font-bold text-[#1a6b7e] uppercase tracking-wider">🧠 Mode Décision IA</span>
+            <span className="text-[11px] font-bold text-[#1a6b7e] uppercase tracking-wider">🧠 Mode Décision IA</span>
           </div>
           <div className="grid grid-cols-3 divide-x divide-[#1a6b7e]/10">
             {[
@@ -223,7 +223,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
                 className="flex flex-col items-center gap-1.5 py-3 hover:bg-[#1a6b7e]/[0.08] transition-colors"
               >
                 <span className="text-xl">{icon}</span>
-                <span className="text-[10.5px] font-semibold text-[#1a6b7e] text-center leading-tight px-1">{label}</span>
+                <span className="text-[11px] font-semibold text-[#1a6b7e] text-center leading-tight px-1">{label}</span>
               </button>
             ))}
           </div>
@@ -260,7 +260,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
         {/* Timeline */}
         {timelineEntries.length > 0 && (
           <div className="bg-blue-50 rounded-xl p-3.5 border border-blue-100">
-            <div className="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-2.5">Historique contacts</div>
+            <div className="text-[11px] text-blue-400 font-bold uppercase tracking-wider mb-2.5">Historique contacts</div>
             {timelineEntries.map((entry, i) => (
               <div key={i} className="flex items-start gap-2.5 py-1.5">
                 <div className={`rounded-full mt-1.5 flex-shrink-0 ${i === 0 ? "w-2.5 h-2.5 bg-blue-600" : "w-2 h-2 bg-blue-300"}`} />
@@ -272,7 +272,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
 
         {/* Coordonnées */}
         <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-3">Coordonnées</div>
+          <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-3">Coordonnées</div>
           <div className="space-y-2.5">
             {[
               { label: "Téléphone", value: telephone, setter: setTelephone },
@@ -301,8 +301,8 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
         {/* Prochaine relance */}
         <div className={`rounded-xl p-3.5 border ${relanceStatus?.cls ?? "bg-gray-50 border-gray-100"}`}>
           <div className="flex items-center justify-between mb-1.5">
-            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Prochaine relance</div>
-            {relanceStatus && <span className={`text-[10px] font-bold ${relanceStatus.cls.split(" ")[0]}`}>{relanceStatus.label}</span>}
+            <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Prochaine relance</div>
+            {relanceStatus && <span className={`text-[11px] font-bold ${relanceStatus.cls.split(" ")[0]}`}>{relanceStatus.label}</span>}
           </div>
           <input
             value={relance}
@@ -314,14 +314,14 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
 
         {/* Données SPC */}
         <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-3">Données SPC</div>
+          <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-3">Données SPC</div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="text-[10px] text-gray-400 mb-1">Nb étudiants</div>
+              <div className="text-[11px] text-gray-400 mb-1">Nb étudiants</div>
               <input value={nbEtudiants} onChange={(e) => setNbEtudiants(e.target.value)} type="number" placeholder="ex : 2500" className="w-full text-[12px] text-gray-700 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30" />
             </div>
             <div>
-              <div className="text-[10px] text-gray-400 mb-1">Sessions / an</div>
+              <div className="text-[11px] text-gray-400 mb-1">Sessions / an</div>
               <input value={sessionsParAn} onChange={(e) => setSessionsParAn(e.target.value)} type="number" placeholder="ex : 4" className="w-full text-[12px] text-gray-700 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30" />
             </div>
           </div>
@@ -329,7 +329,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
 
         {/* Notes */}
         <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">Notes de prospection</div>
+          <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-2">Notes de prospection</div>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -350,7 +350,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
           {pending ? "Sauvegarde..." : saved ? "✓ Sauvegardé" : "💾 Enregistrer la fiche"}
         </button>
         {allProspects && (
-          <div className="flex items-center justify-center gap-2 mt-2 text-[10.5px] text-gray-400">
+          <div className="flex items-center justify-center gap-2 mt-2 text-[11px] text-gray-400">
             <span>← → naviguer</span><span>·</span><span>Échap fermer</span>
           </div>
         )}

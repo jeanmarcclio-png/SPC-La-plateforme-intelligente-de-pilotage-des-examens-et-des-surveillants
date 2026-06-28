@@ -201,7 +201,7 @@ export default async function DashboardPage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-[13px] font-semibold text-gray-800">Cockpit dirigeant</span>
-                <span className="text-[10px] font-semibold bg-gray-100 text-gray-500 rounded-full px-2 py-0.5">Détection proactive</span>
+                <span className="text-[11px] font-semibold bg-gray-100 text-gray-500 rounded-full px-2 py-0.5">Détection proactive</span>
               </div>
               <Link href="/reporting" className="text-[11.5px] text-[#4a90d9] hover:underline">Vue complète →</Link>
             </div>
@@ -218,7 +218,7 @@ export default async function DashboardPage() {
                 >
                   <div className="text-base mb-1">{r.icon}</div>
                   <div className="text-[11.5px] font-semibold text-gray-800 leading-tight">{r.label}</div>
-                  <div className={`text-[10.5px] mt-0.5 leading-tight ${
+                  <div className={`text-[11px] mt-0.5 leading-tight ${
                     r.level === "ok" ? "text-green-700" : r.level === "warning" ? "text-orange-700" : "text-red-700"
                   }`}>{r.detail}</div>
                 </div>
@@ -231,7 +231,7 @@ export default async function DashboardPage() {
             <div className="flex items-center justify-between mb-3.5">
               <div className="flex items-center gap-2">
                 <span className="text-[13px] font-semibold text-gray-800">📈 Prévision IA — objectif fin de campagne</span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${riskLevel === "faible" ? "bg-green-100 text-green-700" : riskLevel === "moyen" ? "bg-orange-100 text-orange-700" : "bg-red-100 text-red-700"}`}>
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${riskLevel === "faible" ? "bg-green-100 text-green-700" : riskLevel === "moyen" ? "bg-orange-100 text-orange-700" : "bg-red-100 text-red-700"}`}>
                   Risque {riskLevel}
                 </span>
               </div>
@@ -239,7 +239,7 @@ export default async function DashboardPage() {
             </div>
             <div className="grid grid-cols-2 gap-3 mb-3">
               <div className="rounded-xl border border-gray-200 p-4 bg-gray-50">
-                <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2.5 font-medium">Sans action aujourd&apos;hui</div>
+                <div className="text-[11px] text-gray-400 uppercase tracking-wider mb-2.5 font-medium">Sans action aujourd&apos;hui</div>
                 <div className="text-[36px] font-extrabold text-gray-400 leading-none mb-1">{baseObjectif}%</div>
                 <div className="text-[11px] text-gray-400 mb-2.5">objectif atteint estimé</div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -247,7 +247,7 @@ export default async function DashboardPage() {
                 </div>
               </div>
               <div className="rounded-xl border border-[#1a6b7e]/25 p-4 bg-teal-50/60">
-                <div className="text-[10px] text-[#1a6b7e] uppercase tracking-wider mb-2.5 font-bold">Recommandations IA suivies ✓</div>
+                <div className="text-[11px] text-[#1a6b7e] uppercase tracking-wider mb-2.5 font-bold">Recommandations IA suivies ✓</div>
                 <div className="text-[36px] font-extrabold text-[#1a6b7e] leading-none mb-1">{boostedObjectif}%</div>
                 <div className="text-[11px] text-[#1a6b7e]/70 mb-2.5">objectif atteint estimé</div>
                 <div className="h-2 bg-[#1a6b7e]/15 rounded-full overflow-hidden">
@@ -270,7 +270,7 @@ export default async function DashboardPage() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-[13px] font-semibold text-gray-800">🤖 Recommandations IA</span>
-                  <span className="text-[10px] font-semibold bg-teal-50 text-teal-600 border border-teal-200 rounded-full px-2 py-0.5">Moteur de décision</span>
+                  <span className="text-[11px] font-semibold bg-teal-50 text-teal-600 border border-teal-200 rounded-full px-2 py-0.5">Moteur de décision</span>
                 </div>
                 <Link href="/qualification" className="text-[11.5px] text-[#4a90d9] hover:underline">Voir tous →</Link>
               </div>
@@ -284,7 +284,7 @@ export default async function DashboardPage() {
                   >
                     {/* Header */}
                     <div className="flex items-center justify-between mb-2.5">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                         rec.urgency === "critical" ? "bg-red-100 text-red-700" :
                         rec.urgency === "high"     ? "bg-orange-100 text-orange-700" :
                                                      "bg-blue-100 text-blue-700"
@@ -308,7 +308,7 @@ export default async function DashboardPage() {
 
                     {/* Impact estimé */}
                     <div className="flex items-center justify-between bg-[#1a6b7e]/[0.07] rounded-lg px-2.5 py-1.5 mb-2">
-                      <span className="text-[10px] text-[#1a6b7e]/70 font-medium">Impact estimé</span>
+                      <span className="text-[11px] text-[#1a6b7e]/70 font-medium">Impact estimé</span>
                       <span className="text-[12.5px] font-extrabold text-[#1a6b7e]">
                         +{Math.round(
                           (parseFloat(rec.prospect.valeurPotentielle ?? "0") > 0
@@ -322,11 +322,11 @@ export default async function DashboardPage() {
                     {/* Timing impact */}
                     <div className="flex gap-1.5 mb-2.5">
                       <div className="flex-1 bg-teal-50 border border-teal-100 rounded-lg p-1.5 text-center">
-                        <div className="text-[9px] font-semibold text-teal-600">Aujourd'hui</div>
+                        <div className="text-[11px] font-semibold text-teal-600">Aujourd'hui</div>
                         <div className="text-[12px] font-extrabold text-teal-700">+{rec.todayBoost}%</div>
                       </div>
                       <div className="flex-1 bg-red-50 border border-red-100 rounded-lg p-1.5 text-center">
-                        <div className="text-[9px] font-semibold text-red-500">J+3</div>
+                        <div className="text-[11px] font-semibold text-red-500">J+3</div>
                         <div className="text-[12px] font-extrabold text-red-600">{rec.delayPenalty}%</div>
                       </div>
                     </div>
@@ -334,7 +334,7 @@ export default async function DashboardPage() {
                     {/* Reasons */}
                     <div className="space-y-0.5 mb-2.5">
                       {rec.reasons.slice(0, 2).map((r, j) => (
-                        <div key={j} className="flex items-start gap-1.5 text-[10.5px] text-gray-600">
+                        <div key={j} className="flex items-start gap-1.5 text-[11px] text-gray-600">
                           <span className="text-green-500 font-bold flex-shrink-0">✓</span>
                           <span className="leading-snug">{r}</span>
                         </div>
@@ -388,7 +388,7 @@ export default async function DashboardPage() {
                     <Link key={p.id} href="/qualification" className="bg-white rounded-lg border border-orange-200 p-2.5 hover:border-orange-400 hover:shadow-sm transition-all">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-[12px] font-semibold text-gray-800 truncate flex-1">{p.nom}</span>
-                        <span className={`text-[10.5px] font-bold px-1.5 py-0.5 rounded ml-1 ${diff < 0 ? "bg-red-100 text-red-600" : "bg-orange-100 text-orange-600"}`}>
+                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ml-1 ${diff < 0 ? "bg-red-100 text-red-600" : "bg-orange-100 text-orange-600"}`}>
                           {diff < 0 ? `J+${Math.abs(diff)}` : "Auj."}
                         </span>
                       </div>
