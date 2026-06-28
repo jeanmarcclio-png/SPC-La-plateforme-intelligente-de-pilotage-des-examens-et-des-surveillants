@@ -260,11 +260,11 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
         {/* Timeline */}
         {timelineEntries.length > 0 && (
           <div className="bg-blue-50 rounded-xl p-3.5 border border-blue-100">
-            <div className="text-[11px] text-blue-400 font-bold uppercase tracking-wider mb-2.5">Historique contacts</div>
+            <div className="text-[13px] text-blue-600 font-bold uppercase tracking-wider mb-2.5">Historique contacts</div>
             {timelineEntries.map((entry, i) => (
               <div key={i} className="flex items-start gap-2.5 py-1.5">
                 <div className={`rounded-full mt-1.5 flex-shrink-0 ${i === 0 ? "w-2.5 h-2.5 bg-blue-600" : "w-2 h-2 bg-blue-300"}`} />
-                <span className={`text-[12px] leading-snug ${i === 0 ? "text-gray-800 font-semibold" : "text-blue-500"}`}>{entry}</span>
+                <span className={`text-[14px] leading-snug ${i === 0 ? "text-gray-800 font-semibold" : "text-blue-600"}`}>{entry}</span>
               </div>
             ))}
           </div>
@@ -272,27 +272,27 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
 
         {/* Coordonnées */}
         <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
-          <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-3">Coordonnées</div>
-          <div className="space-y-2.5">
+          <div className="text-[13px] text-gray-600 font-bold uppercase tracking-wider mb-3">Coordonnées</div>
+          <div className="space-y-3">
             {[
               { label: "Téléphone", value: telephone, setter: setTelephone },
               { label: "Contact", value: contact, setter: setContact },
               { label: "Fonction", value: fonction, setter: setFonction },
               { label: "Valeur €", value: valeur, setter: setValeur },
             ].map(({ label, value, setter }) => (
-              <div key={label} className="flex items-center gap-2.5">
-                <span className="text-[11px] text-gray-400 w-20 font-medium flex-shrink-0">{label}</span>
+              <div key={label} className="flex items-center gap-3">
+                <span className="text-[13px] text-gray-600 w-24 font-semibold flex-shrink-0">{label}</span>
                 <input
                   value={value}
                   onChange={(e) => setter(e.target.value)}
-                  className="flex-1 text-[12px] text-gray-700 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 focus:border-[#4a90d9]"
+                  className="flex-1 text-[14px] text-gray-800 bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 focus:border-[#4a90d9]"
                 />
               </div>
             ))}
             {prospect.email && (
-              <div className="flex items-center gap-2.5">
-                <span className="text-[11px] text-gray-400 w-20 font-medium flex-shrink-0">Email</span>
-                <span className="text-[12px] text-[#4a90d9]">{prospect.email}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[13px] text-gray-600 w-24 font-semibold flex-shrink-0">Email</span>
+                <span className="text-[14px] text-[#4a90d9]">{prospect.email}</span>
               </div>
             )}
           </div>
@@ -301,41 +301,41 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
         {/* Prochaine relance */}
         <div className={`rounded-xl p-3.5 border ${relanceStatus?.cls ?? "bg-gray-50 border-gray-100"}`}>
           <div className="flex items-center justify-between mb-1.5">
-            <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Prochaine relance</div>
-            {relanceStatus && <span className={`text-[11px] font-bold ${relanceStatus.cls.split(" ")[0]}`}>{relanceStatus.label}</span>}
+            <div className="text-[13px] text-gray-600 font-bold uppercase tracking-wider">Prochaine relance</div>
+            {relanceStatus && <span className={`text-[13px] font-bold ${relanceStatus.cls.split(" ")[0]}`}>{relanceStatus.label}</span>}
           </div>
           <input
             value={relance}
             onChange={(e) => setRelance(e.target.value)}
             placeholder="ex : 24/06/2026"
-            className="w-full text-[12px] bg-transparent border-0 outline-none text-gray-700 placeholder-gray-300 font-medium"
+            className="w-full text-[14px] bg-transparent border-0 outline-none text-gray-800 placeholder-gray-400 font-medium"
           />
         </div>
 
         {/* Données SPC */}
         <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
-          <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-3">Données SPC</div>
+          <div className="text-[13px] text-gray-600 font-bold uppercase tracking-wider mb-3">Données SPC</div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="text-[11px] text-gray-400 mb-1">Nb étudiants</div>
-              <input value={nbEtudiants} onChange={(e) => setNbEtudiants(e.target.value)} type="number" placeholder="ex : 2500" className="w-full text-[12px] text-gray-700 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30" />
+              <div className="text-[13px] text-gray-600 font-semibold mb-1.5">Nb étudiants</div>
+              <input value={nbEtudiants} onChange={(e) => setNbEtudiants(e.target.value)} type="number" placeholder="ex : 2500" className="w-full text-[14px] text-gray-800 bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30" />
             </div>
             <div>
-              <div className="text-[11px] text-gray-400 mb-1">Sessions / an</div>
-              <input value={sessionsParAn} onChange={(e) => setSessionsParAn(e.target.value)} type="number" placeholder="ex : 4" className="w-full text-[12px] text-gray-700 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30" />
+              <div className="text-[13px] text-gray-600 font-semibold mb-1.5">Sessions / an</div>
+              <input value={sessionsParAn} onChange={(e) => setSessionsParAn(e.target.value)} type="number" placeholder="ex : 4" className="w-full text-[14px] text-gray-800 bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30" />
             </div>
           </div>
         </div>
 
         {/* Notes */}
         <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
-          <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-2">Notes de prospection</div>
+          <div className="text-[13px] text-gray-600 font-bold uppercase tracking-wider mb-2">Notes de prospection</div>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Décideur identifié, budget, objections, prochaine étape..."
             rows={4}
-            className="w-full text-[12px] text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 focus:border-[#4a90d9]"
+            className="w-full text-[14px] text-gray-800 bg-white border border-gray-200 rounded-lg px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 focus:border-[#4a90d9] placeholder-gray-400"
           />
         </div>
       </div>
