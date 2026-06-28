@@ -31,10 +31,10 @@ export default async function CockpitPage() {
   const boostedObjectif = Math.min(baseObjectif + 29, 96);
 
   const kpis = [
-    { label: "Prospects total",  value: total,      color: "#1a202c", sub: "établissements ciblés", delta: null },
-    { label: pipelineCA > 0 ? "Pipeline CA" : "Contactés", value: pipelineCA > 0 ? `${Math.round(pipelineCA)}k€` : contactes, color: pipelineCA > 0 ? "#6b46c1" : "#4a90d9", sub: pipelineCA > 0 ? "CA estimé total" : `${total > 0 ? Math.round((contactes / total) * 100) : 0}% du pipeline`, delta: pipelineCA > 0 ? `${contactes} contactés` : null },
-    { label: "RDV fixés",        value: rdvFixes,   color: "#38a169", sub: "en discussion avancée", delta: rdvFixes > 0 ? `${Math.round((rdvFixes / total) * 100)}% du pipeline` : null },
-    { label: "Convertis",        value: convertis,  color: "#1a6b7e", sub: "clients signés", delta: convertis > 0 ? "↑ Signature confirmée" : null },
+    { label: "Prospects total",  value: total,      suffix: "",    color: "#1a202c", sub: "établissements ciblés", delta: null },
+    { label: pipelineCA > 0 ? "Pipeline CA" : "Contactés", value: pipelineCA > 0 ? Math.round(pipelineCA) : contactes, suffix: pipelineCA > 0 ? "k€" : "", color: pipelineCA > 0 ? "#6b46c1" : "#4a90d9", sub: pipelineCA > 0 ? "CA estimé total" : `${total > 0 ? Math.round((contactes / total) * 100) : 0}% du pipeline`, delta: pipelineCA > 0 ? `${contactes} contactés` : null },
+    { label: "RDV fixés",        value: rdvFixes,   suffix: "",    color: "#38a169", sub: "en discussion avancée", delta: rdvFixes > 0 ? `${Math.round((rdvFixes / total) * 100)}% du pipeline` : null },
+    { label: "Convertis",        value: convertis,  suffix: "",    color: "#1a6b7e", sub: "clients signés", delta: convertis > 0 ? "↑ Signature confirmée" : null },
   ];
 
   return (
@@ -98,7 +98,7 @@ export default async function CockpitPage() {
                 style={{ animationDelay: `${i * 60}ms` }}
               >
                 <div className="text-[28px] font-extrabold" style={{ color: kpi.color }}>
-                  <CountUp value={kpi.value} />
+                  <CountUp value={kpi.value} suffix={kpi.suffix} />
                 </div>
                 <div className="text-[12px] font-semibold text-gray-700 mt-0.5">{kpi.label}</div>
                 <div className="text-[11px] text-gray-400 mt-0.5">{kpi.sub}</div>
