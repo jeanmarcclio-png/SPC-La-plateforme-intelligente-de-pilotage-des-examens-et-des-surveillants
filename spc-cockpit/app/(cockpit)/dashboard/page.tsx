@@ -174,7 +174,7 @@ export default async function DashboardPage() {
               { icon: "🔍", color: "bg-blue-50 text-blue-700",    num: total,           label: "établissements ciblés",  delta: `${contactRate}% contactés`,                                     trend: contactRate >= 50 ? "up" : "warn" as "up" | "warn" | "neutral", link: "Voir tous →",       href: "/campagnes" },
               { icon: "📈", color: "bg-teal-50 text-teal-700",    num: tresChaudes,     label: "prospects Très chaud",   delta: `${total > 0 ? Math.round((tresChaudes / total) * 100) : 0}% du pipeline`, trend: "up" as "up" | "warn" | "neutral",  link: "Voir la liste →",   href: "/qualification" },
               { icon: "🎯", color: "bg-orange-50 text-orange-700",num: scoreMoyen,      label: "Score BANT moyen /10",   delta: scoreMoyenNum >= 8 ? "Excellent ↑" : scoreMoyenNum >= 6 ? "Bon →" : "À renforcer ↓", trend: (scoreMoyenNum >= 8 ? "up" : scoreMoyenNum >= 6 ? "neutral" : "warn") as "up" | "warn" | "neutral", link: "Voir l'analyse →",  href: "/qualification" },
-              { icon: "💰", color: "bg-purple-50 text-purple-700",num: pipelineTotal > 0 ? `${Math.round(pipelineTotal)}k€` : rdvFixes, label: pipelineTotal > 0 ? "CA pipeline estimé" : "RDV fixés", delta: pipelineTotal > 0 ? `${prospects.filter(p => p.statut === "Converti").length} convertis · ${rdvFixes} RDV` : `${actionsUrgentes} alertes`, trend: "up" as "up" | "warn" | "neutral", link: pipelineTotal > 0 ? "Voir pipeline →" : "Voir le détail →", href: "/qualification" },
+              { icon: "💰", color: "bg-purple-50 text-purple-700",num: pipelineTotal > 0 ? Math.round(pipelineTotal) : rdvFixes, suffix: pipelineTotal > 0 ? "k€" : "", label: pipelineTotal > 0 ? "CA pipeline estimé" : "RDV fixés", delta: pipelineTotal > 0 ? `${prospects.filter(p => p.statut === "Converti").length} convertis · ${rdvFixes} RDV` : `${actionsUrgentes} alertes`, trend: "up" as "up" | "warn" | "neutral", link: pipelineTotal > 0 ? "Voir pipeline →" : "Voir le détail →", href: "/qualification" },
             ].map((kpi, i) => (
               <div
                 key={i}
@@ -183,7 +183,7 @@ export default async function DashboardPage() {
               >
                 <div className={`w-9 h-9 rounded-[9px] flex items-center justify-center mb-2.5 text-base ${kpi.color}`}>{kpi.icon}</div>
                 <div className="text-[26px] font-extrabold text-gray-900 leading-none">
-                  <CountUp value={kpi.num} />
+                  <CountUp value={kpi.num} suffix={(kpi as { suffix?: string }).suffix ?? ""} />
                 </div>
                 {kpi.delta && (
                   <div className={`text-[11px] font-medium mt-0.5 ${kpi.trend === "up" ? "text-green-600" : kpi.trend === "warn" ? "text-orange-500" : "text-gray-400"}`}>
