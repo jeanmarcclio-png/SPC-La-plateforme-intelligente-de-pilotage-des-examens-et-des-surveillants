@@ -6,6 +6,7 @@ import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 import { CopiloteDrawer } from "@/components/CopiloteDrawer";
 import { MobileFabBar } from "@/components/MobileFabBar";
 import { OnboardingOverlay } from "@/components/OnboardingOverlay";
+import { SyncStamp } from "@/components/SyncStamp";
 
 export default function CockpitLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,6 +25,7 @@ export default function CockpitLayout({ children }: { children: React.ReactNode 
       <GlobalSearch />
       <CopiloteDrawer />
       <OnboardingOverlay />
+      <SyncStamp />
     </div>
   );
 }
