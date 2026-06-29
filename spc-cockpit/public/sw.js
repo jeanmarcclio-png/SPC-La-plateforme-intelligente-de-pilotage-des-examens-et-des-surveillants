@@ -1,4 +1,4 @@
-const CACHE = "spc-v4";
+const CACHE = "jmc-v1";
 
 const SHELL = [
   "/offline",
@@ -89,7 +89,7 @@ self.addEventListener("fetch", (event) => {
 // ─── Push notifications ───────────────────────────────────────────────────────
 self.addEventListener("push", (event) => {
   const data = event.data?.json() ?? {};
-  const title = data.title ?? "SPC Cockpit";
+  const title = data.title ?? "JMC Cockpit";
   const options = {
     body:      data.body   ?? "Vous avez des relances à traiter.",
     icon:      "/icon-192.png",

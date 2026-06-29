@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "SPC Cockpit",
-  "short_name": "SPC",
+  "name": "JMC Cockpit",
+  "short_name": "JMC",
   "description": "Pilotage prospection B2B — surveillance d'examens",
   "start_url": "/dashboard",
   "scope": "/",

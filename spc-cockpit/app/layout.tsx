@@ -21,13 +21,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "SPC Cockpit — Pilotage Prospection B2B",
-  description: "Plateforme de pilotage commercial SPC — surveillance d'examens",
+  title: "JMC Cockpit — Pilotage Prospection B2B",
+  description: "Plateforme de pilotage commercial JMC — surveillance d'examens",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "SPC",
+    title: "JMC",
   },
   icons: {
     apple: [

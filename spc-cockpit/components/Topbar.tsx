@@ -81,7 +81,7 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
         </button>
         <button
           aria-label="Aide et documentation"
-          onClick={() => window.dispatchEvent(new CustomEvent("copilote:open", { detail: "Aide-moi à utiliser SPC Cockpit : que puis-je faire depuis ce tableau de bord ? Quelles fonctionnalités sont disponibles ?" }))}
+          onClick={() => window.dispatchEvent(new CustomEvent("copilote:open", { detail: "Aide-moi à utiliser JMC Cockpit : que puis-je faire depuis ce tableau de bord ? Quelles fonctionnalités sont disponibles ?" }))}
           className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100"
         >
           <HelpCircle className="w-3.5 h-3.5" />

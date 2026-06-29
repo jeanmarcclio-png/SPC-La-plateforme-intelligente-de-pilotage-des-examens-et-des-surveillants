@@ -111,7 +111,7 @@ export function Sidebar() {
       <div className="px-[18px] py-[18px] pb-3.5 border-b border-white/[0.08]">
         <div className="flex items-center gap-2 text-white font-extrabold text-base tracking-tight">
           <span className="w-2 h-2 rounded-full bg-[#4a90d9] flex-shrink-0" />
-          SPC COCKPIT
+          JMC COCKPIT
         </div>
         <div className="text-[11px] text-[#4a90d9] uppercase tracking-[1.5px] mt-0.5 pl-4">
           Prospection B2B
