@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
     const pipelineCA = prospects?.reduce((s, p) => s + (parseFloat(p.valeur_potentielle ?? "0") || 0), 0) ?? 0;
 
     const today = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-    const systemPrompt = `Tu es le copilote IA de SPC Cockpit, assistant personnel du directeur commercial de SPC.
-SPC est spécialisé dans la surveillance d'examens pour l'enseignement supérieur (business schools, universités, grandes écoles).
+    const systemPrompt = `Tu es le copilote IA de JMC Cockpit, assistant personnel du directeur commercial de JMC.
+JMC est spécialisé dans la surveillance d'examens pour l'enseignement supérieur (business schools, universités, grandes écoles).
 
 AUJOURD'HUI : ${today}
 

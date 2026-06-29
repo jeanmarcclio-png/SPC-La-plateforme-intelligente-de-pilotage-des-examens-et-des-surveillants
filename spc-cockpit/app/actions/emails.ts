@@ -6,17 +6,17 @@ import { revalidatePath } from "next/cache";
 
 const TEMPLATES: Record<string, { subject: string; body: string }> = {
   j0: {
-    subject: "SPC — Solution de surveillance d'examens pour votre établissement",
+    subject: "JMC — Solution de surveillance d'examens pour votre établissement",
     body: `Bonjour,
 
 Je me permets de vous contacter au sujet de la gestion de vos examens et de la surveillance des sessions.
 
-SPC accompagne les directions des examens d'établissements post-bac (business schools, universités, grandes écoles) dans la coordination de surveillants, la gestion du tiers-temps et la sécurisation logistique des sessions.
+JMC accompagne les directions des examens d'établissements post-bac (business schools, universités, grandes écoles) dans la coordination de surveillants, la gestion du tiers-temps et la sécurisation logistique des sessions.
 
 Seriez-vous disponible pour un échange de 30 minutes afin de vous présenter notre solution ?
 
 Cordialement,
-L'équipe SPC`,
+L'équipe JMC`,
   },
   j3: {
     subject: "Re : Solution de surveillance d'examens — Suivi",
@@ -27,10 +27,10 @@ Je fais suite à mon message de la semaine dernière concernant la gestion de vo
 Avez-vous eu l'occasion d'en prendre connaissance ? Je serais ravi d'échanger avec vous sur vos besoins actuels, notamment en matière de tiers-temps et de coordination de surveillants.
 
 Bien cordialement,
-L'équipe SPC`,
+L'équipe JMC`,
   },
   j7: {
-    subject: "SPC — Audit gratuit 30 min pour votre direction des examens",
+    subject: "JMC — Audit gratuit 30 min pour votre direction des examens",
     body: `Bonjour,
 
 Je reviens vers vous avec une proposition concrète : un audit gratuit de 30 minutes pour analyser votre organisation actuelle des examens et identifier les points d'optimisation.
@@ -40,10 +40,10 @@ Cet audit est sans engagement et vous permettra d'obtenir un rapport personnalis
 Seriez-vous disponible cette semaine ou la semaine prochaine ?
 
 Bien cordialement,
-L'équipe SPC`,
+L'équipe JMC`,
   },
   j15: {
-    subject: "Dernière tentative — Surveillance d'examens SPC",
+    subject: "Dernière tentative — Surveillance d'examens JMC",
     body: `Bonjour,
 
 C'est mon dernier message avant de clore ce dossier.
@@ -53,7 +53,7 @@ Si la gestion des examens n'est pas une priorité en ce moment, je comprends tou
 Dans le cas contraire, je suis joignable jusqu'à vendredi pour convenir d'un échange.
 
 Bien cordialement,
-L'équipe SPC`,
+L'équipe JMC`,
   },
 };
 
@@ -76,7 +76,7 @@ export async function sendProspectEmail(prospectId: string, type: string) {
   if (process.env.RESEND_API_KEY && prospect.email) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { error } = await resend.emails.send({
-      from: "SPC <onboarding@resend.dev>",
+      from: "JMC <onboarding@resend.dev>",
       to: [prospect.email],
       subject: template.subject,
       text: template.body,

@@ -36,7 +36,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2.5 font-extrabold text-[#0d1e2e] text-xl tracking-tight mb-1">
             <span className="w-2.5 h-2.5 rounded-full bg-[#4a90d9] flex-shrink-0" />
-            SPC COCKPIT
+            JMC COCKPIT
           </div>
           <div className="text-[11px] text-[#4a90d9] uppercase tracking-[2px] mt-0.5">
             Plateforme de pilotage B2B
@@ -87,7 +87,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-[11px] text-gray-400 mt-6">
-          Accès réservé aux collaborateurs SPC
+          Accès réservé aux collaborateurs JMC
         </p>
       </div>
     </div>

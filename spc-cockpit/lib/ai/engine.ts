@@ -149,7 +149,7 @@ export function computeRecommendations(prospects: Prospect[]): Recommendation[] 
 
       if (p.statut === "En cours") reasons.push("Discussion en cours — à relancer");
       if (p.statut === "RDV fixé") reasons.push("RDV confirmé");
-      reasons.push(`Segment ${p.segment} — cible prioritaire SPC`);
+      reasons.push(`Segment ${p.segment} — cible prioritaire JMC`);
 
       let action  = "Contacter";
       let urgency: Urgency = "medium";

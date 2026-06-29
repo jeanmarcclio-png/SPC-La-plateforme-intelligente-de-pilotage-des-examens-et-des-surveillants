@@ -7,7 +7,7 @@ const STORAGE_KEY = "spc_onboarding_done";
 const SLIDES = [
   {
     icon: "🎯",
-    title: "Bienvenue sur SPC Cockpit",
+    title: "Bienvenue sur JMC Cockpit",
     desc: "Votre plateforme de pilotage commercial B2B pour la surveillance d'examens. Tout votre pipeline en un coup d'œil.",
     color: "#1a6b7e",
   },

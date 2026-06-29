@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     }
 
     const payload = JSON.stringify({
-      title: "SPC — Relances du jour",
+      title: "JMC — Relances du jour",
       body:  "Consultez votre file d'action et relancez vos prospects.",
       url:   "/dashboard",
     });

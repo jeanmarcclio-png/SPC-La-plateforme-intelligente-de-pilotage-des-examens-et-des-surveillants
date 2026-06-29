@@ -214,7 +214,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
               {
                 icon: "📅",
                 label: "Préparer RDV",
-                prompt: `Aide-moi à préparer mon RDV avec ${prospect.nom} (${prospect.segment} · ${prospect.cluster}). Score BANT ${bantAuto}/10. Donne-moi 5 questions clés à poser, les 3 objections probables et comment les surmonter, et un pitch de 2 minutes sur la valeur SPC.`,
+                prompt: `Aide-moi à préparer mon RDV avec ${prospect.nom} (${prospect.segment} · ${prospect.cluster}). Score BANT ${bantAuto}/10. Donne-moi 5 questions clés à poser, les 3 objections probables et comment les surmonter, et un pitch de 2 minutes sur la valeur JMC.`,
               },
             ].map(({ icon, label, prompt }) => (
               <button
@@ -312,9 +312,9 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
           />
         </div>
 
-        {/* Données SPC */}
+        {/* Données JMC */}
         <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
-          <div className="text-[13px] text-gray-600 font-bold uppercase tracking-wider mb-3">Données SPC</div>
+          <div className="text-[13px] text-gray-600 font-bold uppercase tracking-wider mb-3">Données JMC</div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="text-[13px] text-gray-600 font-semibold mb-1.5">Nb étudiants</div>

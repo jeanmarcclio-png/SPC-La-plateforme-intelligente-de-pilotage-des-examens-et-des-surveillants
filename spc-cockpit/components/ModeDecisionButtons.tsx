@@ -22,7 +22,7 @@ export function ModeDecisionButtons({ prospect }: { prospect: Prospect }) {
       icon: "📅",
       label: "Préparer RDV",
       bg: "bg-[#805ad5]",
-      prompt: `Aide-moi à préparer mon RDV avec ${prospect.nom} (${prospect.segment}). Score BANT ${score}/10. Donne-moi 5 questions clés à poser, les 3 objections probables et un pitch de 2 minutes sur la valeur SPC pour ce type d'établissement.`,
+      prompt: `Aide-moi à préparer mon RDV avec ${prospect.nom} (${prospect.segment}). Score BANT ${score}/10. Donne-moi 5 questions clés à poser, les 3 objections probables et un pitch de 2 minutes sur la valeur JMC pour ce type d'établissement.`,
     },
   ];
 
