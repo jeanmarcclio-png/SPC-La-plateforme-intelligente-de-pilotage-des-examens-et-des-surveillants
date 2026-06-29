@@ -460,7 +460,7 @@ function FunnelChart({ steps }: { steps: { label: string; count: number; color: 
             <div className="flex items-center justify-between text-[12px] mb-1">
               <span className="text-gray-600">{s.label}</span>
               <div className="flex items-center gap-2">
-                {dropPct !== null && dropPct > 0 && (
+                {dropPct !== null && dropPct > 0 && dropPct < 100 && (
                   <span className="text-[11px] text-red-400">−{dropPct}%</span>
                 )}
                 <span className="font-bold text-gray-800">{s.count}</span>
@@ -469,7 +469,7 @@ function FunnelChart({ steps }: { steps: { label: string; count: number; color: 
             <div className="h-6 bg-gray-100 rounded-lg overflow-hidden">
               <div
                 className="h-full rounded-lg flex items-center justify-end pr-2 transition-all duration-700"
-                style={{ width: `${Math.max(pct, 2)}%`, background: s.color }}
+                style={{ width: `${pct}%`, background: s.color }}
               >
                 {pct > 20 && (
                   <span className="text-[10px] font-bold text-white">

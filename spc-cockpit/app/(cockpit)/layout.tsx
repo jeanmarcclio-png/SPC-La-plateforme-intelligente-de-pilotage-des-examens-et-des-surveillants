@@ -7,7 +7,6 @@ import { CopiloteDrawer } from "@/components/CopiloteDrawer";
 import { MobileFabBar } from "@/components/MobileFabBar";
 import { OnboardingOverlay } from "@/components/OnboardingOverlay";
 import { SyncStamp } from "@/components/SyncStamp";
-import { SectorPicker } from "@/components/SectorPicker";
 import { TenantProvider } from "@/lib/tenant/TenantContext";
 
 export default function CockpitLayout({ children }: { children: React.ReactNode }) {
@@ -28,7 +27,6 @@ export default function CockpitLayout({ children }: { children: React.ReactNode 
         <GlobalSearch />
         <CopiloteDrawer />
         <OnboardingOverlay />
-        <SectorPicker />
         <SyncStamp />
       </div>
     </TenantProvider>
