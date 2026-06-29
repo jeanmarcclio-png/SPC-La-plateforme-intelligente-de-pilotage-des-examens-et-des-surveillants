@@ -73,14 +73,14 @@ export function PushNotificationBanner() {
     return (
       <div className="mx-4 mb-3 bg-blue-50 border border-blue-200 rounded-2xl p-3">
         <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#1a6b7e] flex items-center justify-center flex-shrink-0 mt-0.5">
+          <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)] flex items-center justify-center flex-shrink-0 mt-0.5">
             <Bell className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[12.5px] font-bold text-[#1a6b7e]">Activer les rappels (iOS)</div>
+            <div className="text-[12.5px] font-bold text-[var(--color-primary)]">Activer les rappels (iOS)</div>
             <button
               onClick={() => setShowIOSHelp(h => !h)}
-              className="text-[11px] text-[#1a6b7e] underline mt-0.5"
+              className="text-[11px] text-[var(--color-primary)] underline mt-0.5"
             >
               {showIOSHelp ? "Masquer" : "Comment faire ?"}
             </button>
@@ -101,12 +101,12 @@ export function PushNotificationBanner() {
 
   // Standard banner (Android / desktop Chrome)
   return (
-    <div className="mx-4 mb-3 bg-[#1a6b7e]/10 border border-[#1a6b7e]/20 rounded-2xl p-3 flex items-center gap-3">
-      <div className="w-9 h-9 rounded-xl bg-[#1a6b7e] flex items-center justify-center flex-shrink-0">
+    <div className="mx-4 mb-3 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded-2xl p-3 flex items-center gap-3">
+      <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)] flex items-center justify-center flex-shrink-0">
         <Bell className="w-5 h-5 text-white" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[12.5px] font-bold text-[#1a6b7e]">Activer les rappels</div>
+        <div className="text-[12.5px] font-bold text-[var(--color-primary)]">Activer les rappels</div>
         <div className="text-[11px] text-gray-500">Recevez vos relances du jour</div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
@@ -117,7 +117,7 @@ export function PushNotificationBanner() {
           onClick={subscribe}
           disabled={loading}
           className="text-[11px] font-bold text-white px-3 py-1.5 rounded-lg disabled:opacity-60"
-          style={{ background: "#1a6b7e" }}
+          style={{ background: "var(--color-primary)" }}
         >
           {loading ? "…" : "OK"}
         </button>
@@ -191,7 +191,7 @@ export function PushNotificationToggle() {
             onClick={subscribe}
             disabled={loading || (isIOS && !isStandalone)}
             className="text-[12px] font-bold text-white px-4 py-2 rounded-xl disabled:opacity-40"
-            style={{ background: "#1a6b7e" }}
+            style={{ background: "var(--color-primary)" }}
           >
             {loading ? "…" : perm === "granted" ? "Renouveler" : "Activer"}
           </button>
@@ -199,7 +199,7 @@ export function PushNotificationToggle() {
       </div>
       {isIOS && !isStandalone && (
         <div className="bg-blue-50 rounded-xl p-3 text-[11.5px] text-gray-700 space-y-1">
-          <div className="font-bold text-[#1a6b7e] mb-1.5">Comment activer sur iPhone :</div>
+          <div className="font-bold text-[var(--color-primary)] mb-1.5">Comment activer sur iPhone :</div>
           <div>1. Dans Safari → appuyez sur <strong>↑</strong> (bouton partage)</div>
           <div>2. Choisissez <strong>"Sur l'écran d'accueil"</strong></div>
           <div>3. Ouvrez l'app depuis la nouvelle icône</div>

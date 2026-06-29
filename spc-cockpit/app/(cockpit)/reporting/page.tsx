@@ -32,7 +32,7 @@ export default async function ReportingPage() {
     "Non contacté": "#a0aec0",
     "En cours": "#4a90d9",
     "RDV fixé": "#38a169",
-    "Converti": "#1a6b7e",
+    "Converti": "var(--color-primary)",
   };
 
   const tauxConversion = totalProspects > 0 ? Math.round(((rdvFixes + convertis) / totalProspects) * 100) : 0;
@@ -53,7 +53,7 @@ export default async function ReportingPage() {
 
         {/* ── MOBILE ── */}
         <div className="md:hidden">
-          <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+          <div className="px-4 pt-5 pb-4" style={{ background: "var(--color-primary)" }}>
             <div className="text-[22px] font-extrabold text-white">Performance</div>
             <div className="text-[13px] text-white/70 mt-0.5">{campagnes.length} campagnes · {totalProspects} prospects</div>
           </div>
@@ -63,7 +63,7 @@ export default async function ReportingPage() {
               {[
                 { label: "Prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, color: "text-gray-900" },
                 { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, color: "text-orange-500" },
-                { label: "Score BANT", value: `${scoreMoyen}/10`, sub: "moyenne", color: "text-[#1a6b7e]" },
+                { label: "Score BANT", value: `${scoreMoyen}/10`, sub: "moyenne", color: "text-[var(--color-primary)]" },
                 { label: "RDV + Convertis", value: rdvFixes + convertis, sub: `taux ${tauxConversion}%`, color: "text-green-600" },
               ].map((kpi, i) => (
                 <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
@@ -123,7 +123,7 @@ export default async function ReportingPage() {
                     <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div className="h-full rounded-full" style={{
                         width: `${(c.score / 10) * 100}%`,
-                        background: c.score >= 9.5 ? "#1a6b7e" : c.score >= 9 ? "#4a90d9" : "#a0aec0",
+                        background: c.score >= 9.5 ? "var(--color-primary)" : c.score >= 9 ? "#4a90d9" : "#a0aec0",
                       }} />
                     </div>
                   </div>
@@ -138,13 +138,13 @@ export default async function ReportingPage() {
                 <span className="text-[12px] text-gray-400">{livrablesValides}/{livrables.length} validés</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
-                <div className="h-full rounded-full bg-[#1a6b7e] transition-all" style={{ width: `${(livrablesValides / (livrables.length || 1)) * 100}%` }} />
+                <div className="h-full rounded-full bg-[var(--color-primary)] transition-all" style={{ width: `${(livrablesValides / (livrables.length || 1)) * 100}%` }} />
               </div>
               <div className="space-y-1.5">
                 {livrables.map((l) => (
                   <div key={l.id} className="flex items-center justify-between text-[12px]">
                     <span className="text-gray-700 truncate flex-1">{l.nom}</span>
-                    <span className={`ml-2 flex-shrink-0 font-semibold ${l.statut === "Validé" ? "text-[#1a6b7e]" : l.statut === "En cours" ? "text-blue-600" : "text-gray-400"}`}>{l.statut === "Validé" ? "✓" : l.statut === "En cours" ? "…" : "—"}</span>
+                    <span className={`ml-2 flex-shrink-0 font-semibold ${l.statut === "Validé" ? "text-[var(--color-primary)]" : l.statut === "En cours" ? "text-blue-600" : "text-gray-400"}`}>{l.statut === "Validé" ? "✓" : l.statut === "En cours" ? "…" : "—"}</span>
                   </div>
                 ))}
               </div>
@@ -181,21 +181,21 @@ export default async function ReportingPage() {
               </div>
               <div className="text-[11px] text-gray-500">Taux de conversion actuel : {tauxConversion}%</div>
             </div>
-            <div className="border border-[#1a6b7e]/25 rounded-xl p-4 bg-teal-50/60">
-              <div className="text-[11px] text-[#1a6b7e] uppercase tracking-wider mb-3 font-bold">Avec accélération recommandée</div>
+            <div className="border border-[var(--color-primary)]/25 rounded-xl p-4 bg-teal-50/60">
+              <div className="text-[11px] text-[var(--color-primary)] uppercase tracking-wider mb-3 font-bold">Avec accélération recommandée</div>
               <div className="flex items-end gap-4 mb-3">
                 <div>
-                  <div className="text-[30px] font-extrabold text-[#1a6b7e] leading-none">{forecastConversionsBoosted}</div>
-                  <div className="text-[11px] text-[#1a6b7e]/70 mt-0.5">conversions estimées</div>
+                  <div className="text-[30px] font-extrabold text-[var(--color-primary)] leading-none">{forecastConversionsBoosted}</div>
+                  <div className="text-[11px] text-[var(--color-primary)]/70 mt-0.5">conversions estimées</div>
                 </div>
                 {forecastCABoosted > 0 && (
                   <div className="text-right pb-0.5">
-                    <div className="text-[22px] font-extrabold text-[#1a6b7e]">{Math.round(forecastCABoosted)}k€</div>
-                    <div className="text-[11px] text-[#1a6b7e]/70">CA potentiel</div>
+                    <div className="text-[22px] font-extrabold text-[var(--color-primary)]">{Math.round(forecastCABoosted)}k€</div>
+                    <div className="text-[11px] text-[var(--color-primary)]/70">CA potentiel</div>
                   </div>
                 )}
               </div>
-              <div className="text-[11px] text-[#1a6b7e]/80 font-medium">+{gainPct}% vs trajectoire actuelle</div>
+              <div className="text-[11px] text-[var(--color-primary)]/80 font-medium">+{gainPct}% vs trajectoire actuelle</div>
             </div>
           </div>
         </div>
@@ -205,7 +205,7 @@ export default async function ReportingPage() {
           {[
             { label: "Total prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, color: "text-gray-900" },
             { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, color: "text-orange-500" },
-            { label: "Score BANT moyen", value: scoreMoyen, sub: "Sur 10 pts", color: "text-[#1a6b7e]" },
+            { label: "Score BANT moyen", value: scoreMoyen, sub: "Sur 10 pts", color: "text-[var(--color-primary)]" },
             { label: "RDV fixés", value: rdvFixes + convertis, sub: `dont ${convertis} converti${convertis !== 1 ? "s" : ""}`, color: "text-green-600" },
           ].map((kpi, i) => (
             <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
@@ -277,7 +277,7 @@ export default async function ReportingPage() {
                       className="h-full rounded-full"
                       style={{
                         width: `${(c.score / 10) * 100}%`,
-                        background: c.score >= 9.5 ? "#1a6b7e" : c.score >= 9 ? "#4a90d9" : "#a0aec0",
+                        background: c.score >= 9.5 ? "var(--color-primary)" : c.score >= 9 ? "#4a90d9" : "#a0aec0",
                       }}
                     />
                   </div>
@@ -296,7 +296,7 @@ export default async function ReportingPage() {
           <div className="grid grid-cols-2 gap-3">
             {livrables.map((l) => {
               const pct = l.statut === "Validé" ? 100 : l.statut === "En cours" ? 50 : l.statut === "À renforcer" ? 70 : 0;
-              const color = l.statut === "Validé" ? "#1a6b7e" : l.statut === "En cours" ? "#4a90d9" : l.statut === "À renforcer" ? "#f6ad55" : "#e2e8f0";
+              const color = l.statut === "Validé" ? "var(--color-primary)" : l.statut === "En cours" ? "#4a90d9" : l.statut === "À renforcer" ? "#f6ad55" : "#e2e8f0";
               return (
                 <div key={l.id} className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">

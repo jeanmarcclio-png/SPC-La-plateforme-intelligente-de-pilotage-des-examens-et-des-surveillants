@@ -72,7 +72,7 @@ export default async function PlanningPage() {
 
         {/* ── MOBILE ── */}
         <div className="md:hidden">
-          <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+          <div className="px-4 pt-5 pb-4" style={{ background: "var(--color-primary)" }}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-[22px] font-extrabold text-white">Planning</div>
@@ -102,7 +102,7 @@ export default async function PlanningPage() {
                     {items.map((e) => (
                       <div key={e.id} className={`flex items-center gap-3 p-3.5 rounded-2xl border ${e.urgent ? "border-red-200 bg-red-50" : `${c.border} bg-white`}`}>
                         <div className="w-11 text-center flex-shrink-0">
-                          <div className={`text-[16px] font-extrabold ${e.urgent ? "text-red-600" : "text-[#1a6b7e]"}`}>{e.date.split(" ")[0]}</div>
+                          <div className={`text-[16px] font-extrabold ${e.urgent ? "text-red-600" : "text-[var(--color-primary)]"}`}>{e.date.split(" ")[0]}</div>
                           <div className="text-[11px] text-gray-400">{e.date.split(" ").slice(1).join(" ")}</div>
                         </div>
                         <div className="flex-1 min-w-0">

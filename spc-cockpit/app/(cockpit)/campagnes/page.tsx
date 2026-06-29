@@ -33,7 +33,7 @@ export default async function CampagnesPage() {
 
         {/* ── MOBILE ── */}
         <div className="md:hidden">
-          <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+          <div className="px-4 pt-5 pb-4" style={{ background: "var(--color-primary)" }}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-[22px] font-extrabold text-white">Mes campagnes</div>
@@ -44,7 +44,7 @@ export default async function CampagnesPage() {
           </div>
           <div className="p-4 pb-48 space-y-4">
             {campagnes.map((c) => (
-              <div key={c.id} className={`bg-white rounded-2xl border p-5 ${c.statut === "Actif" ? "border-[#1a6b7e]/40" : "border-gray-100"}`} style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
+              <div key={c.id} className={`bg-white rounded-2xl border p-5 ${c.statut === "Actif" ? "border-[var(--color-primary)]/40" : "border-gray-100"}`} style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
                 <div className="flex items-start justify-between mb-4">
                   <div><div className="text-[17px] font-extrabold text-gray-900">{c.nom}</div><div className="text-[13px] text-gray-400 mt-0.5">{c.perimetre}</div></div>
                   <CampagneStatutSelect id={c.id} statut={c.statut} />
@@ -56,8 +56,8 @@ export default async function CampagnesPage() {
                     <div className="text-[12px] text-gray-400 mt-1">cibles</div>
                   </div>
                   <div className="flex-1 text-center bg-teal-50 rounded-xl py-3 px-1">
-                    <div className="text-[24px] font-extrabold text-[#1a6b7e] leading-none">{c.tresChaudes}</div>
-                    <div className="text-[12px] text-[#1a6b7e] mt-1">très chaud</div>
+                    <div className="text-[24px] font-extrabold text-[var(--color-primary)] leading-none">{c.tresChaudes}</div>
+                    <div className="text-[12px] text-[var(--color-primary)] mt-1">très chaud</div>
                   </div>
                   <div className="flex-1 text-center bg-gray-50 rounded-xl py-3 px-1">
                     <div className="text-[24px] font-extrabold text-gray-900 leading-none">{c.score}</div>
@@ -66,7 +66,7 @@ export default async function CampagnesPage() {
                 </div>
                 <div className="flex justify-between text-[13px] mb-3">
                   <span className="text-gray-400">Deadline : {c.deadline}</span>
-                  <span className={`font-bold ${c.joursRestants === 0 ? "text-gray-400" : c.joursRestants <= 10 ? "text-red-600" : "text-[#1a6b7e]"}`}>{c.joursRestants > 0 ? `J - ${c.joursRestants}` : "Terminé"}</span>
+                  <span className={`font-bold ${c.joursRestants === 0 ? "text-gray-400" : c.joursRestants <= 10 ? "text-red-600" : "text-[var(--color-primary)]"}`}>{c.joursRestants > 0 ? `J - ${c.joursRestants}` : "Terminé"}</span>
                 </div>
                 {/* Avancement + santé campagne */}
                 <div className="space-y-1.5">
@@ -88,7 +88,7 @@ export default async function CampagnesPage() {
             <div className="bg-white rounded-2xl border border-gray-100 pt-5 px-5 pb-36" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[15px] font-bold text-gray-900">Livrables</span>
-                <span className="text-[13px] font-semibold text-[#1a6b7e]">{validated}/{total} validés</span>
+                <span className="text-[13px] font-semibold text-[var(--color-primary)]">{validated}/{total} validés</span>
               </div>
               {activeCampagne && (
                 <div className="text-[13px] text-gray-400 mb-3 truncate">{activeCampagne.nom}</div>
@@ -97,10 +97,10 @@ export default async function CampagnesPage() {
                 <div className="mb-3 space-y-1">
                   <div className="flex items-center justify-between text-[12px] text-gray-400">
                     <span>Avancement</span>
-                    <span className="font-semibold text-[#1a6b7e]">{pct} %</span>
+                    <span className="font-semibold text-[var(--color-primary)]">{pct} %</span>
                   </div>
                   <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#1a6b7e] rounded-full bar-fill" style={{ width: `${pct}%` }} />
+                    <div className="h-full bg-[var(--color-primary)] rounded-full bar-fill" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               )}
@@ -113,11 +113,11 @@ export default async function CampagnesPage() {
                       : l.statut === "En cours" ? "⟳"
                       : l.statut === "À renforcer" ? "⚠"
                       : "○";
-                    const iconBg = l.statut === "Validé" ? "bg-[#1a6b7e] text-white"
+                    const iconBg = l.statut === "Validé" ? "bg-[var(--color-primary)] text-white"
                       : l.statut === "En cours" ? "bg-blue-50 text-blue-600"
                       : l.statut === "À renforcer" ? "bg-orange-50 text-orange-500"
                       : "bg-gray-100 text-gray-400";
-                    const labelColor = l.statut === "Validé" ? "text-[#1a6b7e]"
+                    const labelColor = l.statut === "Validé" ? "text-[var(--color-primary)]"
                       : l.statut === "En cours" ? "text-blue-600"
                       : l.statut === "À renforcer" ? "text-orange-500"
                       : "text-gray-400";
@@ -150,7 +150,7 @@ export default async function CampagnesPage() {
           {campagnes.map((c) => (
             <div
               key={c.id}
-              className={`bg-white rounded-xl border shadow-sm p-4 hover:shadow-md transition-shadow ${c.statut === "Actif" ? "border-[#1a6b7e]/40" : "border-gray-200"}`}
+              className={`bg-white rounded-xl border shadow-sm p-4 hover:shadow-md transition-shadow ${c.statut === "Actif" ? "border-[var(--color-primary)]/40" : "border-gray-200"}`}
             >
               <div className="flex items-start justify-between mb-2">
                 <div>
@@ -165,7 +165,7 @@ export default async function CampagnesPage() {
                   <div className="text-[11px] text-gray-400">cibles</div>
                 </div>
                 <div className="text-center border-x border-gray-100">
-                  <div className="text-[20px] font-extrabold text-[#1a6b7e]">{c.tresChaudes}</div>
+                  <div className="text-[20px] font-extrabold text-[var(--color-primary)]">{c.tresChaudes}</div>
                   <div className="text-[11px] text-gray-400">très chaud</div>
                 </div>
                 <div className="text-center">
@@ -175,7 +175,7 @@ export default async function CampagnesPage() {
               </div>
               <div className="mt-3 flex items-center justify-between mb-2.5">
                 <span className="text-[11px] text-gray-400">Deadline : {c.deadline}</span>
-                <span className={`text-[12px] font-bold ${c.joursRestants <= 10 && c.joursRestants > 0 ? "text-red-600" : c.joursRestants === 0 ? "text-gray-400" : "text-[#1a6b7e]"}`}>
+                <span className={`text-[12px] font-bold ${c.joursRestants <= 10 && c.joursRestants > 0 ? "text-red-600" : c.joursRestants === 0 ? "text-gray-400" : "text-[var(--color-primary)]"}`}>
                   {c.joursRestants > 0 ? `J - ${c.joursRestants}` : "Terminé"}
                 </span>
               </div>
@@ -210,7 +210,7 @@ export default async function CampagnesPage() {
                   className={`flex items-center gap-3.5 px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 cursor-pointer`}
                 >
                   {/* Step number / check */}
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold ${l.statut === "Validé" ? "bg-[#1a6b7e] text-white" : "bg-gray-100 text-gray-400"}`}>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold ${l.statut === "Validé" ? "bg-[var(--color-primary)] text-white" : "bg-gray-100 text-gray-400"}`}>
                     {l.statut === "Validé" ? checkIcon : i + 1}
                   </div>
 
@@ -272,7 +272,7 @@ export default async function CampagnesPage() {
                 ].map((row) => (
                   <div key={row.label} className="flex items-center justify-between text-[12px]">
                     <span className="text-gray-500">{row.label}</span>
-                    <span className={`font-semibold ${row.ok ? "text-[#1a6b7e]" : "text-orange-500"}`}>{row.value}</span>
+                    <span className={`font-semibold ${row.ok ? "text-[var(--color-primary)]" : "text-orange-500"}`}>{row.value}</span>
                   </div>
                 ))}
               </div>
@@ -313,7 +313,7 @@ function ConformiteGauge({ pct }: { pct: number }) {
   const cy = 52;
   const circumference = Math.PI * r;
   const dash = (pct / 100) * circumference;
-  const color = pct >= 80 ? "#1a6b7e" : pct >= 60 ? "#f6ad55" : "#fc8181";
+  const color = pct >= 80 ? "var(--color-primary)" : pct >= 60 ? "#f6ad55" : "#fc8181";
 
   return (
     <div className="flex flex-col items-center">

@@ -65,7 +65,7 @@ export function GlobalSearch() {
           <div className="bg-white rounded-t-3xl flex flex-col max-h-[85vh]">
             {/* Search input */}
             <div className="flex items-center gap-3 px-4 pt-5 pb-3 border-b border-gray-100">
-              <Search className="w-5 h-5 flex-shrink-0 text-[#1a6b7e]" />
+              <Search className="w-5 h-5 flex-shrink-0 text-[var(--color-primary)]" />
               <input
                 ref={inputRef}
                 type="search"
@@ -81,7 +81,7 @@ export function GlobalSearch() {
             <div className="overflow-y-auto flex-1 pb-6">
               {isPending && (
                 <div className="flex items-center justify-center py-10">
-                  <div className="w-5 h-5 border-2 border-[#1a6b7e] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
 
@@ -110,8 +110,8 @@ export function GlobalSearch() {
                           onClick={() => navigate("/qualification")}
                           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 text-left"
                         >
-                          <div className="w-8 h-8 rounded-full bg-[#1a6b7e]/10 flex items-center justify-center flex-shrink-0">
-                            <User className="w-4 h-4 text-[#1a6b7e]" />
+                          <div className="w-8 h-8 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
+                            <User className="w-4 h-4 text-[var(--color-primary)]" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-[13px] font-semibold text-gray-900 truncate">{p.nom}</div>

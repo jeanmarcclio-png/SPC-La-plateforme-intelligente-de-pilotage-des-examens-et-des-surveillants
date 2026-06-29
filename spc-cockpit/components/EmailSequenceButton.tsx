@@ -33,7 +33,7 @@ export function EmailSequenceButton({ prospectId, prospectNom, email }: { prospe
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-[11px] font-semibold text-[#4a90d9] hover:text-[#1a6b7e] hover:underline"
+        className="text-[11px] font-semibold text-[#4a90d9] hover:text-[var(--color-primary)] hover:underline"
       >
         Email →
       </button>
@@ -59,7 +59,7 @@ export function EmailSequenceButton({ prospectId, prospectNom, email }: { prospe
                     disabled={pending}
                     className="w-full text-left px-4 py-3 border border-gray-200 rounded-xl hover:border-[#4a90d9] hover:bg-blue-50 transition-colors disabled:opacity-50 group"
                   >
-                    <div className="text-[12.5px] font-semibold text-gray-800 group-hover:text-[#1a6b7e]">{s.label}</div>
+                    <div className="text-[12.5px] font-semibold text-gray-800 group-hover:text-[var(--color-primary)]">{s.label}</div>
                   </button>
                 ))}
               </div>

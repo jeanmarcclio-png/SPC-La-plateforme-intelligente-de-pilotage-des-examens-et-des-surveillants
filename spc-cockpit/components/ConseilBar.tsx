@@ -7,12 +7,12 @@ export function ConseilBar({ text, stats }: { text: string; stats?: Array<{ labe
     <div className="bg-white border-t border-gray-200 px-6 py-2.5 flex items-center gap-3 flex-shrink-0">
       <span className="text-lg">✨</span>
       <p className="text-[12.5px] text-gray-600">
-        <strong className="text-[#1a6b7e]">Conseil JMC</strong> — {text}
+        <strong className="text-[var(--color-primary)]">Conseil JMC</strong> — {text}
       </p>
       {stats && stats.length > 0 && (
         <div className="hidden lg:flex items-center gap-1.5 flex-shrink-0">
           {stats.map((s, i) => (
-            <span key={i} className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold ${s.highlight ? "bg-[#1a6b7e] text-white" : "bg-[#1a6b7e]/10 text-[#1a6b7e]"}`}>
+            <span key={i} className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold ${s.highlight ? "bg-[var(--color-primary)] text-white" : "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"}`}>
               {s.label} · {s.value}
             </span>
           ))}

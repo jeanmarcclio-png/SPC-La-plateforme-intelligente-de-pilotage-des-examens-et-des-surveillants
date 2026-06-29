@@ -52,7 +52,7 @@ export function DashboardFileAction({
                   <span className={`text-[11px] font-bold px-2 py-1 rounded-lg ${diff < 0 ? "bg-red-100 text-red-600" : "bg-orange-100 text-orange-600"}`}>
                     {diff < 0 ? `J+${Math.abs(diff)}` : "Auj."}
                   </span>
-                  <span className="text-[11px] text-[#1a6b7e] font-semibold">→</span>
+                  <span className="text-[11px] text-[var(--color-primary)] font-semibold">→</span>
                 </div>
               </button>
             );

@@ -6,7 +6,7 @@ import { updateCampagneStatut, createCampagne } from "@/app/actions/campagnes";
 import { STATUT_CAMPAGNE as STATUTS } from "@/lib/constants";
 
 const statutColors: Record<string, string> = {
-  "Actif":    "bg-[#1a6b7e]/10 text-[#1a6b7e]",
+  "Actif":    "bg-[var(--color-primary)]/10 text-[var(--color-primary)]",
   "En cours": "bg-blue-50 text-blue-700",
   "Terminé":  "bg-gray-100 text-gray-500",
   "Archivé":  "bg-gray-50 text-gray-400",
@@ -66,7 +66,7 @@ export function AddCampagneButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-[12px] font-semibold text-white bg-[#1a6b7e] hover:bg-[#155a6a] px-3 py-1.5 rounded-lg transition-colors"
+        className="text-[12px] font-semibold text-white bg-[var(--color-primary)] hover:bg-[#155a6a] px-3 py-1.5 rounded-lg transition-colors"
       >
         + Nouvelle campagne
       </button>
@@ -108,7 +108,7 @@ export function AddCampagneButton() {
             <button
               type="submit"
               disabled={pending}
-              className="w-full mt-2 bg-[#1a6b7e] hover:bg-[#155a6a] text-white text-[13px] font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
+              className="w-full mt-2 bg-[var(--color-primary)] hover:bg-[#155a6a] text-white text-[13px] font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
             >
               {pending ? "Création…" : "Créer la campagne"}
             </button>

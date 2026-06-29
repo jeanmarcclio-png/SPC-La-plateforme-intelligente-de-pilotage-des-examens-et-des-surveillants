@@ -19,8 +19,8 @@ export function MobileFabBar() {
         style={{ background: "rgba(26,107,126,0.08)" }}
         aria-label="Recherche globale"
       >
-        <Search className="w-4 h-4 flex-shrink-0 text-[#1a6b7e]" strokeWidth={2.5} />
-        <span className="text-[13px] font-medium" style={{ color: "#1a6b7e" }}>Rechercher…</span>
+        <Search className="w-4 h-4 flex-shrink-0 text-[var(--color-primary)]" strokeWidth={2.5} />
+        <span className="text-[13px] font-medium" style={{ color: "var(--color-primary)" }}>Rechercher…</span>
       </button>
 
       {/* Divider */}
@@ -30,7 +30,7 @@ export function MobileFabBar() {
       <button
         onClick={openCopilote}
         className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white text-[13px] font-semibold flex-shrink-0"
-        style={{ background: "#1a6b7e" }}
+        style={{ background: "var(--color-primary)" }}
         aria-label="Copilote IA"
       >
         <span className="text-base leading-none">🤖</span>

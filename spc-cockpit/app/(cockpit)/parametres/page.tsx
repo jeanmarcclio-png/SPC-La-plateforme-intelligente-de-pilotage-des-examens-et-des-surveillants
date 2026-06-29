@@ -32,7 +32,7 @@ export default async function ParametresPage() {
 
         {/* ── MOBILE ── */}
         <div className="md:hidden">
-          <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+          <div className="px-4 pt-5 pb-4" style={{ background: "var(--color-primary)" }}>
             <div className="text-[22px] font-extrabold text-white">Paramètres</div>
             <div className="text-[13px] text-white/70 mt-0.5">{displayName}</div>
           </div>
@@ -88,7 +88,7 @@ export default async function ParametresPage() {
                 ].map((row) => (
                   <div key={row.label} className="flex justify-between text-[12.5px]">
                     <span className="text-gray-400">{row.label}</span>
-                    <span className={`font-semibold flex items-center gap-1.5 ${row.ok ? "text-[#1a6b7e]" : "text-gray-400"}`}>
+                    <span className={`font-semibold flex items-center gap-1.5 ${row.ok ? "text-[var(--color-primary)]" : "text-gray-400"}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${row.ok ? "bg-green-400" : "bg-gray-300"}`} />
                       {row.value}
                     </span>
@@ -166,7 +166,7 @@ export default async function ParametresPage() {
               ].map((row) => (
                 <div key={row.label} className="flex items-center justify-between text-[12.5px]">
                   <span className="text-gray-500">{row.label}</span>
-                  <span className={`font-semibold flex items-center gap-1 ${row.ok ? "text-[#1a6b7e]" : "text-gray-400"}`}>
+                  <span className={`font-semibold flex items-center gap-1 ${row.ok ? "text-[var(--color-primary)]" : "text-gray-400"}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${row.ok ? "bg-green-400" : "bg-gray-300"}`} />
                     {row.value}
                   </span>

@@ -88,7 +88,7 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
         </button>
         <span className="text-gray-200 text-lg">|</span>
         {userName && <span className="text-[13px] text-gray-600">{userName}</span>}
-        <div className="w-8 h-8 rounded-full bg-[#1a6b7e] text-white flex items-center justify-center text-[11px] font-bold">
+        <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-[11px] font-bold">
           {userInitials}
         </div>
         <button

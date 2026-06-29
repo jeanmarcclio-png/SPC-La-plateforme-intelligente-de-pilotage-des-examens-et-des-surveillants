@@ -94,7 +94,7 @@ export default async function DashboardPage() {
         {/* ── MOBILE VIEW ── */}
         <div className="md:hidden">
           {/* Header teal */}
-          <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+          <div className="px-4 pt-5 pb-4" style={{ background: "var(--color-primary)" }}>
             <div className="text-[22px] font-extrabold text-white">Bonjour {userFirstName} 👋</div>
             <div className="text-[13px] text-white/70 mt-0.5">{dateStr}</div>
           </div>
@@ -118,7 +118,7 @@ export default async function DashboardPage() {
                 { label: "Prospects",    value: total,      color: "#1a202c", sub: `${aRelancer} à contacter`,                                         href: "/qualification" },
                 { label: "Priorité haute",value: tresChaudes,color: "#f6ad55", sub: `${prospects.filter(p => p.statut === "En cours").length} en cours`, href: "/qualification" },
                 { label: "RDV fixés",    value: rdvFixes,   color: "#38a169", sub: `${prospects.filter(p => p.statut === "Converti").length} convertis`, href: "/qualification" },
-                { label: "À relancer",   value: aRelancer,  color: "#1a6b7e", sub: "voir l'agenda →",                                                   href: "/qualification" },
+                { label: "À relancer",   value: aRelancer,  color: "var(--color-primary)", sub: "voir l'agenda →",                                                   href: "/qualification" },
               ].map((k) => (
                 <Link key={k.label} href={k.href} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm active:opacity-70">
                   <div className="text-[30px] font-extrabold leading-none" style={{ color: k.color }}>
@@ -247,20 +247,20 @@ export default async function DashboardPage() {
                   <div className="h-full rounded-full bg-gray-400 transition-all duration-700" style={{ width: `${baseObjectif}%` }} />
                 </div>
               </div>
-              <div className="rounded-xl border border-[#1a6b7e]/25 p-4 bg-teal-50/60">
-                <div className="text-[11px] text-[#1a6b7e] uppercase tracking-wider mb-2.5 font-bold">Recommandations IA suivies ✓</div>
-                <div className="text-[36px] font-extrabold text-[#1a6b7e] leading-none mb-1">{boostedObjectif}%</div>
-                <div className="text-[11px] text-[#1a6b7e]/70 mb-2.5">objectif atteint estimé</div>
-                <div className="h-2 bg-[#1a6b7e]/15 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full bg-[#1a6b7e] transition-all duration-700" style={{ width: `${boostedObjectif}%` }} />
+              <div className="rounded-xl border border-[var(--color-primary)]/25 p-4 bg-teal-50/60">
+                <div className="text-[11px] text-[var(--color-primary)] uppercase tracking-wider mb-2.5 font-bold">Recommandations IA suivies ✓</div>
+                <div className="text-[36px] font-extrabold text-[var(--color-primary)] leading-none mb-1">{boostedObjectif}%</div>
+                <div className="text-[11px] text-[var(--color-primary)]/70 mb-2.5">objectif atteint estimé</div>
+                <div className="h-2 bg-[var(--color-primary)]/15 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-700" style={{ width: `${boostedObjectif}%` }} />
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 bg-[#1a6b7e]/[0.06] rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2.5 bg-[var(--color-primary)]/[0.06] rounded-lg px-3 py-2">
               <span className="text-base flex-shrink-0">🧠</span>
               <p className="text-[12px] text-gray-600 leading-snug">
-                <strong className="text-[#1a6b7e]">+{boostedObjectif - baseObjectif} points</strong> de progression estimée si les <strong className="text-gray-800">{recommendations.length} recommandations</strong> sont appliquées cette semaine.
-                {pipelineTotal > 0 && <> Impact CA estimé : <strong className="text-[#1a6b7e]">+{Math.round(pipelineTotal * (boostedObjectif - baseObjectif) / 10000)}k€</strong>.</>}
+                <strong className="text-[var(--color-primary)]">+{boostedObjectif - baseObjectif} points</strong> de progression estimée si les <strong className="text-gray-800">{recommendations.length} recommandations</strong> sont appliquées cette semaine.
+                {pipelineTotal > 0 && <> Impact CA estimé : <strong className="text-[var(--color-primary)]">+{Math.round(pipelineTotal * (boostedObjectif - baseObjectif) / 10000)}k€</strong>.</>}
               </p>
             </div>
           </div>
@@ -280,7 +280,7 @@ export default async function DashboardPage() {
                   <Link
                     key={i}
                     href="/qualification"
-                    className="group border border-gray-200 rounded-xl p-3.5 hover:border-[#1a6b7e] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 block animate-scale-in"
+                    className="group border border-gray-200 rounded-xl p-3.5 hover:border-[var(--color-primary)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 block animate-scale-in"
                     style={{ animationDelay: `${400 + i * 80}ms` }}
                   >
                     {/* Header */}
@@ -294,7 +294,7 @@ export default async function DashboardPage() {
                       </span>
                       <div className="flex items-center gap-1.5">
                         <span className="text-[11px] text-gray-400">Confiance</span>
-                        <span className="text-[13px] font-extrabold text-[#1a6b7e]">{rec.confidence}%</span>
+                        <span className="text-[13px] font-extrabold text-[var(--color-primary)]">{rec.confidence}%</span>
                       </div>
                     </div>
 
@@ -304,13 +304,13 @@ export default async function DashboardPage() {
 
                     {/* Confidence bar */}
                     <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-3">
-                      <div className="h-full rounded-full bar-fill" style={{ width: `${rec.confidence}%`, background: "#1a6b7e" }} />
+                      <div className="h-full rounded-full bar-fill" style={{ width: `${rec.confidence}%`, background: "var(--color-primary)" }} />
                     </div>
 
                     {/* Impact estimé */}
-                    <div className="flex items-center justify-between bg-[#1a6b7e]/[0.07] rounded-lg px-2.5 py-1.5 mb-2">
-                      <span className="text-[11px] text-[#1a6b7e]/70 font-medium">Impact estimé</span>
-                      <span className="text-[12.5px] font-extrabold text-[#1a6b7e]">
+                    <div className="flex items-center justify-between bg-[var(--color-primary)]/[0.07] rounded-lg px-2.5 py-1.5 mb-2">
+                      <span className="text-[11px] text-[var(--color-primary)]/70 font-medium">Impact estimé</span>
+                      <span className="text-[12.5px] font-extrabold text-[var(--color-primary)]">
                         +{Math.round(
                           (parseFloat(rec.prospect.valeurPotentielle ?? "0") > 0
                             ? parseFloat(rec.prospect.valeurPotentielle!)
@@ -342,7 +342,7 @@ export default async function DashboardPage() {
                       ))}
                     </div>
 
-                    <div className="text-[11px] font-bold text-[#1a6b7e] group-hover:underline">→ {rec.action}</div>
+                    <div className="text-[11px] font-bold text-[var(--color-primary)] group-hover:underline">→ {rec.action}</div>
                   </Link>
                 ))}
               </div>
@@ -433,7 +433,7 @@ export default async function DashboardPage() {
                         <td className="px-3.5 py-3">
                           <Badge variant={c.statut === "Actif" ? "tres-chaud" : c.statut === "En cours" ? "en-cours" : c.statut === "Terminé" ? "valide" : "a-rediger"}>{c.statut}</Badge>
                         </td>
-                        <td className="px-3.5 py-3 text-right"><Link href="/campagnes" className="text-gray-300 hover:text-[#1a6b7e] transition-colors">›</Link></td>
+                        <td className="px-3.5 py-3 text-right"><Link href="/campagnes" className="text-gray-300 hover:text-[var(--color-primary)] transition-colors">›</Link></td>
                       </tr>
                     ))}
                   </tbody>
@@ -460,7 +460,7 @@ export default async function DashboardPage() {
                       <div key={c.nom}>
                         <div className="flex justify-between text-[12px] text-gray-600 mb-1"><span>{c.nom}</span><span className="font-semibold">{c.score}</span></div>
                         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full bg-[#1a6b7e] bar-fill" style={{ width: `${(c.score / 10) * 100}%` }} />
+                          <div className="h-full rounded-full bg-[var(--color-primary)] bar-fill" style={{ width: `${(c.score / 10) * 100}%` }} />
                         </div>
                       </div>
                     ))}
