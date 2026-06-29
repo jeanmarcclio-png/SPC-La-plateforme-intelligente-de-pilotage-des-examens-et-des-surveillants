@@ -1,17 +1,48 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useTenant } from "@/lib/tenant/TenantContext";
 
 interface Message { role: "user" | "assistant"; content: string; }
 
-const SUGGESTIONS = [
-  "Quels sont mes 3 prospects prioritaires ?",
-  "Pourquoi mon score BANT est-il faible ?",
-  "Rédige un email de relance pour un IFSI",
-  "Quels établissements dois-je rappeler aujourd'hui ?",
-];
+const SUGGESTIONS_BY_SECTEUR: Record<string, string[]> = {
+  examens: [
+    "Quels sont mes 3 prospects prioritaires ?",
+    "Pourquoi mon score BANT est-il faible ?",
+    "Rédige un email de relance pour un IFSI",
+    "Quels établissements dois-je rappeler aujourd'hui ?",
+  ],
+  conseil: [
+    "Quels sont mes 3 clients à fort potentiel ?",
+    "Comment améliorer mon taux de conversion ?",
+    "Rédige une proposition pour une mission de conseil",
+    "Quels clients dois-je relancer cette semaine ?",
+  ],
+  securite: [
+    "Quels sites prioritaires dois-je cibler ?",
+    "Analyse mon pipeline sécurité",
+    "Rédige un email pour un directeur de site",
+    "Quels prospects sont prêts à signer ?",
+  ],
+  btp: [
+    "Quels chantiers dois-je prioriser ?",
+    "Analyse mon pipeline travaux",
+    "Rédige une offre pour un maître d'ouvrage",
+    "Quels prospects sont en phase de décision ?",
+  ],
+  rh: [
+    "Quelles entreprises ont le plus fort besoin RH ?",
+    "Analyse mon pipeline recrutement",
+    "Rédige un email pour un DRH",
+    "Quels clients dois-je rappeler aujourd'hui ?",
+  ],
+};
 
 export function CopiloteDrawer() {
+  const { config } = useTenant();
+  const accent = config.couleur;
+  const suggestions = SUGGESTIONS_BY_SECTEUR[config.secteur] ?? SUGGESTIONS_BY_SECTEUR.examens;
+
   const [open, setOpen]         = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput]       = useState("");
@@ -44,7 +75,7 @@ export function CopiloteDrawer() {
       const res = await fetch("/api/copilote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next }),
+        body: JSON.stringify({ messages: next, secteur: config.secteur }),
       });
 
       if (!res.ok || !res.body) {
@@ -98,7 +129,7 @@ export function CopiloteDrawer() {
       <button
         onClick={() => setOpen(true)}
         className="hidden md:flex fixed bottom-6 right-6 z-40 w-10 h-10 rounded-full shadow-lg items-center justify-center text-white text-lg"
-        style={{ background: "#1a6b7e" }}
+        style={{ background: accent }}
         aria-label="Copilote IA"
       >
         🤖
@@ -121,12 +152,12 @@ export function CopiloteDrawer() {
         >
 
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100" style={{ background: "#1a6b7e" }}>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100" style={{ background: accent }}>
             <div className="flex items-center gap-2.5">
               <span className="text-xl">🤖</span>
               <div>
                 <div className="text-[13px] font-bold text-white">Copilote JMC</div>
-                <div className="text-[11px] text-white/70">Alimenté par Claude</div>
+                <div className="text-[11px] text-white/70">Alimenté par Claude · {config.nom}</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -149,15 +180,18 @@ export function CopiloteDrawer() {
             {messages.length === 0 && (
               <div className="space-y-3">
                 <div className="bg-gray-50 rounded-xl p-3 text-[12.5px] text-gray-600">
-                  Bonjour ! Je suis votre copilote commercial. Posez-moi n&apos;importe quelle question sur votre pipeline, vos prospects ou vos priorités.
+                  Bonjour ! Je suis votre copilote {config.nom}. Posez-moi n&apos;importe quelle question sur votre pipeline, vos {config.vocabulaire.ressource.toLowerCase()}s ou vos priorités.
                 </div>
                 <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Suggestions</div>
                 <div className="space-y-2">
-                  {SUGGESTIONS.map((s) => (
+                  {suggestions.map((s) => (
                     <button
                       key={s}
                       onClick={() => send(s)}
-                      className="w-full text-left px-3 py-2 rounded-xl border border-gray-200 text-[12px] text-gray-700 hover:border-[#1a6b7e] hover:bg-blue-50 transition-colors"
+                      className="w-full text-left px-3 py-2 rounded-xl border border-gray-200 text-[12px] text-gray-700 transition-colors hover:bg-gray-50"
+                      style={{ borderColor: "inherit" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.backgroundColor = `${accent}10`; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.backgroundColor = ""; }}
                     >
                       {s}
                     </button>
@@ -172,7 +206,7 @@ export function CopiloteDrawer() {
                     ? "text-white rounded-br-sm"
                     : "bg-gray-100 text-gray-800 rounded-bl-sm"
                   }`}
-                  style={m.role === "user" ? { background: "#1a6b7e" } : {}}
+                  style={m.role === "user" ? { background: accent } : {}}
                 >
                   {m.content || <span className="opacity-50">…</span>}
                 </div>
@@ -195,13 +229,15 @@ export function CopiloteDrawer() {
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
                 placeholder="Posez votre question…"
                 disabled={loading}
-                className="flex-1 rounded-xl border border-gray-200 px-3 py-2.5 text-[13px] outline-none focus:border-[#1a6b7e] disabled:opacity-50"
+                className="flex-1 rounded-xl border border-gray-200 px-3 py-2.5 text-[13px] outline-none disabled:opacity-50"
+                onFocus={(e) => { e.currentTarget.style.borderColor = accent; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = ""; }}
               />
               <button
                 onClick={() => send()}
                 disabled={!input.trim() || loading}
                 className="px-3 py-2.5 rounded-xl text-white text-[13px] font-semibold disabled:opacity-40"
-                style={{ background: "#1a6b7e" }}
+                style={{ background: accent }}
               >
                 ↑
               </button>
