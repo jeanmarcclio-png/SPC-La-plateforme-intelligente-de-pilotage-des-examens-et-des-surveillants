@@ -146,7 +146,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
     >
 
       {/* Header */}
-      <div className="bg-[#1a6b7e] px-5 pt-4 pb-4 flex-shrink-0">
+      <div className="bg-[var(--color-primary)] px-5 pt-4 pb-4 flex-shrink-0">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0 mr-2">
             <div className="text-white/60 text-[11px] uppercase tracking-wider mb-0.5">{prospect.segment} · {prospect.cluster}</div>
@@ -167,7 +167,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
         {/* Pipeline steps */}
         <div className="flex items-center gap-1 mb-3">
           {STATUT_PIPELINE.map((s, i) => (
-            <button key={s} onClick={() => handleStatut(s)} className={`flex-1 text-[11px] font-bold py-1 rounded transition-colors ${i === pipelineIdx ? "bg-white text-[#1a6b7e]" : i < pipelineIdx ? "bg-white/30 text-white" : "bg-white/10 text-white/40 hover:bg-white/20"}`}>
+            <button key={s} onClick={() => handleStatut(s)} className={`flex-1 text-[11px] font-bold py-1 rounded transition-colors ${i === pipelineIdx ? "bg-white text-[var(--color-primary)]" : i < pipelineIdx ? "bg-white/30 text-white" : "bg-white/10 text-white/40 hover:bg-white/20"}`}>
               {i < pipelineIdx ? "✓" : s.split(" ")[0]}
             </button>
           ))}
@@ -195,11 +195,11 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3.5">
 
         {/* ── Mode Décision IA ── */}
-        <div className="rounded-xl border border-[#1a6b7e]/20 overflow-hidden">
-          <div className="bg-[#1a6b7e]/[0.06] px-3 py-2 flex items-center gap-2">
-            <span className="text-[11px] font-bold text-[#1a6b7e] uppercase tracking-wider">🧠 Mode Décision IA</span>
+        <div className="rounded-xl border border-[var(--color-primary)]/20 overflow-hidden">
+          <div className="bg-[var(--color-primary)]/[0.06] px-3 py-2 flex items-center gap-2">
+            <span className="text-[11px] font-bold text-[var(--color-primary)] uppercase tracking-wider">🧠 Mode Décision IA</span>
           </div>
-          <div className="grid grid-cols-3 divide-x divide-[#1a6b7e]/10">
+          <div className="grid grid-cols-3 divide-x divide-gray-100">
             {[
               {
                 icon: "📞",
@@ -220,10 +220,10 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
               <button
                 key={label}
                 onClick={() => window.dispatchEvent(new CustomEvent("copilote:open", { detail: prompt }))}
-                className="flex flex-col items-center gap-1.5 py-3 hover:bg-[#1a6b7e]/[0.08] transition-colors"
+                className="flex flex-col items-center gap-1.5 py-3 hover:bg-[var(--color-primary)]/[0.08] transition-colors"
               >
                 <span className="text-xl">{icon}</span>
-                <span className="text-[11px] font-semibold text-[#1a6b7e] text-center leading-tight px-1">{label}</span>
+                <span className="text-[11px] font-semibold text-[var(--color-primary)] text-center leading-tight px-1">{label}</span>
               </button>
             ))}
           </div>
@@ -345,7 +345,7 @@ export function ProspectDrawer({ prospect, onClose, onUpdated, allProspects, cur
         <button
           onClick={handleSave}
           disabled={pending}
-          className={`w-full text-[13px] font-semibold py-2.5 rounded-xl transition-colors ${saved ? "bg-green-500 text-white" : "bg-[#1a6b7e] hover:bg-[#1a5c6e] text-white"} disabled:opacity-50`}
+          className={`w-full text-[13px] font-semibold py-2.5 rounded-xl transition-colors ${saved ? "bg-green-500 text-white" : "bg-[var(--color-primary)] hover:bg-[#1a5c6e] text-white"} disabled:opacity-50`}
         >
           {pending ? "Sauvegarde..." : saved ? "✓ Sauvegardé" : "💾 Enregistrer la fiche"}
         </button>

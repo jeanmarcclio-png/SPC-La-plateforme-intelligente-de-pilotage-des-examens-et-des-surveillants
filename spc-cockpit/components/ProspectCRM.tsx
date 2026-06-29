@@ -11,7 +11,7 @@ const statutColors: Record<string, string> = {
   "Non contacté": "bg-gray-100 text-gray-600",
   "En cours":     "bg-blue-50 text-blue-700",
   "RDV fixé":     "bg-green-50 text-green-700",
-  "Converti":     "bg-[#1a6b7e]/10 text-[#1a6b7e]",
+  "Converti":     "bg-[var(--color-primary)]/10 text-[var(--color-primary)]",
 };
 
 export function ProspectStatutSelect({ id, statut }: { id: string; statut: string }) {

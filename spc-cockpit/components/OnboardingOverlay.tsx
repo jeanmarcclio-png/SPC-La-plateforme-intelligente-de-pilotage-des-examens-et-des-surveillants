@@ -9,7 +9,7 @@ const SLIDES = [
     icon: "🎯",
     title: "Bienvenue sur JMC Cockpit",
     desc: "Votre plateforme de pilotage commercial B2B pour la surveillance d'examens. Tout votre pipeline en un coup d'œil.",
-    color: "#1a6b7e",
+    color: "var(--color-primary)",
   },
   {
     icon: "📊",
@@ -27,7 +27,7 @@ const SLIDES = [
     icon: "🤖",
     title: "Copilote IA disponible partout",
     desc: "Appuyez sur « Copilote » en bas de l'écran pour obtenir des recommandations, rédiger des emails ou préparer vos appels.",
-    color: "#1a6b7e",
+    color: "var(--color-primary)",
   },
 ];
 

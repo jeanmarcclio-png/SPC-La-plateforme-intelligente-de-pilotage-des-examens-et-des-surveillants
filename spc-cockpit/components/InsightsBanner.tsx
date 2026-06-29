@@ -16,7 +16,7 @@ export function InsightsBanner({ insights }: { insights: ProactiveInsight[] }) {
     <div className="mb-5">
       <div className="flex items-center gap-2 mb-2.5">
         <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">IA Proactive</span>
-        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1a6b7e] bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--color-primary)] bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
           <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
           Analyse en temps réel
         </span>

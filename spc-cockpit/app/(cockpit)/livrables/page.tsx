@@ -18,14 +18,14 @@ export default async function LivrablesPage() {
 
         {/* ── MOBILE ── */}
         <div className="md:hidden">
-          <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+          <div className="px-4 pt-5 pb-4" style={{ background: "var(--color-primary)" }}>
             <div className="text-[22px] font-extrabold text-white">Livrables</div>
             <div className="text-[13px] text-white/70 mt-0.5">{valides}/{livraisonIDF.length} validés</div>
           </div>
           <div className="p-4 pb-40 space-y-2">
             {livraisonIDF.map((l, i) => (
               <div key={l.id} className={`flex items-center gap-3 pt-4 pl-4 pb-4 pr-14 bg-white rounded-2xl border ${l.statut === "Validé" ? "border-teal-200" : "border-gray-100"}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 ${l.statut === "Validé" ? "bg-[#1a6b7e] text-white" : "bg-gray-100 text-gray-400"}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 ${l.statut === "Validé" ? "bg-[var(--color-primary)] text-white" : "bg-gray-100 text-gray-400"}`}>
                   {l.statut === "Validé" ? "✓" : i + 1}
                 </div>
                 <div className="flex-1 min-w-0">

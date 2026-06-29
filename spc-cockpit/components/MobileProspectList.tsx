@@ -6,6 +6,7 @@ import { ProspectStatutSelect } from "@/components/ProspectCRM";
 import { ProspectDrawer } from "@/components/ProspectDrawer";
 import { AddProspectButton } from "@/components/AddProspectModal";
 import { Eye, Phone, Search, Filter, List, Columns } from "lucide-react";
+import { useTenant } from "@/lib/tenant/TenantContext";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const niveauBg: Record<string, string> = {
@@ -31,10 +32,12 @@ function bantColor(s: number) {
 // ─── Swipeable card ──────────────────────────────────────────────────────────
 function SwipeableProspectCard({
   p,
+  accent,
   onOpen,
   onQuickAction,
 }: {
   p: Prospect;
+  accent: string;
   onOpen: () => void;
   onQuickAction: () => void;
 }) {
@@ -83,7 +86,7 @@ function SwipeableProspectCard({
   return (
     <div className="relative rounded-2xl overflow-hidden select-none">
       {/* Left reveal: Voir fiche */}
-      <div className="absolute inset-y-0 left-0 flex items-center justify-center bg-[#1a6b7e] rounded-l-2xl" style={{ width: SWIPE_REVEAL }}>
+      <div className="absolute inset-y-0 left-0 flex items-center justify-center rounded-l-2xl" style={{ width: SWIPE_REVEAL, background: accent }}>
         <button onClick={(e) => { e.stopPropagation(); setOffset(0); onOpen(); }} className="flex flex-col items-center gap-1">
           <Eye className="w-5 h-5 text-white" strokeWidth={2.5} />
           <span className="text-[11px] font-bold text-white uppercase tracking-wide">Fiche</span>
@@ -104,13 +107,13 @@ function SwipeableProspectCard({
           transform: `translateX(${offset}px)`,
           transition: active ? "none" : "transform 0.22s cubic-bezier(.25,.46,.45,.94)",
           willChange: "transform",
+          borderColor: isLeftOpen ? `${accent}66` : isRightOpen ? "#fed7aa" : "#f3f4f6",
         }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
         onClick={handleCardClick}
-        className={`bg-white rounded-2xl border shadow-sm p-4 relative z-10 cursor-pointer
-          ${isLeftOpen ? "border-[#1a6b7e]/40" : isRightOpen ? "border-orange-200" : "border-gray-100"}`}
+        className="bg-white rounded-2xl border shadow-sm p-4 relative z-10 cursor-pointer"
       >
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1 min-w-0">
@@ -135,7 +138,7 @@ function SwipeableProspectCard({
         <div className="mt-2 pt-2 border-t border-gray-50 flex items-center justify-between">
           <span className="text-[11px] text-gray-400">{p.action}</span>
           <span className="text-[11px] text-gray-300 flex items-center gap-1">
-            <span className="text-[#1a6b7e]/40">←</span>
+            <span style={{ color: `${accent}66` }}>←</span>
             <span>swipe</span>
             <span className="text-orange-300/80">→</span>
           </span>
@@ -206,6 +209,9 @@ function KanbanView({
 
 // ─── Main list ────────────────────────────────────────────────────────────────
 export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
+  const { config } = useTenant();
+  const accent = config.couleur;
+
   const [search, setSearch]   = useState("");
   const [segment, setSegment] = useState("");
   const [cluster, setCluster] = useState("");
@@ -257,7 +263,9 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher…"
-            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-[13px] text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a6b7e]/30 focus:border-[#1a6b7e]"
+            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-[13px] text-gray-700 placeholder-gray-400 focus:outline-none"
+            onFocus={(e) => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.boxShadow = `0 0 0 3px ${accent}30`; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.boxShadow = ""; }}
           />
           {search && (
             <button onClick={() => setSearch("")}
@@ -268,7 +276,10 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
         {/* Filtres */}
         <button
           onClick={() => setFiltersOpen(o => !o)}
-          className={`relative flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-[12.5px] font-semibold transition-colors ${filtersOpen || activeFilters > 0 ? "bg-[#1a6b7e] border-[#1a6b7e] text-white" : "bg-white border-gray-200 text-gray-600"}`}
+          className="relative flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-[12.5px] font-semibold transition-colors"
+          style={filtersOpen || activeFilters > 0
+            ? { background: accent, borderColor: accent, color: "white" }
+            : { background: "white", borderColor: "#e5e7eb", color: "#4b5563" }}
         >
           <Filter className="w-4 h-4" />
           {activeFilters > 0 && (
@@ -288,7 +299,7 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
             <div>
               <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">Segment</div>
               <select value={segment} onChange={(e) => setSegment(e.target.value)}
-                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a6b7e]/30">
+                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-[12px] text-gray-700 focus:outline-none">
                 <option value="">Tous</option>
                 {segments.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
@@ -296,7 +307,7 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
             <div>
               <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">Cluster</div>
               <select value={cluster} onChange={(e) => setCluster(e.target.value)}
-                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a6b7e]/30">
+                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-[12px] text-gray-700 focus:outline-none">
                 <option value="">Tous</option>
                 {clusters.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -304,7 +315,7 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
             <div>
               <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">Statut</div>
               <select value={statut} onChange={(e) => setStatut(e.target.value)}
-                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a6b7e]/30">
+                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-[12px] text-gray-700 focus:outline-none">
                 <option value="">Tous</option>
                 {statuts.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
@@ -323,21 +334,24 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
       {activeFilters > 0 && !filtersOpen && (
         <div className="flex items-center gap-2 flex-wrap">
           {segment && (
-            <span className="flex items-center gap-1 bg-[#1a6b7e]/10 text-[#1a6b7e] text-[11px] font-semibold px-2.5 py-1 rounded-full">
+            <span className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full"
+              style={{ background: `${accent}1a`, color: accent }}>
               {segment}
-              <button onClick={() => setSegment("")} className="text-[#1a6b7e]/60 hover:text-[#1a6b7e] ml-0.5">×</button>
+              <button onClick={() => setSegment("")} className="ml-0.5" style={{ color: `${accent}99` }}>×</button>
             </span>
           )}
           {cluster && (
-            <span className="flex items-center gap-1 bg-[#1a6b7e]/10 text-[#1a6b7e] text-[11px] font-semibold px-2.5 py-1 rounded-full">
+            <span className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full"
+              style={{ background: `${accent}1a`, color: accent }}>
               {cluster}
-              <button onClick={() => setCluster("")} className="text-[#1a6b7e]/60 hover:text-[#1a6b7e] ml-0.5">×</button>
+              <button onClick={() => setCluster("")} className="ml-0.5" style={{ color: `${accent}99` }}>×</button>
             </span>
           )}
           {statut && (
-            <span className="flex items-center gap-1 bg-[#1a6b7e]/10 text-[#1a6b7e] text-[11px] font-semibold px-2.5 py-1 rounded-full">
+            <span className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full"
+              style={{ background: `${accent}1a`, color: accent }}>
               {statut}
-              <button onClick={() => setStatut("")} className="text-[#1a6b7e]/60 hover:text-[#1a6b7e] ml-0.5">×</button>
+              <button onClick={() => setStatut("")} className="ml-0.5" style={{ color: `${accent}99` }}>×</button>
             </span>
           )}
         </div>
@@ -353,13 +367,15 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
         <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-0.5">
           <button
             onClick={() => setViewMode("list")}
-            className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${viewMode === "list" ? "bg-[#1a6b7e] text-white" : "text-gray-500"}`}
+            className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors"
+            style={viewMode === "list" ? { background: accent, color: "white" } : { color: "#6b7280" }}
           >
             <List className="w-3.5 h-3.5" strokeWidth={2.5} />
           </button>
           <button
             onClick={() => setViewMode("kanban")}
-            className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${viewMode === "kanban" ? "bg-[#1a6b7e] text-white" : "text-gray-500"}`}
+            className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors"
+            style={viewMode === "kanban" ? { background: accent, color: "white" } : { color: "#6b7280" }}
           >
             <Columns className="w-3.5 h-3.5" strokeWidth={2.5} />
           </button>
@@ -387,13 +403,14 @@ export function MobileProspectList({ prospects }: { prospects: Prospect[] }) {
             <>
               <div className="flex items-center justify-between px-1">
                 <span className="text-[11px] text-gray-400 flex items-center gap-1">
-                  <span className="text-[#1a6b7e]/40">←</span> fiche · en cours <span className="text-orange-300/80">→</span>
+                  <span style={{ color: `${accent}66` }}>←</span> fiche · en cours <span className="text-orange-300/80">→</span>
                 </span>
               </div>
               {filtered.map((p) => (
                 <SwipeableProspectCard
                   key={p.id}
                   p={p}
+                  accent={accent}
                   onOpen={() => setSelected(p)}
                   onQuickAction={() => handleQuickAction(p)}
                 />

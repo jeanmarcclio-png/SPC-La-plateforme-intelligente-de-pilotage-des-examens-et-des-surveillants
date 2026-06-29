@@ -88,7 +88,7 @@ export function PullToRefresh() {
           animation: refreshing ? "spin 0.7s linear infinite" : "none",
         }}
       >
-        <RotateCcw className="w-[18px] h-[18px] text-[#1a6b7e]" strokeWidth={2.5} />
+        <RotateCcw className="w-[18px] h-[18px] text-[var(--color-primary)]" strokeWidth={2.5} />
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>

@@ -9,7 +9,7 @@ type Member = { id: string; email: string; nom: string; role: string };
 const ROLES = ["Admin", "Commercial", "Lecteur"] as const;
 
 const roleColors: Record<string, string> = {
-  Admin: "bg-[#1a6b7e]/10 text-[#1a6b7e]",
+  Admin: "bg-[var(--color-primary)]/10 text-[var(--color-primary)]",
   Commercial: "bg-blue-50 text-blue-700",
   Lecteur: "bg-gray-100 text-gray-500",
 };
@@ -41,7 +41,7 @@ export function TeamSection({ members }: { members: Member[] }) {
       )}
       {members.map((m) => (
         <div key={m.id} className="flex items-center gap-3 py-1.5 border-b border-gray-100 last:border-0">
-          <div className="w-7 h-7 rounded-full bg-[#1a6b7e]/10 text-[#1a6b7e] flex items-center justify-center text-[11px] font-bold flex-shrink-0">
+          <div className="w-7 h-7 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center text-[11px] font-bold flex-shrink-0">
             {m.nom.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
@@ -74,7 +74,7 @@ export function TeamSection({ members }: { members: Member[] }) {
             {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
           </select>
           <div className="flex gap-2">
-            <button type="submit" disabled={pending} className="flex-1 bg-[#1a6b7e] hover:bg-[#155a6a] text-white text-[12px] font-semibold py-2 rounded-lg disabled:opacity-50 transition-colors">
+            <button type="submit" disabled={pending} className="flex-1 bg-[var(--color-primary)] hover:bg-[#155a6a] text-white text-[12px] font-semibold py-2 rounded-lg disabled:opacity-50 transition-colors">
               {pending ? "Ajout…" : "Ajouter"}
             </button>
             <button type="button" onClick={() => setShowForm(false)} className="px-3 py-2 text-[12px] text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg">

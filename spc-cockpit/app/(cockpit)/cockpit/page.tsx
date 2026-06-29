@@ -34,7 +34,7 @@ export default async function CockpitPage() {
     { label: "Prospects total",  value: total,      suffix: "",    color: "#1a202c", sub: "établissements ciblés", delta: null },
     { label: pipelineCA > 0 ? "Pipeline CA" : "Contactés", value: pipelineCA > 0 ? Math.round(pipelineCA) : contactes, suffix: pipelineCA > 0 ? "k€" : "", color: pipelineCA > 0 ? "#6b46c1" : "#4a90d9", sub: pipelineCA > 0 ? "CA estimé total" : `${total > 0 ? Math.round((contactes / total) * 100) : 0}% du pipeline`, delta: pipelineCA > 0 ? `${contactes} contactés` : null },
     { label: "RDV fixés",        value: rdvFixes,   suffix: "",    color: "#38a169", sub: "en discussion avancée", delta: rdvFixes > 0 ? `${Math.round((rdvFixes / total) * 100)}% du pipeline` : null },
-    { label: "Convertis",        value: convertis,  suffix: "",    color: "#1a6b7e", sub: "clients signés", delta: convertis > 0 ? "↑ Signature confirmée" : null },
+    { label: "Convertis",        value: convertis,  suffix: "",    color: "var(--color-primary)", sub: "clients signés", delta: convertis > 0 ? "↑ Signature confirmée" : null },
   ];
 
   return (
@@ -58,7 +58,7 @@ export default async function CockpitPage() {
           {/* ── Executive Summary Banner ── */}
           <div
             className="rounded-2xl p-5 md:p-6 animate-scale-in"
-            style={{ background: "linear-gradient(135deg, #0d1e2e 0%, #1a3a52 60%, #1a6b7e 100%)" }}
+            style={{ background: "linear-gradient(135deg, #0d1e2e 0%, #1a3a52 60%, var(--color-primary) 100%)" }}
           >
             <div className="flex items-start gap-3 mb-4">
               <span className="text-2xl flex-shrink-0">🧠</span>
@@ -103,7 +103,7 @@ export default async function CockpitPage() {
                 <div className="text-[12px] font-semibold text-gray-700 mt-0.5">{kpi.label}</div>
                 <div className="text-[11px] text-gray-400 mt-0.5">{kpi.sub}</div>
                 {kpi.delta && (
-                  <div className="text-[11px] text-[#1a6b7e] font-medium mt-1">{kpi.delta}</div>
+                  <div className="text-[11px] text-[var(--color-primary)] font-medium mt-1">{kpi.delta}</div>
                 )}
               </div>
             ))}
@@ -123,18 +123,18 @@ export default async function CockpitPage() {
                 </div>
               </div>
               <div className="flex-1 p-4" style={{ background: "rgba(26,107,126,0.04)" }}>
-                <div className="text-[11px] text-[#1a6b7e] uppercase tracking-wider mb-2 font-bold">IA recommandée ✓</div>
+                <div className="text-[11px] text-[var(--color-primary)] uppercase tracking-wider mb-2 font-bold">IA recommandée ✓</div>
                 <div className="flex items-end gap-2 mb-1.5">
-                  <span className="text-[26px] font-extrabold text-[#1a6b7e] leading-none">{boostedObjectif}%</span>
-                  <span className="text-[11px] text-[#1a6b7e]/60 pb-0.5">objectif</span>
+                  <span className="text-[26px] font-extrabold text-[var(--color-primary)] leading-none">{boostedObjectif}%</span>
+                  <span className="text-[11px] text-[var(--color-primary)]/60 pb-0.5">objectif</span>
                 </div>
-                <div className="h-1.5 bg-[#1a6b7e]/15 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#1a6b7e] rounded-full" style={{ width: `${boostedObjectif}%` }} />
+                <div className="h-1.5 bg-[var(--color-primary)]/15 rounded-full overflow-hidden">
+                  <div className="h-full bg-[var(--color-primary)] rounded-full" style={{ width: `${boostedObjectif}%` }} />
                 </div>
               </div>
               <div className="flex items-center px-4 flex-shrink-0 border-l border-gray-100">
                 <div className="text-center">
-                  <div className="text-[22px] font-extrabold text-[#1a6b7e]">+{boostedObjectif - baseObjectif}pts</div>
+                  <div className="text-[22px] font-extrabold text-[var(--color-primary)]">+{boostedObjectif - baseObjectif}pts</div>
                   <div className="text-[11px] text-gray-400">gain estimé</div>
                 </div>
               </div>
@@ -211,7 +211,7 @@ export default async function CockpitPage() {
                         <div className="text-[11px] text-gray-400">{p.segment} · {p.statut}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[14px] font-extrabold text-[#1a6b7e]">{p.scoreBANT}</div>
+                        <div className="text-[14px] font-extrabold text-[var(--color-primary)]">{p.scoreBANT}</div>
                         <div className="text-[11px] text-gray-400">BANT</div>
                       </div>
                     </div>
@@ -243,7 +243,7 @@ export default async function CockpitPage() {
                 ))}
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <Link href="/campagnes" className="text-center bg-[#1a6b7e]/[0.08] text-[#1a6b7e] text-[12px] font-semibold py-2 rounded-xl hover:bg-[#1a6b7e]/[0.15] transition-colors">
+                <Link href="/campagnes" className="text-center bg-[var(--color-primary)]/[0.08] text-[var(--color-primary)] text-[12px] font-semibold py-2 rounded-xl hover:bg-[var(--color-primary)]/[0.15] transition-colors">
                   Campagnes
                 </Link>
                 <Link href="/planning" className="text-center bg-[#4a90d9]/[0.08] text-[#4a90d9] text-[12px] font-semibold py-2 rounded-xl hover:bg-[#4a90d9]/[0.15] transition-colors">

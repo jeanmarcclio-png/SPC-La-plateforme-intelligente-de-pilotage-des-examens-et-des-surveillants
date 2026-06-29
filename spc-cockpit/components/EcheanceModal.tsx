@@ -75,7 +75,7 @@ function EcheanceForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full mt-2 bg-[#1a6b7e] hover:bg-[#155a6a] text-white text-[13px] font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
+        className="w-full mt-2 bg-[var(--color-primary)] hover:bg-[#155a6a] text-white text-[13px] font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
       >
         {pending ? "Enregistrement…" : "Enregistrer"}
       </button>
@@ -98,7 +98,7 @@ export function AddEcheanceButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-[12px] font-semibold text-white bg-[#1a6b7e] hover:bg-[#155a6a] px-3 py-1.5 rounded-lg transition-colors"
+        className="text-[12px] font-semibold text-white bg-[var(--color-primary)] hover:bg-[#155a6a] px-3 py-1.5 rounded-lg transition-colors"
       >
         + Ajouter
       </button>

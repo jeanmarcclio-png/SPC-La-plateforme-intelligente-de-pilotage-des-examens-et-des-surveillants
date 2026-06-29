@@ -36,7 +36,7 @@ export function EmailHistoryButton({ prospectId, prospectNom }: { prospectId: st
     <>
       <button
         onClick={handleOpen}
-        className="text-[11px] text-gray-400 hover:text-[#1a6b7e] hover:underline"
+        className="text-[11px] text-gray-400 hover:text-[var(--color-primary)] hover:underline"
       >
         Historique
       </button>
@@ -59,7 +59,7 @@ export function EmailHistoryButton({ prospectId, prospectNom }: { prospectId: st
               <div className="space-y-2 max-h-[360px] overflow-y-auto">
                 {logs.map((log) => (
                   <div key={log.id} className="flex items-start gap-3 p-3 border border-gray-100 rounded-lg hover:bg-gray-50">
-                    <span className="text-[11px] font-bold text-white bg-[#1a6b7e] px-2 py-0.5 rounded-full flex-shrink-0">
+                    <span className="text-[11px] font-bold text-white bg-[var(--color-primary)] px-2 py-0.5 rounded-full flex-shrink-0">
                       {typeLabels[log.type] ?? log.type}
                     </span>
                     <div className="flex-1 min-w-0">

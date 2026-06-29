@@ -15,7 +15,7 @@ export function PageError({ error, reset }: { error: Error & { digest?: string }
       <button
         onClick={reset}
         className="px-4 py-2 rounded-lg text-[13px] font-semibold text-white"
-        style={{ background: "#1a6b7e" }}
+        style={{ background: "var(--color-primary)" }}
       >
         Réessayer
       </button>

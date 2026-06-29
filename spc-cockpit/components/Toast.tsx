@@ -33,7 +33,7 @@ export function Toaster() {
         <div
           key={t.id}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg text-[13px] font-semibold text-white animate-in fade-in slide-in-from-bottom-2 duration-200 ${
-            t.type === "success" ? "bg-[#1a6b7e]" : "bg-red-500"
+            t.type === "success" ? "bg-[var(--color-primary)]" : "bg-red-500"
           }`}
         >
           <span>{t.type === "success" ? "✓" : "✕"}</span>

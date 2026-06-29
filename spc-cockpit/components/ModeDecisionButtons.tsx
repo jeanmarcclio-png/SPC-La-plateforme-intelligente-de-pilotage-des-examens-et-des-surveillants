@@ -9,7 +9,7 @@ export function ModeDecisionButtons({ prospect }: { prospect: Prospect }) {
     {
       icon: "📞",
       label: "Script appel",
-      bg: "bg-[#1a6b7e]",
+      bg: "bg-[var(--color-primary)]",
       prompt: `Génère un script d'appel à froid pour contacter ${prospect.nom} (${prospect.segment} · ${prospect.cluster}). Score BANT ${score}/10, statut : ${prospect.statut}. Interlocuteur cible : ${prospect.interlocuteur}. Canal recommandé : ${prospect.canal}. Objectif : décrocher un RDV ou audit gratuit 30 min.`,
     },
     {

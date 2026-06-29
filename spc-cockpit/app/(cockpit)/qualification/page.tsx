@@ -37,13 +37,13 @@ export default async function QualificationPage() {
 
         {/* ── MOBILE ── */}
         <div className="md:hidden">
-          <div className="px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+          <div className="px-4 pt-5 pb-4" style={{ background: "var(--color-primary)" }}>
             <div className="text-[22px] font-extrabold text-white">Qualification BANT</div>
             <div className="text-[13px] text-white/70 mt-0.5">{tresChaudes} très chaud · {prospects.length} prospects</div>
           </div>
           <div className="p-4 space-y-3">
             {/* Hero prospect */}
-            <div className="bg-white rounded-2xl border border-[#1a6b7e]/30 shadow-sm p-4">
+            <div className="bg-white rounded-2xl border border-[var(--color-primary)]/30 shadow-sm p-4">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="text-[11px] text-gray-400 mb-0.5">Priorité A · Vague 1</div>
@@ -57,7 +57,7 @@ export default async function QualificationPage() {
                 <div className="relative w-16 h-16 flex-shrink-0">
                   <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90">
                     <circle cx="18" cy="18" r="15.9" fill="none" stroke="#edf2f7" strokeWidth="3.5" />
-                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#1a6b7e" strokeWidth="3.5"
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--color-primary)" strokeWidth="3.5"
                       strokeDasharray={`${(emLyon.scoreBANT / 10) * 100} 100`} strokeLinecap="round" />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -76,7 +76,7 @@ export default async function QualificationPage() {
                       <div className="text-[11px] text-gray-400">{b.label}</div>
                       {b.estimated || b.score === undefined
                         ? <div className="text-[11px] font-semibold text-gray-300 mt-0.5">—</div>
-                        : <div className="text-[13px] font-extrabold text-[#1a6b7e]">{b.score}</div>
+                        : <div className="text-[13px] font-extrabold text-[var(--color-primary)]">{b.score}</div>
                       }
                     </div>
                   ))}
@@ -118,7 +118,7 @@ export default async function QualificationPage() {
                 ))}
               </div>
               <div className="bg-teal-50 rounded-2xl p-3 border border-teal-100">
-                <div className="text-[11px] font-bold text-[#1a6b7e] mb-2">✓ Points forts</div>
+                <div className="text-[11px] font-bold text-[var(--color-primary)] mb-2">✓ Points forts</div>
                 {["1 200+ étudiants", "Budget confirmé", "Tiers-temps non géré", "Réseau CHU x4"].map((p, i) => (
                   <div key={i} className="text-[11px] text-gray-600 py-1 border-b border-teal-100/50 last:border-0">· {p}</div>
                 ))}
@@ -161,7 +161,7 @@ export default async function QualificationPage() {
                 <div key={b.label} className={`rounded-lg p-3 text-center ${b.score === undefined ? "bg-gray-50/60 border border-dashed border-gray-200" : "bg-gray-50"}`}>
                   <div className="text-lg mb-1">{b.icon}</div>
                   {b.score !== undefined
-                    ? <><div className="text-[18px] font-extrabold text-[#1a6b7e]">{b.score}</div><div className="text-[11px] text-gray-400 uppercase tracking-wide mt-0.5">/{b.max}</div></>
+                    ? <><div className="text-[18px] font-extrabold text-[var(--color-primary)]">{b.score}</div><div className="text-[11px] text-gray-400 uppercase tracking-wide mt-0.5">/{b.max}</div></>
                     : <div className="text-[13px] font-semibold text-gray-300 mt-1">—</div>
                   }
                   <div className="text-[11px] font-semibold text-gray-600 mt-1">{b.label}</div>
@@ -215,7 +215,7 @@ export default async function QualificationPage() {
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-              <div className="text-[12.5px] font-semibold text-[#1a6b7e] mb-2.5 flex items-center gap-1.5">
+              <div className="text-[12.5px] font-semibold text-[var(--color-primary)] mb-2.5 flex items-center gap-1.5">
                 <span>✓</span> Points forts
               </div>
               {[
@@ -230,7 +230,7 @@ export default async function QualificationPage() {
               ))}
             </div>
 
-            <div className="bg-[#1a6b7e] rounded-xl p-4">
+            <div className="bg-[var(--color-primary)] rounded-xl p-4">
               <div className="text-[12px] text-white/70 mb-1">Prochaine étape recommandée</div>
               <div className="text-[13.5px] font-bold text-white">Appel sortant — Lundi matin</div>
               <div className="text-[12px] text-white/80 mt-1.5 leading-snug">Demander le responsable des examens · Script : segment Commerce · Proposer audit gratuit 30 min.</div>
@@ -260,7 +260,7 @@ export default async function QualificationPage() {
                       className="h-full rounded-full transition-all"
                       style={{
                         width: `${(c.score / 10) * 100}%`,
-                        background: c.score >= 9.5 ? "#1a6b7e" : c.score >= 9 ? "#4a90d9" : "#a0aec0"
+                        background: c.score >= 9.5 ? "var(--color-primary)" : c.score >= 9 ? "#4a90d9" : "#a0aec0"
                       }}
                     />
                   </div>
@@ -269,7 +269,7 @@ export default async function QualificationPage() {
             </div>
             <div className="mt-4 pt-3 border-t border-gray-100">
               <div className="text-[11px] text-gray-400 mb-1">Meilleur cluster</div>
-              <div className="text-[13px] font-bold text-[#1a6b7e]">Lyon / Rhône-Alpes</div>
+              <div className="text-[13px] font-bold text-[var(--color-primary)]">Lyon / Rhône-Alpes</div>
               <div className="text-[11px] text-gray-500">EM Lyon · IFSI CHU · Grenoble EM</div>
             </div>
           </div>
@@ -292,7 +292,7 @@ function BANTGauge({ score }: { score: number }) {
   return (
     <svg viewBox="0 0 140 82" className="w-[180px] h-[105px]">
       <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="#edf2f7" strokeWidth="16" strokeLinecap="round" />
-      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="#1a6b7e" strokeWidth="16" strokeLinecap="round" strokeDasharray={`${dash} ${circumference}`} />
+      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="var(--color-primary)" strokeWidth="16" strokeLinecap="round" strokeDasharray={`${dash} ${circumference}`} />
       <text x={cx} y={cy - 12} textAnchor="middle" style={{ fontSize: 26, fontWeight: 800, fill: "#1a202c" }}>{score}</text>
       <text x={cx} y={cy + 4} textAnchor="middle" style={{ fontSize: 10, fill: "#718096" }}>SCORE BANT / 10</text>
       <text x={cx - r - 2} y={cy + 14} textAnchor="middle" style={{ fontSize: 9, fill: "#a0aec0" }}>0</text>

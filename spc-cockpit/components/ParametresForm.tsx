@@ -65,7 +65,7 @@ export function CompteSection({ email, displayName }: { email: string; displayNa
           <button
             type="submit"
             disabled={pending}
-            className="px-3 py-2 bg-[#1a6b7e] hover:bg-[#155a6a] text-white text-[12px] font-semibold rounded-lg disabled:opacity-50 transition-colors"
+            className="px-3 py-2 bg-[var(--color-primary)] hover:bg-[#155a6a] text-white text-[12px] font-semibold rounded-lg disabled:opacity-50 transition-colors"
           >
             Sauver
           </button>
@@ -109,7 +109,7 @@ export function CompteSection({ email, displayName }: { email: string; displayNa
             <button
               type="submit"
               disabled={pending}
-              className="w-full bg-[#1a6b7e] hover:bg-[#155a6a] text-white text-[13px] font-semibold py-2 rounded-lg disabled:opacity-50 transition-colors"
+              className="w-full bg-[var(--color-primary)] hover:bg-[#155a6a] text-white text-[13px] font-semibold py-2 rounded-lg disabled:opacity-50 transition-colors"
             >
               {pending ? "Mise à jour…" : "Mettre à jour"}
             </button>
@@ -152,7 +152,7 @@ export function NotificationsSection({ saved }: { saved: Record<string, boolean>
           <span className="text-[12.5px] text-gray-600">{NOTIF_LABELS[key]}</span>
           <button
             onClick={() => toggle(key)}
-            className={`relative w-10 h-5 rounded-full transition-colors ${prefs[key] ? "bg-[#1a6b7e]" : "bg-gray-200"}`}
+            className={`relative w-10 h-5 rounded-full transition-colors ${prefs[key] ? "bg-[var(--color-primary)]" : "bg-gray-200"}`}
           >
             <span
               className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${prefs[key] ? "translate-x-5" : "translate-x-0"}`}

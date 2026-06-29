@@ -15,7 +15,7 @@ export function PageSkeleton({ title = "" }: { title?: string }) {
       </div>
 
       {/* Mobile header */}
-      <div className="md:hidden px-4 pt-5 pb-4" style={{ background: "#1a6b7e" }}>
+      <div className="md:hidden px-4 pt-5 pb-4" style={{ background: "var(--color-primary)" }}>
         <Pulse className="w-40 h-6 bg-white/30 mb-2" />
         <Pulse className="w-24 h-3 bg-white/20" />
       </div>

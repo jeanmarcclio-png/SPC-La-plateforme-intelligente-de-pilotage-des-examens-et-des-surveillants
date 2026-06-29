@@ -88,14 +88,14 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
             <button
               onClick={() => setViewMode("table")}
               title="Vue tableau"
-              className={`px-2.5 py-1.5 transition-colors ${viewMode === "table" ? "bg-[#1a6b7e] text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}
+              className={`px-2.5 py-1.5 transition-colors ${viewMode === "table" ? "bg-[var(--color-primary)] text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}
             >
               <Table2 className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setViewMode("kanban")}
               title="Vue Kanban"
-              className={`px-2.5 py-1.5 transition-colors ${viewMode === "kanban" ? "bg-[#1a6b7e] text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}
+              className={`px-2.5 py-1.5 transition-colors ${viewMode === "kanban" ? "bg-[var(--color-primary)] text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}
             >
               <Columns className="w-3.5 h-3.5" />
             </button>
@@ -104,7 +104,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
           <button
             onClick={() => exportCSV(filtered)}
             title="Exporter CSV"
-            className="text-[12px] font-semibold text-gray-500 hover:text-[#1a6b7e] border border-gray-200 hover:border-[#1a6b7e]/40 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+            className="text-[12px] font-semibold text-gray-500 hover:text-[var(--color-primary)] border border-gray-200 hover:border-[var(--color-primary)]/40 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
           >
             <Download className="w-3.5 h-3.5" />
             CSV
@@ -162,7 +162,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
                 <tr
                   key={p.id}
                   onClick={() => setSelected(p)}
-                  className={`border-b border-gray-100 last:border-0 hover:bg-blue-50/40 cursor-pointer transition-colors ${i === 0 && !hasFilters ? "bg-[#1a6b7e]/[0.03]" : ""} ${selected?.id === p.id ? "bg-blue-50/60" : ""}`}
+                  className={`border-b border-gray-100 last:border-0 hover:bg-blue-50/40 cursor-pointer transition-colors ${i === 0 && !hasFilters ? "bg-[var(--color-primary)]/[0.03]" : ""} ${selected?.id === p.id ? "bg-blue-50/60" : ""}`}
                 >
                   <td className="px-3 py-2.5 text-[12px] font-bold text-gray-400">{i + 1}</td>
                   <td className="px-3 py-2.5">

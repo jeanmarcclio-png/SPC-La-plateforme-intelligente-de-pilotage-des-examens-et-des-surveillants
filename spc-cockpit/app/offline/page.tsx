@@ -96,7 +96,7 @@ export default function OfflinePage() {
       <button
         onClick={() => window.location.reload()}
         className="flex items-center gap-2 px-6 py-3 rounded-xl text-[14px] font-bold text-white transition-opacity active:opacity-80"
-        style={{ background: "#1a6b7e" }}
+        style={{ background: "var(--color-primary)" }}
       >
         <RefreshCw className="w-4 h-4" />
         Réessayer
