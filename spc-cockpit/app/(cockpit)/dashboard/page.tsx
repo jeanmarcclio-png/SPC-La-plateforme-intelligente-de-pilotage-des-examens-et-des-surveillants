@@ -16,6 +16,7 @@ import { CountUp } from "@/components/CountUp";
 import { ContactDuJour } from "@/components/ContactDuJour";
 import { CalendarDays } from "lucide-react";
 import { SectorDashboardWidget, SectorDashboardWidgetMobile } from "@/components/SectorDashboardWidget";
+import { SectorKPIPanel, SectorKPIPanelMobile } from "@/components/SectorKPIPanel";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -107,6 +108,9 @@ export default async function DashboardPage() {
           <div className="px-4 pt-5 pb-4" style={{ background: "var(--color-primary)" }}>
             <div className="text-[22px] font-extrabold text-white">Bonjour {userFirstName} 👋</div>
             <div className="text-[13px] text-white/70 mt-0.5">{dateStr}</div>
+            <div className="mt-3">
+              <SectorKPIPanelMobile />
+            </div>
           </div>
 
           <div className="p-4 space-y-3">
@@ -417,6 +421,9 @@ export default async function DashboardPage() {
               </div>
             </div>
           )}
+
+          {/* Sector KPIs + AI alerts */}
+          <SectorKPIPanel />
 
           {/* Sector-specific widget — desktop */}
           <SectorDashboardWidget />

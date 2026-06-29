@@ -4,6 +4,7 @@ import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { getEcheances } from "@/lib/supabase/queries";
 import { AddEcheanceButton, EcheanceActions } from "@/components/EcheanceModal";
+import { SectorPlanningPanel } from "@/components/SectorPlanningPanel";
 
 type Slot = "Aujourd'hui" | "Demain" | "Cette semaine" | "Semaine prochaine" | "Plus tard" | "Passé";
 
@@ -228,6 +229,9 @@ export default async function PlanningPage() {
             <span className="text-[14px] font-semibold text-gray-900">Timeline IA — Échéances groupées</span>
             <AddEcheanceButton />
           </div>
+          {/* Sector planning agenda */}
+          <SectorPlanningPanel />
+
           {/* Weekly grid */}
           <WeekGrid echeances={echeances} />
           <div className="space-y-4">
