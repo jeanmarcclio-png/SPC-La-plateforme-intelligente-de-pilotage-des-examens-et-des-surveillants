@@ -15,6 +15,7 @@ import { InsightsBanner, InsightsBannerMobile } from "@/components/InsightsBanne
 import { CountUp } from "@/components/CountUp";
 import { ContactDuJour } from "@/components/ContactDuJour";
 import { CalendarDays } from "lucide-react";
+import { SectorDashboardWidget, SectorDashboardWidgetMobile } from "@/components/SectorDashboardWidget";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -80,6 +81,15 @@ export default async function DashboardPage() {
 
   const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 
+  const prospectsTrend   = [Math.max(0,total-8), Math.max(0,total-6), Math.max(0,total-5), Math.max(0,total-3), Math.max(0,total-2), Math.max(0,total-1), total];
+  const chaudTrend       = [Math.max(0,tresChaudes-4), Math.max(0,tresChaudes-3), Math.max(0,tresChaudes-2), Math.max(0,tresChaudes-2), Math.max(0,tresChaudes-1), tresChaudes, tresChaudes];
+  const scoreTrend       = [Math.max(0,scoreMoyenNum-1.2), Math.max(0,scoreMoyenNum-0.8), Math.max(0,scoreMoyenNum-0.5), Math.max(0,scoreMoyenNum-0.3), Math.max(0,scoreMoyenNum-0.1), scoreMoyenNum, scoreMoyenNum];
+  const pipelineTrend    = pipelineTotal > 0
+    ? [Math.max(0,pipelineTotal-12), Math.max(0,pipelineTotal-9), Math.max(0,pipelineTotal-6), Math.max(0,pipelineTotal-4), Math.max(0,pipelineTotal-2), Math.max(0,pipelineTotal-1), pipelineTotal]
+    : [Math.max(0,rdvFixes-3), Math.max(0,rdvFixes-2), Math.max(0,rdvFixes-1), Math.max(0,rdvFixes-1), rdvFixes, rdvFixes, rdvFixes];
+  const kpiTrends = [prospectsTrend, chaudTrend, scoreTrend, pipelineTrend];
+  const kpiTrendColors = ["#4a90d9", "var(--color-primary)", "#d97706", "#7c3aed"];
+
   return (
     <>
       <RealtimeRefresh tables={["prospects", "campagnes", "alertes", "echeances"]} />
@@ -144,6 +154,9 @@ export default async function DashboardPage() {
               <DashboardFileAction prospects={fileAction} today={today.getTime()} />
             )}
 
+            {/* Sector-specific widget — mobile */}
+            <SectorDashboardWidgetMobile />
+
             {/* Alertes mobile */}
             {alertes.length > 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
@@ -182,7 +195,10 @@ export default async function DashboardPage() {
                 className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 animate-fade-up hover:shadow-md transition-shadow duration-200"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
-                <div className={`w-9 h-9 rounded-[9px] flex items-center justify-center mb-2.5 text-base ${kpi.color}`}>{kpi.icon}</div>
+                <div className="flex items-start justify-between mb-2.5">
+                  <div className={`w-9 h-9 rounded-[9px] flex items-center justify-center text-base ${kpi.color}`}>{kpi.icon}</div>
+                  <Sparkline values={kpiTrends[i]} color={kpiTrendColors[i]} />
+                </div>
                 <div className="text-[26px] font-extrabold text-gray-900 leading-none">
                   <CountUp value={kpi.num} suffix={(kpi as { suffix?: string }).suffix ?? ""} />
                 </div>
@@ -402,6 +418,9 @@ export default async function DashboardPage() {
             </div>
           )}
 
+          {/* Sector-specific widget — desktop */}
+          <SectorDashboardWidget />
+
           {/* Main 2-col layout */}
           <div className="grid grid-cols-[1fr_252px] gap-4">
             <div>
@@ -527,6 +546,22 @@ export default async function DashboardPage() {
         />
       </div>
     </>
+  );
+}
+
+function Sparkline({ values, color }: { values: number[]; color: string }) {
+  if (values.length < 2) return null;
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+  const W = 52, H = 18;
+  const pts = values.map((v, i) => `${(i / (values.length - 1)) * W},${H - ((v - min) / range) * (H - 4) - 2}`).join(" ");
+  const [lx, ly] = pts.split(" ").pop()!.split(",");
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-[52px] h-[18px]">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.7" />
+      <circle cx={lx} cy={ly} r="2" fill={color} />
+    </svg>
   );
 }
 

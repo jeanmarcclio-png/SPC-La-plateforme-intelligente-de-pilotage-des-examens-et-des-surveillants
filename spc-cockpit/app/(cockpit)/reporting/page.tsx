@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
+import { FacturationButton } from "@/components/FacturationButton";
 import { getCampagnes, getProspects, getClusterScores, getSegmentRepartition, getLivrables } from "@/lib/supabase/queries";
 
 export default async function ReportingPage() {
@@ -14,12 +15,13 @@ export default async function ReportingPage() {
   ]);
 
   const totalProspects = prospects.length;
-  const tresChaudes = prospects.filter((p) => p.niveau === "Très chaud").length;
-  const scoreMoyen = totalProspects > 0
+  const tresChaudes    = prospects.filter((p) => p.niveau === "Très chaud").length;
+  const scoreMoyen     = totalProspects > 0
     ? (prospects.reduce((s, p) => s + p.scoreBANT, 0) / totalProspects).toFixed(1)
     : "0.0";
-  const rdvFixes = prospects.filter((p) => p.statut === "RDV fixé").length;
-  const convertis = prospects.filter((p) => p.statut === "Converti").length;
+  const rdvFixes     = prospects.filter((p) => p.statut === "RDV fixé").length;
+  const convertis    = prospects.filter((p) => p.statut === "Converti").length;
+  const contactes    = prospects.filter((p) => p.statut !== "Non contacté").length;
   const livrablesValides = livrables.filter((l) => l.statut === "Validé").length;
 
   const statutCounts: Record<string, number> = {};
@@ -30,9 +32,9 @@ export default async function ReportingPage() {
 
   const statutColors: Record<string, string> = {
     "Non contacté": "#a0aec0",
-    "En cours": "#4a90d9",
-    "RDV fixé": "#38a169",
-    "Converti": "var(--color-primary)",
+    "En cours":     "#4a90d9",
+    "RDV fixé":     "#38a169",
+    "Converti":     "var(--color-primary)",
   };
 
   const tauxConversion = totalProspects > 0 ? Math.round(((rdvFixes + convertis) / totalProspects) * 100) : 0;
@@ -44,18 +46,75 @@ export default async function ReportingPage() {
   const forecastCABoosted = Math.round(forecastCABase * 1.6);
   const gainPct = forecastConversions > 0 ? Math.round((forecastConversionsBoosted / forecastConversions - 1) * 100) : 60;
 
+  // Score distribution buckets
+  const scoreBuckets = [
+    { label: "0–2",  min: 0,  max: 2  },
+    { label: "3–4",  min: 3,  max: 4  },
+    { label: "5–6",  min: 5,  max: 6  },
+    { label: "7–8",  min: 7,  max: 8  },
+    { label: "9–10", min: 9,  max: 10 },
+  ].map((b) => ({
+    ...b,
+    count: prospects.filter((p) => p.scoreBANT >= b.min && p.scoreBANT <= b.max).length,
+  }));
+  const maxBucketCount = Math.max(...scoreBuckets.map((b) => b.count), 1);
+
+  // Funnel steps
+  const funnelSteps = [
+    { label: "Prospects",  count: totalProspects, color: "#a0aec0"  },
+    { label: "Contactés",  count: contactes,      color: "#4a90d9"  },
+    { label: "RDV fixés",  count: rdvFixes,       color: "#38a169"  },
+    { label: "Convertis",  count: convertis,      color: "var(--color-primary)" },
+  ];
+
+  const campagneActive = campagnes.find((c) => c.statut === "Actif") ?? campagnes[0];
+  const todayStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+
   return (
     <>
       <div className="hidden md:block">
-        <Topbar context="Reporting" title="Performance commerciale" badge={`${campagnes.length} campagnes`} badgeColor="blue" />
+        <Topbar
+          context="Reporting"
+          title="Performance commerciale"
+          badge={`${campagnes.length} campagnes`}
+          badgeColor="blue"
+          actions={
+            <FacturationButton
+              campagneNom={campagneActive?.nom ?? "Toutes campagnes"}
+              totalProspects={totalProspects}
+              convertis={convertis}
+              rdvFixes={rdvFixes}
+              scoreMoyen={scoreMoyen}
+              pipelineCA={Math.round(currentPipelineCA)}
+              tresChaudes={tresChaudes}
+              date={todayStr}
+            />
+          }
+        />
       </div>
       <main className="flex-1 overflow-y-auto">
 
         {/* ── MOBILE ── */}
         <div className="md:hidden">
           <div className="px-4 pt-5 pb-4" style={{ background: "var(--color-primary)" }}>
-            <div className="text-[22px] font-extrabold text-white">Performance</div>
-            <div className="text-[13px] text-white/70 mt-0.5">{campagnes.length} campagnes · {totalProspects} prospects</div>
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="text-[22px] font-extrabold text-white">Performance</div>
+                <div className="text-[13px] text-white/70 mt-0.5">{campagnes.length} campagnes · {totalProspects} prospects</div>
+              </div>
+              <div className="mt-1">
+                <FacturationButton
+                  campagneNom={campagneActive?.nom ?? "Toutes campagnes"}
+                  totalProspects={totalProspects}
+                  convertis={convertis}
+                  rdvFixes={rdvFixes}
+                  scoreMoyen={scoreMoyen}
+                  pipelineCA={Math.round(currentPipelineCA)}
+                  tresChaudes={tresChaudes}
+                  date={todayStr}
+                />
+              </div>
+            </div>
           </div>
           <div className="p-4 space-y-3">
             {/* 2×2 KPIs */}
@@ -72,6 +131,18 @@ export default async function ReportingPage() {
                   <div className="text-[12px] text-gray-400 mt-0.5">{kpi.sub}</div>
                 </div>
               ))}
+            </div>
+
+            {/* Conversion Funnel — mobile */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <div className="text-[13px] font-bold text-gray-800 mb-3">Entonnoir de conversion</div>
+              <FunnelChart steps={funnelSteps} />
+            </div>
+
+            {/* Score Distribution — mobile */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <div className="text-[13px] font-bold text-gray-800 mb-3">Distribution score BANT</div>
+              <ScoreHistogram buckets={scoreBuckets} maxCount={maxBucketCount} />
             </div>
 
             {/* Statuts pipeline */}
@@ -287,6 +358,23 @@ export default async function ReportingPage() {
           </div>
         </div>
 
+        {/* Analytics avancés row */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+
+          {/* Entonnoir de conversion */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <div className="text-[13px] font-semibold text-gray-700 mb-4">Entonnoir de conversion</div>
+            <FunnelChart steps={funnelSteps} />
+          </div>
+
+          {/* Distribution score BANT */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <div className="text-[13px] font-semibold text-gray-700 mb-4">Distribution score BANT</div>
+            <ScoreHistogram buckets={scoreBuckets} maxCount={maxBucketCount} />
+          </div>
+
+        </div>
+
         {/* Livrables progression */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
           <div className="flex items-center justify-between mb-4">
@@ -323,6 +411,7 @@ export default async function ReportingPage() {
   );
 }
 
+// ─── Donut Chart ─────────────────────────────────────────────────────────────
 function DonutChart({ data, total }: { data: { nom: string; count: number; color: string }[]; total: number }) {
   const cx = 54, cy = 54, r = 40, strokeW = 14;
   const circumference = 2 * Math.PI * r;
@@ -333,7 +422,7 @@ function DonutChart({ data, total }: { data: { nom: string; count: number; color
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="#edf2f7" strokeWidth={strokeW} />
       {data.map((s) => {
         const dash = (s.count / total) * circumference;
-        const gap = circumference - dash;
+        const gap  = circumference - dash;
         const rotation = (offset / total) * 360 - 90;
         offset += s.count;
         return (
@@ -353,5 +442,68 @@ function DonutChart({ data, total }: { data: { nom: string; count: number; color
       <text x={cx} y={cy - 4} textAnchor="middle" style={{ fontSize: 18, fontWeight: 800, fill: "#1a202c" }}>{total}</text>
       <text x={cx} y={cy + 10} textAnchor="middle" style={{ fontSize: 8, fill: "#718096" }}>prospects</text>
     </svg>
+  );
+}
+
+// ─── Funnel Chart ─────────────────────────────────────────────────────────────
+function FunnelChart({ steps }: { steps: { label: string; count: number; color: string }[] }) {
+  const maxCount = Math.max(...steps.map((s) => s.count), 1);
+  return (
+    <div className="space-y-2">
+      {steps.map((s, i) => {
+        const pct = (s.count / maxCount) * 100;
+        const dropPct = i > 0 && steps[i - 1].count > 0
+          ? Math.round((1 - s.count / steps[i - 1].count) * 100)
+          : null;
+        return (
+          <div key={s.label}>
+            <div className="flex items-center justify-between text-[12px] mb-1">
+              <span className="text-gray-600">{s.label}</span>
+              <div className="flex items-center gap-2">
+                {dropPct !== null && dropPct > 0 && dropPct < 100 && (
+                  <span className="text-[11px] text-red-400">−{dropPct}%</span>
+                )}
+                <span className="font-bold text-gray-800">{s.count}</span>
+              </div>
+            </div>
+            <div className="h-6 bg-gray-100 rounded-lg overflow-hidden">
+              <div
+                className="h-full rounded-lg flex items-center justify-end pr-2 transition-all duration-700"
+                style={{ width: `${pct}%`, background: s.color }}
+              >
+                {pct > 20 && (
+                  <span className="text-[10px] font-bold text-white">
+                    {Math.round(pct)}%
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Score Histogram ──────────────────────────────────────────────────────────
+function ScoreHistogram({ buckets, maxCount }: { buckets: { label: string; count: number }[]; maxCount: number }) {
+  const colors = ["#a0aec0", "#4a90d9", "#f6ad55", "#38a169", "var(--color-primary)"];
+  return (
+    <div className="flex items-end gap-2 h-[100px]">
+      {buckets.map((b, i) => {
+        const heightPct = maxCount > 0 ? (b.count / maxCount) * 100 : 0;
+        return (
+          <div key={b.label} className="flex-1 flex flex-col items-center gap-1">
+            <span className="text-[10px] text-gray-500 font-semibold">{b.count > 0 ? b.count : ""}</span>
+            <div className="w-full rounded-t-md transition-all duration-700" style={{
+              height:     `${Math.max(heightPct, 2)}%`,
+              background: colors[i] ?? "#a0aec0",
+              minHeight:  b.count > 0 ? 4 : 0,
+            }} />
+            <span className="text-[10px] text-gray-400">{b.label}</span>
+          </div>
+        );
+      })}
+    </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useTenant } from "@/lib/tenant/TenantContext";
 import { SECTEURS_LISTE } from "@/lib/tenant/configs";
 
-export function SectorSection() {
+export function SectorSection({ cols = 2 }: { cols?: 2 | 5 }) {
   const { config, setSecteur } = useTenant();
 
   return (
@@ -13,7 +13,7 @@ export function SectorSection() {
         JMC Cockpit adapte le vocabulaire, les KPIs et les emails à votre métier.
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5">
+      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
         {SECTEURS_LISTE.map((cfg) => (
           <button
             key={cfg.secteur}

@@ -10,6 +10,7 @@ interface TopbarProps {
   title: string;
   badge?: string;
   badgeColor?: "blue" | "green" | "orange" | "red";
+  actions?: React.ReactNode;
 }
 
 function getInitials(name: string): string {
@@ -17,7 +18,7 @@ function getInitials(name: string): string {
   return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
 }
 
-export function Topbar({ context = "Campagnes en cours", title, badge, badgeColor = "blue" }: TopbarProps) {
+export function Topbar({ context = "Campagnes en cours", title, badge, badgeColor = "blue", actions }: TopbarProps) {
   const badgeStyles = {
     blue: "bg-blue-50 text-blue-700",
     green: "bg-green-50 text-green-700",
@@ -71,6 +72,7 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
         {syncLabel}
       </span>
       <div className="ml-auto flex items-center gap-2.5">
+        {actions}
         <button
           aria-label="Alertes et notifications"
           onClick={() => window.dispatchEvent(new CustomEvent("copilote:open", { detail: "Quelles sont mes alertes et actions urgentes du jour ? Donne-moi une liste priorisée." }))}

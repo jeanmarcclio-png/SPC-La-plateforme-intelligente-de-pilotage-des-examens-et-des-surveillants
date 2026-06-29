@@ -109,6 +109,11 @@ export default async function ParametresPage() {
         <div className="hidden md:block p-5">
         <div className="grid grid-cols-2 gap-4">
 
+          {/* Secteur d'activité — full width, 5 colonnes desktop */}
+          <div className="col-span-2">
+            <SectorSection cols={5} />
+          </div>
+
           {/* Compte utilisateur */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
             <div className="text-[13px] font-semibold text-gray-800 mb-4">Compte utilisateur</div>
