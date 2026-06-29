@@ -15,6 +15,7 @@ import { InsightsBanner, InsightsBannerMobile } from "@/components/InsightsBanne
 import { CountUp } from "@/components/CountUp";
 import { ContactDuJour } from "@/components/ContactDuJour";
 import { CalendarDays } from "lucide-react";
+import { SectorDashboardWidget, SectorDashboardWidgetMobile } from "@/components/SectorDashboardWidget";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -143,6 +144,9 @@ export default async function DashboardPage() {
             {fileAction.length > 0 && (
               <DashboardFileAction prospects={fileAction} today={today.getTime()} />
             )}
+
+            {/* Sector-specific widget — mobile */}
+            <SectorDashboardWidgetMobile />
 
             {/* Alertes mobile */}
             {alertes.length > 0 && (
@@ -401,6 +405,9 @@ export default async function DashboardPage() {
               </div>
             </div>
           )}
+
+          {/* Sector-specific widget — desktop */}
+          <SectorDashboardWidget />
 
           {/* Main 2-col layout */}
           <div className="grid grid-cols-[1fr_252px] gap-4">

@@ -10,6 +10,7 @@ import { MobileProspectList } from "@/components/MobileProspectList";
 import { AddProspectButton } from "@/components/AddProspectModal";
 import { ModeDecisionButtons } from "@/components/ModeDecisionButtons";
 import { LancerScriptButton } from "@/components/LancerScriptButton";
+import { ProspectKanban } from "@/components/ProspectKanban";
 
 export default async function QualificationPage() {
   const [prospects, clusterScores] = await Promise.all([getProspects(), getClusterScores()]);
@@ -238,6 +239,9 @@ export default async function QualificationPage() {
             </div>
           </div>
         </div>
+
+        {/* Kanban pipeline view — HubSpot inspired */}
+        <ProspectKanban prospects={prospects} />
 
         {/* Bottom: prospects table + cluster scores */}
         <div className="grid grid-cols-[1fr_220px] gap-4">
