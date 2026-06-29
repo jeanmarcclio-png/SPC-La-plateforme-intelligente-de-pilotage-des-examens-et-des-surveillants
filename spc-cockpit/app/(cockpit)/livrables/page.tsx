@@ -5,6 +5,7 @@ import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { getLivrables } from "@/lib/supabase/queries";
 import { LivrableStatutSelect } from "@/components/LivrableStatut";
+import { SectorLivrablesPanel } from "@/components/SectorLivrablesPanel";
 
 export default async function LivrablesPage() {
   const livraisonIDF = await getLivrables();
@@ -23,6 +24,7 @@ export default async function LivrablesPage() {
             <div className="text-[13px] text-white/70 mt-0.5">{valides}/{livraisonIDF.length} validés</div>
           </div>
           <div className="p-4 pb-40 space-y-2">
+            <SectorLivrablesPanel />
             {livraisonIDF.map((l, i) => (
               <div key={l.id} className={`flex items-center gap-3 pt-4 pl-4 pb-4 pr-14 bg-white rounded-2xl border ${l.statut === "Validé" ? "border-teal-200" : "border-gray-100"}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 ${l.statut === "Validé" ? "bg-[var(--color-primary)] text-white" : "bg-gray-100 text-gray-400"}`}>
@@ -40,6 +42,7 @@ export default async function LivrablesPage() {
 
         {/* ── DESKTOP ── */}
         <div className="hidden md:block p-5">
+          <SectorLivrablesPanel />
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <table className="w-full border-collapse">
               <thead>
