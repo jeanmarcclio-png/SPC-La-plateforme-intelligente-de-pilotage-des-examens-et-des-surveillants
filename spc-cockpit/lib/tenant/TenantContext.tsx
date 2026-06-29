@@ -32,14 +32,13 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     if (!CONFIGS[secteur]) return;
     localStorage.setItem(STORAGE_KEY, secteur);
     setConfig(CONFIGS[secteur]);
-    // Update CSS variable for primary color
-    document.documentElement.style.setProperty("--color-primary", CONFIGS[secteur].couleur);
+    document.body.style.setProperty("--color-primary", CONFIGS[secteur].couleur);
   }
 
   // Sync CSS variable on mount
   useEffect(() => {
     if (isReady) {
-      document.documentElement.style.setProperty("--color-primary", config.couleur);
+      document.body.style.setProperty("--color-primary", config.couleur);
     }
   }, [isReady, config.couleur]);
 
