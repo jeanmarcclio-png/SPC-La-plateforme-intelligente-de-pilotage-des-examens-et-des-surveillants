@@ -6,6 +6,7 @@ import { Clock, LayoutGrid, FileText, TrendingUp, Activity, CalendarDays, BarCha
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useTenant } from "@/lib/tenant/TenantContext";
 
 const navItems = [
   { href: "/cockpit",       label: "Cockpit Dirigeant",  icon: <Clock      className="w-4 h-4" /> },
@@ -33,6 +34,8 @@ const mobileNavItems = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { config } = useTenant();
+  const accent = config.couleur;
   return (
     <nav
       className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.08]"
@@ -46,11 +49,12 @@ export function MobileNav() {
               key={item.href}
               href={item.href}
               className={`flex-1 flex flex-col items-center justify-center gap-[5px] text-[11px] font-semibold tracking-tight transition-colors relative min-w-0 ${
-                active ? "text-[#4a90d9]" : "text-[#5a6e82]"
+                active ? "" : "text-[#5a6e82]"
               }`}
+              style={{ color: active ? accent : undefined }}
             >
               {active && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2.5px] rounded-full bg-[#4a90d9]" />
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2.5px] rounded-full" style={{ background: accent }} />
               )}
               {item.icon(active)}
               <span className="leading-none">{item.label}</span>
@@ -70,8 +74,10 @@ interface CampagneInfo {
 }
 
 export function Sidebar() {
-  const pathname = usePathname();
-  const router   = useRouter();
+  const pathname  = usePathname();
+  const router    = useRouter();
+  const { config } = useTenant();
+  const accent    = config.couleur;
   const [campagne, setCampagne] = useState<CampagneInfo | null>(null);
 
   useEffect(() => {
@@ -110,11 +116,11 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-[18px] py-[18px] pb-3.5 border-b border-white/[0.08]">
         <div className="flex items-center gap-2 text-white font-extrabold text-base tracking-tight">
-          <span className="w-2 h-2 rounded-full bg-[#4a90d9] flex-shrink-0" />
+          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: accent }} />
           JMC COCKPIT
         </div>
-        <div className="text-[11px] text-[#4a90d9] uppercase tracking-[1.5px] mt-0.5 pl-4">
-          Prospection B2B
+        <div className="text-[11px] uppercase tracking-[1.5px] mt-0.5 pl-4" style={{ color: accent }}>
+          {config.emoji} {config.nom}
         </div>
       </div>
 
@@ -127,10 +133,9 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={`flex items-center gap-2.5 px-[18px] py-[9px] text-[13px] transition-all border-l-[3px] ${
-                active
-                  ? "bg-[#4a90d9]/[0.13] text-white border-[#4a90d9]"
-                  : "text-[#7a8fa0] border-transparent hover:bg-white/[0.05] hover:text-[#c8d8e8]"
+                active ? "text-white" : "text-[#7a8fa0] border-transparent hover:bg-white/[0.05] hover:text-[#c8d8e8]"
               }`}
+              style={active ? { borderColor: accent, background: `${accent}22` } : {}}
             >
               {item.icon}
               {item.label}
@@ -147,10 +152,9 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={`flex items-center gap-2.5 px-[18px] py-[9px] text-[13px] transition-all border-l-[3px] ${
-                active
-                  ? "bg-[#4a90d9]/[0.13] text-white border-[#4a90d9]"
-                  : "text-[#7a8fa0] border-transparent hover:bg-white/[0.05] hover:text-[#c8d8e8]"
+                active ? "text-white" : "text-[#7a8fa0] border-transparent hover:bg-white/[0.05] hover:text-[#c8d8e8]"
               }`}
+              style={active ? { borderColor: accent, background: `${accent}22` } : {}}
             >
               {item.icon}
               {item.label}
@@ -170,21 +174,25 @@ export function Sidebar() {
         </button>
       </div>
 
-      {/* Campaign info */}
+      {/* Mission active */}
       <div className="p-3.5 border-t border-white/[0.08]">
-        <div className="text-[11px] text-[#4a90d9] uppercase tracking-[1px] mb-1.5">
-          Campagne active
+        <div className="text-[11px] uppercase tracking-[1px] mb-1.5" style={{ color: accent }}>
+          {config.vocabulaire.mission} active
         </div>
         <div className="text-[13px] font-semibold text-[#e2e8f0] leading-snug">
           {campagne?.nom ?? "—"}
         </div>
         <div className="text-[11px] text-[#8899aa] mt-0.5">
-          {campagne ? `${campagne.nombreProspects} établissements · ${campagne.tresChaudes} Très chaud` : "Chargement…"}
+          {campagne
+            ? `${campagne.nombreProspects} ${config.vocabulaire.ressource.toLowerCase()}s · ${campagne.tresChaudes} ${config.scoring.labels[0]}`
+            : "Chargement…"}
         </div>
         {campagne && (
-          <div className="mt-2.5 bg-[#4a90d9]/[0.12] rounded-lg p-2 text-center">
-            <div className="text-2xl font-extrabold text-[#4a90d9] leading-none">J - {campagne.joursRestants}</div>
-            <div className="text-[11px] text-[#8899aa] mt-0.5">Fin Vague 1</div>
+          <div className="mt-2.5 rounded-lg p-2 text-center" style={{ background: `${accent}20` }}>
+            <div className="text-2xl font-extrabold leading-none" style={{ color: accent }}>
+              J - {campagne.joursRestants}
+            </div>
+            <div className="text-[11px] text-[#8899aa] mt-0.5">Fin Phase 1</div>
           </div>
         )}
       </div>
