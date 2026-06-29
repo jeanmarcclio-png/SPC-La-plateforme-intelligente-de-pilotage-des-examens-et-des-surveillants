@@ -9,9 +9,15 @@ type Member = { id: string; email: string; nom: string; role: string };
 const ROLES = ["Admin", "Commercial", "Lecteur"] as const;
 
 const roleColors: Record<string, string> = {
-  Admin: "bg-[var(--color-primary)]/10 text-[var(--color-primary)]",
+  Admin:      "bg-[var(--color-primary)]/10 text-[var(--color-primary)]",
   Commercial: "bg-blue-50 text-blue-700",
-  Lecteur: "bg-gray-100 text-gray-500",
+  Lecteur:    "bg-gray-100 text-gray-500",
+};
+
+const ROLE_PERMISSIONS: Record<string, string[]> = {
+  Admin:      ["Tout accès", "Gérer l'équipe", "Exporter", "Configurer"],
+  Commercial: ["Prospects", "Campagnes", "Copilote IA", "Reporting"],
+  Lecteur:    ["Lecture seule", "Reporting", "Dashboard"],
 };
 
 export function TeamSection({ members }: { members: Member[] }) {
@@ -65,6 +71,19 @@ export function TeamSection({ members }: { members: Member[] }) {
           </button>
         </div>
       ))}
+
+      {/* Role permissions legend */}
+      <div className="pt-3 border-t border-gray-100">
+        <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Permissions par rôle</div>
+        <div className="space-y-1.5">
+          {(Object.entries(ROLE_PERMISSIONS) as [string, string[]][]).map(([role, perms]) => (
+            <div key={role} className="flex items-start gap-2">
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 mt-0.5 ${roleColors[role]}`}>{role}</span>
+              <span className="text-[11px] text-gray-400">{perms.join(" · ")}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {showForm ? (
         <form action={handleInvite} className="space-y-2 pt-2 border-t border-gray-100">
