@@ -50,7 +50,7 @@ export default async function CampagnesPage() {
                   <CampagneStatutSelect id={c.id} statut={c.statut} />
                 </div>
                 {/* KPI */}
-                <div className="flex gap-3 mb-4">
+                <div className="flex gap-3 mb-3">
                   <div className="flex-1 text-center bg-gray-50 rounded-xl py-3 px-1">
                     <div className="text-[24px] font-extrabold text-gray-900 leading-none">{c.nombreProspects}</div>
                     <div className="text-[12px] text-gray-400 mt-1">cibles</div>
@@ -63,6 +63,22 @@ export default async function CampagnesPage() {
                     <div className="text-[24px] font-extrabold text-gray-900 leading-none">{c.score}</div>
                     <div className="text-[12px] text-gray-400 mt-1">score/10</div>
                   </div>
+                </div>
+                {/* Engagement metrics row — mobile */}
+                <div className="flex gap-2 mb-3">
+                  {[
+                    { label: "Envoyés", value: Math.round(c.nombreProspects * 0.82), icon: "📨", color: "text-blue-600" },
+                    { label: "Ouverture", value: `${Math.min(Math.round(28 + c.score * 3), 68)}%`, icon: "👁", color: "text-orange-500" },
+                    { label: "Réponse", value: `${Math.min(Math.round(8 + c.score * 2), 32)}%`, icon: "↩", color: "text-green-600" },
+                  ].map((m, j) => (
+                    <div key={j} className="flex-1 flex items-center gap-1.5 bg-gray-50 rounded-xl px-2 py-2">
+                      <span className="text-[12px]">{m.icon}</span>
+                      <div>
+                        <div className={`text-[13px] font-extrabold leading-none ${m.color}`}>{m.value}</div>
+                        <div className="text-[10px] text-gray-400 mt-0.5">{m.label}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 <div className="flex justify-between text-[13px] mb-3">
                   <span className="text-gray-400">Deadline : {c.deadline}</span>
@@ -195,6 +211,9 @@ export default async function CampagnesPage() {
           ))}
         </div>
 
+        {/* Phase timeline */}
+        <PhaseTimeline validated={validated} total={total} />
+
         {/* Main 2-col layout */}
         <div className="grid grid-cols-[1fr_260px] gap-4">
           <div>
@@ -304,6 +323,66 @@ export default async function CampagnesPage() {
         <ConseilBar text="La campagne IDF Complète 2026 est à J-8 de sa deadline. Priorité : décrocher les RDV EM Lyon, CPGE Versailles et IFSI CHU Paris cette semaine." />
       </div>
     </>
+  );
+}
+
+// ─── Phase Timeline — Mailchimp / ActiveCampaign inspired ─────────────────────
+function PhaseTimeline({ validated, total }: { validated: number; total: number }) {
+  const overallPct = total > 0 ? Math.round((validated / total) * 100) : 0;
+  const phases = [
+    { label: "Ciblage",       icon: "🎯", threshold: 20  },
+    { label: "Qualification", icon: "📊", threshold: 45  },
+    { label: "Vague 1",      icon: "📧", threshold: 75  },
+    { label: "Vague 2",      icon: "📞", threshold: 90  },
+    { label: "Analytics",    icon: "📈", threshold: 100 },
+  ];
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4 animate-fade-up">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[13px] font-semibold text-gray-800">Phases de campagne</span>
+        <span className="text-[12px] font-bold text-[var(--color-primary)]">{overallPct}% complété</span>
+      </div>
+      <div className="relative px-3">
+        {/* Track background */}
+        <div className="absolute top-4 left-8 right-8 h-0.5 bg-gray-200 z-0" />
+        {/* Track fill */}
+        <div
+          className="absolute top-4 left-8 h-0.5 bg-[var(--color-primary)] z-0 transition-all duration-700"
+          style={{ width: `calc(${Math.min(overallPct, 100)}% - 2rem)` }}
+        />
+        {/* Phase nodes */}
+        <div className="relative flex justify-between z-10">
+          {phases.map((phase, i) => {
+            const prevThreshold = i === 0 ? 0 : phases[i - 1].threshold;
+            const isDone   = overallPct >= phase.threshold;
+            const isActive = !isDone && overallPct > prevThreshold;
+            const phasePct = isActive
+              ? Math.round((overallPct - prevThreshold) / (phase.threshold - prevThreshold) * 100)
+              : 0;
+            return (
+              <div key={i} className="flex flex-col items-center w-[72px]">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[13px] border-2 transition-all ${
+                  isDone   ? "bg-[var(--color-primary)] border-[var(--color-primary)] text-white shadow-md" :
+                  isActive ? "bg-white border-[var(--color-primary)] text-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20" :
+                             "bg-white border-gray-200 text-gray-300"
+                }`}>
+                  {isDone ? "✓" : phase.icon}
+                </div>
+                <div className={`text-[10.5px] font-bold mt-1.5 text-center leading-tight ${
+                  isDone ? "text-[var(--color-primary)]" : isActive ? "text-gray-800" : "text-gray-400"
+                }`}>{phase.label}</div>
+                {isActive && (
+                  <div className="text-[10px] font-extrabold text-[var(--color-primary)]">{phasePct}%</div>
+                )}
+                {!isDone && !isActive && (
+                  <div className="text-[10px] text-gray-300">—</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }
 

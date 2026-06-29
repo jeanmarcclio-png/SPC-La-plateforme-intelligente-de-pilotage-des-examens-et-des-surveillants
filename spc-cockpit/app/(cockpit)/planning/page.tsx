@@ -51,6 +51,108 @@ const SLOT_COLOR: Record<Slot, { bg: string; border: string; label: string; dot:
   "Passé":             { bg: "bg-gray-50",   border: "border-gray-100",   label: "text-gray-400",   dot: "bg-gray-300" },
 };
 
+// ─── Weekly Grid — Monday.com / Asana inspired ────────────────────────────────
+function WeekGrid({ echeances }: { echeances: { id: number | string; date: string; nom: string; tag: string; urgent?: boolean }[] }) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dow = today.getDay();
+  const mondayOffset = dow === 0 ? -6 : 1 - dow;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + mondayOffset);
+
+  const days = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+
+  function parseDateStr(str: string): Date {
+    const p = str.split("/");
+    if (p.length >= 2) {
+      const yr = p.length >= 3 ? parseInt(p[2]) : today.getFullYear();
+      return new Date(yr, parseInt(p[1]) - 1, parseInt(p[0]));
+    }
+    return new Date();
+  }
+
+  function echeancesOnDay(day: Date) {
+    return echeances.filter((e) => {
+      const d = parseDateStr(e.date);
+      return d.getFullYear() === day.getFullYear() && d.getMonth() === day.getMonth() && d.getDate() === day.getDate();
+    });
+  }
+
+  const DAY_LABELS = ["L", "M", "M", "J", "V", "S", "D"];
+  const MONTHS = ["jan", "fév", "mar", "avr", "mai", "jun", "jul", "aoû", "sep", "oct", "nov", "déc"];
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[13px] font-semibold text-gray-800">Vue 2 semaines</span>
+        <span className="text-[11px] text-gray-400">{monday.getDate()} {MONTHS[monday.getMonth()]} → {days[13].getDate()} {MONTHS[days[13].getMonth()]}</span>
+      </div>
+      {/* Week labels */}
+      <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
+        <div className="text-[10px] font-bold text-gray-500 flex items-center pr-2">S{Math.ceil(monday.getDate() / 7)}</div>
+        <div className="grid grid-cols-7 gap-1">
+          {DAY_LABELS.map((d, i) => (
+            <div key={i} className="text-[10px] font-bold text-gray-400 text-center">{d}</div>
+          ))}
+        </div>
+        {/* Week 1 */}
+        <div />
+        <div className="grid grid-cols-7 gap-1">
+          {days.slice(0, 7).map((day, i) => {
+            const isToday = day.getTime() === today.getTime();
+            const items = echeancesOnDay(day);
+            const hasUrgent = items.some((e) => e.urgent);
+            return (
+              <div key={i} className={`rounded-lg p-1 min-h-[54px] transition-all ${
+                isToday ? "bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/40 shadow-sm" : "bg-gray-50 border border-gray-100"
+              }`}>
+                <div className={`text-[11px] font-bold text-center mb-0.5 ${isToday ? "text-[var(--color-primary)]" : "text-gray-500"}`}>{day.getDate()}</div>
+                {items.slice(0, 3).map((e, j) => (
+                  <div key={j} title={e.nom} className={`w-full text-[8.5px] font-semibold px-1 py-0.5 rounded mb-0.5 truncate leading-tight ${
+                    e.urgent ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"
+                  }`}>
+                    {e.nom.split(" ").slice(0, 2).join(" ")}
+                  </div>
+                ))}
+                {items.length > 3 && (
+                  <div className="text-[8px] text-gray-400 text-center">+{items.length - 3}</div>
+                )}
+                {items.length === 0 && isToday && (
+                  <div className="text-[8px] text-[var(--color-primary)]/50 text-center">auj.</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {/* Week 2 */}
+        <div className="text-[10px] font-bold text-gray-400 flex items-center pr-2">S+1</div>
+        <div className="grid grid-cols-7 gap-1">
+          {days.slice(7).map((day, i) => {
+            const items = echeancesOnDay(day);
+            return (
+              <div key={i} className="bg-gray-50/60 border border-gray-100 rounded-lg p-1 min-h-[54px] opacity-75">
+                <div className="text-[11px] font-bold text-center text-gray-400 mb-0.5">{day.getDate()}</div>
+                {items.slice(0, 2).map((e, j) => (
+                  <div key={j} title={e.nom} className="w-full text-[8.5px] font-semibold px-1 py-0.5 bg-teal-100 text-teal-600 rounded mb-0.5 truncate leading-tight">
+                    {e.nom.split(" ").slice(0, 2).join(" ")}
+                  </div>
+                ))}
+                {items.length > 2 && (
+                  <div className="text-[8px] text-gray-400 text-center">+{items.length - 2}</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default async function PlanningPage() {
   const echeances = await getEcheances();
   const urgentes  = echeances.filter((e) => e.urgent).length;
@@ -126,6 +228,8 @@ export default async function PlanningPage() {
             <span className="text-[14px] font-semibold text-gray-900">Timeline IA — Échéances groupées</span>
             <AddEcheanceButton />
           </div>
+          {/* Weekly grid */}
+          <WeekGrid echeances={echeances} />
           <div className="space-y-4">
             {echeances.length === 0 && (
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center text-[13px] text-gray-400">
