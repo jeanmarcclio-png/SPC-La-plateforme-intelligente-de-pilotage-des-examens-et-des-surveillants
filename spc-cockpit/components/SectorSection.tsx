@@ -13,7 +13,7 @@ export function SectorSection({ cols = 2 }: { cols?: 2 | 5 }) {
         JMC Cockpit adapte le vocabulaire, les KPIs et les emails à votre métier.
       </div>
 
-      <div className={`grid gap-2 ${cols === 5 ? "grid-cols-5" : "grid-cols-2"}`}>
+      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
         {SECTEURS_LISTE.map((cfg) => (
           <button
             key={cfg.secteur}
