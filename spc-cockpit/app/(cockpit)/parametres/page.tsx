@@ -8,6 +8,7 @@ import { CompteSection, NotificationsSection } from "@/components/ParametresForm
 import { TeamSection } from "@/components/TeamSection";
 import { getNotificationPrefs, getTeamMembers } from "@/app/actions/parametres";
 import { PushNotificationToggle } from "@/components/PushNotificationBanner";
+import { SectorSection } from "@/components/SectorSection";
 
 export default async function ParametresPage() {
   const supabase = await createClient();
@@ -36,6 +37,9 @@ export default async function ParametresPage() {
             <div className="text-[13px] text-white/70 mt-0.5">{displayName}</div>
           </div>
           <div className="p-4 space-y-3">
+
+            {/* Secteur */}
+            <SectorSection />
 
             {/* Compte */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
