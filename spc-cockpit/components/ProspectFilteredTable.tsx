@@ -7,9 +7,26 @@ import { AddProspectButton } from "@/components/AddProspectModal";
 import { EmailSequenceButton } from "@/components/EmailSequenceButton";
 import { ProspectDrawer } from "@/components/ProspectDrawer";
 import { KanbanBoard } from "@/components/KanbanBoard";
-import { Table2, Columns, Download, Search } from "lucide-react";
+import { Table2, Columns, Download, Search, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 
 import { parseFRDate } from "@/lib/utils/date";
+
+type SortKey = "nom" | "segment" | "scoreBANT" | "prochaineRelance" | "statut";
+type SortDir = "asc" | "desc";
+
+const SORTABLE_COLUMNS: { key: SortKey; label: string }[] = [
+  { key: "nom", label: "Établissement" },
+  { key: "segment", label: "Segment" },
+  { key: "scoreBANT", label: "Score" },
+  { key: "prochaineRelance", label: "Relance" },
+  { key: "statut", label: "Statut" },
+];
+
+function sortValue(p: Prospect, key: SortKey): string | number {
+  if (key === "scoreBANT") return p.scoreBANT;
+  if (key === "prochaineRelance") return parseFRDate(p.prochaineRelance)?.getTime() ?? -Infinity;
+  return (p[key] ?? "").toString().toLowerCase();
+}
 
 function RelanceBadge({ date }: { date?: string }) {
   if (!date) return <span className="text-[11px] text-gray-300">—</span>;
@@ -46,6 +63,8 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
   const [selected, setSelected] = useState<Prospect | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [localProspects, setLocalProspects] = useState<Prospect[]>(prospects);
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const allProspects = localProspects.length ? localProspects : prospects;
 
@@ -64,8 +83,25 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
     });
   }, [allProspects, search, segment, cluster, statut]);
 
+  const sorted = useMemo(() => {
+    if (!sortKey) return filtered;
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...filtered].sort((a, b) => {
+      const va = sortValue(a, sortKey);
+      const vb = sortValue(b, sortKey);
+      if (va < vb) return -1 * dir;
+      if (va > vb) return 1 * dir;
+      return 0;
+    });
+  }, [filtered, sortKey, sortDir]);
+
+  function toggleSort(key: SortKey) {
+    if (sortKey !== key) { setSortKey(key); setSortDir("asc"); return; }
+    setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+  }
+
   const hasFilters = search || segment || cluster || statut;
-  const selectedIndex = selected ? filtered.findIndex(p => p.id === selected.id) : -1;
+  const selectedIndex = selected ? sorted.findIndex(p => p.id === selected.id) : -1;
 
   function handleUpdated(id: string, fields: Partial<Prospect>) {
     setLocalProspects((prev) => prev.map((p) => p.id === id ? { ...p, ...fields } : p));
@@ -78,7 +114,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
       <div className="flex items-center justify-between mb-3">
         <span className="text-[14px] font-semibold text-gray-900">
           Top prospects — Vague 1
-          {hasFilters && <span className="ml-2 text-[12px] font-normal text-gray-400">{filtered.length} résultat{filtered.length !== 1 ? "s" : ""}</span>}
+          {hasFilters && <span className="ml-2 text-[12px] font-normal text-gray-400">{sorted.length} résultat{sorted.length !== 1 ? "s" : ""}</span>}
         </span>
         <div className="flex items-center gap-2">
           <span className="text-[12px] text-gray-400">{allProspects.length} prospects</span>
@@ -102,7 +138,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
           </div>
 
           <button
-            onClick={() => exportCSV(filtered)}
+            onClick={() => exportCSV(sorted)}
             title="Exporter CSV"
             className="text-[12px] font-semibold text-gray-500 hover:text-[var(--color-primary)] border border-gray-200 hover:border-[var(--color-primary)]/40 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
           >
@@ -140,7 +176,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
 
       {/* Kanban view */}
       {viewMode === "kanban" && (
-        <KanbanBoard prospects={filtered} onSelect={(p) => setSelected(p)} selectedId={selected?.id} />
+        <KanbanBoard prospects={sorted} onSelect={(p) => setSelected(p)} selectedId={selected?.id} />
       )}
 
       {/* Table view */}
@@ -149,16 +185,26 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                {["#", "Établissement", "Segment", "Score", "Relance", "Statut", "Email", ""].map((h) => (
-                  <th key={h} className="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-[.5px]">{h}</th>
+                <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-[.5px]">#</th>
+                {SORTABLE_COLUMNS.map(({ key, label }) => (
+                  <th key={key} className="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-[.5px]">
+                    <button onClick={() => toggleSort(key)} className="flex items-center gap-1 hover:text-gray-800 transition-colors">
+                      {label}
+                      {sortKey === key
+                        ? (sortDir === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)
+                        : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                    </button>
+                  </th>
                 ))}
+                <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-[.5px]">Email</th>
+                <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-[.5px]" />
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 && (
+              {sorted.length === 0 && (
                 <tr><td colSpan={8} className="text-center py-8 text-[13px] text-gray-400">Aucun prospect ne correspond aux filtres.</td></tr>
               )}
-              {filtered.map((p, i) => (
+              {sorted.map((p, i) => (
                 <tr
                   key={p.id}
                   onClick={() => setSelected(p)}
@@ -206,7 +252,7 @@ export function ProspectFilteredTable({ prospects }: { prospects: Prospect[] }) 
             prospect={selected}
             onClose={() => setSelected(null)}
             onUpdated={handleUpdated}
-            allProspects={filtered}
+            allProspects={sorted}
             currentIndex={selectedIndex}
             onNavigate={(p) => setSelected(p)}
           />
