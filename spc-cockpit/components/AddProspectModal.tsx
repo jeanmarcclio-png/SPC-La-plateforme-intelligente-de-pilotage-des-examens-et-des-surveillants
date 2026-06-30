@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { createProspect } from "@/app/actions/prospects";
 import { useTenant } from "@/lib/tenant/TenantContext";
 import { NIVEAU_CHALEUR as NIVEAUX } from "@/lib/constants";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function AddProspectButton() {
   const { config } = useTenant();
@@ -33,15 +34,13 @@ export function AddProspectButton() {
         + Ajouter un {config.vocabulaire.ressource.toLowerCase()}
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div className="text-[16px] font-bold text-gray-900">
-                Nouveau {config.vocabulaire.ressource.toLowerCase()}
-              </div>
-              <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
-            </div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              Nouveau {config.vocabulaire.ressource.toLowerCase()}
+            </DialogTitle>
+          </DialogHeader>
 
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-3.5">
               {/* Nom */}
@@ -145,9 +144,8 @@ export function AddProspectButton() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

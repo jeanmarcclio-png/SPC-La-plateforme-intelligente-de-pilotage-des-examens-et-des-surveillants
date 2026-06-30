@@ -3,20 +3,20 @@
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { createEcheance, updateEcheance, deleteEcheance } from "@/app/actions/echeances";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Echeance = { id: number; date: string; nom: string; tag: string; urgent: boolean };
 
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+function Modal({ title, open, onClose, children }: { title: string; open: boolean; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-[420px] max-w-[95vw] p-6">
-        <div className="flex items-center justify-between mb-5">
-          <span className="text-[15px] font-bold text-gray-900">{title}</span>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
-        </div>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="w-[420px] max-w-[95vw]">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
         {children}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -102,11 +102,9 @@ export function AddEcheanceButton() {
       >
         + Ajouter
       </button>
-      {open && (
-        <Modal title="Nouvelle échéance" onClose={() => setOpen(false)}>
-          <EcheanceForm onSubmit={handleSubmit} pending={pending} />
-        </Modal>
-      )}
+      <Modal title="Nouvelle échéance" open={open} onClose={() => setOpen(false)}>
+        <EcheanceForm onSubmit={handleSubmit} pending={pending} />
+      </Modal>
     </>
   );
 }
@@ -144,11 +142,9 @@ export function EcheanceActions({ echeance }: { echeance: Echeance }) {
           <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
-      {editOpen && (
-        <Modal title="Modifier l'échéance" onClose={() => setEditOpen(false)}>
-          <EcheanceForm defaults={echeance} onSubmit={handleEdit} pending={pending} />
-        </Modal>
-      )}
+      <Modal title="Modifier l'échéance" open={editOpen} onClose={() => setEditOpen(false)}>
+        <EcheanceForm defaults={echeance} onSubmit={handleEdit} pending={pending} />
+      </Modal>
     </>
   );
 }
