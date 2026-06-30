@@ -24,12 +24,12 @@ function CreateLivrableDialog({
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     startTransition(async () => {
-      try {
-        await createLivrable(fd);
+      const result = await createLivrable(fd);
+      if (result.error) {
+        showToast(result.error, "error");
+      } else {
         showToast(`"${fd.get("nom")}" ajouté aux livrables`);
         onClose();
-      } catch (err) {
-        showToast(err instanceof Error ? err.message : "Erreur lors de la création", "error");
       }
     });
   }
