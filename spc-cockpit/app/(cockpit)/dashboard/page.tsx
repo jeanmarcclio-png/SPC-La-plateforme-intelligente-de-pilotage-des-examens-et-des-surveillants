@@ -183,6 +183,9 @@ export default async function DashboardPage() {
         {/* ── DESKTOP VIEW ── */}
         <div className="hidden md:block p-5">
 
+          {/* Sector KPIs + AI alerts */}
+          <SectorKPIPanel />
+
           {/* ── IA PROACTIVE INSIGHTS ── */}
           <InsightsBanner insights={insights} />
 
@@ -421,9 +424,6 @@ export default async function DashboardPage() {
               </div>
             </div>
           )}
-
-          {/* Sector KPIs + AI alerts */}
-          <SectorKPIPanel />
 
           {/* Sector-specific widget — desktop */}
           <SectorDashboardWidget />
