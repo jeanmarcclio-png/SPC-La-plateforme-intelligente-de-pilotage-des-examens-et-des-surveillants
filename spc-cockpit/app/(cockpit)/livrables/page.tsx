@@ -5,6 +5,7 @@ import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { getLivrables } from "@/lib/supabase/queries";
 import { LivrableStatutSelect } from "@/components/LivrableStatut";
+import { LivrableEditButton } from "@/components/LivrableEditButton";
 import { SectorLivrablesPanel } from "@/components/SectorLivrablesPanel";
 
 export default async function LivrablesPage() {
@@ -34,7 +35,10 @@ export default async function LivrablesPage() {
                   <div className="text-[13px] font-semibold text-gray-800 truncate">{l.nom}</div>
                   <div className="text-[12px] text-gray-400 truncate">{l.description}</div>
                 </div>
-                <LivrableStatutSelect id={l.id} statut={l.statut} />
+                <div className="flex flex-col items-end gap-1">
+                  <LivrableStatutSelect id={l.id} statut={l.statut} />
+                  <LivrableEditButton livrable={l} />
+                </div>
               </div>
             ))}
           </div>
@@ -59,8 +63,15 @@ export default async function LivrablesPage() {
                     <td className="px-4 py-3 text-[12.5px] text-gray-500">{l.description}</td>
                     <td className="px-4 py-3 text-[12.5px] text-gray-600">{l.campagneNom ?? "—"}</td>
                     <td className="px-4 py-3"><LivrableStatutSelect id={l.id} statut={l.statut} /></td>
-                    <td className="px-4 py-3 text-right text-[11.5px]">
-                      {l.fichier ? <Link href="/campagnes" className="text-[#4a90d9] hover:underline">Ouvrir →</Link> : <span className="text-gray-300">—</span>}
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <LivrableEditButton livrable={l} />
+                        {l.fichier && (
+                          l.fichier.startsWith("http")
+                            ? <a href={l.fichier} target="_blank" rel="noopener noreferrer" className="text-[11.5px] text-[#4a90d9] hover:underline">Ouvrir →</a>
+                            : <Link href="/campagnes" className="text-[11.5px] text-[#4a90d9] hover:underline">Ouvrir →</Link>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
