@@ -42,7 +42,7 @@ export default async function QualificationPage() {
             <div className="text-[22px] font-extrabold text-white">Qualification BANT</div>
             <div className="text-[13px] text-white/70 mt-0.5">{tresChaudes} très chaud · {prospects.length} prospects</div>
           </div>
-          <div className="p-4 space-y-3">
+          <div className="p-4 pb-40 space-y-3">
             {/* Hero prospect */}
             <div className="bg-white rounded-2xl border border-[var(--color-primary)]/30 shadow-sm p-4">
               <div className="flex items-start justify-between mb-3">

@@ -4,7 +4,7 @@ import { useSectorConfig } from "@/lib/hooks/useSectorConfig";
 
 export function SectorCockpitPanel() {
   const { sectorPack, tenantConfig, isReady } = useSectorConfig();
-  if (!isReady) return null;
+  if (!isReady) return <div className="rounded-2xl mb-4 h-[160px] bg-gray-100 animate-pulse" />;
 
   const { cockpit } = sectorPack;
 

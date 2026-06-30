@@ -116,7 +116,7 @@ export default async function ReportingPage() {
               </div>
             </div>
           </div>
-          <div className="p-4 space-y-3">
+          <div className="p-4 pb-40 space-y-3">
             {/* 2×2 KPIs */}
             <div className="grid grid-cols-2 gap-3">
               {[

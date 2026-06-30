@@ -4,7 +4,7 @@ import { useSectorConfig } from "@/lib/hooks/useSectorConfig";
 
 export function SectorPlanningPanel() {
   const { sectorPack, tenantConfig, isReady } = useSectorConfig();
-  if (!isReady) return null;
+  if (!isReady) return <div className="rounded-xl mb-5 h-[90px] bg-gray-100 animate-pulse" />;
 
   const { planning } = sectorPack;
 

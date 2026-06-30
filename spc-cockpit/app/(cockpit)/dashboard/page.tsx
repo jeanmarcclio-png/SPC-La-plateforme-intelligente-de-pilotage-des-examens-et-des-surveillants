@@ -113,7 +113,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="p-4 space-y-3">
+          <div className="p-4 pb-40 space-y-3">
             {/* IA Proactive — mobile */}
             <InsightsBannerMobile insights={insights} />
 

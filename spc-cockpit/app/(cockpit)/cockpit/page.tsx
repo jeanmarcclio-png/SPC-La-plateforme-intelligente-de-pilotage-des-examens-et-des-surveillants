@@ -54,7 +54,7 @@ export default async function CockpitPage() {
           </div>
         </div>
 
-        <div className="p-4 md:p-5 space-y-4 animate-fade-up">
+        <div className="p-4 md:p-5 pb-40 md:pb-5 space-y-4 animate-fade-up">
 
           {/* ── Executive Summary Banner — sector-aware ── */}
           <SectorCockpitPanel />

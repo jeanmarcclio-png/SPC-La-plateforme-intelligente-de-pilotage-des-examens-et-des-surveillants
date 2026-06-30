@@ -2,9 +2,22 @@
 
 import { useSectorConfig } from "@/lib/hooks/useSectorConfig";
 
+function SectorKPIPanelSkeleton() {
+  return (
+    <div className="space-y-3 animate-pulse">
+      <div className="rounded-2xl p-4 bg-gray-100 h-[60px]" />
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="bg-gray-100 rounded-xl h-[60px]" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function SectorKPIPanel() {
   const { sectorPack, tenantConfig, isReady } = useSectorConfig();
-  if (!isReady) return null;
+  if (!isReady) return <SectorKPIPanelSkeleton />;
 
   const { dashboard } = sectorPack;
 
@@ -59,7 +72,15 @@ export function SectorKPIPanel() {
 
 export function SectorKPIPanelMobile() {
   const { sectorPack, tenantConfig, isReady } = useSectorConfig();
-  if (!isReady) return null;
+  if (!isReady) {
+    return (
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 animate-pulse">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex-shrink-0 bg-white/15 rounded-xl min-w-[90px] h-[72px]" />
+        ))}
+      </div>
+    );
+  }
 
   const { dashboard } = sectorPack;
 

@@ -184,7 +184,7 @@ export default async function PlanningPage() {
               <AddEcheanceButton />
             </div>
           </div>
-          <div className="p-4 space-y-4">
+          <div className="p-4 pb-40 space-y-4">
             {echeances.length === 0 && (
               <div className="text-center py-12 text-[13px] text-gray-400">Aucune échéance.</div>
             )}

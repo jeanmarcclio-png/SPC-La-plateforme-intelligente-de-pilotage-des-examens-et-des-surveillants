@@ -4,7 +4,7 @@ import { useSectorConfig } from "@/lib/hooks/useSectorConfig";
 
 export function SectorLivrablesPanel() {
   const { sectorPack, tenantConfig, isReady } = useSectorConfig();
-  if (!isReady) return null;
+  if (!isReady) return <div className="rounded-xl mb-4 h-[100px] bg-gray-100 animate-pulse" />;
 
   const { livrables } = sectorPack;
 
