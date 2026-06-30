@@ -2,6 +2,7 @@ import { Sidebar, MobileNav } from "@/components/Sidebar";
 import { Toaster } from "@/components/Toast";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { GlobalSearch } from "@/components/GlobalSearch";
+import { CommandPalette } from "@/components/CommandPalette";
 import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 import { CopiloteDrawer } from "@/components/CopiloteDrawer";
 import { MobileFabBar } from "@/components/MobileFabBar";
@@ -25,6 +26,7 @@ export default function CockpitLayout({ children }: { children: React.ReactNode 
         <Toaster />
         <PullToRefresh />
         <GlobalSearch />
+        <CommandPalette />
         <CopiloteDrawer />
         <OnboardingOverlay />
         <SyncStamp />

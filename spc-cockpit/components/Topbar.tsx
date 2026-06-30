@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, HelpCircle, LogOut } from "lucide-react";
+import { Bell, HelpCircle, LogOut, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -73,6 +73,14 @@ export function Topbar({ context = "Campagnes en cours", title, badge, badgeColo
       </span>
       <div className="ml-auto flex items-center gap-2.5">
         {actions}
+        <button
+          aria-label="Rechercher (⌘K)"
+          onClick={() => window.dispatchEvent(new CustomEvent("command-palette:open"))}
+          className="flex items-center gap-2 h-8 px-2.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-500 hover:bg-gray-100"
+        >
+          <Search className="w-3.5 h-3.5" />
+          <span className="text-[11px] text-gray-400 border border-gray-200 rounded px-1 py-0.5 leading-none">⌘K</span>
+        </button>
         <button
           aria-label="Alertes et notifications"
           onClick={() => window.dispatchEvent(new CustomEvent("copilote:open", { detail: "Quelles sont mes alertes et actions urgentes du jour ? Donne-moi une liste priorisée." }))}
