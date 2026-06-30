@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useTenant } from "@/lib/tenant/TenantContext";
+import { Bot, X, ArrowUp } from "lucide-react";
 
 interface Message { role: "user" | "assistant"; content: string; }
 
@@ -128,11 +129,11 @@ export function CopiloteDrawer() {
       {/* Desktop floating button */}
       <button
         onClick={() => setOpen(true)}
-        className="hidden md:flex fixed bottom-6 right-6 z-40 w-10 h-10 rounded-full shadow-lg items-center justify-center text-white text-lg"
+        className="hidden md:flex fixed bottom-6 right-6 z-40 w-10 h-10 rounded-full shadow-lg items-center justify-center text-white"
         style={{ background: accent }}
         aria-label="Copilote IA"
       >
-        🤖
+        <Bot className="w-4 h-4" />
       </button>
 
       {/* Backdrop */}
@@ -154,7 +155,7 @@ export function CopiloteDrawer() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100" style={{ background: accent }}>
             <div className="flex items-center gap-2.5">
-              <span className="text-xl">🤖</span>
+              <Bot className="w-5 h-5 text-white" />
               <div>
                 <div className="text-[13px] font-bold text-white">Copilote JMC</div>
                 <div className="text-[11px] text-white/70">Alimenté par Claude · {config.nom}</div>
@@ -171,7 +172,9 @@ export function CopiloteDrawer() {
                   Effacer
                 </button>
               )}
-              <button onClick={() => setOpen(false)} aria-label="Fermer le copilote" className="text-white/70 hover:text-white text-xl leading-none">×</button>
+              <button onClick={() => setOpen(false)} aria-label="Fermer le copilote" className="text-white/70 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
@@ -236,10 +239,11 @@ export function CopiloteDrawer() {
               <button
                 onClick={() => send()}
                 disabled={!input.trim() || loading}
-                className="px-3 py-2.5 rounded-xl text-white text-[13px] font-semibold disabled:opacity-40"
+                aria-label="Envoyer le message"
+                className="px-3 py-2.5 rounded-xl text-white disabled:opacity-40 flex items-center justify-center"
                 style={{ background: accent }}
               >
-                ↑
+                <ArrowUp className="w-4 h-4" />
               </button>
             </div>
           </div>
