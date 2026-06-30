@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { updateLivrable, deleteLivrable } from "@/app/actions/livrables";
+import { updateLivrable } from "@/app/actions/livrables";
 import { showToast } from "@/components/Toast";
 import type { Livrable } from "@/lib/types";
 
@@ -13,20 +13,7 @@ export function LivrableEditButton({ livrable }: { livrable: Livrable }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  function handleDelete() {
-    if (!confirm(`Supprimer définitivement "${livrable.nom}" ?`)) return;
-    startTransition(async () => {
-      const result = await deleteLivrable(livrable.id);
-      if (result.error) {
-        showToast(result.error, "error");
-      } else {
-        showToast(`"${livrable.nom}" supprimé`);
-        setOpen(false);
-      }
-    });
-  }
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     startTransition(async () => {
@@ -95,15 +82,6 @@ export function LivrableEditButton({ livrable }: { livrable: Livrable }) {
               />
             </div>
             <div className="flex items-center gap-2.5 pt-1">
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={pending}
-                title="Supprimer ce livrable"
-                className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40 flex-shrink-0"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}

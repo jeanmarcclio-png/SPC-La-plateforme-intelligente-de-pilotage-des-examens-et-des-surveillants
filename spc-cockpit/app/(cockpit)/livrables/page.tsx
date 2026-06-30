@@ -6,6 +6,7 @@ import { ConseilBar } from "@/components/ConseilBar";
 import { getLivrables } from "@/lib/supabase/queries";
 import { LivrableStatutSelect } from "@/components/LivrableStatut";
 import { LivrableEditButton } from "@/components/LivrableEditButton";
+import { LivrableDeleteButton } from "@/components/LivrableDeleteButton";
 import { SectorLivrablesPanel } from "@/components/SectorLivrablesPanel";
 
 export default async function LivrablesPage() {
@@ -64,12 +65,13 @@ export default async function LivrablesPage() {
                     <td className="px-4 py-3 text-[12.5px] text-gray-600">{l.campagneNom ?? "—"}</td>
                     <td className="px-4 py-3"><LivrableStatutSelect id={l.id} statut={l.statut} /></td>
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1">
                         <LivrableEditButton livrable={l} />
+                        <LivrableDeleteButton id={l.id} nom={l.nom} />
                         {l.fichier && (
                           l.fichier.startsWith("http")
-                            ? <a href={l.fichier} target="_blank" rel="noopener noreferrer" className="text-[11.5px] text-[#4a90d9] hover:underline">Ouvrir →</a>
-                            : <Link href="/campagnes" className="text-[11.5px] text-[#4a90d9] hover:underline">Ouvrir →</Link>
+                            ? <a href={l.fichier} target="_blank" rel="noopener noreferrer" className="text-[11.5px] text-[#4a90d9] hover:underline ml-1">Ouvrir →</a>
+                            : <Link href="/campagnes" className="text-[11.5px] text-[#4a90d9] hover:underline ml-1">Ouvrir →</Link>
                         )}
                       </div>
                     </td>
