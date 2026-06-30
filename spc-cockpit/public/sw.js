@@ -1,4 +1,6 @@
-const CACHE = "jmc-v1";
+// Bump this on every deploy that changes sw.js or cached shell behavior —
+// a stale cache name lets old _next/static assets outlive the build that served them.
+const CACHE = "jmc-v2";
 
 const SHELL = [
   "/offline",
@@ -14,7 +16,9 @@ const SHELL = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE)
-      .then((cache) => cache.addAll(SHELL))
+      .then((cache) =>
+        Promise.allSettled(SHELL.map((url) => cache.add(url)))
+      )
       .then(() => self.skipWaiting())
   );
 });
