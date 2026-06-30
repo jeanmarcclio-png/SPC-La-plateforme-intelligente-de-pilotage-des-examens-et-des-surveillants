@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { updateLivrable } from "@/app/actions/livrables";
+import { updateLivrable, deleteLivrable } from "@/app/actions/livrables";
 import { showToast } from "@/components/Toast";
 import type { Livrable } from "@/lib/types";
 
@@ -12,6 +12,19 @@ const STATUTS = ["À rédiger", "En cours", "À renforcer", "Validé"] as const;
 export function LivrableEditButton({ livrable }: { livrable: Livrable }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  function handleDelete() {
+    if (!confirm(`Supprimer définitivement "${livrable.nom}" ?`)) return;
+    startTransition(async () => {
+      const result = await deleteLivrable(livrable.id);
+      if (result.error) {
+        showToast(result.error, "error");
+      } else {
+        showToast(`"${livrable.nom}" supprimé`);
+        setOpen(false);
+      }
+    });
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -81,7 +94,16 @@ export function LivrableEditButton({ livrable }: { livrable: Livrable }) {
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/30 focus:border-[#4a90d9]"
               />
             </div>
-            <div className="flex gap-2.5 pt-1">
+            <div className="flex items-center gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={pending}
+                title="Supprimer ce livrable"
+                className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40 flex-shrink-0"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}

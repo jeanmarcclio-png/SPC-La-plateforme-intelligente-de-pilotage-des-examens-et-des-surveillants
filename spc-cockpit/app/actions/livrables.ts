@@ -17,6 +17,18 @@ export async function updateLivrableStatut(id: number, statut: string) {
   revalidateAll();
 }
 
+export async function deleteLivrable(id: number): Promise<{ error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.from("livrables").delete().eq("id", id);
+    if (error) return { error: `Suppression échouée : ${error.message}` };
+    revalidateAll();
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
 export async function updateLivrable(id: number, fd: FormData): Promise<{ error?: string }> {
   const nom = (fd.get("nom") as string | null)?.trim();
   const description = (fd.get("description") as string | null)?.trim() ?? "";
