@@ -1,6 +1,7 @@
 "use client";
 
 import { useSectorConfig } from "@/lib/hooks/useSectorConfig";
+import { Card } from "@/components/ui/card";
 
 function SectorKPIPanelSkeleton() {
   return (
@@ -35,7 +36,7 @@ export function SectorKPIPanel() {
       {/* KPI grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         {dashboard.kpis.map((kpi, i) => (
-          <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex items-center gap-3">
+          <Card key={i} className="rounded-xl p-3 flex items-center gap-3">
             <div className={`w-9 h-9 rounded-[9px] flex items-center justify-center text-base flex-shrink-0 ${kpi.color}`}>
               {kpi.icon}
             </div>
@@ -44,7 +45,7 @@ export function SectorKPIPanel() {
               <div className="text-[11px] font-semibold text-gray-600 mt-0.5 truncate">{kpi.label}</div>
               {kpi.subtext && <div className="text-[10px] text-gray-400 truncate">{kpi.subtext}</div>}
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 

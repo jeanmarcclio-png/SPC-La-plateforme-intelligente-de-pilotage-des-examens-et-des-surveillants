@@ -6,6 +6,7 @@ import { CountUp } from "@/components/CountUp";
 import { getCampagnes, getProspects, getAlertes, getEcheances } from "@/lib/supabase/queries";
 import { computeCampagneHealth, generateExecutiveSummary } from "@/lib/ai/engine";
 import { SectorCockpitPanel } from "@/components/SectorCockpitPanel";
+import { Card } from "@/components/ui/card";
 
 export default async function CockpitPage() {
   const [campagnes, prospects, alertes, echeances] = await Promise.all([
@@ -62,9 +63,9 @@ export default async function CockpitPage() {
           {/* ── KPI Row ── */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {kpis.map((kpi, i) => (
-              <div
+              <Card
                 key={i}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center animate-fade-up"
+                className="rounded-2xl p-4 text-center animate-fade-up"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
                 <div className="text-[28px] font-extrabold" style={{ color: kpi.color }}>
@@ -75,7 +76,7 @@ export default async function CockpitPage() {
                 {kpi.delta && (
                   <div className="text-[11px] text-[var(--color-primary)] font-medium mt-1">{kpi.delta}</div>
                 )}
-              </div>
+              </Card>
             ))}
           </div>
 
