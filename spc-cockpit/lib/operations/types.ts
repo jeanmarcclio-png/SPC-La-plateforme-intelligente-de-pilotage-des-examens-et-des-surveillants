@@ -58,6 +58,18 @@ export interface Devis {
   missionId?: number;
 }
 
+export interface Salle {
+  id: number;
+  nom: string;
+  batiment?: string;
+  etage?: string;
+  capacite: number;
+  etudiants: number;
+  nbSurveillants: number;
+  pmr: boolean;
+  tiersTemps: boolean;
+}
+
 export interface Incident {
   id: number;
   titre: string;

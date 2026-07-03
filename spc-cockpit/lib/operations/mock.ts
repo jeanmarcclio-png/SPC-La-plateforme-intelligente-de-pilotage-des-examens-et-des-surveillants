@@ -1,4 +1,4 @@
-import type { Surveillant, Mission, Affectation, Devis, Incident } from "./types";
+import type { Surveillant, Mission, Affectation, Devis, Incident, Salle } from "./types";
 
 // Données de secours affichées tant que les tables Supabase (supabase-operations.sql)
 // n'ont pas été créées — l'écran ne doit jamais être vide.
@@ -37,6 +37,14 @@ export const mockDevis: Devis[] = [
   { id: 1, reference: "SPC-20260514-001", client: "Sciences Po",  session: "Concours écrit 2026",           statut: "Accepté",   montantHT: 5200, montantTTC: 6240,   nbSurveillants: 18 },
   { id: 2, reference: "SPC-20260524-001", client: "ICP Paris",    session: "Session principale — mai 2026", statut: "Brouillon", montantHT: 4042, montantTTC: 4850.4, nbSurveillants: 14 },
   { id: 3, reference: "SPC-20260528-001", client: "Dauphine PSL", session: "Rattrapages juin 2026",         statut: "Envoyé",    montantHT: 2600, montantTTC: 3120,   nbSurveillants: 8 },
+];
+
+export const mockSalles: Salle[] = [
+  { id: 1, nom: "Salle A21",          batiment: "Bâtiment A", etage: "2e étage",  capacite: 80,  etudiants: 75,  nbSurveillants: 2, pmr: false, tiersTemps: false },
+  { id: 2, nom: "Salle A22",          batiment: "Bâtiment A", etage: "2e étage",  capacite: 80,  etudiants: 72,  nbSurveillants: 2, pmr: false, tiersTemps: false },
+  { id: 3, nom: "Salle E31",          batiment: "Bâtiment E", etage: "3e étage",  capacite: 30,  etudiants: 8,   nbSurveillants: 2, pmr: true,  tiersTemps: true },
+  { id: 4, nom: "Grand Amphithéâtre", batiment: "Bâtiment C", etage: "RDC",       capacite: 300, etudiants: 280, nbSurveillants: 8, pmr: false, tiersTemps: false },
+  { id: 5, nom: "Salle B11",          batiment: "Bâtiment B", etage: "1er étage", capacite: 50,  etudiants: 44,  nbSurveillants: 2, pmr: false, tiersTemps: true },
 ];
 
 export const mockIncidents: Incident[] = [
