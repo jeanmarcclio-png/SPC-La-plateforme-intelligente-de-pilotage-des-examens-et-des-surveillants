@@ -2,25 +2,9 @@ export const dynamic = "force-dynamic";
 
 import { getSurveillants, getMissions, getDevisList, getIncidents } from "@/lib/operations/queries";
 import { MissionBadge, DevisBadge, SurvBadge } from "@/components/ops/badges";
+import { Kpi } from "@/components/ops/Kpi";
 import { euro, dateFR } from "@/lib/operations/format";
 import { Briefcase, Users, Euro, FileCheck2, AlertTriangle, Star } from "lucide-react";
-
-const ACCENT = "#6366f1";
-
-function Kpi({ label, value, sub, icon }: { label: string; value: string; sub: string; icon: React.ReactNode }) {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] font-bold uppercase tracking-[1px] text-gray-400">{label}</span>
-        <span className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${ACCENT}12`, color: ACCENT }}>
-          {icon}
-        </span>
-      </div>
-      <div className="text-[26px] font-extrabold text-gray-900 leading-none">{value}</div>
-      <div className="text-[12px] text-gray-400 mt-1.5">{sub}</div>
-    </div>
-  );
-}
 
 const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#6366f1"];
 
