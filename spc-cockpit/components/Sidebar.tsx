@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { calcJoursRestants } from "@/lib/utils/date";
-import { Clock, LayoutGrid, FileText, TrendingUp, Activity, CalendarDays, BarChart2, Settings, Users, Megaphone, ClipboardCheck, LogOut } from "lucide-react";
+import { Clock, LayoutGrid, FileText, TrendingUp, Activity, CalendarDays, BarChart2, Settings, Users, Megaphone, ClipboardCheck, LogOut, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -19,6 +19,7 @@ const navItems2 = [
   { href: "/livrables",  label: "Livrables",  icon: <Activity      className="w-4 h-4" /> },
   { href: "/planning",   label: "Planning",   icon: <CalendarDays  className="w-4 h-4" /> },
   { href: "/reporting",  label: "Reporting",  icon: <BarChart2     className="w-4 h-4" /> },
+  { href: "/operations", label: "Opérations", icon: <ShieldCheck   className="w-4 h-4" /> },
   { href: "/parametres", label: "Paramètres", icon: <Settings      className="w-4 h-4" /> },
 ];
 
