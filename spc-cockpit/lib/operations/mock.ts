@@ -14,11 +14,11 @@ export const mockSurveillants: Surveillant[] = [
 ];
 
 export const mockMissions: Mission[] = [
-  { id: 5, reference: "EX-2026-041", client: "ICP Paris",    session: "Session principale",  dateMission: "2026-07-08", nbSalles: 6,  nbSurveillants: 14, statut: "Planifiée" },
-  { id: 4, reference: "EX-2026-040", client: "Dauphine PSL", session: "Partiels L3",         dateMission: "2026-05-26", nbSalles: 4,  nbSurveillants: 9,  statut: "Terminée" },
-  { id: 3, reference: "EX-2026-039", client: "Sciences Po",  session: "Concours écrit 2026", dateMission: "2026-05-23", nbSalles: 8,  nbSurveillants: 18, statut: "Terminée" },
-  { id: 2, reference: "EX-2026-038", client: "ESSEC",        session: "Rattrapages",         dateMission: "2026-05-20", nbSalles: 3,  nbSurveillants: 7,  statut: "Terminée" },
-  { id: 1, reference: "EX-2026-037", client: "HEC Paris",    session: "Partiels S2",         dateMission: "2026-05-15", nbSalles: 10, nbSurveillants: 22, statut: "Terminée" },
+  { id: 5, reference: "EX-2026-041", client: "ICP Paris",    session: "Session principale",  dateMission: "2026-07-08", type: "Examen écrit", nbSalles: 6,  nbSurveillants: 14, montantHT: 4042, statut: "Planifiée" },
+  { id: 4, reference: "EX-2026-040", client: "Dauphine PSL", session: "Partiels L3",         dateMission: "2026-05-26", type: "Examen écrit", nbSalles: 4,  nbSurveillants: 9,  montantHT: 2600, statut: "Terminée" },
+  { id: 3, reference: "EX-2026-039", client: "Sciences Po",  session: "Concours écrit 2026", dateMission: "2026-05-23", type: "Examen écrit", nbSalles: 8,  nbSurveillants: 18, montantHT: 5200, statut: "Terminée" },
+  { id: 2, reference: "EX-2026-038", client: "ESSEC",        session: "Rattrapages",         dateMission: "2026-05-20", type: "Examen écrit", nbSalles: 3,  nbSurveillants: 7,  montantHT: 1925, statut: "Terminée" },
+  { id: 1, reference: "EX-2026-037", client: "HEC Paris",    session: "Partiels S2",         dateMission: "2026-05-15", type: "Examen écrit", nbSalles: 10, nbSurveillants: 22, montantHT: 6400, statut: "Terminée" },
 ];
 
 export const mockDevis: Devis[] = [

@@ -16,7 +16,7 @@ const NAV = [
 
 // Pages livrées progressivement — les entrées des phases à venir restent visibles
 // mais inactives pour montrer la feuille de route sans créer de 404.
-const LIVE_ROUTES = new Set(["/operations", "/operations/surveillants"]);
+const LIVE_ROUTES = new Set(["/operations", "/operations/surveillants", "/operations/missions"]);
 
 export function OpsSidebar() {
   const pathname = usePathname();

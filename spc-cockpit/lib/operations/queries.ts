@@ -36,8 +36,10 @@ export async function getMissions(): Promise<Mission[]> {
       client: r.client,
       session: r.session ?? undefined,
       dateMission: r.date_mission ?? undefined,
+      type: r.type ?? "Examen écrit",
       nbSalles: r.nb_salles ?? 1,
       nbSurveillants: r.nb_surveillants ?? 1,
+      montantHT: Number(r.montant_ht ?? 0),
       statut: r.statut ?? "Planifiée",
       notes: r.notes ?? undefined,
     }));

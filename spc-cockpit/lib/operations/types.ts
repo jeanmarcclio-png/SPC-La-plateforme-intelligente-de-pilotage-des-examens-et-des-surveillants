@@ -23,8 +23,10 @@ export interface Mission {
   client: string;
   session?: string;
   dateMission?: string; // ISO yyyy-mm-dd
+  type: string;
   nbSalles: number;
   nbSurveillants: number;
+  montantHT: number;
   statut: StatutMission;
   notes?: string;
 }
