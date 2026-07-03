@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Surveillant, Mission, Devis, Incident } from "./types";
-import { mockSurveillants, mockMissions, mockDevis, mockIncidents } from "./mock";
+import type { Surveillant, Mission, Affectation, Devis, Incident } from "./types";
+import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents } from "./mock";
 
 export async function getSurveillants(): Promise<Surveillant[]> {
   try {
@@ -45,6 +45,30 @@ export async function getMissions(): Promise<Mission[]> {
     }));
   } catch {
     return mockMissions;
+  }
+}
+
+export async function getAffectations(): Promise<Affectation[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("affectations").select("*").order("id");
+    if (error || !data?.length) return mockAffectations;
+    return data.map((r) => ({
+      id: r.id,
+      missionId: r.mission_id,
+      surveillantId: r.surveillant_id,
+      roleMission: r.role_mission ?? undefined,
+      statut: r.statut ?? "Proposé",
+      salle: r.salle ?? undefined,
+      matin: r.matin ?? false,
+      matinDebut: r.matin_debut ?? undefined,
+      matinFin: r.matin_fin ?? undefined,
+      apm: r.apm ?? false,
+      apmDebut: r.apm_debut ?? undefined,
+      apmFin: r.apm_fin ?? undefined,
+    }));
+  } catch {
+    return mockAffectations;
   }
 }
 

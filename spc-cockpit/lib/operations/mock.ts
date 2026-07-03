@@ -1,4 +1,4 @@
-import type { Surveillant, Mission, Devis, Incident } from "./types";
+import type { Surveillant, Mission, Affectation, Devis, Incident } from "./types";
 
 // Données de secours affichées tant que les tables Supabase (supabase-operations.sql)
 // n'ont pas été créées — l'écran ne doit jamais être vide.
@@ -19,6 +19,18 @@ export const mockMissions: Mission[] = [
   { id: 3, reference: "EX-2026-039", client: "Sciences Po",  session: "Concours écrit 2026", dateMission: "2026-05-23", type: "Examen écrit", nbSalles: 8,  nbSurveillants: 18, montantHT: 5200, statut: "Terminée" },
   { id: 2, reference: "EX-2026-038", client: "ESSEC",        session: "Rattrapages",         dateMission: "2026-05-20", type: "Examen écrit", nbSalles: 3,  nbSurveillants: 7,  montantHT: 1925, statut: "Terminée" },
   { id: 1, reference: "EX-2026-037", client: "HEC Paris",    session: "Partiels S2",         dateMission: "2026-05-15", type: "Examen écrit", nbSalles: 10, nbSurveillants: 22, montantHT: 6400, statut: "Terminée" },
+];
+
+// Affectations de la mission EX-2026-041 (id 5 dans mockMissions)
+export const mockAffectations: Affectation[] = [
+  { id: 1, missionId: 5, surveillantId: 1, roleMission: "Coordinatrice",      statut: "Confirmé", salle: "A21", matin: true,  matinDebut: "08:00", matinFin: "14:00", apm: false },
+  { id: 2, missionId: 5, surveillantId: 2, roleMission: "Surveillant volant", statut: "Confirmé", salle: undefined, matin: true, matinDebut: "08:00", matinFin: "13:00", apm: true, apmDebut: "13:30", apmFin: "18:00" },
+  { id: 3, missionId: 5, surveillantId: 3, roleMission: "Surveillant salle",  statut: "Proposé",  salle: undefined, matin: false, apm: false },
+  { id: 4, missionId: 5, surveillantId: 4, roleMission: "Surveillant PMR",    statut: "Confirmé", salle: "E31", matin: true, matinDebut: "08:30", matinFin: "13:00", apm: true, apmDebut: "13:30", apmFin: "18:30" },
+  { id: 5, missionId: 5, surveillantId: 5, roleMission: "Coordinatrice",      statut: "Confirmé", salle: "AMP", matin: false, apm: true, apmDebut: "13:00", apmFin: "19:00" },
+  { id: 6, missionId: 5, surveillantId: 6, roleMission: "Surveillant salle",  statut: "Confirmé", salle: "A22", matin: true, matinDebut: "08:30", matinFin: "13:30", apm: false },
+  { id: 7, missionId: 5, surveillantId: 7, roleMission: "Surveillant volant", statut: "Proposé",  salle: undefined, matin: false, apm: false },
+  { id: 8, missionId: 5, surveillantId: 8, roleMission: "Surveillant salle",  statut: "Proposé",  salle: undefined, matin: false, apm: false },
 ];
 
 export const mockDevis: Devis[] = [

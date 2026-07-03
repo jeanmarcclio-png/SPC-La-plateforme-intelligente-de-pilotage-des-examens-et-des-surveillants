@@ -2,21 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Briefcase, Euro, AlertTriangle, ArrowLeft, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, CalendarClock, Euro, AlertTriangle, ArrowLeft, ShieldCheck } from "lucide-react";
 
 const ACCENT = "#6366f1";
 
 const NAV = [
-  { href: "/operations",              label: "Vue d'ensemble", icon: <LayoutDashboard className="w-4 h-4" /> },
-  { href: "/operations/surveillants", label: "Surveillants",   icon: <Users className="w-4 h-4" />,        phase: 2 },
-  { href: "/operations/missions",     label: "Missions",       icon: <Briefcase className="w-4 h-4" />,    phase: 3 },
-  { href: "/operations/devis",        label: "Devis",          icon: <Euro className="w-4 h-4" />,         phase: 4 },
-  { href: "/operations/incidents",    label: "Incidents",      icon: <AlertTriangle className="w-4 h-4" />, phase: 5 },
+  { href: "/operations",                label: "Vue d'ensemble", icon: <LayoutDashboard className="w-4 h-4" /> },
+  { href: "/operations/surveillants",   label: "Surveillants",   icon: <Users className="w-4 h-4" />,          phase: 2 },
+  { href: "/operations/missions",       label: "Missions",       icon: <Briefcase className="w-4 h-4" />,      phase: 3 },
+  { href: "/operations/planification",  label: "Planification",  icon: <CalendarClock className="w-4 h-4" />,  phase: 4 },
+  { href: "/operations/devis",          label: "Devis",          icon: <Euro className="w-4 h-4" />,           phase: 5 },
+  { href: "/operations/incidents",      label: "Incidents",      icon: <AlertTriangle className="w-4 h-4" />,  phase: 6 },
 ];
 
 // Pages livrées progressivement — les entrées des phases à venir restent visibles
 // mais inactives pour montrer la feuille de route sans créer de 404.
-const LIVE_ROUTES = new Set(["/operations", "/operations/surveillants", "/operations/missions"]);
+const LIVE_ROUTES = new Set(["/operations", "/operations/surveillants", "/operations/missions", "/operations/planification"]);
 
 export function OpsSidebar() {
   const pathname = usePathname();

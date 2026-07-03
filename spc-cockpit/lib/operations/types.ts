@@ -31,6 +31,21 @@ export interface Mission {
   notes?: string;
 }
 
+export interface Affectation {
+  id: number;
+  missionId: number;
+  surveillantId: number;
+  roleMission?: string;
+  statut: string;
+  salle?: string;
+  matin: boolean;
+  matinDebut?: string; // "HH:MM"
+  matinFin?: string;
+  apm: boolean;
+  apmDebut?: string;
+  apmFin?: string;
+}
+
 export interface Devis {
   id: number;
   reference: string;
