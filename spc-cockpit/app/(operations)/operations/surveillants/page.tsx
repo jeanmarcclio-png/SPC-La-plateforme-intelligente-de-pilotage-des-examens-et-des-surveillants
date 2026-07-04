@@ -5,8 +5,7 @@ import { getSurveillants } from "@/lib/operations/queries";
 import { SurveillantsTable } from "@/components/ops/SurveillantsTable";
 import { Kpi } from "@/components/ops/Kpi";
 import { Users, UserCheck, Clock, Star, AlertTriangle, Shield, UsersRound } from "lucide-react";
-
-const SEUIL_SURCHARGE_H = 100;
+import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
 
 function PilotageCard({ tag, titre, detail, icon }: { tag: string; titre: string; detail: string; icon: React.ReactNode }) {
   return (
