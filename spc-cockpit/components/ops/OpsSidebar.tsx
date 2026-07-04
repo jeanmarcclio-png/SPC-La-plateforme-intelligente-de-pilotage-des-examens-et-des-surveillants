@@ -2,17 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Briefcase, CalendarClock, DoorOpen, Euro, AlertTriangle, BarChart3, ArrowLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Gauge, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight } from "lucide-react";
 
 const NAV = [
-  { href: "/operations",                label: "Vue d'ensemble", icon: <LayoutDashboard className="w-4 h-4" /> },
-  { href: "/operations/missions",       label: "Missions",       icon: <Briefcase className="w-4 h-4" /> },
-  { href: "/operations/surveillants",   label: "Surveillants",   icon: <Users className="w-4 h-4" /> },
-  { href: "/operations/planification",  label: "Planification",  icon: <CalendarClock className="w-4 h-4" /> },
-  { href: "/operations/salles",         label: "Salles",         icon: <DoorOpen className="w-4 h-4" /> },
-  { href: "/operations/devis",          label: "Devis",          icon: <Euro className="w-4 h-4" /> },
-  { href: "/operations/incidents",      label: "Incidents",      icon: <AlertTriangle className="w-4 h-4" /> },
-  { href: "/operations/rapports",       label: "Rapports",       icon: <BarChart3 className="w-4 h-4" /> },
+  { href: "/operations",                label: "Dashboard",        icon: <LayoutDashboard className="w-4 h-4" /> },
+  { href: "/operations/cockpit",        label: "Cockpit",          icon: <Gauge className="w-4 h-4" /> },
+  { href: "/operations/missions",       label: "Missions",         icon: <Briefcase className="w-4 h-4" /> },
+  { href: "/operations/surveillants",   label: "Surveillants",     icon: <Users className="w-4 h-4" /> },
+  { href: "/operations/planification",  label: "Planification",    icon: <CalendarClock className="w-4 h-4" /> },
+  { href: "/operations/salles",         label: "Salles",           icon: <DoorOpen className="w-4 h-4" /> },
+  { href: "/operations/pmr",            label: "PMR & Tiers-temps", icon: <Accessibility className="w-4 h-4" /> },
+  { href: "/operations/devis",          label: "Devis",            icon: <FileText className="w-4 h-4" /> },
+  { href: "/operations/facturation",    label: "Facturation",      icon: <Euro className="w-4 h-4" /> },
+  { href: "/operations/presence",       label: "Présence",         icon: <ClipboardCheck className="w-4 h-4" /> },
+  { href: "/operations/incidents",      label: "Incidents",        icon: <AlertTriangle className="w-4 h-4" /> },
+  { href: "/operations/rapports",       label: "Rapports",         icon: <BarChart3 className="w-4 h-4" /> },
 ];
 
 export interface ActiveMissionInfo {

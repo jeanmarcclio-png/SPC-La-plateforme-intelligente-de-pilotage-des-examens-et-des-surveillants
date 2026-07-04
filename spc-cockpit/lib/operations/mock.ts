@@ -1,4 +1,4 @@
-import type { Surveillant, Mission, Affectation, Devis, Incident, Salle } from "./types";
+import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture } from "./types";
 
 // Données de secours affichées tant que les tables Supabase (supabase-operations.sql)
 // n'ont pas été créées — l'écran ne doit jamais être vide.
@@ -23,14 +23,14 @@ export const mockMissions: Mission[] = [
 
 // Affectations de la mission EX-2026-041 (id 5 dans mockMissions)
 export const mockAffectations: Affectation[] = [
-  { id: 1, missionId: 5, surveillantId: 1, roleMission: "Coordinatrice",      statut: "Confirmé", salle: "A21", matin: true,  matinDebut: "08:00", matinFin: "14:00", apm: false },
-  { id: 2, missionId: 5, surveillantId: 2, roleMission: "Surveillant volant", statut: "Confirmé", salle: undefined, matin: true, matinDebut: "08:00", matinFin: "13:00", apm: true, apmDebut: "13:30", apmFin: "18:00" },
-  { id: 3, missionId: 5, surveillantId: 3, roleMission: "Surveillant salle",  statut: "Proposé",  salle: undefined, matin: false, apm: false },
-  { id: 4, missionId: 5, surveillantId: 4, roleMission: "Surveillant PMR",    statut: "Confirmé", salle: "E31", matin: true, matinDebut: "08:30", matinFin: "13:00", apm: true, apmDebut: "13:30", apmFin: "18:30" },
-  { id: 5, missionId: 5, surveillantId: 5, roleMission: "Coordinatrice",      statut: "Confirmé", salle: "AMP", matin: false, apm: true, apmDebut: "13:00", apmFin: "19:00" },
-  { id: 6, missionId: 5, surveillantId: 6, roleMission: "Surveillant salle",  statut: "Confirmé", salle: "A22", matin: true, matinDebut: "08:30", matinFin: "13:30", apm: false },
-  { id: 7, missionId: 5, surveillantId: 7, roleMission: "Surveillant volant", statut: "Proposé",  salle: undefined, matin: false, apm: false },
-  { id: 8, missionId: 5, surveillantId: 8, roleMission: "Surveillant salle",  statut: "Proposé",  salle: undefined, matin: false, apm: false },
+  { id: 1, missionId: 5, surveillantId: 1, roleMission: "Coordinatrice",      statut: "Confirmé", presence: "Présent", salle: "A21", matin: true,  matinDebut: "08:00", matinFin: "14:00", apm: false },
+  { id: 2, missionId: 5, surveillantId: 2, roleMission: "Surveillant volant", statut: "Confirmé", presence: "Présent", salle: undefined, matin: true, matinDebut: "08:00", matinFin: "13:00", apm: true, apmDebut: "13:30", apmFin: "18:00" },
+  { id: 3, missionId: 5, surveillantId: 3, roleMission: "Surveillant salle",  statut: "Proposé",  presence: "En attente", salle: undefined, matin: false, apm: false },
+  { id: 4, missionId: 5, surveillantId: 4, roleMission: "Surveillant PMR",    statut: "Confirmé", presence: "Présent", salle: "E31", matin: true, matinDebut: "08:30", matinFin: "13:00", apm: true, apmDebut: "13:30", apmFin: "18:30" },
+  { id: 5, missionId: 5, surveillantId: 5, roleMission: "Coordinatrice",      statut: "Confirmé", presence: "Présent", salle: "AMP", matin: false, apm: true, apmDebut: "13:00", apmFin: "19:00" },
+  { id: 6, missionId: 5, surveillantId: 6, roleMission: "Surveillant salle",  statut: "Confirmé", presence: "Présent", salle: "A22", matin: true, matinDebut: "08:30", matinFin: "13:30", apm: false },
+  { id: 7, missionId: 5, surveillantId: 7, roleMission: "Surveillant volant", statut: "Proposé",  presence: "En attente", salle: undefined, matin: false, apm: false },
+  { id: 8, missionId: 5, surveillantId: 8, roleMission: "Surveillant salle",  statut: "Proposé",  presence: "En attente", salle: undefined, matin: false, apm: false },
 ];
 
 export const mockDevis: Devis[] = [
@@ -45,6 +45,18 @@ export const mockSalles: Salle[] = [
   { id: 3, nom: "Salle E31",          batiment: "Bâtiment E", etage: "3e étage",  capacite: 30,  etudiants: 8,   nbSurveillants: 2, pmr: true,  tiersTemps: true },
   { id: 4, nom: "Grand Amphithéâtre", batiment: "Bâtiment C", etage: "RDC",       capacite: 300, etudiants: 280, nbSurveillants: 8, pmr: false, tiersTemps: false },
   { id: 5, nom: "Salle B11",          batiment: "Bâtiment B", etage: "1er étage", capacite: 50,  etudiants: 44,  nbSurveillants: 2, pmr: false, tiersTemps: true },
+];
+
+export const mockAmenagements: Amenagement[] = [
+  { id: 1, amenagement: "PMR — Fauteuil roulant",   salle: "E31", tiersTemps: true,  surveillant: "Thomas Girard" },
+  { id: 2, amenagement: "Tiers-temps",              salle: "E31", tiersTemps: true,  surveillant: "Thomas Girard" },
+  { id: 3, amenagement: "Tiers-temps + secrétaire", salle: "B11", tiersTemps: true,  surveillant: "Sophie Dubois" },
+  { id: 4, amenagement: "PMR — Malvoyant",          salle: "E31", tiersTemps: false, surveillant: "Thomas Girard" },
+];
+
+export const mockFactures: Facture[] = [
+  { id: 1, reference: "FA-2026-001", client: "Sciences Po",  session: "Concours écrit 2026",   statut: "Payée",    montantHT: 5200, montantTTC: 6240, emission: "2026-05-24", echeance: "2026-06-23" },
+  { id: 2, reference: "FA-2026-002", client: "Dauphine PSL", session: "Partiels S4 — Gestion", statut: "Facturée", montantHT: 2600, montantTTC: 3120, emission: "2026-07-03", echeance: "2026-08-02" },
 ];
 
 export const mockIncidents: Incident[] = [

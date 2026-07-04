@@ -55,6 +55,19 @@ export async function addAffectation(missionId: number, surveillantId: number, r
   }
 }
 
+export async function setPresence(id: number, presence: "En attente" | "Présent" | "Absent"): Promise<{ error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.from("affectations").update({ presence }).eq("id", id);
+    if (error) return { error: `Émargement échoué : ${error.message}` };
+    revalidatePath("/operations/presence");
+    revalidatePath("/operations");
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
 export async function deleteAffectation(id: number): Promise<{ error?: string }> {
   try {
     const supabase = await createClient();

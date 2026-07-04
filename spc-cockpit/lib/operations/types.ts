@@ -31,6 +31,8 @@ export interface Mission {
   notes?: string;
 }
 
+export type Presence = "En attente" | "Présent" | "Absent";
+
 export interface Affectation {
   id: number;
   missionId: number;
@@ -44,6 +46,29 @@ export interface Affectation {
   apm: boolean;
   apmDebut?: string;
   apmFin?: string;
+  presence: Presence;
+}
+
+export interface Amenagement {
+  id: number;
+  amenagement: string;
+  salle?: string;
+  tiersTemps: boolean;
+  surveillant?: string;
+}
+
+export type StatutFacture = "À facturer" | "Facturée" | "Payée" | "En retard";
+
+export interface Facture {
+  id: number;
+  reference: string;
+  client: string;
+  session?: string;
+  statut: StatutFacture;
+  montantHT: number;
+  montantTTC: number;
+  emission?: string;
+  echeance?: string;
 }
 
 export interface Devis {

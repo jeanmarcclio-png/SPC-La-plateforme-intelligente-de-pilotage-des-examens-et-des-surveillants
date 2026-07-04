@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Surveillant, Mission, Affectation, Devis, Incident, Salle } from "./types";
-import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles } from "./mock";
+import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture } from "./types";
+import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures } from "./mock";
 
 export async function getSurveillants(): Promise<Surveillant[]> {
   try {
@@ -66,6 +66,7 @@ export async function getAffectations(): Promise<Affectation[]> {
       apm: r.apm ?? false,
       apmDebut: r.apm_debut ?? undefined,
       apmFin: r.apm_fin ?? undefined,
+      presence: r.presence ?? "En attente",
     }));
   } catch {
     return mockAffectations;
@@ -131,5 +132,43 @@ export async function getIncidents(): Promise<Incident[]> {
     }));
   } catch {
     return mockIncidents;
+  }
+}
+
+export async function getAmenagements(): Promise<Amenagement[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("amenagements").select("*").order("id");
+    if (error || !data?.length) return mockAmenagements;
+    return data.map((r) => ({
+      id: r.id,
+      amenagement: r.amenagement,
+      salle: r.salle ?? undefined,
+      tiersTemps: r.tiers_temps ?? false,
+      surveillant: r.surveillant ?? undefined,
+    }));
+  } catch {
+    return mockAmenagements;
+  }
+}
+
+export async function getFactures(): Promise<Facture[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("factures").select("*").order("id");
+    if (error || !data?.length) return mockFactures;
+    return data.map((r) => ({
+      id: r.id,
+      reference: r.reference,
+      client: r.client,
+      session: r.session ?? undefined,
+      statut: r.statut ?? "À facturer",
+      montantHT: Number(r.montant_ht ?? 0),
+      montantTTC: Number(r.montant_ttc ?? 0),
+      emission: r.emission ?? undefined,
+      echeance: r.echeance ?? undefined,
+    }));
+  } catch {
+    return mockFactures;
   }
 }
