@@ -6,6 +6,8 @@ import { MissionBadge, DevisBadge, SurvBadge } from "@/components/ops/badges";
 import { Kpi } from "@/components/ops/Kpi";
 import { euro, dateFR } from "@/lib/operations/format";
 import { SEUIL_SURCHARGE_H, STATUTS_PIPELINE, STATUTS_CA_CONFIRME } from "@/lib/operations/constants";
+import { tendanceCA } from "@/lib/operations/stats";
+import { QuickActions } from "@/components/ops/QuickActions";
 import { Briefcase, Users, Euro, FileCheck2, AlertTriangle, Star, ClipboardList, FileText, Send, ArrowRight, Plus, TrendingUp } from "lucide-react";
 
 const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#2563eb"];
@@ -49,26 +51,6 @@ function PrioriteCard({ p }: { p: Priorite }) {
       </Link>
     </div>
   );
-}
-
-// ── Tendance CA ──────────────────────────────────────────────────────────────
-const MOIS_FR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-
-function tendanceCA(missions: Awaited<ReturnType<typeof getMissions>>) {
-  const parMois = new Map<string, number>();
-  for (const m of missions) {
-    if (m.statut === "Annulée" || !m.dateMission) continue;
-    const key = m.dateMission.slice(0, 7); // yyyy-mm
-    parMois.set(key, (parMois.get(key) ?? 0) + m.montantHT);
-  }
-  return [...parMois.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-6)
-    .map(([key, total]) => ({
-      key,
-      label: `${MOIS_FR[Number(key.slice(5, 7)) - 1]} ${key.slice(2, 4)}`,
-      total,
-    }));
 }
 
 export default async function OperationsPage() {
@@ -377,6 +359,9 @@ export default async function OperationsPage() {
           </table>
         </div>
       </section>
+
+      {/* Actions rapides */}
+      <QuickActions />
     </div>
   );
 }
