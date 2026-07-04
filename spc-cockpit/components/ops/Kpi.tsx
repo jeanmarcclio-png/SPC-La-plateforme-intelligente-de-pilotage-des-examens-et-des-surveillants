@@ -1,4 +1,4 @@
-const ACCENT = "#6366f1";
+const ACCENT = "#2563eb";
 
 export function Kpi({ label, value, sub, icon }: { label: string; value: string; sub: string; icon: React.ReactNode }) {
   return (

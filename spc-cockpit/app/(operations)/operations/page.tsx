@@ -6,7 +6,7 @@ import { Kpi } from "@/components/ops/Kpi";
 import { euro, dateFR } from "@/lib/operations/format";
 import { Briefcase, Users, Euro, FileCheck2, AlertTriangle, Star } from "lucide-react";
 
-const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#6366f1"];
+const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#2563eb"];
 
 export default async function OperationsPage() {
   const [surveillants, missions, devis, incidents] = await Promise.all([
@@ -71,7 +71,7 @@ export default async function OperationsPage() {
               </thead>
               <tbody>
                 {missions.map((m) => (
-                  <tr key={m.id} className="border-b border-gray-50 last:border-0 hover:bg-indigo-50/30 transition-colors">
+                  <tr key={m.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                     <td className="px-5 py-3 text-[12px] font-mono text-gray-400">{m.reference}</td>
                     <td className="px-5 py-3">
                       <div className="text-[13px] font-semibold text-gray-800">{m.client}</div>
@@ -129,7 +129,7 @@ export default async function OperationsPage() {
             </thead>
             <tbody>
               {surveillants.map((s, i) => (
-                <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-indigo-50/30 transition-colors">
+                <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       <span

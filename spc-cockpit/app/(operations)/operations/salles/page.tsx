@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { OpsBreadcrumb } from "@/components/ops/OpsBreadcrumb";
 import { getSalles } from "@/lib/operations/queries";
 import { SallesBoard } from "@/components/ops/SallesBoard";
 import { Kpi } from "@/components/ops/Kpi";
@@ -14,6 +15,7 @@ export default async function SallesPage() {
   return (
     <div className="p-5 md:p-7 max-w-[1200px] mx-auto pb-16">
       <div className="mb-6">
+        <OpsBreadcrumb page="Salles" />
         <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">Salles</h1>
         <p className="text-[13px] text-gray-400 mt-0.5">Gestion des salles d&apos;examen, capacités et affectation des surveillants</p>
       </div>

@@ -7,7 +7,7 @@ import { createSalle, updateSalle, deleteSalle } from "@/app/actions/salles";
 import { showToast } from "@/components/Toast";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
-const ACCENT = "#6366f1";
+const ACCENT = "#2563eb";
 
 function occupation(s: Salle): number {
   return s.capacite > 0 ? Math.round((s.etudiants / s.capacite) * 100) : 0;
@@ -36,7 +36,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputCls =
-  "w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400";
+  "w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400";
 
 function SalleForm({
   initial,
@@ -80,11 +80,11 @@ function SalleForm({
       </div>
       <div className="flex items-center gap-5 pt-1">
         <label className="flex items-center gap-2 text-[13px] text-gray-600 cursor-pointer">
-          <input type="checkbox" name="pmr" value="true" defaultChecked={initial?.pmr ?? false} className="w-4 h-4 accent-indigo-500" />
+          <input type="checkbox" name="pmr" value="true" defaultChecked={initial?.pmr ?? false} className="w-4 h-4 accent-blue-500" />
           Accès PMR
         </label>
         <label className="flex items-center gap-2 text-[13px] text-gray-600 cursor-pointer">
-          <input type="checkbox" name="tiers_temps" value="true" defaultChecked={initial?.tiersTemps ?? false} className="w-4 h-4 accent-indigo-500" />
+          <input type="checkbox" name="tiers_temps" value="true" defaultChecked={initial?.tiersTemps ?? false} className="w-4 h-4 accent-blue-500" />
           Tiers-temps
         </label>
       </div>
@@ -192,7 +192,7 @@ export function SallesBoard({ salles }: { salles: Salle[] }) {
               {salles.map((s) => {
                 const pct = occupation(s);
                 return (
-                  <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-indigo-50/30 transition-colors">
+                  <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                     <td className="px-5 py-3">
                       <div className="text-[13px] font-semibold text-gray-800">{s.nom}</div>
                       {s.etage && <div className="text-[11.5px] text-gray-400">{s.etage}</div>}
@@ -216,7 +216,7 @@ export function SallesBoard({ salles }: { salles: Salle[] }) {
                         <button
                           onClick={() => setDialog({ mode: "edit", salle: s })}
                           title={`Modifier ${s.nom}`}
-                          className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                          className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>

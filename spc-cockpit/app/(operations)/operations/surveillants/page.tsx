@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { OpsBreadcrumb } from "@/components/ops/OpsBreadcrumb";
 import { getSurveillants } from "@/lib/operations/queries";
 import { SurveillantsTable } from "@/components/ops/SurveillantsTable";
 import { Kpi } from "@/components/ops/Kpi";
@@ -38,6 +39,7 @@ export default async function SurveillantsPage() {
   return (
     <div className="p-5 md:p-7 max-w-[1200px] mx-auto pb-16">
       <div className="mb-6">
+        <OpsBreadcrumb page="Surveillants" />
         <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">Surveillants</h1>
         <p className="text-[13px] text-gray-400 mt-0.5">Annuaire, rôles et disponibilités de l&apos;équipe</p>
       </div>

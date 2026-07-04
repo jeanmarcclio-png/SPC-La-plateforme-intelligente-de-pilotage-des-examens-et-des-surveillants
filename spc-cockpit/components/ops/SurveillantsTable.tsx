@@ -8,10 +8,10 @@ import { showToast } from "@/components/Toast";
 import { SurvBadge } from "@/components/ops/badges";
 import { Search, Plus, Pencil, Trash2, Star } from "lucide-react";
 
-const ACCENT = "#6366f1";
+const ACCENT = "#2563eb";
 const ROLES = ["Coordinatrice", "Surveillant salle", "Surveillant volant", "Surveillant PMR"];
 const STATUTS = ["Disponible", "Planifié", "Annulé", "Indisponible"];
-const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#6366f1"];
+const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#2563eb"];
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -23,7 +23,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputCls =
-  "w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400";
+  "w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400";
 
 function SurveillantForm({
   initial,
@@ -147,7 +147,7 @@ export function SurveillantsTable({ surveillants }: { surveillants: Surveillant[
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher un surveillant…"
-            className="w-full pl-8 pr-3 py-2 text-[12.5px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400"
+            className="w-full pl-8 pr-3 py-2 text-[12.5px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400"
           />
         </div>
         <select value={role} onChange={(e) => setRole(e.target.value)} className="text-[12px] bg-white border border-gray-200 rounded-lg px-2.5 py-2 text-gray-600 focus:outline-none">
@@ -189,7 +189,7 @@ export function SurveillantsTable({ surveillants }: { surveillants: Surveillant[
                 <tr><td colSpan={8} className="text-center py-10 text-[13px] text-gray-400">Aucun surveillant ne correspond aux filtres.</td></tr>
               )}
               {filtered.map((s, i) => (
-                <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-indigo-50/30 transition-colors">
+                <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       <span
@@ -222,7 +222,7 @@ export function SurveillantsTable({ surveillants }: { surveillants: Surveillant[
                       <button
                         onClick={() => setDialog({ mode: "edit", surveillant: s })}
                         title={`Modifier ${s.nom}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>

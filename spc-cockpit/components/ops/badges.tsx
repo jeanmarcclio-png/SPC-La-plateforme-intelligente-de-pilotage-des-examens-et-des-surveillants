@@ -2,7 +2,7 @@ import type { StatutMission, StatutDevis, StatutSurveillant } from "@/lib/operat
 
 export function MissionBadge({ statut }: { statut: StatutMission }) {
   const cls: Record<StatutMission, string> = {
-    "Planifiée": "bg-indigo-50 text-indigo-600",
+    "Planifiée": "bg-blue-50 text-blue-600",
     "En cours":  "bg-amber-50 text-amber-600",
     "Terminée":  "bg-emerald-50 text-emerald-600",
     "Annulée":   "bg-red-50 text-red-500",
@@ -20,7 +20,7 @@ export function DevisBadge({ statut }: { statut: StatutDevis }) {
     "Envoyé":    "bg-sky-50 text-sky-600",
     "Accepté":   "bg-emerald-50 text-emerald-600",
     "Refusé":    "bg-red-50 text-red-500",
-    "Facturé":   "bg-indigo-50 text-indigo-600",
+    "Facturé":   "bg-blue-50 text-blue-600",
   };
   return <span className={`text-[11px] font-bold px-2 py-1 rounded-full ${cls[statut]}`}>{statut}</span>;
 }
@@ -28,7 +28,7 @@ export function DevisBadge({ statut }: { statut: StatutDevis }) {
 export function SurvBadge({ statut }: { statut: StatutSurveillant }) {
   const cls: Record<StatutSurveillant, string> = {
     "Disponible":   "bg-emerald-50 text-emerald-600",
-    "Planifié":     "bg-indigo-50 text-indigo-600",
+    "Planifié":     "bg-blue-50 text-blue-600",
     "Annulé":       "bg-red-50 text-red-500",
     "Indisponible": "bg-gray-100 text-gray-500",
   };

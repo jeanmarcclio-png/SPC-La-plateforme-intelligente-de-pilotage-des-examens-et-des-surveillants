@@ -8,7 +8,7 @@ import { showToast } from "@/components/Toast";
 import { dateFR } from "@/lib/operations/format";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
-const ACCENT = "#6366f1";
+const ACCENT = "#2563eb";
 const GRAVITES = [
   { value: "critique", label: "Critique" },
   { value: "majeur",   label: "Majeur" },
@@ -49,7 +49,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputCls =
-  "w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400";
+  "w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400";
 
 function IncidentForm({
   initial,
@@ -174,7 +174,7 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
                 <tr><td colSpan={7} className="text-center py-10 text-[13px] text-gray-400">Aucun incident déclaré. C&apos;est une bonne nouvelle.</td></tr>
               )}
               {incidents.map((i) => (
-                <tr key={i.id} className="border-b border-gray-50 last:border-0 hover:bg-indigo-50/30 transition-colors">
+                <tr key={i.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                   <td className="px-5 py-3 text-[12px] font-mono text-gray-400 whitespace-nowrap">INC-{String(i.id).padStart(3, "0")}</td>
                   <td className="px-5 py-3 text-[12.5px] text-gray-600 whitespace-nowrap">{dateFR(i.dateIncident)}</td>
                   <td className="px-5 py-3">
@@ -193,7 +193,7 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
                       <button
                         onClick={() => setDialog({ mode: "edit", incident: i })}
                         title="Modifier l'incident"
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>

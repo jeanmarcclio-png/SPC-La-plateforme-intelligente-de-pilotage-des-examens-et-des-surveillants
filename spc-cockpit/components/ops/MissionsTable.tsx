@@ -9,7 +9,7 @@ import { MissionBadge } from "@/components/ops/badges";
 import { euro, dateFR } from "@/lib/operations/format";
 import { Search, Plus, Pencil, Trash2, Briefcase } from "lucide-react";
 
-const ACCENT = "#6366f1";
+const ACCENT = "#2563eb";
 const TYPES = ["Examen écrit", "Examen oral", "Concours", "Certification RNCP", "Partiels"];
 const STATUTS = ["Planifiée", "En cours", "Terminée", "Annulée"];
 
@@ -32,7 +32,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputCls =
-  "w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400";
+  "w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400";
 
 function MissionForm({
   initial,
@@ -156,10 +156,10 @@ export function MissionsTable({ missions }: { missions: Mission[] }) {
     <>
       {/* Mission active */}
       {active && (
-        <div className="rounded-2xl p-5 mb-5 text-white shadow-sm" style={{ background: "#0b0d12" }}>
+        <div className="rounded-2xl p-5 mb-5 text-white shadow-sm" style={{ background: "#0d2137" }}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <div className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#7d81f2]">
+              <div className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#7fb2ff]">
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: ACCENT }} />
                 Mission {active.statut === "En cours" ? "active" : "à venir"}
               </div>
@@ -194,7 +194,7 @@ export function MissionsTable({ missions }: { missions: Mission[] }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher une mission, un client…"
-            className="w-full pl-8 pr-3 py-2 text-[12.5px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400"
+            className="w-full pl-8 pr-3 py-2 text-[12.5px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400"
           />
         </div>
         <select value={statut} onChange={(e) => setStatut(e.target.value)} className="text-[12px] bg-white border border-gray-200 rounded-lg px-2.5 py-2 text-gray-600 focus:outline-none">
@@ -227,7 +227,7 @@ export function MissionsTable({ missions }: { missions: Mission[] }) {
                 <tr><td colSpan={8} className="text-center py-10 text-[13px] text-gray-400">Aucune mission ne correspond aux filtres.</td></tr>
               )}
               {filtered.map((m) => (
-                <tr key={m.id} className="border-b border-gray-50 last:border-0 hover:bg-indigo-50/30 transition-colors">
+                <tr key={m.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                   <td className="px-5 py-3 text-[12px] font-mono text-gray-400 whitespace-nowrap">
                     <span className="inline-flex items-center gap-1.5">
                       {m.id === active?.id && <Briefcase className="w-3 h-3" style={{ color: ACCENT }} />}
@@ -248,7 +248,7 @@ export function MissionsTable({ missions }: { missions: Mission[] }) {
                       <button
                         onClick={() => setDialog({ mode: "edit", mission: m })}
                         title={`Modifier ${m.reference}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>

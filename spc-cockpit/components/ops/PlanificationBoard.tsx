@@ -7,8 +7,8 @@ import { showToast } from "@/components/Toast";
 import { dateFR } from "@/lib/operations/format";
 import { AlertTriangle, Trash2, Check, Plus } from "lucide-react";
 
-const ACCENT = "#6366f1";
-const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#6366f1"];
+const ACCENT = "#2563eb";
+const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#2563eb"];
 
 type Slot = { on: boolean; debut: string; fin: string };
 type RowState = { salle: string; matin: Slot; apm: Slot };
@@ -41,7 +41,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
       aria-checked={on}
       onClick={() => onChange(!on)}
       className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${on ? "" : "bg-gray-200"}`}
-      style={on ? { background: "#0b0d12" } : {}}
+      style={on ? { background: "#0d2137" } : {}}
     >
       <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${on ? "left-[18px]" : "left-0.5"}`} />
     </button>
@@ -50,7 +50,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 
 function TimeInputs({ slot, onChange }: { slot: Slot; onChange: (s: Slot) => void }) {
   if (!slot.on) return <span className="text-[12px] text-gray-300">—</span>;
-  const cls = "w-[74px] px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/25";
+  const cls = "w-[74px] px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/25";
   return (
     <span className="inline-flex items-center gap-1">
       <input type="time" value={slot.debut} onChange={(e) => onChange({ ...slot, debut: e.target.value })} className={cls} />
@@ -166,7 +166,7 @@ export function PlanificationBoard({
               className={`px-3.5 py-2 rounded-xl text-[12.5px] font-semibold border transition-colors ${
                 active ? "text-white border-transparent" : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
               }`}
-              style={active ? { background: "#0b0d12" } : {}}
+              style={active ? { background: "#0d2137" } : {}}
             >
               {m.client} · {dateFR(m.dateMission)}
             </button>
@@ -177,10 +177,10 @@ export function PlanificationBoard({
       {mission && (
         <>
           {/* Résumé de session */}
-          <div className="rounded-2xl p-5 mb-5 text-white shadow-sm" style={{ background: "#0b0d12" }}>
+          <div className="rounded-2xl p-5 mb-5 text-white shadow-sm" style={{ background: "#0d2137" }}>
             <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
               <div>
-                <div className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#7d81f2]">Résumé de session</div>
+                <div className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#7fb2ff]">Résumé de session</div>
                 <div className="text-[16px] font-extrabold mt-0.5">{mission.client} — {dateFR(mission.dateMission)}</div>
               </div>
               <span className="text-[11px] font-bold px-2.5 py-1 rounded-full border border-white/20 text-white/70">{mission.statut}</span>
@@ -207,7 +207,7 @@ export function PlanificationBoard({
                   </div>
                 ))}
                 {alertes.length > 4 && (
-                  <div className="text-[11.5px] text-[#7d81f2]">+ {alertes.length - 4} alerte(s) supplémentaire(s)</div>
+                  <div className="text-[11.5px] text-[#7fb2ff]">+ {alertes.length - 4} alerte(s) supplémentaire(s)</div>
                 )}
               </div>
             )}
@@ -245,7 +245,7 @@ export function PlanificationBoard({
             <div className="overflow-x-auto">
               <table className="w-full border-collapse min-w-[860px]">
                 <thead>
-                  <tr className="border-b border-gray-100" style={{ background: "#0b0d12" }}>
+                  <tr className="border-b border-gray-100" style={{ background: "#0d2137" }}>
                     {["Surveillant", "Salle", "● Matin", "● Après-midi", "Heures", ""].map((h) => (
                       <th key={h} className="text-left px-5 py-3 text-[10.5px] font-bold text-white/60 uppercase tracking-[.8px]">{h}</th>
                     ))}
@@ -261,7 +261,7 @@ export function PlanificationBoard({
                     const dirty = isDirty(a);
                     const h = rowHours(r);
                     return (
-                      <tr key={a.id} className={`border-b border-gray-50 last:border-0 transition-colors ${dirty ? "bg-indigo-50/40" : "hover:bg-indigo-50/20"}`}>
+                      <tr key={a.id} className={`border-b border-gray-50 last:border-0 transition-colors ${dirty ? "bg-blue-50/40" : "hover:bg-blue-50/20"}`}>
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-3">
                             <span
@@ -281,7 +281,7 @@ export function PlanificationBoard({
                             value={r.salle}
                             onChange={(e) => setRow(a, { ...r, salle: e.target.value })}
                             placeholder="Salle…"
-                            className="w-[86px] px-2.5 py-1.5 rounded-lg border border-gray-200 text-[12.5px] font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
+                            className="w-[86px] px-2.5 py-1.5 rounded-lg border border-gray-200 text-[12.5px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/25"
                           />
                         </td>
                         <td className="px-5 py-3">

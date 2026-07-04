@@ -9,7 +9,7 @@ import { DevisBadge } from "@/components/ops/badges";
 import { euro } from "@/lib/operations/format";
 import { Search, Plus, Pencil, Trash2 } from "lucide-react";
 
-const ACCENT = "#6366f1";
+const ACCENT = "#2563eb";
 const STATUTS = ["Brouillon", "Envoyé", "Accepté", "Refusé", "Facturé"];
 
 function suggestReference(devis: Devis[]): string {
@@ -29,7 +29,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputCls =
-  "w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400";
+  "w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400";
 
 function DevisForm({
   initial,
@@ -161,7 +161,7 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher un devis, un client…"
-            className="w-full pl-8 pr-3 py-2 text-[12.5px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400"
+            className="w-full pl-8 pr-3 py-2 text-[12.5px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400"
           />
         </div>
         <select value={statut} onChange={(e) => setStatut(e.target.value)} className="text-[12px] bg-white border border-gray-200 rounded-lg px-2.5 py-2 text-gray-600 focus:outline-none">
@@ -193,7 +193,7 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
                 <tr><td colSpan={8} className="text-center py-10 text-[13px] text-gray-400">Aucun devis ne correspond aux filtres.</td></tr>
               )}
               {filtered.map((d) => (
-                <tr key={d.id} className="border-b border-gray-50 last:border-0 hover:bg-indigo-50/30 transition-colors">
+                <tr key={d.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                   <td className="px-5 py-3 text-[12px] font-mono text-gray-400 whitespace-nowrap">{d.reference}</td>
                   <td className="px-5 py-3 text-[13px] font-semibold text-gray-800">{d.client}</td>
                   <td className="px-5 py-3 text-[12.5px] text-gray-500 max-w-[200px] truncate">{d.session ?? "—"}</td>
@@ -206,7 +206,7 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
                       <button
                         onClick={() => setDialog({ mode: "edit", devis: d })}
                         title={`Modifier ${d.reference}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
