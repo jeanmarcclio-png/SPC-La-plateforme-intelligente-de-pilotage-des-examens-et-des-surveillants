@@ -91,6 +91,27 @@ export interface Devis {
   montantTTC: number;
   nbSurveillants: number;
   missionId?: number;
+  contact?: string;
+  email?: string;
+  ville?: string;
+  typeEpreuve?: string;
+  dateDebut?: string; // ISO
+  dateFin?: string;
+}
+
+export interface DevisSalle {
+  id: number;
+  devisId: number;
+  session: "matin" | "apres-midi";
+  salle: string;
+  etudiants: number;
+  surveillants: number;
+  pmr: boolean;
+  tiersTemps: boolean;
+  debut?: string;
+  fin?: string;
+  observations?: string;
+  ordre: number;
 }
 
 export interface Salle {

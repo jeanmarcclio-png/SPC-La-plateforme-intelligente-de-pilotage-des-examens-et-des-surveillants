@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne } from "./types";
-import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures, mockDevisLignes } from "./mock";
+import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle } from "./types";
+import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures, mockDevisLignes, mockDevisSalles } from "./mock";
 
 export async function getSurveillants(): Promise<Surveillant[]> {
   try {
@@ -88,6 +88,12 @@ export async function getDevisList(): Promise<Devis[]> {
       montantTTC: Number(r.montant_ttc ?? 0),
       nbSurveillants: r.nb_surveillants ?? 0,
       missionId: r.mission_id ?? undefined,
+      contact: r.contact ?? undefined,
+      email: r.email ?? undefined,
+      ville: r.ville ?? undefined,
+      typeEpreuve: r.type_epreuve ?? undefined,
+      dateDebut: r.date_debut ?? undefined,
+      dateFin: r.date_fin ?? undefined,
     }));
   } catch {
     return mockDevis;
@@ -189,5 +195,29 @@ export async function getDevisLignes(): Promise<DevisLigne[]> {
     }));
   } catch {
     return mockDevisLignes;
+  }
+}
+
+export async function getDevisSalles(): Promise<DevisSalle[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("devis_salles").select("*").order("ordre");
+    if (error || !data?.length) return mockDevisSalles;
+    return data.map((r) => ({
+      id: r.id,
+      devisId: r.devis_id,
+      session: r.session === "apres-midi" ? "apres-midi" as const : "matin" as const,
+      salle: r.salle,
+      etudiants: r.etudiants ?? 0,
+      surveillants: r.surveillants ?? 1,
+      pmr: r.pmr ?? false,
+      tiersTemps: r.tiers_temps ?? false,
+      debut: r.debut ?? undefined,
+      fin: r.fin ?? undefined,
+      observations: r.observations ?? undefined,
+      ordre: r.ordre ?? 1,
+    }));
+  } catch {
+    return mockDevisSalles;
   }
 }

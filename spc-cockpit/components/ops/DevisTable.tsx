@@ -3,12 +3,13 @@
 import { useState, useMemo, useTransition } from "react";
 import type { Devis } from "@/lib/operations/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { createDevis, updateDevis, deleteDevis } from "@/app/actions/devis";
+import { createDevis, updateDevis, deleteDevis, duplicateDevis } from "@/app/actions/devis";
 import { showToast } from "@/components/Toast";
 import { DevisBadge } from "@/components/ops/badges";
 import { euro } from "@/lib/operations/format";
 import Link from "next/link";
-import { Search, Plus, Pencil, Trash2, Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Plus, Pencil, Trash2, Eye, Copy } from "lucide-react";
 
 const ACCENT = "#2563eb";
 const STATUTS = ["Brouillon", "Envoyé", "Accepté", "Refusé", "Facturé"];
@@ -77,6 +78,30 @@ function DevisForm({
       <Field label="Session">
         <input name="session" defaultValue={initial?.session ?? ""} placeholder="ex: Concours écrit 2026" className={inputCls} />
       </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Contact">
+          <input name="contact" defaultValue={initial?.contact ?? ""} placeholder="ex: Service scolarité" className={inputCls} />
+        </Field>
+        <Field label="Email">
+          <input name="email" type="email" defaultValue={initial?.email ?? ""} placeholder="contact@etablissement.fr" className={inputCls} />
+        </Field>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Ville / site">
+          <input name="ville" defaultValue={initial?.ville ?? ""} placeholder="ex: Paris" className={inputCls} />
+        </Field>
+        <Field label="Type d'épreuve">
+          <input name="type_epreuve" defaultValue={initial?.typeEpreuve ?? ""} placeholder="ex: Concours, Rattrapage…" className={inputCls} />
+        </Field>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Date début">
+          <input name="date_debut" type="date" defaultValue={initial?.dateDebut ?? ""} className={inputCls} />
+        </Field>
+        <Field label="Date fin">
+          <input name="date_fin" type="date" defaultValue={initial?.dateFin ?? ""} className={inputCls} />
+        </Field>
+      </div>
       <div className="grid grid-cols-3 gap-3">
         <Field label="Montant HT (€)">
           <input
@@ -119,6 +144,19 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
   const [statut, setStatut] = useState("");
   const [dialog, setDialog] = useState<{ mode: "create" } | { mode: "edit"; devis: Devis } | null>(null);
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
+
+  function handleDuplicate(d: Devis) {
+    startTransition(async () => {
+      const result = await duplicateDevis(d.id);
+      if (result.error) {
+        showToast(result.error, "error");
+      } else {
+        showToast(`${d.reference} dupliqué en brouillon`);
+        if (result.newId) router.push(`/operations/devis/${result.newId}`);
+      }
+    });
+  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -211,6 +249,14 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
                       >
                         <Eye className="w-3.5 h-3.5" />
                       </Link>
+                      <button
+                        onClick={() => handleDuplicate(d)}
+                        disabled={pending}
+                        title={`Dupliquer ${d.reference}`}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-40"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
                       <button
                         onClick={() => setDialog({ mode: "edit", devis: d })}
                         title={`Modifier ${d.reference}`}

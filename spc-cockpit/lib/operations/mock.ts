@@ -1,4 +1,4 @@
-import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne } from "./types";
+import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle } from "./types";
 
 // Données de secours affichées tant que les tables Supabase (supabase-operations.sql)
 // n'ont pas été créées — l'écran ne doit jamais être vide.
@@ -37,7 +37,7 @@ export const mockDevis: Devis[] = [
   { id: 1, reference: "SPC-20260514-001", client: "Sciences Po",  session: "Concours écrit 2026",           statut: "Accepté",   montantHT: 5200, montantTTC: 6240,   nbSurveillants: 18 },
   { id: 2, reference: "SPC-20260524-001", client: "ICP Paris",    session: "Session principale — mai 2026", statut: "Brouillon", montantHT: 4042, montantTTC: 4850.4, nbSurveillants: 14 },
   { id: 3, reference: "SPC-20260528-001", client: "Dauphine PSL", session: "Rattrapages juin 2026",         statut: "Envoyé",    montantHT: 2600, montantTTC: 3120,   nbSurveillants: 8 },
-  { id: 4, reference: "SPC-20260605-001", client: "ICP Reims",    session: "Rattrapages juin 2026 — 74 créneaux · 262,3 h", statut: "Accepté", montantHT: 7344.4, montantTTC: 8813.28, nbSurveillants: 6 },
+  { id: 4, reference: "SPC-20260605-001", client: "ICP Reims",    session: "Rattrapages juin 2026 — 74 créneaux · 262,3 h", statut: "Accepté", montantHT: 7344.4, montantTTC: 8813.28, nbSurveillants: 6, contact: "Mathilde Régnier — Pôle Scolarité", email: "scolarite.reims@icp.fr", ville: "Reims", typeEpreuve: "Rattrapage", dateDebut: "2026-06-15", dateFin: "2026-06-26" },
 ];
 
 export const mockSalles: Salle[] = [
@@ -66,6 +66,15 @@ export const mockDevisLignes: DevisLigne[] = [
   { id: 3, devisId: 1, designation: "Surveillance concours écrit 2026 — 8 salles · 18 surveillants · coordination incluse", quantite: 200, unite: "h", prixUnitaire: 26, ordre: 1 },
   { id: 4, devisId: 2, designation: "Surveillance session principale mai 2026 — 6 salles · 14 surveillants", quantite: 1, unite: "forfait", prixUnitaire: 4042, ordre: 1 },
   { id: 5, devisId: 3, designation: "Surveillance rattrapages juin 2026 — 4 salles · 8 surveillants", quantite: 1, unite: "forfait", prixUnitaire: 2600, ordre: 1 },
+];
+
+export const mockDevisSalles: DevisSalle[] = [
+  { id: 1, devisId: 4, session: "matin", salle: "B22", etudiants: 30, surveillants: 1, pmr: false, tiersTemps: false, debut: "08:30", fin: "12:15", ordre: 1 },
+  { id: 2, devisId: 4, session: "matin", salle: "B23", etudiants: 30, surveillants: 1, pmr: false, tiersTemps: false, debut: "08:30", fin: "12:15", ordre: 2 },
+  { id: 3, devisId: 4, session: "matin", salle: "B11 Tiers-temps", etudiants: 30, surveillants: 1, pmr: false, tiersTemps: true, debut: "08:30", fin: "13:15", observations: "Durées majorées 1/3", ordre: 3 },
+  { id: 4, devisId: 4, session: "matin", salle: "B21 Isolé", etudiants: 1, surveillants: 1, pmr: false, tiersTemps: false, debut: "08:30", fin: "13:15", observations: "Candidat isolé", ordre: 4 },
+  { id: 5, devisId: 4, session: "apres-midi", salle: "B22", etudiants: 30, surveillants: 1, pmr: false, tiersTemps: false, debut: "13:30", fin: "16:15", ordre: 1 },
+  { id: 6, devisId: 4, session: "apres-midi", salle: "B11 Tiers-temps", etudiants: 30, surveillants: 1, pmr: false, tiersTemps: true, debut: "13:30", fin: "17:05", observations: "Durées majorées 1/3", ordre: 2 },
 ];
 
 export const mockIncidents: Incident[] = [
