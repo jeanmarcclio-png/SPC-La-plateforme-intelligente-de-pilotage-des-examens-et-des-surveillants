@@ -1,5 +1,9 @@
 @AGENTS.md
 
+> **Référence produit obligatoire** : lire `../SPC_Product_Bible_v1.0.md`
+> (racine du dépôt) avant toute évolution du module Opérations — vision,
+> workflows métier, règles de calcul, gouvernance et comité d'experts.
+
 # FRAMEWORK ENTERPRISE UI/UX — JMC COCKPIT
 
 Tu dois utiliser UI/UX Pro Max comme moteur d'expertise principal pour toutes les décisions UI/UX.
