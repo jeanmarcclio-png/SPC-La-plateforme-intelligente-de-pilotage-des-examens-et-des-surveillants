@@ -3,9 +3,12 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { OpsBreadcrumb } from "@/components/ops/OpsBreadcrumb";
 import { getMissions, getSurveillants, getAffectations } from "@/lib/operations/queries";
-import { Kpi } from "@/components/ops/Kpi";
+import { CockpitSubtitle, RefreshButton } from "@/components/ops/CockpitRefresh";
 import { dateFR } from "@/lib/operations/format";
-import { Activity, DoorOpen, CalendarClock, AlertTriangle, CheckCircle2, MapPin } from "lucide-react";
+import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
+import { Activity, DoorOpen, CalendarClock, AlertTriangle, CheckCircle2, MapPin, Zap, Users, Landmark, UserCheck } from "lucide-react";
+
+const NAVY = "#0d2137";
 
 type StatutLigne = "Conforme" | "Salle manquante" | "Sans créneau";
 
@@ -17,12 +20,12 @@ function statutLigne(a: { salle?: string; matin: boolean; apm: boolean }): Statu
 
 function LigneBadge({ statut }: { statut: StatutLigne }) {
   if (statut === "Conforme") {
-    return <span className="inline-flex items-center gap-1 text-[12px] font-bold text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" aria-hidden />Conforme</span>;
+    return <span className="inline-flex items-center gap-1 text-[12.5px] font-bold text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" aria-hidden />Conforme</span>;
   }
   if (statut === "Salle manquante") {
-    return <span className="inline-flex items-center gap-1 text-[12px] font-bold text-amber-600"><AlertTriangle className="w-3.5 h-3.5" aria-hidden />Salle manquante</span>;
+    return <span className="inline-flex items-center gap-1 text-[12.5px] font-bold text-amber-600"><AlertTriangle className="w-3.5 h-3.5" aria-hidden />Salle manquante</span>;
   }
-  return <span className="inline-flex items-center gap-1 text-[12px] font-bold text-red-500"><AlertTriangle className="w-3.5 h-3.5" aria-hidden />Sans créneau</span>;
+  return <span className="inline-flex items-center gap-1 text-[12.5px] font-bold text-red-500"><AlertTriangle className="w-3.5 h-3.5" aria-hidden />Sans créneau</span>;
 }
 
 function Creneau({ on, debut, fin }: { on: boolean; debut?: string; fin?: string }) {
@@ -30,7 +33,43 @@ function Creneau({ on, debut, fin }: { on: boolean; debut?: string; fin?: string
   return <span className="text-[11.5px] font-mono font-bold bg-emerald-50 text-emerald-700 rounded px-1.5 py-0.5 whitespace-nowrap">{debut}→{fin}</span>;
 }
 
+function CockpitKpi({ label, value, sub, icon, variant = "default" }: {
+  label: string; value: string; sub: string; icon: React.ReactNode; variant?: "default" | "amber" | "alerte";
+}) {
+  const iconBg = variant === "default" ? "bg-blue-50 text-blue-600" : "bg-amber-50 text-amber-600";
+  if (variant === "alerte") {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/70 shadow-sm p-5">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[11px] font-bold uppercase tracking-[1px] text-amber-700">{label}</span>
+          <span aria-hidden className="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-100 text-amber-600">{icon}</span>
+        </div>
+        <div className="text-[26px] font-extrabold text-amber-600 leading-none">{value}</div>
+        <div className="text-[12px] font-semibold text-amber-600 mt-1.5">{sub}</div>
+      </div>
+    );
+  }
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[11px] font-bold uppercase tracking-[1px] text-gray-500">{label}</span>
+        <span aria-hidden className={`w-8 h-8 rounded-lg flex items-center justify-center ${iconBg}`}>{icon}</span>
+      </div>
+      <div className="text-[26px] font-extrabold leading-none" style={{ color: NAVY }}>{value}</div>
+      <div className="text-[12px] text-gray-500 mt-1.5">{sub}</div>
+    </div>
+  );
+}
+
 const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#2563eb"];
+
+interface Alerte {
+  niveau: "avertissement" | "information";
+  tag: "Planning" | "Staff" | "Délai";
+  titre: string;
+  detail: string;
+  href: string;
+}
 
 export default async function CockpitOpsPage() {
   const [missions, surveillants, affectations] = await Promise.all([
@@ -39,140 +78,254 @@ export default async function CockpitOpsPage() {
   const survById = new Map(surveillants.map((s) => [s.id, s]));
 
   const active = missions.find((m) => m.statut === "En cours") ?? missions.find((m) => m.statut === "Planifiée");
+  const enCours = missions.filter((m) => m.statut === "En cours").length;
   const rows = active ? affectations.filter((a) => a.missionId === active.id) : [];
 
   const sallesCouvertes = rows.filter((a) => a.salle).length;
   const creneauxDefinis = rows.filter((a) => a.matin || a.apm).length;
+  const coordinateurOk = rows.some((a) => (a.roleMission ?? "").toLowerCase().includes("coordinat") && (a.matin || a.apm) && a.salle);
 
-  const alertes: { titre: string; detail: string; type: "planning" | "creneau" }[] = [];
+  // ── Alertes ────────────────────────────────────────────────────────────────
+  const alertes: Alerte[] = [];
+
   for (const a of rows) {
     const nom = survById.get(a.surveillantId)?.nom ?? `Surveillant #${a.surveillantId}`;
-    const s = statutLigne(a);
-    if (s === "Sans créneau") alertes.push({ titre: `Créneau manquant — ${nom}`, detail: `Session "${active?.client}" : ni matin ni après-midi`, type: "creneau" });
-    else if (s === "Salle manquante") alertes.push({ titre: `Salle manquante — ${nom}`, detail: `Session "${active?.client}" : aucune salle affectée`, type: "planning" });
+    const session = `Session "${active?.client} — ${active?.session ?? "Session"}"`;
+    if (!a.matin && !a.apm) {
+      alertes.push({ niveau: "avertissement", tag: "Planning", titre: `Créneau manquant — ${nom}`, detail: `${session} : ni matin ni après-midi`, href: "/operations/planification" });
+    }
+    if (!a.salle) {
+      alertes.push({ niveau: "avertissement", tag: "Planning", titre: `Salle manquante — ${nom}`, detail: `${session} : aucune salle affectée`, href: "/operations/planification" });
+    }
   }
+
+  for (const s of surveillants.filter((x) => x.heures >= SEUIL_SURCHARGE_H)) {
+    alertes.push({
+      niveau: "avertissement", tag: "Staff",
+      titre: `Charge critique — ${s.nom}`,
+      detail: `${s.heures}h planifiées — seuil de surcharge dépassé`,
+      href: "/operations/surveillants",
+    });
+  }
+
+  for (const m of missions.filter((x) => x.statut !== "Annulée" && x.dateMission)) {
+    alertes.push({
+      niveau: "information", tag: "Délai",
+      titre: `Session du ${dateFR(m.dateMission)} — ${m.client}`,
+      detail: `${m.nbSalles} salles · ${m.nbSurveillants} surveillants · statut : ${m.statut}`,
+      href: "/operations/missions",
+    });
+  }
+
+  const avertissements = alertes.filter((a) => a.niveau === "avertissement");
+  const informations = alertes.filter((a) => a.niveau === "information");
 
   return (
     <div className="p-5 md:p-7 max-w-[1200px] mx-auto pb-16">
+      {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">
         <div>
           <OpsBreadcrumb page="Cockpit" />
           <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">Cockpit opérationnel</h1>
-          <p className="text-[13px] text-gray-400 mt-0.5">Pilotage temps réel de la session active</p>
+          <CockpitSubtitle />
         </div>
-        <Link
-          href="/operations/planification"
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold transition-opacity hover:opacity-90"
-          style={{ background: "#0d2137" }}
-        >
-          <CalendarClock className="w-4 h-4" aria-hidden />
-          Planification
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <RefreshButton />
+          <Link
+            href="/operations/planification"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold transition-opacity hover:opacity-90"
+            style={{ background: NAVY }}
+          >
+            <Zap className="w-4 h-4" aria-hidden />
+            Planification
+          </Link>
+        </div>
       </div>
 
+      {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
-        <Kpi label="Sessions actives" value={active ? "1" : "0"} sub={active ? `${active.client} · ${dateFR(active.dateMission)}` : "aucune session en cours"} icon={<Activity className="w-4 h-4" />} href="/operations/missions" />
-        <Kpi label="Salles couvertes" value={`${sallesCouvertes}/${rows.length}`} sub={`${rows.length - sallesCouvertes} salle(s) manquante(s)`} icon={<DoorOpen className="w-4 h-4" />} href="/operations/planification" />
-        <Kpi label="Créneaux définis" value={`${creneauxDefinis}/${rows.length}`} sub={`${rows.length - creneauxDefinis} surveillant(s) sans créneau`} icon={<CalendarClock className="w-4 h-4" />} href="/operations/planification" />
-        <Kpi label="Alertes" value={String(alertes.length)} sub="à corriger avant la session" icon={<AlertTriangle className="w-4 h-4" />} href="/operations/planification" />
+        <CockpitKpi
+          label="Sessions actives"
+          value={active ? "1" : "0"}
+          sub={enCours > 0 ? `${enCours} session(s) en cours` : "Aucune session en cours"}
+          icon={<Activity className="w-4 h-4" />}
+        />
+        <CockpitKpi
+          label="Salles couvertes"
+          value={`${sallesCouvertes}/${rows.length}`}
+          sub={`${rows.length - sallesCouvertes} salle(s) manquante(s)`}
+          icon={<DoorOpen className="w-4 h-4" />}
+          variant="amber"
+        />
+        <CockpitKpi
+          label="Créneaux définis"
+          value={`${creneauxDefinis}/${rows.length}`}
+          sub={`${rows.length - creneauxDefinis} surveillant(s) sans créneau`}
+          icon={<UserCheck className="w-4 h-4" />}
+        />
+        <CockpitKpi
+          label="Alertes"
+          value={String(alertes.length)}
+          sub={`${avertissements.length} avert.`}
+          icon={<AlertTriangle className="w-4 h-4" />}
+          variant="alerte"
+        />
       </div>
 
-      {!active ? (
-        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-8 text-center text-[13px] text-gray-400">
-          Aucune session active ou planifiée. Créez une mission pour démarrer le pilotage.
-        </div>
-      ) : (
-        <div className="grid lg:grid-cols-5 gap-5">
-          {/* Session active */}
-          <section aria-label="Session active" className="lg:col-span-3 bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
-            <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-center justify-between gap-2 flex-wrap">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span aria-hidden className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                  <h2 className="text-[14px] font-bold text-gray-900">{active.client} — {active.session ?? "Session"}</h2>
-                </div>
-                <p className="text-[12px] text-gray-400 mt-0.5">{dateFR(active.dateMission)} · {alertes.length} alerte{alertes.length !== 1 ? "s" : ""}</p>
-              </div>
-              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600">En préparation</span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[600px]">
-                <thead>
-                  <tr className="bg-gray-50/70 border-b border-gray-100">
-                    {["Surveillant", "Salle", "Matin", "Après-midi", "Statut"].map((h) => (
-                      <th key={h} className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((a, i) => {
-                    const s = survById.get(a.surveillantId);
-                    const st = statutLigne(a);
-                    return (
-                      <tr key={a.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-3">
-                            <span
-                              aria-hidden
-                              className="w-7 h-7 rounded-full flex items-center justify-center text-[10.5px] font-bold text-white flex-shrink-0"
-                              style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
-                            >
-                              {(s?.nom ?? "??").split(" ").map((p) => p[0]).slice(0, 2).join("")}
-                            </span>
-                            <div>
-                              <div className="text-[13px] font-semibold text-gray-800">{s?.nom ?? `Surveillant #${a.surveillantId}`}</div>
-                              <div className="text-[11px] text-gray-400">{a.roleMission ?? s?.role ?? ""}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-3">
-                          {a.salle
-                            ? <span className="inline-flex items-center gap-1 text-[12.5px] font-mono font-bold text-gray-700"><MapPin className="w-3 h-3 text-gray-400" aria-hidden />{a.salle}</span>
-                            : <span className="inline-flex items-center gap-1 text-[12.5px] text-red-400"><MapPin className="w-3 h-3" aria-hidden />—</span>}
-                        </td>
-                        <td className="px-5 py-3"><Creneau on={a.matin} debut={a.matinDebut} fin={a.matinFin} /></td>
-                        <td className="px-5 py-3"><Creneau on={a.apm} debut={a.apmDebut} fin={a.apmFin} /></td>
-                        <td className="px-5 py-3"><LigneBadge statut={st} /></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-[12px] flex-wrap gap-2">
-              <span className="text-gray-500">{rows.length} surveillants · <span className={sallesCouvertes < rows.length ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{sallesCouvertes}/{rows.length} salles</span></span>
-              <Link href="/operations/planification" className="font-bold text-blue-600 hover:text-blue-800">Ouvrir →</Link>
-            </div>
-          </section>
+      <div className="grid lg:grid-cols-5 gap-5">
+        {/* Sessions actives */}
+        <div className="lg:col-span-3">
+          <div className="flex items-baseline justify-between mb-3">
+            <h2 className="text-[12px] font-bold uppercase tracking-[1px] text-gray-700">Sessions actives</h2>
+            <Link href="/operations/planification" className="text-[12.5px] font-bold text-blue-600 hover:text-blue-800">Voir planning →</Link>
+          </div>
 
-          {/* Alertes */}
-          <section aria-label="Alertes" className="lg:col-span-2 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden self-start">
-            <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-[14px] font-bold text-gray-900">Alertes</h2>
-              <span className="w-6 h-6 rounded-full bg-amber-400 text-amber-950 text-[11px] font-extrabold flex items-center justify-center">{alertes.length}</span>
+          {!active ? (
+            <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-8 text-center text-[13px] text-gray-500">
+              Aucune session active ou planifiée. Créez une mission pour démarrer le pilotage.
             </div>
-            {alertes.length === 0 ? (
-              <p className="px-5 py-6 text-[12.5px] text-gray-400">Aucune alerte — la session est prête. ✓</p>
-            ) : (
-              <div>
-                {alertes.map((a, i) => (
-                  <Link
-                    key={i}
-                    href="/operations/planification"
-                    className="flex items-start gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0 hover:bg-amber-50/40 transition-colors border-l-[3px] border-l-amber-400"
-                  >
-                    <div className="min-w-0">
-                      <span className="text-[10px] font-bold uppercase tracking-wide bg-amber-50 text-amber-600 rounded px-1.5 py-0.5">{a.type === "planning" ? "Planning" : "Créneau"}</span>
-                      <div className="text-[13px] font-bold text-gray-900 mt-1">{a.titre}</div>
-                      <div className="text-[11.5px] text-gray-500 mt-0.5">{a.detail}</div>
-                    </div>
-                  </Link>
-                ))}
+          ) : (
+            <section aria-label="Session active" className="bg-white rounded-2xl border-2 border-amber-200 shadow-sm overflow-hidden">
+              <div className="px-5 pt-4 pb-3.5 flex items-start justify-between gap-2 flex-wrap">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span aria-hidden className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                    <h3 className="text-[15px] font-extrabold text-gray-900">{active.client} — {active.session ?? "Session"}</h3>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[12px] text-gray-500 mt-1">
+                    <CalendarClock className="w-3.5 h-3.5" aria-hidden />
+                    {dateFR(active.dateMission)} · {active.client}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">{avertissements.length} alertes</span>
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-200">En préparation</span>
+                </div>
               </div>
-            )}
-          </section>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse min-w-[600px]">
+                  <thead>
+                    <tr className="border-y border-gray-100 bg-gray-50/70">
+                      {["Surveillant", "Salle", "Matin", "Après-midi", "Statut"].map((h) => (
+                        <th key={h} className="text-left px-5 py-2.5 text-[11px] font-bold text-gray-500 uppercase tracking-[.8px]">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((a, i) => {
+                      const s = survById.get(a.surveillantId);
+                      const st = statutLigne(a);
+                      const coord = (a.roleMission ?? "").toLowerCase().includes("coordinat");
+                      return (
+                        <tr key={a.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-2.5">
+                              <span
+                                aria-hidden
+                                className="w-7 h-7 rounded-full flex items-center justify-center text-[10.5px] font-bold text-white flex-shrink-0"
+                                style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
+                              >
+                                {(s?.nom ?? "??").split(" ").map((p) => p[0]).slice(0, 2).join("")}
+                              </span>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[13px] font-semibold text-gray-800">{s?.nom ?? `Surveillant #${a.surveillantId}`}</span>
+                                {coord && <span className="text-[9.5px] font-extrabold uppercase tracking-wide bg-blue-50 text-blue-700 border border-blue-200 rounded px-1.5 py-0.5">Coord</span>}
+                              </div>
+                            </div>
+                            {!coord && <div className="text-[11px] text-gray-400 ml-[38px]">{a.roleMission ?? s?.role ?? ""}</div>}
+                          </td>
+                          <td className="px-5 py-3">
+                            {a.salle
+                              ? <span className="inline-flex items-center gap-1 text-[12.5px] font-mono font-bold text-gray-700"><MapPin className="w-3 h-3 text-blue-500" aria-hidden />{a.salle}</span>
+                              : <span className="inline-flex items-center gap-1 text-[12.5px] text-red-400"><MapPin className="w-3 h-3" aria-hidden />—</span>}
+                          </td>
+                          <td className="px-5 py-3"><Creneau on={a.matin} debut={a.matinDebut} fin={a.matinFin} /></td>
+                          <td className="px-5 py-3"><Creneau on={a.apm} debut={a.apmDebut} fin={a.apmFin} /></td>
+                          <td className="px-5 py-3"><LigneBadge statut={st} /></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-[12.5px] flex-wrap gap-2">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 text-gray-600"><Users className="w-3.5 h-3.5 text-gray-400" aria-hidden />{rows.length} surveillants</span>
+                  <span className={`inline-flex items-center gap-1.5 font-bold ${sallesCouvertes < rows.length ? "text-red-500" : "text-emerald-600"}`}>
+                    <Landmark className="w-3.5 h-3.5" aria-hidden />{sallesCouvertes}/{rows.length} salles
+                  </span>
+                  <span className={`inline-flex items-center gap-1.5 font-bold ${coordinateurOk ? "text-emerald-600" : "text-amber-600"}`}>
+                    <UserCheck className="w-3.5 h-3.5" aria-hidden />{coordinateurOk ? "Coordinateur OK" : "Coordinateur à confirmer"}
+                  </span>
+                </div>
+                <Link href="/operations/planification" className="font-bold text-blue-600 hover:text-blue-800">Ouvrir →</Link>
+              </div>
+            </section>
+          )}
         </div>
-      )}
+
+        {/* Alertes */}
+        <div className="lg:col-span-2">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[12px] font-bold uppercase tracking-[1px] text-gray-700">Alertes</h2>
+            <span className="w-6 h-6 rounded-full bg-amber-400 text-white text-[11px] font-extrabold flex items-center justify-center">{avertissements.length}</span>
+          </div>
+
+          <div className="space-y-2.5 max-h-[560px] overflow-y-auto pr-1">
+            {avertissements.map((a, i) => (
+              <Link
+                key={`w-${i}`}
+                href={a.href}
+                className="block bg-white rounded-2xl border border-gray-200/80 border-l-[3px] border-l-amber-400 shadow-sm px-4 py-3.5 hover:bg-amber-50/40 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wide bg-amber-100 text-amber-700 rounded px-1.5 py-0.5">{a.tag}</span>
+                  <span className="text-gray-300">›</span>
+                </div>
+                <div className="text-[13px] font-bold text-gray-900 mt-1.5">{a.titre}</div>
+                <div className="text-[11.5px] text-gray-500 mt-0.5">{a.detail}</div>
+              </Link>
+            ))}
+            {informations.map((a, i) => (
+              <Link
+                key={`i-${i}`}
+                href={a.href}
+                className="block bg-white rounded-2xl border border-gray-200/80 border-l-[3px] border-l-blue-400 shadow-sm px-4 py-3.5 hover:bg-blue-50/40 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wide bg-rose-50 text-rose-500 rounded px-1.5 py-0.5">{a.tag}</span>
+                  <span className="text-gray-300">›</span>
+                </div>
+                <div className="text-[13px] font-bold text-gray-900 mt-1.5">{a.titre}</div>
+                <div className="text-[11.5px] text-gray-500 mt-0.5">{a.detail}</div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Récapitulatif */}
+          <div className="mt-4 bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
+            <h3 className="text-[12px] font-bold uppercase tracking-[1px] text-gray-700 mb-3">Récapitulatif</h3>
+            <div className="space-y-2.5 text-[13px]">
+              <div className="flex items-center justify-between text-gray-600">
+                <span>Critiques</span>
+                <span className="font-extrabold text-gray-900">0</span>
+              </div>
+              <div className="flex items-center justify-between text-gray-600">
+                <span className="inline-flex items-center gap-2"><span aria-hidden className="w-2 h-2 rounded-full bg-amber-400" />Avertissements</span>
+                <span className="font-extrabold text-gray-900">{avertissements.length}</span>
+              </div>
+              <div className="flex items-center justify-between text-gray-600">
+                <span className="inline-flex items-center gap-2"><span aria-hidden className="w-2 h-2 rounded-full bg-blue-400" />Informations</span>
+                <span className="font-extrabold text-gray-900">{informations.length}</span>
+              </div>
+              <div className="flex items-center justify-between pt-2.5 border-t border-gray-100">
+                <span className="font-bold text-gray-900">Total alertes</span>
+                <span className="text-[15px] font-extrabold text-gray-900">{alertes.length}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
