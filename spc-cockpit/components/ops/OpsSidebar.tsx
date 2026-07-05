@@ -42,7 +42,7 @@ export function OpsSidebar({ activeMission }: { activeMission?: ActiveMissionInf
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex w-[236px] flex-shrink-0 flex-col" style={{ background: "#0d2137" }}>
+    <aside className="hidden md:flex print:!hidden w-[236px] flex-shrink-0 flex-col" style={{ background: "#0d2137" }}>
       {/* Logo */}
       <div className="px-4 pt-5 pb-4">
         <LogoBlock />
@@ -102,7 +102,7 @@ export function OpsSidebar({ activeMission }: { activeMission?: ActiveMissionInf
 
 export function OpsMobileHeader() {
   return (
-    <div className="md:hidden flex items-center justify-between px-4 py-3.5" style={{ background: "#0d2137" }}>
+    <div className="md:hidden print:!hidden flex items-center justify-between px-4 py-3.5" style={{ background: "#0d2137" }}>
       <LogoBlock />
       <Link href="/cockpit" className="flex items-center gap-1.5 text-[12px] text-[#8fa3b8]">
         <ArrowLeft className="w-3.5 h-3.5" />

@@ -7,7 +7,8 @@ import { createDevis, updateDevis, deleteDevis } from "@/app/actions/devis";
 import { showToast } from "@/components/Toast";
 import { DevisBadge } from "@/components/ops/badges";
 import { euro } from "@/lib/operations/format";
-import { Search, Plus, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Search, Plus, Pencil, Trash2, Eye } from "lucide-react";
 
 const ACCENT = "#2563eb";
 const STATUTS = ["Brouillon", "Envoyé", "Accepté", "Refusé", "Facturé"];
@@ -203,6 +204,13 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
                   <td className="px-5 py-3 text-[12.5px] text-gray-500 whitespace-nowrap">{d.nbSurveillants} surv.</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-end gap-1">
+                      <Link
+                        href={`/operations/devis/${d.id}`}
+                        title={`Voir le devis ${d.reference}`}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </Link>
                       <button
                         onClick={() => setDialog({ mode: "edit", devis: d })}
                         title={`Modifier ${d.reference}`}

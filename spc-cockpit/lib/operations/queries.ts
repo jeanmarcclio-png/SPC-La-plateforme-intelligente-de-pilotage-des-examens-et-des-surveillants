@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture } from "./types";
-import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures } from "./mock";
+import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne } from "./types";
+import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures, mockDevisLignes } from "./mock";
 
 export async function getSurveillants(): Promise<Surveillant[]> {
   try {
@@ -170,5 +170,24 @@ export async function getFactures(): Promise<Facture[]> {
     }));
   } catch {
     return mockFactures;
+  }
+}
+
+export async function getDevisLignes(): Promise<DevisLigne[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("devis_lignes").select("*").order("ordre");
+    if (error || !data?.length) return mockDevisLignes;
+    return data.map((r) => ({
+      id: r.id,
+      devisId: r.devis_id,
+      designation: r.designation,
+      quantite: Number(r.quantite ?? 1),
+      unite: r.unite ?? "forfait",
+      prixUnitaire: Number(r.prix_unitaire ?? 0),
+      ordre: r.ordre ?? 1,
+    }));
+  } catch {
+    return mockDevisLignes;
   }
 }

@@ -1,4 +1,4 @@
-import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture } from "./types";
+import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne } from "./types";
 
 // Données de secours affichées tant que les tables Supabase (supabase-operations.sql)
 // n'ont pas été créées — l'écran ne doit jamais être vide.
@@ -37,6 +37,7 @@ export const mockDevis: Devis[] = [
   { id: 1, reference: "SPC-20260514-001", client: "Sciences Po",  session: "Concours écrit 2026",           statut: "Accepté",   montantHT: 5200, montantTTC: 6240,   nbSurveillants: 18 },
   { id: 2, reference: "SPC-20260524-001", client: "ICP Paris",    session: "Session principale — mai 2026", statut: "Brouillon", montantHT: 4042, montantTTC: 4850.4, nbSurveillants: 14 },
   { id: 3, reference: "SPC-20260528-001", client: "Dauphine PSL", session: "Rattrapages juin 2026",         statut: "Envoyé",    montantHT: 2600, montantTTC: 3120,   nbSurveillants: 8 },
+  { id: 4, reference: "SPC-20260605-001", client: "ICP Reims",    session: "Rattrapages juin 2026 — 74 créneaux · 262,3 h", statut: "Accepté", montantHT: 7344.4, montantTTC: 8813.28, nbSurveillants: 6 },
 ];
 
 export const mockSalles: Salle[] = [
@@ -57,6 +58,14 @@ export const mockAmenagements: Amenagement[] = [
 export const mockFactures: Facture[] = [
   { id: 1, reference: "FA-2026-001", client: "Sciences Po",  session: "Concours écrit 2026",   statut: "Payée",    montantHT: 5200, montantTTC: 6240, emission: "2026-05-24", echeance: "2026-06-23" },
   { id: 2, reference: "FA-2026-002", client: "Dauphine PSL", session: "Partiels S4 — Gestion", statut: "Facturée", montantHT: 2600, montantTTC: 3120, emission: "2026-07-03", echeance: "2026-08-02" },
+];
+
+export const mockDevisLignes: DevisLigne[] = [
+  { id: 1, devisId: 4, designation: "Surveillance rattrapages — semaine du 15 au 19 juin 2026 (35 créneaux, salles B11 TT/B13/B21/B22/B23)", quantite: 118.2, unite: "h", prixUnitaire: 28, ordre: 1 },
+  { id: 2, devisId: 4, designation: "Surveillance rattrapages — semaine du 22 au 26 juin 2026 (39 créneaux, salles B11 TT/B12/B13/B21/B22/B23)", quantite: 144.1, unite: "h", prixUnitaire: 28, ordre: 2 },
+  { id: 3, devisId: 1, designation: "Surveillance concours écrit 2026 — 8 salles · 18 surveillants · coordination incluse", quantite: 200, unite: "h", prixUnitaire: 26, ordre: 1 },
+  { id: 4, devisId: 2, designation: "Surveillance session principale mai 2026 — 6 salles · 14 surveillants", quantite: 1, unite: "forfait", prixUnitaire: 4042, ordre: 1 },
+  { id: 5, devisId: 3, designation: "Surveillance rattrapages juin 2026 — 4 salles · 8 surveillants", quantite: 1, unite: "forfait", prixUnitaire: 2600, ordre: 1 },
 ];
 
 export const mockIncidents: Incident[] = [

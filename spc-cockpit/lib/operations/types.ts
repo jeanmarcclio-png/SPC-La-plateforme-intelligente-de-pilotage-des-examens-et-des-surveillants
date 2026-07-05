@@ -57,6 +57,16 @@ export interface Amenagement {
   surveillant?: string;
 }
 
+export interface DevisLigne {
+  id: number;
+  devisId: number;
+  designation: string;
+  quantite: number;
+  unite: string;
+  prixUnitaire: number;
+  ordre: number;
+}
+
 export type StatutFacture = "À facturer" | "Facturée" | "Payée" | "En retard";
 
 export interface Facture {
