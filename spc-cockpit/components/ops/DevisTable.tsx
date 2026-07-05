@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { createDevis, updateDevis, deleteDevis, duplicateDevis } from "@/app/actions/devis";
 import { showToast } from "@/components/Toast";
 import { DevisBadge } from "@/components/ops/badges";
-import { euro } from "@/lib/operations/format";
+import { euro, dateFR } from "@/lib/operations/format";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Plus, Pencil, Trash2, Eye, Copy } from "lucide-react";
@@ -103,6 +103,17 @@ function DevisForm({
         </Field>
       </div>
       <div className="grid grid-cols-3 gap-3">
+        <Field label="Frais déplacement (€)">
+          <input name="frais_deplacement" type="number" min="0" step="0.01" defaultValue={initial?.fraisDeplacement ?? 0} className={inputCls} />
+        </Field>
+        <Field label="Frais coordination (€)">
+          <input name="frais_coordination" type="number" min="0" step="0.01" defaultValue={initial?.fraisCoordination ?? 0} className={inputCls} />
+        </Field>
+        <Field label="Remise (€)">
+          <input name="remise" type="number" min="0" step="0.01" defaultValue={initial?.remise ?? 0} className={inputCls} />
+        </Field>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
         <Field label="Montant HT (€)">
           <input
             name="montant_ht" type="number" min="0" step="0.01" value={ht}
@@ -176,14 +187,22 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
       if (result.error) {
         showToast(result.error, "error");
       } else {
-        showToast(dialog.mode === "edit" ? `${fd.get("reference")} mis à jour` : `Devis ${fd.get("reference")} créé`);
+        const missionRef = "missionRef" in result ? result.missionRef : undefined;
+        showToast(
+          missionRef
+            ? `${fd.get("reference")} accepté — mission ${missionRef} créée`
+            : dialog.mode === "edit" ? `${fd.get("reference")} mis à jour` : `Devis ${fd.get("reference")} créé`
+        );
         setDialog(null);
       }
     });
   }
 
   function handleDelete(d: Devis) {
-    if (!confirm(`Supprimer définitivement le devis ${d.reference} (${d.client}) ?`)) return;
+    const message = d.statut === "Accepté" || d.statut === "Facturé"
+      ? `⚠️ ATTENTION : le devis ${d.reference} est ${d.statut.toUpperCase()}.\nIl peut être lié à une mission, une planification ou une facture.\n\nSupprimer quand même définitivement ?`
+      : `Supprimer définitivement le devis ${d.reference} (${d.client}) ?`;
+    if (!confirm(message)) return;
     startTransition(async () => {
       const result = await deleteDevis(d.id);
       if (result.error) showToast(result.error, "error");
@@ -222,20 +241,23 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
           <table className="w-full border-collapse min-w-[720px]">
             <thead>
               <tr className="bg-gray-50/70 border-b border-gray-100">
-                {["Référence", "Client", "Session", "Statut", "Montant HT", "Montant TTC", "Équipe", ""].map((h) => (
-                  <th key={h} className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">{h}</th>
+                {["Référence", "Client", "Session", "Période", "Statut", "Montant HT", "Montant TTC", "Équipe", ""].map((h) => (
+                  <th key={h} className="text-left px-5 py-2.5 text-[11px] font-bold text-gray-500 uppercase tracking-[.8px]">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={8} className="text-center py-10 text-[13px] text-gray-400">Aucun devis ne correspond aux filtres.</td></tr>
+                <tr><td colSpan={9} className="text-center py-10 text-[13px] text-gray-400">Aucun devis ne correspond aux filtres.</td></tr>
               )}
               {filtered.map((d) => (
                 <tr key={d.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                   <td className="px-5 py-3 text-[12px] font-mono text-gray-400 whitespace-nowrap">{d.reference}</td>
                   <td className="px-5 py-3 text-[13px] font-semibold text-gray-800">{d.client}</td>
                   <td className="px-5 py-3 text-[12.5px] text-gray-500 max-w-[200px] truncate">{d.session ?? "—"}</td>
+                  <td className="px-5 py-3 text-[12px] text-gray-600 whitespace-nowrap">
+                    {d.dateDebut ? `${dateFR(d.dateDebut)}${d.dateFin && d.dateFin !== d.dateDebut ? ` → ${dateFR(d.dateFin)}` : ""}` : "—"}
+                  </td>
                   <td className="px-5 py-3"><DevisBadge statut={d.statut} /></td>
                   <td className="px-5 py-3 text-[13px] text-gray-700 whitespace-nowrap">{euro(d.montantHT)}</td>
                   <td className="px-5 py-3 text-[13px] font-extrabold text-gray-900 whitespace-nowrap">{euro(d.montantTTC)}</td>

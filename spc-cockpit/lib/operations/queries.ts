@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle } from "./types";
-import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures, mockDevisLignes, mockDevisSalles } from "./mock";
+import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle, DevisEquipe } from "./types";
+import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures, mockDevisLignes, mockDevisSalles, mockDevisEquipe } from "./mock";
 
 export async function getSurveillants(): Promise<Surveillant[]> {
   try {
@@ -94,6 +94,9 @@ export async function getDevisList(): Promise<Devis[]> {
       typeEpreuve: r.type_epreuve ?? undefined,
       dateDebut: r.date_debut ?? undefined,
       dateFin: r.date_fin ?? undefined,
+      fraisDeplacement: Number(r.frais_deplacement ?? 0),
+      fraisCoordination: Number(r.frais_coordination ?? 0),
+      remise: Number(r.remise ?? 0),
     }));
   } catch {
     return mockDevis;
@@ -173,6 +176,7 @@ export async function getFactures(): Promise<Facture[]> {
       montantTTC: Number(r.montant_ttc ?? 0),
       emission: r.emission ?? undefined,
       echeance: r.echeance ?? undefined,
+      devisId: r.devis_id ?? undefined,
     }));
   } catch {
     return mockFactures;
@@ -219,5 +223,24 @@ export async function getDevisSalles(): Promise<DevisSalle[]> {
     }));
   } catch {
     return mockDevisSalles;
+  }
+}
+
+export async function getDevisEquipe(): Promise<DevisEquipe[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("devis_equipe").select("*").order("ordre");
+    if (error || !data?.length) return mockDevisEquipe;
+    return data.map((r) => ({
+      id: r.id,
+      devisId: r.devis_id,
+      role: r.role,
+      effectif: r.effectif ?? 1,
+      heuresPers: Number(r.heures_pers ?? 0),
+      tauxH: Number(r.taux_h ?? 0),
+      ordre: r.ordre ?? 1,
+    }));
+  } catch {
+    return mockDevisEquipe;
   }
 }

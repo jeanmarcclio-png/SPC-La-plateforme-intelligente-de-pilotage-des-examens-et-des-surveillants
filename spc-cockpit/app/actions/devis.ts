@@ -27,7 +27,53 @@ function parseForm(fd: FormData) {
     type_epreuve: (fd.get("type_epreuve") as string | null)?.trim() || null,
     date_debut: (fd.get("date_debut") as string | null) || null,
     date_fin: (fd.get("date_fin") as string | null) || null,
+    frais_deplacement: Number(fd.get("frais_deplacement") ?? 0) || 0,
+    frais_coordination: Number(fd.get("frais_coordination") ?? 0) || 0,
+    remise: Number(fd.get("remise") ?? 0) || 0,
   };
+}
+
+// Chaînage métier : un devis accepté crée (ou retrouve) sa mission.
+async function creerMissionDepuisDevis(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  devisId: number
+): Promise<{ missionRef?: string; error?: string }> {
+  const { data: d } = await supabase.from("devis").select("*").eq("id", devisId).single();
+  if (!d) return { error: "Devis introuvable" };
+  if (d.mission_id) return {}; // mission déjà liée — rien à faire
+
+  // Référence EX-YYYY-NNN suivante
+  const { data: refs } = await supabase.from("missions").select("reference");
+  const annee = (d.date_debut as string | null)?.slice(0, 4) ?? "2026";
+  const max = (refs ?? []).reduce((acc, r) => {
+    const n = Number(String(r.reference).match(/^EX-\d{4}-(\d+)$/)?.[1] ?? 0);
+    return Math.max(acc, n);
+  }, 0);
+  const reference = `EX-${annee}-${String(max + 1).padStart(3, "0")}`;
+
+  // Volume salles depuis la répartition du devis (max des deux sessions)
+  const { data: salles } = await supabase.from("devis_salles").select("session, salle").eq("devis_id", devisId);
+  const matin = new Set((salles ?? []).filter((s) => s.session === "matin").map((s) => s.salle)).size;
+  const apm = new Set((salles ?? []).filter((s) => s.session === "apres-midi").map((s) => s.salle)).size;
+  const nbSalles = Math.max(matin, apm, 1);
+
+  const { data: mission, error } = await supabase.from("missions").insert({
+    reference,
+    client: d.client,
+    session: d.session,
+    date_mission: d.date_debut,
+    type: d.type_epreuve ?? "Examen écrit",
+    nb_salles: nbSalles,
+    nb_surveillants: d.nb_surveillants ?? 1,
+    montant_ht: d.montant_ht ?? 0,
+    statut: "Planifiée",
+  }).select("id, reference").single();
+  if (error || !mission) return { error: `Création de la mission échouée : ${error?.message}` };
+
+  await supabase.from("devis").update({ mission_id: mission.id }).eq("id", devisId);
+  revalidatePath("/operations/missions");
+  revalidatePath("/operations/planification");
+  return { missionRef: mission.reference };
 }
 
 export async function createDevis(fd: FormData): Promise<{ error?: string }> {
@@ -46,7 +92,7 @@ export async function createDevis(fd: FormData): Promise<{ error?: string }> {
   }
 }
 
-export async function updateDevis(id: number, fd: FormData): Promise<{ error?: string }> {
+export async function updateDevis(id: number, fd: FormData): Promise<{ error?: string; missionRef?: string }> {
   const fields = parseForm(fd);
   if (!fields.reference) return { error: "La référence est obligatoire" };
   if (!fields.client) return { error: "Le client est obligatoire" };
@@ -55,8 +101,16 @@ export async function updateDevis(id: number, fd: FormData): Promise<{ error?: s
     const supabase = await createClient();
     const { error } = await supabase.from("devis").update(fields).eq("id", id);
     if (error) return { error: `Mise à jour échouée : ${error.message}` };
+
+    let missionRef: string | undefined;
+    if (fields.statut === "Accepté") {
+      const chaine = await creerMissionDepuisDevis(supabase, id);
+      if (chaine.error) return { error: chaine.error };
+      missionRef = chaine.missionRef;
+    }
+
     revalidateOps();
-    return {};
+    return { missionRef };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erreur inconnue" };
   }

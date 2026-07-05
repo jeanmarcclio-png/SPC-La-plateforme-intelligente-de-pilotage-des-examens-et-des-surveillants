@@ -79,6 +79,7 @@ export interface Facture {
   montantTTC: number;
   emission?: string;
   echeance?: string;
+  devisId?: number;
 }
 
 export interface Devis {
@@ -97,6 +98,19 @@ export interface Devis {
   typeEpreuve?: string;
   dateDebut?: string; // ISO
   dateFin?: string;
+  fraisDeplacement: number;
+  fraisCoordination: number;
+  remise: number;
+}
+
+export interface DevisEquipe {
+  id: number;
+  devisId: number;
+  role: string;
+  effectif: number;
+  heuresPers: number;
+  tauxH: number;
+  ordre: number;
 }
 
 export interface DevisSalle {

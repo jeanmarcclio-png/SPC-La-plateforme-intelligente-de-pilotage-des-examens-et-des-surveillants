@@ -2,13 +2,13 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getDevisList, getDevisLignes, getDevisSalles } from "@/lib/operations/queries";
+import { getDevisList, getDevisLignes, getDevisSalles, getDevisEquipe, getFactures, getMissions } from "@/lib/operations/queries";
 import type { DevisSalle } from "@/lib/operations/types";
 import { DevisBadge } from "@/components/ops/badges";
 import { PrintButton } from "@/components/ops/PrintButton";
 import { DuplicateDevisButton } from "@/components/ops/DuplicateDevisButton";
 import { euro, dateFR } from "@/lib/operations/format";
-import { ArrowLeft, CheckCircle2, Euro, CalendarClock } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Euro, CalendarClock, Briefcase, AlertTriangle } from "lucide-react";
 
 const NAVY = "#0d2137";
 
@@ -52,7 +52,7 @@ function joursOuvres(debut?: string, fin?: string): number | null {
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-[1px] text-gray-400 mb-0.5">{label}</div>
+      <div className="text-[10px] font-bold uppercase tracking-[1px] text-gray-500 mb-0.5">{label}</div>
       <div className="text-[13.5px] font-bold text-gray-900">{value}</div>
     </div>
   );
@@ -86,6 +86,16 @@ function SallesTable({ titre, salles }: { titre: string; salles: DevisSalle[] })
               </tr>
             ))}
           </tbody>
+          <tfoot>
+            <tr className="bg-gray-50/80 border-t-2 border-gray-200">
+              <td className="px-4 py-2.5 text-[12.5px] font-extrabold text-gray-900">Total ({salles.length} salle{salles.length > 1 ? "s" : ""})</td>
+              <td className="px-4 py-2.5 text-[13px] font-extrabold text-gray-900">{salles.reduce((t, s) => t + s.etudiants, 0)}</td>
+              <td className="px-4 py-2.5 text-[13px] font-extrabold text-gray-900">{salles.reduce((t, s) => t + s.surveillants, 0)}</td>
+              <td colSpan={5} className="px-4 py-2.5 text-[12px] font-semibold text-gray-500">
+                PMR : {salles.filter((s) => s.pmr).length} · TT : {salles.filter((s) => s.tiersTemps).length}
+              </td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
@@ -95,9 +105,14 @@ function SallesTable({ titre, salles }: { titre: string; salles: DevisSalle[] })
 export default async function DevisDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const devisId = Number(id);
-  const [devisList, lignes, sallesAll] = await Promise.all([getDevisList(), getDevisLignes(), getDevisSalles()]);
+  const [devisList, lignes, sallesAll, equipeAll, factures, missions] = await Promise.all([
+    getDevisList(), getDevisLignes(), getDevisSalles(), getDevisEquipe(), getFactures(), getMissions(),
+  ]);
   const devis = devisList.find((d) => d.id === devisId);
   if (!devis) notFound();
+  const equipe = equipeAll.filter((e) => e.devisId === devisId).sort((a, b) => a.ordre - b.ordre);
+  const facture = factures.find((f) => f.devisId === devisId);
+  const mission = devis.missionId ? missions.find((m) => m.id === devis.missionId) : undefined;
 
   const lignesDevis = lignes.filter((l) => l.devisId === devisId).sort((a, b) => a.ordre - b.ordre);
   const salles = sallesAll.filter((s) => s.devisId === devisId);
@@ -105,9 +120,12 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
   const sallesApm = salles.filter((s) => s.session === "apres-midi");
 
   const totalLignes = lignesDevis.reduce((s, l) => s + l.quantite * l.prixUnitaire, 0);
-  const ht = lignesDevis.length > 0 ? totalLignes : devis.montantHT;
+  const totalEquipe = equipe.reduce((s, e) => s + e.effectif * e.heuresPers * e.tauxH, 0);
+  const baseBrute = equipe.length > 0 ? totalEquipe : lignesDevis.length > 0 ? totalLignes : devis.montantHT;
+  const ht = Math.round((baseBrute + devis.fraisDeplacement + devis.fraisCoordination - devis.remise) * 100) / 100;
   const tva = Math.round(ht * 0.2 * 100) / 100;
   const ttc = Math.round((ht + tva) * 100) / 100;
+  const ecart = Math.round((ht - devis.montantHT) * 100) / 100;
 
   const matin = plage(sallesMatin);
   const apm = plage(sallesApm);
@@ -139,7 +157,13 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
               <div className="text-[12px] text-emerald-700">Vous pouvez planifier la session et créer la facture.</div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {mission && (
+              <Link href="/operations/missions" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-emerald-200 text-[12.5px] font-bold text-emerald-700 hover:bg-emerald-50 transition-colors">
+                <Briefcase className="w-3.5 h-3.5" aria-hidden />
+                Mission {mission.reference} →
+              </Link>
+            )}
             <Link href="/operations/planification" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-[12.5px] font-bold text-gray-700 hover:bg-gray-50 transition-colors">
               <CalendarClock className="w-3.5 h-3.5" aria-hidden />
               Voir le planning →
@@ -200,6 +224,46 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
           </section>
         )}
 
+        {/* Équipe & volume horaire */}
+        {equipe.length > 0 && (
+          <section className="pt-2 pb-4">
+            <h2 className="text-[11px] font-bold uppercase tracking-[1px] text-gray-500 mb-2.5">Équipe &amp; volume horaire</h2>
+            <div className="overflow-x-auto rounded-lg border border-gray-100">
+              <table className="w-full border-collapse min-w-[560px]">
+                <thead>
+                  <tr style={{ background: NAVY }}>
+                    {["Rôle", "Effectif", "H fact./pers.", "Total heures", "Taux/h", "Sous-total HT"].map((h) => (
+                      <th key={h} className="text-left px-4 py-2.5 text-[10.5px] font-bold text-white/80 uppercase tracking-[.8px]">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {equipe.map((e) => (
+                    <tr key={e.id} className="border-b border-gray-100 last:border-0">
+                      <td className="px-4 py-2.5 text-[13px] font-semibold text-gray-900">{e.role}</td>
+                      <td className="px-4 py-2.5 text-[13px] text-gray-700">{e.effectif}</td>
+                      <td className="px-4 py-2.5 text-[13px] text-gray-700">{e.heuresPers.toLocaleString("fr-FR")}h</td>
+                      <td className="px-4 py-2.5 text-[13px] font-bold text-gray-900">{(e.effectif * e.heuresPers).toLocaleString("fr-FR")}h</td>
+                      <td className="px-4 py-2.5 text-[13px] text-gray-700 whitespace-nowrap">{euro(e.tauxH)}</td>
+                      <td className="px-4 py-2.5 text-[13px] font-bold text-gray-900 whitespace-nowrap text-right">{euro(e.effectif * e.heuresPers * e.tauxH)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-gray-50/80 border-t-2 border-gray-200">
+                    <td className="px-4 py-2.5 text-[12.5px] font-extrabold text-gray-900">TOTAL</td>
+                    <td className="px-4 py-2.5 text-[13px] font-extrabold text-gray-900">{equipe.reduce((t, e) => t + e.effectif, 0)}</td>
+                    <td />
+                    <td className="px-4 py-2.5 text-[13px] font-extrabold text-gray-900">{equipe.reduce((t, e) => t + e.effectif * e.heuresPers, 0).toLocaleString("fr-FR")}h</td>
+                    <td />
+                    <td className="px-4 py-2.5 text-[13.5px] font-extrabold text-gray-900 whitespace-nowrap text-right">{euro(totalEquipe)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </section>
+        )}
+
         {/* Prestations */}
         <section className="pt-2">
           <h2 className="text-[11px] font-bold uppercase tracking-[1px] text-gray-500 mb-2.5">Détail des prestations</h2>
@@ -235,23 +299,68 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
             </tbody>
           </table>
 
-          {/* Totaux */}
-          <div className="flex justify-end">
-            <div className="w-full sm:w-[280px] space-y-2">
-              <div className="flex justify-between text-[13px] text-gray-600">
-                <span>Total HT</span>
-                <span className="font-semibold">{euro(ht)}</span>
+          {/* Récapitulatif financier */}
+          <h2 className="text-[11px] font-bold uppercase tracking-[1px] text-gray-500 mb-2.5">Récapitulatif financier</h2>
+          <div className="rounded-xl border border-gray-100 divide-y divide-gray-100">
+            <div className="flex justify-between px-4 py-2.5 text-[13px] text-gray-700">
+              <span>Base brute HT ({equipe.length > 0 ? "heures × tarifs" : "détail des prestations"})</span>
+              <span className="font-semibold">{euro(baseBrute)}</span>
+            </div>
+            {devis.fraisDeplacement > 0 && (
+              <div className="flex justify-between px-4 py-2.5 text-[13px] text-gray-700">
+                <span>Frais de déplacement</span>
+                <span className="font-semibold">{euro(devis.fraisDeplacement)}</span>
               </div>
-              <div className="flex justify-between text-[13px] text-gray-600">
-                <span>TVA 20 %</span>
-                <span className="font-semibold">{euro(tva)}</span>
+            )}
+            {devis.fraisCoordination > 0 && (
+              <div className="flex justify-between px-4 py-2.5 text-[13px] text-gray-700">
+                <span>Frais de coordination</span>
+                <span className="font-semibold">{euro(devis.fraisCoordination)}</span>
               </div>
-              <div className="flex justify-between items-center rounded-xl px-4 py-3 text-white" style={{ background: NAVY }}>
-                <span className="text-[12px] font-bold uppercase tracking-wide">Total TTC</span>
-                <span className="text-[17px] font-extrabold">{euro(ttc)}</span>
+            )}
+            {devis.remise > 0 && (
+              <div className="flex justify-between px-4 py-2.5 text-[13px] text-red-600">
+                <span>Remise</span>
+                <span className="font-semibold">− {euro(devis.remise)}</span>
               </div>
+            )}
+            <div className="flex justify-between px-4 py-2.5 text-[13.5px] font-extrabold text-gray-900">
+              <span>Total HT</span>
+              <span>{euro(ht)}</span>
+            </div>
+            <div className="flex justify-between px-4 py-2.5 text-[13px] text-gray-700">
+              <span>TVA 20 %</span>
+              <span className="font-semibold">{euro(tva)}</span>
+            </div>
+            <div className="flex justify-between items-center px-4 py-3 text-white rounded-b-xl" style={{ background: NAVY }}>
+              <span className="text-[12px] font-bold uppercase tracking-wide">Total TTC</span>
+              <span className="text-[17px] font-extrabold">{euro(ttc)}</span>
             </div>
           </div>
+
+          {Math.abs(ecart) >= 0.01 && (
+            <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-[12.5px] text-amber-800 print:hidden">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden />
+              <span>
+                Écart de <strong>{euro(Math.abs(ecart))}</strong> entre le total calculé ({euro(ht)}) et le montant
+                enregistré sur le devis ({euro(devis.montantHT)}). Mettez à jour le devis ou son détail pour aligner les deux.
+              </span>
+            </div>
+          )}
+
+          {facture && (
+            <div className="mt-3 rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+              <div className="text-[13px] text-gray-700">
+                <span className="font-bold text-gray-900">Facture {facture.reference}</span>
+                <span className="mx-1.5 text-gray-300">·</span>
+                Statut : <span className={`font-bold ${facture.statut === "Payée" ? "text-emerald-600" : facture.statut === "En retard" ? "text-red-600" : "text-sky-700"}`}>{facture.statut}</span>
+                {facture.echeance && <span className="text-gray-500"> · échéance {dateFR(facture.echeance)}</span>}
+              </div>
+              <div className="text-[13px] font-bold text-gray-900">
+                Reste à encaisser : {euro(facture.statut === "Payée" ? 0 : facture.montantTTC)}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Conditions */}
