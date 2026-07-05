@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { OpsBreadcrumb } from "@/components/ops/OpsBreadcrumb";
 import { getDevisList } from "@/lib/operations/queries";
 import { DevisTable } from "@/components/ops/DevisTable";
 import { Kpi } from "@/components/ops/Kpi";
 import { euro } from "@/lib/operations/format";
 import { FileText, PenLine, Send, CheckCircle2, Euro } from "lucide-react";
+import { PageHeader } from "@/components/ops/shell";
 
 export default async function DevisPage() {
   const devis = await getDevisList();
@@ -15,12 +15,8 @@ export default async function DevisPage() {
   const caAccepteHT = acceptes.reduce((s, d) => s + d.montantHT, 0);
 
   return (
-    <div className="p-5 md:p-7 max-w-[1200px] mx-auto pb-16">
-      <div className="mb-6">
-        <OpsBreadcrumb page="Devis" />
-        <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">Devis</h1>
-        <p className="text-[13px] text-gray-400 mt-0.5">Gestion des devis et suivi du pipeline commercial opérations</p>
-      </div>
+    <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
+      <PageHeader page="Devis" subtitle="Gestion des devis et suivi du pipeline commercial opérations" />
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 mb-5">
         <Kpi label="Total devis" value={String(devis.length)} sub="créés" icon={<FileText className="w-4 h-4" />} />

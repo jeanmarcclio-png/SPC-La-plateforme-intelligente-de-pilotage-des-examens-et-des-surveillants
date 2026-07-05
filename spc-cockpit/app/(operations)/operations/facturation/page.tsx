@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { OpsBreadcrumb } from "@/components/ops/OpsBreadcrumb";
 import { getFactures } from "@/lib/operations/queries";
 import { FacturationTable } from "@/components/ops/FacturationTable";
 import { Kpi } from "@/components/ops/Kpi";
 import { euro } from "@/lib/operations/format";
 import { Euro, CheckCircle2, FileText, AlertCircle } from "lucide-react";
+import { PageHeader } from "@/components/ops/shell";
 
 export default async function FacturationPage() {
   const factures = await getFactures();
@@ -15,12 +15,8 @@ export default async function FacturationPage() {
   const enRetard = factures.filter((f) => f.statut === "En retard").length;
 
   return (
-    <div className="p-5 md:p-7 max-w-[1200px] mx-auto pb-16">
-      <div className="mb-6">
-        <OpsBreadcrumb page="Facturation" />
-        <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">Facturation</h1>
-        <p className="text-[13px] text-gray-400 mt-0.5">Suivi des factures, paiements et chiffre d&apos;affaires</p>
-      </div>
+    <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
+      <PageHeader page="Facturation" subtitle="Suivi des factures, paiements et chiffre d&apos;affaires" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
         <Kpi label="CA total HT" value={euro(caTotal)} sub="toutes factures" icon={<Euro className="w-4 h-4" />} />

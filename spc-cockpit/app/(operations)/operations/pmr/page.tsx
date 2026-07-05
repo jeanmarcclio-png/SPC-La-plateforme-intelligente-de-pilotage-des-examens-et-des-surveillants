@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { OpsBreadcrumb } from "@/components/ops/OpsBreadcrumb";
 import { getAmenagements, getSalles, getSurveillants } from "@/lib/operations/queries";
 import { PMRBoard } from "@/components/ops/PMRBoard";
 import { Kpi } from "@/components/ops/Kpi";
 import { Accessibility, DoorOpen, Clock } from "lucide-react";
+import { PageHeader } from "@/components/ops/shell";
 
 export default async function PMRPage() {
   const [amenagements, salles, surveillants] = await Promise.all([
@@ -15,12 +15,8 @@ export default async function PMRPage() {
   const tiersTemps = amenagements.filter((a) => a.tiersTemps).length;
 
   return (
-    <div className="p-5 md:p-7 max-w-[1200px] mx-auto pb-16">
-      <div className="mb-6">
-        <OpsBreadcrumb page="PMR & Tiers-temps" />
-        <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">PMR &amp; Tiers-temps</h1>
-        <p className="text-[13px] text-gray-400 mt-0.5">Gestion des aménagements pour étudiants à besoins spécifiques</p>
-      </div>
+    <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
+      <PageHeader page="PMR & Tiers-temps" title="PMR &amp; Tiers-temps" subtitle="Gestion des aménagements pour étudiants à besoins spécifiques" />
 
       <div className="grid grid-cols-3 gap-3.5 mb-5">
         <Kpi label="Étudiants PMR/TT" value={String(amenagements.length)} sub="aménagements suivis" icon={<Accessibility className="w-4 h-4" />} />

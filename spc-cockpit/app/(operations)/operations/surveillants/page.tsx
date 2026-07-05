@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { OpsBreadcrumb } from "@/components/ops/OpsBreadcrumb";
 import { getSurveillants } from "@/lib/operations/queries";
 import { SurveillantsTable } from "@/components/ops/SurveillantsTable";
 import { Kpi } from "@/components/ops/Kpi";
 import { Users, UserCheck, Clock, Star, AlertTriangle, Shield, UsersRound } from "lucide-react";
 import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
+import { PageHeader } from "@/components/ops/shell";
 
 function PilotageCard({ tag, titre, detail, icon }: { tag: string; titre: string; detail: string; icon: React.ReactNode }) {
   return (
@@ -36,12 +36,8 @@ export default async function SurveillantsPage() {
   const noyau = [...dispo].sort((a, b) => b.note - a.note).slice(0, 3);
 
   return (
-    <div className="p-5 md:p-7 max-w-[1200px] mx-auto pb-16">
-      <div className="mb-6">
-        <OpsBreadcrumb page="Surveillants" />
-        <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">Surveillants</h1>
-        <p className="text-[13px] text-gray-400 mt-0.5">Annuaire, rôles et disponibilités de l&apos;équipe</p>
-      </div>
+    <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
+      <PageHeader page="Surveillants" subtitle="Annuaire, rôles et disponibilités de l&apos;équipe" />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">

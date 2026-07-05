@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { OpsBreadcrumb } from "@/components/ops/OpsBreadcrumb";
 import { getSalles } from "@/lib/operations/queries";
 import { SallesBoard } from "@/components/ops/SallesBoard";
 import { Kpi } from "@/components/ops/Kpi";
 import { DoorOpen, GraduationCap, Users, Accessibility } from "lucide-react";
+import { PageHeader } from "@/components/ops/shell";
 
 export default async function SallesPage() {
   const salles = await getSalles();
@@ -13,12 +13,8 @@ export default async function SallesPage() {
   const pmrTT = salles.filter((s) => s.pmr || s.tiersTemps).length;
 
   return (
-    <div className="p-5 md:p-7 max-w-[1200px] mx-auto pb-16">
-      <div className="mb-6">
-        <OpsBreadcrumb page="Salles" />
-        <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">Salles</h1>
-        <p className="text-[13px] text-gray-400 mt-0.5">Gestion des salles d&apos;examen, capacités et affectation des surveillants</p>
-      </div>
+    <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
+      <PageHeader page="Salles" subtitle="Gestion des salles d&apos;examen, capacités et affectation des surveillants" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
         <Kpi label="Salles" value={String(salles.length)} sub="configurées" icon={<DoorOpen className="w-4 h-4" />} />

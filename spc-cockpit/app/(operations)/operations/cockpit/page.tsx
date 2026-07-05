@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { OpsBreadcrumb } from "@/components/ops/OpsBreadcrumb";
 import { getMissions, getSurveillants, getAffectations } from "@/lib/operations/queries";
 import { CockpitSubtitle, RefreshButton } from "@/components/ops/CockpitRefresh";
 import { dateFR } from "@/lib/operations/format";
 import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
 import { Activity, DoorOpen, CalendarClock, AlertTriangle, CheckCircle2, MapPin, Zap, Users, Landmark, UserCheck } from "lucide-react";
+import { PageHeader } from "@/components/ops/shell";
 
 const NAVY = "#0d2137";
 
@@ -121,26 +121,25 @@ export default async function CockpitOpsPage() {
   const informations = alertes.filter((a) => a.niveau === "information");
 
   return (
-    <div className="p-5 md:p-7 max-w-[1200px] mx-auto pb-16">
-      {/* Header */}
-      <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <OpsBreadcrumb page="Cockpit" />
-          <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">Cockpit opérationnel</h1>
-          <CockpitSubtitle />
-        </div>
-        <div className="flex items-center gap-2.5">
-          <RefreshButton />
-          <Link
-            href="/operations/planification"
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold transition-opacity hover:opacity-90"
-            style={{ background: NAVY }}
-          >
-            <Zap className="w-4 h-4" aria-hidden />
-            Planification
-          </Link>
-        </div>
-      </div>
+    <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
+      <PageHeader
+        page="Cockpit"
+        title="Cockpit opérationnel"
+        subtitle={<CockpitSubtitle />}
+        actions={
+          <>
+            <RefreshButton />
+            <Link
+              href="/operations/planification"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold transition-opacity hover:opacity-90"
+              style={{ background: NAVY }}
+            >
+              <Zap className="w-4 h-4" aria-hidden />
+              Planification
+            </Link>
+          </>
+        }
+      />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">

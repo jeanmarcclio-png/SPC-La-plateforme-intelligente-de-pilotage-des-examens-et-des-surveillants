@@ -10,7 +10,10 @@ function heure() {
 
 export function CockpitSubtitle() {
   const [maj, setMaj] = useState<string | null>(null);
-  useEffect(() => { setMaj(heure()); }, []);
+  useEffect(() => {
+    const t = setTimeout(() => setMaj(heure()), 0);
+    return () => clearTimeout(t);
+  }, []);
   return (
     <p className="text-[13px] text-gray-500 mt-0.5">
       Pilotage temps réel · Dernière mise à jour : <span className="font-bold text-gray-700">{maj ?? "…"}</span>

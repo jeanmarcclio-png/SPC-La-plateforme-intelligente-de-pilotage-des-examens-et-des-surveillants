@@ -132,7 +132,7 @@ export default async function OperationsPage() {
     : null;
 
   return (
-    <div className="p-5 md:p-7 max-w-[1200px] mx-auto pb-16">
+    <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
       {/* Header — une seule action primaire */}
       <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">
         <div>

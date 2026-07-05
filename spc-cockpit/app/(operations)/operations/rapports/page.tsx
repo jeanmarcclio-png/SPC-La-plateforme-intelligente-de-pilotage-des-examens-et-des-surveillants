@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { OpsBreadcrumb } from "@/components/ops/OpsBreadcrumb";
 import { getMissions, getSurveillants, getSalles } from "@/lib/operations/queries";
 import { Kpi } from "@/components/ops/Kpi";
 import { MissionBadge } from "@/components/ops/badges";
@@ -8,6 +7,7 @@ import { RapportExportCSV } from "@/components/ops/RapportExportCSV";
 import { euro, dateFR } from "@/lib/operations/format";
 import { tendanceCA } from "@/lib/operations/stats";
 import { Euro, ClipboardCheck, Users, DoorOpen } from "lucide-react";
+import { PageHeader } from "@/components/ops/shell";
 
 export default async function RapportsPage() {
   const [missions, surveillants, salles] = await Promise.all([
@@ -23,15 +23,13 @@ export default async function RapportsPage() {
   const maxMois = Math.max(...tendance.map((t) => t.total), 1);
 
   return (
-    <div className="p-5 md:p-7 max-w-[1200px] mx-auto pb-16">
-      <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <OpsBreadcrumb page="Rapports" />
-          <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">Rapports post-session</h1>
-          <p className="text-[13px] text-gray-400 mt-0.5">Bilan de l&apos;activité, analyse des missions et export comptable</p>
-        </div>
-        <RapportExportCSV missions={missions} />
-      </div>
+    <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
+      <PageHeader
+        page="Rapports"
+        title="Rapports post-session"
+        subtitle="Bilan de l'activité, analyse des missions et export comptable"
+        actions={<RapportExportCSV missions={missions} />}
+      />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
         <Kpi label="CA total (HT)" value={euro(caTotal)} sub="missions non annulées" icon={<Euro className="w-4 h-4" />} href="/operations/devis" />
