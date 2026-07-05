@@ -7,6 +7,7 @@ import { createFacture, updateFactureStatut, deleteFacture } from "@/app/actions
 import { showToast } from "@/components/Toast";
 import { euro, dateFR } from "@/lib/operations/format";
 import { Plus, Trash2 } from "lucide-react";
+import { ttcFromHT } from "@/lib/operations/engine";
 
 const ACCENT = "#2563eb";
 const STATUTS: StatutFacture[] = ["À facturer", "Facturée", "Payée", "En retard"];
@@ -56,7 +57,7 @@ function FactureForm({
 
   function onHtChange(v: number) {
     setHt(v);
-    if (!ttcTouched) setTtc(Math.round(v * 1.2 * 100) / 100);
+    if (!ttcTouched) setTtc(ttcFromHT(v));
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {

@@ -5,6 +5,7 @@ import type { Mission, Surveillant, Affectation } from "@/lib/operations/types";
 import { updateAffectation, addAffectation, deleteAffectation, type AffectationFields } from "@/app/actions/affectations";
 import { showToast } from "@/components/Toast";
 import { dateFR } from "@/lib/operations/format";
+import { parseTimeToMinutes, detectSupervisorConflicts, type SupervisorAssignmentInput } from "@/lib/operations/engine";
 import { AlertTriangle, Trash2, Check, Plus } from "lucide-react";
 
 const ACCENT = "#2563eb";
@@ -23,10 +24,12 @@ function toRowState(a: Affectation): RowState {
 
 function slotHours(s: Slot): number {
   if (!s.on) return 0;
-  const [dh, dm] = s.debut.split(":").map(Number);
-  const [fh, fm] = s.fin.split(":").map(Number);
-  const mins = fh * 60 + fm - (dh * 60 + dm);
-  return mins > 0 ? mins / 60 : 0;
+  try {
+    const mins = parseTimeToMinutes(s.fin) - parseTimeToMinutes(s.debut);
+    return mins > 0 ? mins / 60 : 0;
+  } catch {
+    return 0;
+  }
 }
 
 function rowHours(r: RowState): number {
@@ -151,6 +154,27 @@ export function PlanificationBoard({
     const nom = survById.get(a.surveillantId)?.nom ?? `#${a.surveillantId}`;
     if (!r.matin.on && !r.apm.on) alertes.push(`${nom} : aucun créneau assigné (ni matin ni après-midi)`);
     else if (!r.salle.trim()) alertes.push(`${nom} : aucune salle affectée`);
+  }
+
+  // Conflits inter-missions : même surveillant, même date, créneaux chevauchants
+  // (moteur central — detectSupervisorConflicts). L'état d'édition local prime.
+  const dateByMission = new Map(missions.map((m) => [m.id, m.dateMission]));
+  const assignments: SupervisorAssignmentInput[] = affectations.flatMap((a) => {
+    const date = dateByMission.get(a.missionId);
+    if (!date) return [];
+    const r = a.missionId === missionId ? stateOf(a) : toRowState(a);
+    const out: SupervisorAssignmentInput[] = [];
+    if (r.matin.on)
+      out.push({ id: `${a.id}-matin`, sessionId: `${date}-matin`, roomId: `${a.missionId}:${r.salle}`, supervisorId: String(a.surveillantId), startTime: r.matin.debut, endTime: r.matin.fin });
+    if (r.apm.on)
+      out.push({ id: `${a.id}-apm`, sessionId: `${date}-apm`, roomId: `${a.missionId}:${r.salle}`, supervisorId: String(a.surveillantId), startTime: r.apm.debut, endTime: r.apm.fin });
+    return out;
+  });
+  const survIdsMission = new Set(rows.map((r) => String(r.surveillantId)));
+  for (const c of detectSupervisorConflicts(assignments)) {
+    if (!survIdsMission.has(c.supervisorId)) continue;
+    const nom = survById.get(Number(c.supervisorId))?.nom ?? `#${c.supervisorId}`;
+    alertes.push(`${nom} : double affectation le même jour (${c.startTime}–${c.endTime})`);
   }
 
   return (

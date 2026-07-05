@@ -10,6 +10,7 @@ import { euro, dateFR } from "@/lib/operations/format";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Plus, Pencil, Trash2, Eye, Copy } from "lucide-react";
+import { ttcFromHT } from "@/lib/operations/engine";
 
 const ACCENT = "#2563eb";
 const STATUTS = ["Brouillon", "Envoyé", "Accepté", "Refusé", "Facturé"];
@@ -52,7 +53,7 @@ function DevisForm({
 
   function onHtChange(v: number) {
     setHt(v);
-    if (!ttcTouched) setTtc(Math.round(v * 1.2 * 100) / 100);
+    if (!ttcTouched) setTtc(ttcFromHT(v));
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -263,36 +264,40 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
                   <td className="px-5 py-3 text-[13px] font-extrabold text-gray-900 whitespace-nowrap">{euro(d.montantTTC)}</td>
                   <td className="px-5 py-3 text-[12.5px] text-gray-500 whitespace-nowrap">{d.nbSurveillants} surv.</td>
                   <td className="px-5 py-3">
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex items-center justify-end gap-2.5">
+                      <button
+                        onClick={() => setDialog({ mode: "edit", devis: d })}
+                        title={`Modifier ${d.reference}`}
+                        className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-gray-500 hover:text-gray-800 transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        Modifier
+                      </button>
                       <Link
                         href={`/operations/devis/${d.id}`}
                         title={`Voir le devis ${d.reference}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
+                        className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-gray-500 hover:text-gray-800 transition-colors"
                       >
                         <Eye className="w-3.5 h-3.5" />
+                        Voir
                       </Link>
                       <button
                         onClick={() => handleDuplicate(d)}
                         disabled={pending}
                         title={`Dupliquer ${d.reference}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-40"
+                        aria-label={`Dupliquer ${d.reference}`}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-40"
                       >
                         <Copy className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setDialog({ mode: "edit", devis: d })}
-                        title={`Modifier ${d.reference}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(d)}
                         disabled={pending}
                         title={`Supprimer ${d.reference}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+                        aria-label={`Supprimer ${d.reference}`}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-red-200 bg-red-50/50 text-red-500 hover:bg-red-100 hover:border-red-300 transition-colors disabled:opacity-40"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>

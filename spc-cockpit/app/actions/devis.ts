@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { ttcFromHT } from "@/lib/operations/engine";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -19,7 +20,7 @@ function parseForm(fd: FormData) {
     session: (fd.get("session") as string | null)?.trim() || null,
     statut: (fd.get("statut") as string | null) ?? "Brouillon",
     montant_ht: montantHT,
-    montant_ttc: montantTTCRaw > 0 ? montantTTCRaw : Math.round(montantHT * 1.2 * 100) / 100,
+    montant_ttc: montantTTCRaw > 0 ? montantTTCRaw : ttcFromHT(montantHT),
     nb_surveillants: Number(fd.get("nb_surveillants") ?? 0) || 0,
     contact: (fd.get("contact") as string | null)?.trim() || null,
     email: (fd.get("email") as string | null)?.trim() || null,

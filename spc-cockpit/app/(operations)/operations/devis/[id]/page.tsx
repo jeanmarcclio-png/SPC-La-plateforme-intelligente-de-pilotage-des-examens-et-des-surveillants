@@ -8,14 +8,18 @@ import { DevisBadge } from "@/components/ops/badges";
 import { PrintButton } from "@/components/ops/PrintButton";
 import { DuplicateDevisButton } from "@/components/ops/DuplicateDevisButton";
 import { euro, dateFR } from "@/lib/operations/format";
+import { calculateDevisTotals, parseTimeToMinutes, eurosToCents, centsToEuros } from "@/lib/operations/engine";
 import { ArrowLeft, CheckCircle2, Euro, CalendarClock, Briefcase, AlertTriangle } from "lucide-react";
 
 const NAVY = "#0d2137";
 
 function mins(hm?: string): number | null {
   if (!hm) return null;
-  const [h, m] = hm.split(":").map(Number);
-  return h * 60 + (m || 0);
+  try {
+    return parseTimeToMinutes(hm);
+  } catch {
+    return null;
+  }
 }
 
 function plage(salles: DevisSalle[]): { label: string; heures: number } {
@@ -122,10 +126,13 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
   const totalLignes = lignesDevis.reduce((s, l) => s + l.quantite * l.prixUnitaire, 0);
   const totalEquipe = equipe.reduce((s, e) => s + e.effectif * e.heuresPers * e.tauxH, 0);
   const baseBrute = equipe.length > 0 ? totalEquipe : lignesDevis.length > 0 ? totalLignes : devis.montantHT;
-  const ht = Math.round((baseBrute + devis.fraisDeplacement + devis.fraisCoordination - devis.remise) * 100) / 100;
-  const tva = Math.round(ht * 0.2 * 100) / 100;
-  const ttc = Math.round((ht + tva) * 100) / 100;
-  const ecart = Math.round((ht - devis.montantHT) * 100) / 100;
+  const { ht, tva, ttc } = calculateDevisTotals({
+    baseBruteHT: baseBrute,
+    fraisDeplacement: devis.fraisDeplacement,
+    fraisCoordination: devis.fraisCoordination,
+    remise: devis.remise,
+  });
+  const ecart = centsToEuros(eurosToCents(ht) - eurosToCents(devis.montantHT));
 
   const matin = plage(sallesMatin);
   const apm = plage(sallesApm);
