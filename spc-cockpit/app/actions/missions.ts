@@ -56,6 +56,22 @@ export async function updateMission(id: number, fd: FormData): Promise<{ error?:
   }
 }
 
+// Validation de session (Master Prompt §15.4) : les contrôles bloquants sont
+// exécutés côté client via le moteur central ; cette action scelle le statut.
+export async function validerSession(id: number): Promise<{ error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.from("missions").update({ statut: "Validée" }).eq("id", id);
+    if (error) return { error: `Validation échouée : ${error.message}` };
+    revalidateOps();
+    revalidatePath("/operations/planification");
+    revalidatePath("/operations/cockpit");
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
 export async function deleteMission(id: number): Promise<{ error?: string }> {
   try {
     const supabase = await createClient();

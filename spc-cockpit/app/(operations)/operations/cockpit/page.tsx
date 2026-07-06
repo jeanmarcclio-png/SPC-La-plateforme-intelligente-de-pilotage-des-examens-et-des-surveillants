@@ -77,7 +77,7 @@ export default async function CockpitOpsPage() {
   ]);
   const survById = new Map(surveillants.map((s) => [s.id, s]));
 
-  const active = missions.find((m) => m.statut === "En cours") ?? missions.find((m) => m.statut === "Planifiée");
+  const active = missions.find((m) => m.statut === "En cours") ?? missions.find((m) => m.statut === "Validée") ?? missions.find((m) => m.statut === "Planifiée");
   const enCours = missions.filter((m) => m.statut === "En cours").length;
   const rows = active ? affectations.filter((a) => a.missionId === active.id) : [];
 

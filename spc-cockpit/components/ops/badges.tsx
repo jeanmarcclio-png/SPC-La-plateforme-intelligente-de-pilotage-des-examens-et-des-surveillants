@@ -3,6 +3,7 @@ import type { StatutMission, StatutDevis, StatutSurveillant } from "@/lib/operat
 export function MissionBadge({ statut }: { statut: StatutMission }) {
   const cls: Record<StatutMission, string> = {
     "Planifiée": "bg-blue-50 text-blue-600",
+    "Validée":   "bg-indigo-50 text-indigo-600",
     "En cours":  "bg-amber-50 text-amber-600",
     "Terminée":  "bg-emerald-50 text-emerald-600",
     "Annulée":   "bg-red-50 text-red-500",

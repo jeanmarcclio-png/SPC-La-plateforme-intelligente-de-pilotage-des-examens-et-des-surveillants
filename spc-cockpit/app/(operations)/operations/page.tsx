@@ -59,7 +59,7 @@ export default async function OperationsPage() {
   ]);
 
   const dispo = surveillants.filter((s) => s.statut === "Disponible" || s.statut === "Planifié");
-  const missionsAVenir = missions.filter((m) => m.statut === "Planifiée" || m.statut === "En cours");
+  const missionsAVenir = missions.filter((m) => m.statut === "Planifiée" || m.statut === "Validée" || m.statut === "En cours");
   const pipeline = devis.filter((d) => (STATUTS_PIPELINE as readonly string[]).includes(d.statut));
   const confirmes = devis.filter((d) => (STATUTS_CA_CONFIRME as readonly string[]).includes(d.statut));
   const incidentsOuverts = incidents.filter((i) => i.statut !== "Résolu");
@@ -79,7 +79,7 @@ export default async function OperationsPage() {
     });
   }
 
-  const missionActive = missions.find((m) => m.statut === "En cours") ?? missions.find((m) => m.statut === "Planifiée");
+  const missionActive = missions.find((m) => m.statut === "En cours") ?? missions.find((m) => m.statut === "Validée") ?? missions.find((m) => m.statut === "Planifiée");
   if (missionActive) {
     const rows = affectations.filter((a) => a.missionId === missionActive.id);
     const incomplets = rows.filter((a) => (!a.matin && !a.apm) || !a.salle).length;

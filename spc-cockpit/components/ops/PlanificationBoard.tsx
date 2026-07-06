@@ -3,10 +3,11 @@
 import { useState, useMemo, useTransition } from "react";
 import type { Mission, Surveillant, Affectation } from "@/lib/operations/types";
 import { updateAffectation, addAffectation, deleteAffectation, type AffectationFields } from "@/app/actions/affectations";
+import { validerSession } from "@/app/actions/missions";
 import { showToast } from "@/components/Toast";
 import { dateFR } from "@/lib/operations/format";
 import { parseTimeToMinutes, detectSupervisorConflicts, type SupervisorAssignmentInput } from "@/lib/operations/engine";
-import { AlertTriangle, Trash2, Check, Plus } from "lucide-react";
+import { AlertTriangle, Trash2, Check, Plus, ShieldCheck } from "lucide-react";
 
 const ACCENT = "#2563eb";
 const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#2563eb"];
@@ -73,7 +74,7 @@ export function PlanificationBoard({
   affectations: Affectation[];
 }) {
   const planifiables = useMemo(
-    () => missions.filter((m) => m.statut === "En cours" || m.statut === "Planifiée").concat(missions.filter((m) => m.statut === "Terminée")),
+    () => missions.filter((m) => m.statut === "En cours" || m.statut === "Planifiée" || m.statut === "Validée").concat(missions.filter((m) => m.statut === "Terminée")),
     [missions]
   );
   const [missionId, setMissionId] = useState<number | null>(planifiables[0]?.id ?? null);
@@ -154,6 +155,8 @@ export function PlanificationBoard({
     const nom = survById.get(a.surveillantId)?.nom ?? `#${a.surveillantId}`;
     if (!r.matin.on && !r.apm.on) alertes.push(`${nom} : aucun créneau assigné (ni matin ni après-midi)`);
     else if (!r.salle.trim()) alertes.push(`${nom} : aucune salle affectée`);
+    if (r.matin.on && slotHours(r.matin) === 0) alertes.push(`${nom} : horaire matin invalide (fin ≤ début)`);
+    if (r.apm.on && slotHours(r.apm) === 0) alertes.push(`${nom} : horaire après-midi invalide (fin ≤ début)`);
   }
 
   // Conflits inter-missions : même surveillant, même date, créneaux chevauchants
@@ -175,6 +178,29 @@ export function PlanificationBoard({
     if (!survIdsMission.has(c.supervisorId)) continue;
     const nom = survById.get(Number(c.supervisorId))?.nom ?? `#${c.supervisorId}`;
     alertes.push(`${nom} : double affectation le même jour (${c.startTime}–${c.endTime})`);
+  }
+
+  // Validation de session (Master Prompt §15.4) — toutes les alertes sont bloquantes.
+  function valider() {
+    if (!mission) return;
+    if (rows.length === 0) {
+      showToast("Impossible de valider : aucun surveillant affecté à la session", "error");
+      return;
+    }
+    const dirty = rows.filter((a) => isDirty(a));
+    if (dirty.length > 0) {
+      showToast("Des modifications non enregistrées sont en cours — enregistre chaque ligne avant de valider.", "error");
+      return;
+    }
+    if (alertes.length > 0) {
+      showToast(`Impossible de valider :\n• ${alertes.slice(0, 5).join("\n• ")}${alertes.length > 5 ? `\n… et ${alertes.length - 5} autre(s)` : ""}`, "error");
+      return;
+    }
+    startTransition(async () => {
+      const result = await validerSession(mission.id);
+      if (result.error) showToast(result.error, "error");
+      else showToast(`Session ${mission.client} validée — planning verrouillé pour le terrain`);
+    });
   }
 
   return (
@@ -207,7 +233,25 @@ export function PlanificationBoard({
                 <div className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#7fb2ff]">Résumé de session</div>
                 <div className="text-[16px] font-extrabold mt-0.5">{mission.client} — {dateFR(mission.dateMission)}</div>
               </div>
-              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full border border-white/20 text-white/70">{mission.statut}</span>
+              <div className="flex items-center gap-2.5">
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full border border-white/20 text-white/70">{mission.statut}</span>
+                {mission.statut !== "Validée" && mission.statut !== "Terminée" && (
+                  <button
+                    onClick={valider}
+                    disabled={pending}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 text-white text-[12.5px] font-bold hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                  >
+                    <ShieldCheck className="w-4 h-4" aria-hidden />
+                    Valider la session
+                  </button>
+                )}
+                {mission.statut === "Validée" && (
+                  <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-emerald-300">
+                    <ShieldCheck className="w-4 h-4" aria-hidden />
+                    Session validée
+                  </span>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
               {[

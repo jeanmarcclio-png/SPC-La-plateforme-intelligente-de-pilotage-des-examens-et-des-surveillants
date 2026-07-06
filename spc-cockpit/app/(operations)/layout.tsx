@@ -6,7 +6,7 @@ import { dateFR } from "@/lib/operations/format";
 
 export default async function OperationsLayout({ children }: { children: React.ReactNode }) {
   const missions = await getMissions();
-  const active = missions.find((m) => m.statut === "En cours") ?? missions.find((m) => m.statut === "Planifiée");
+  const active = missions.find((m) => m.statut === "En cours") ?? missions.find((m) => m.statut === "Validée") ?? missions.find((m) => m.statut === "Planifiée");
   const activeMission = active ? { client: active.client, dateLabel: dateFR(active.dateMission) } : null;
 
   return (

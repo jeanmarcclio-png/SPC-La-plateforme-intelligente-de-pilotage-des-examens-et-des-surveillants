@@ -12,7 +12,7 @@ export default async function PresencePage() {
     getMissions(), getSurveillants(), getAffectations(),
   ]);
 
-  const active = missions.find((m) => m.statut === "En cours") ?? missions.find((m) => m.statut === "Planifiée");
+  const active = missions.find((m) => m.statut === "En cours") ?? missions.find((m) => m.statut === "Validée") ?? missions.find((m) => m.statut === "Planifiée");
   const rows = active ? affectations.filter((a) => a.missionId === active.id) : [];
 
   const presents = rows.filter((a) => a.presence === "Présent").length;

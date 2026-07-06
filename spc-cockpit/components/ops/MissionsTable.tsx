@@ -11,7 +11,7 @@ import { Search, Plus, Pencil, Trash2, Briefcase } from "lucide-react";
 
 const ACCENT = "#2563eb";
 const TYPES = ["Examen écrit", "Examen oral", "Concours", "Certification RNCP", "Partiels"];
-const STATUTS = ["Planifiée", "En cours", "Terminée", "Annulée"];
+const STATUTS = ["Planifiée", "Validée", "En cours", "Terminée", "Annulée"];
 
 function nextReference(missions: Mission[]): string {
   const year = missions[0]?.reference.match(/^EX-(\d{4})-/)?.[1] ?? "2026";
