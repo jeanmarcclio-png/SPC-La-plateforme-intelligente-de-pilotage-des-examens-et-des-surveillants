@@ -4,10 +4,11 @@ import { useState, useMemo, useTransition } from "react";
 import type { Mission, Surveillant, Affectation } from "@/lib/operations/types";
 import { updateAffectation, addAffectation, deleteAffectation, type AffectationFields } from "@/app/actions/affectations";
 import { validerSession } from "@/app/actions/missions";
+import { SurveillantPicker } from "@/components/ops/SurveillantPicker";
 import { showToast } from "@/components/Toast";
 import { dateFR } from "@/lib/operations/format";
 import { parseTimeToMinutes, detectSupervisorConflicts, type SupervisorAssignmentInput } from "@/lib/operations/engine";
-import { AlertTriangle, Trash2, Check, Plus, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Trash2, Check, ShieldCheck } from "lucide-react";
 
 const ACCENT = "#2563eb";
 const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#2563eb"];
@@ -83,7 +84,6 @@ export function PlanificationBoard({
   const rows = useMemo(() => affectations.filter((a) => a.missionId === missionId), [affectations, missionId]);
   const [edits, setEdits] = useState<Record<number, RowState>>({});
   const [pending, startTransition] = useTransition();
-  const [addId, setAddId] = useState("");
 
   const survById = useMemo(() => new Map(surveillants.map((s) => [s.id, s])), [surveillants]);
   const nonAffectes = surveillants.filter((s) => !rows.some((r) => r.surveillantId === s.id));
@@ -133,14 +133,12 @@ export function PlanificationBoard({
     });
   }
 
-  function add() {
-    const sid = Number(addId);
-    if (!sid || !missionId) return;
-    const s = survById.get(sid);
+  function add(s: Surveillant) {
+    if (!missionId) return;
     startTransition(async () => {
-      const result = await addAffectation(missionId, sid, s?.role ?? "Surveillant salle");
+      const result = await addAffectation(missionId, s.id, s.role || "Surveillant salle");
       if (result.error) showToast(result.error, "error");
-      else { showToast(`${s?.nom} ajouté à la session`); setAddId(""); }
+      else showToast(`${s.nom} ajouté à la session`);
     });
   }
 
@@ -289,25 +287,7 @@ export function PlanificationBoard({
                 <p className="text-[12px] text-gray-400">{dateFR(mission.dateMission)} · {alertes.length} alerte{alertes.length !== 1 ? "s" : ""}</p>
               </div>
               {nonAffectes.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <select
-                    value={addId}
-                    onChange={(e) => setAddId(e.target.value)}
-                    className="text-[12px] bg-white border border-gray-200 rounded-lg px-2.5 py-2 text-gray-600 focus:outline-none"
-                  >
-                    <option value="">Ajouter un surveillant…</option>
-                    {nonAffectes.map((s) => <option key={s.id} value={s.id}>{s.nom} — {s.role}</option>)}
-                  </select>
-                  <button
-                    onClick={add}
-                    disabled={!addId || pending}
-                    className="flex items-center gap-1 px-3 py-2 rounded-lg text-white text-[12px] font-semibold disabled:opacity-40"
-                    style={{ background: ACCENT }}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    Ajouter
-                  </button>
-                </div>
+                <SurveillantPicker surveillants={nonAffectes} onSelect={add} disabled={pending} />
               )}
             </div>
             <div className="overflow-x-auto">
