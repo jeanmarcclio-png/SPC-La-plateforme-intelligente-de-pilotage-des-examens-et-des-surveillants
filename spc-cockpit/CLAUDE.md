@@ -1,8 +1,11 @@
 @AGENTS.md
 
-> **Référence produit obligatoire** : lire `../SPC_Product_Bible_v1.0.md`
-> (racine du dépôt) avant toute évolution du module Opérations — vision,
-> workflows métier, règles de calcul, gouvernance et comité d'experts.
+> **Références produit obligatoires** avant toute évolution du module Opérations :
+> 1. `../SPC_Master_Prompt_Prestige.md` (racine) — Master Prompt Enterprise :
+>    principes non négociables, workflow officiel, moteur de calcul, modules,
+>    QA/tests, rapport final obligatoire à chaque chantier.
+> 2. `../SPC_Product_Bible_v1.0.md` (racine) — vision, workflows métier,
+>    règles de calcul, gouvernance et comité d'experts.
 
 # FRAMEWORK ENTERPRISE UI/UX — JMC COCKPIT
 
