@@ -9,6 +9,80 @@ function revalidateOps() {
   revalidatePath("/operations/devis");
 }
 
+interface SalleInput {
+  session: "matin" | "apres-midi";
+  salle: string;
+  etudiants: number;
+  surveillants: number;
+  pmr: boolean;
+  tiersTemps: boolean;
+  debut: string;
+  fin: string;
+  observations: string;
+  ordre: number;
+}
+
+function parseSalles(fd: FormData): SalleInput[] | null {
+  const raw = fd.get("salles_json");
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  try {
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return null;
+    return arr
+      .filter((s) => s && typeof s.salle === "string" && s.salle.trim())
+      .map((s) => ({
+        session: s.session === "apres-midi" ? "apres-midi" : "matin",
+        salle: String(s.salle).trim().slice(0, 6),
+        etudiants: Number(s.etudiants) || 0,
+        surveillants: Number(s.surveillants) || 0,
+        pmr: !!s.pmr,
+        tiersTemps: !!s.tiersTemps,
+        debut: typeof s.debut === "string" ? s.debut : "",
+        fin: typeof s.fin === "string" ? s.fin : "",
+        observations: typeof s.observations === "string" ? s.observations.trim() : "",
+        ordre: Number(s.ordre) || 0,
+      }));
+  } catch {
+    return null;
+  }
+}
+
+// Remplace intégralement la répartition des salles d'un devis (delete + reinsert).
+// Matin et après-midi restent indépendants : les deux sessions sont réécrites ensemble.
+async function syncSalles(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  devisId: number,
+  salles: SalleInput[] | null
+): Promise<{ warning?: string }> {
+  if (salles === null) return {}; // formulaire sans éditeur de salles — ne touche à rien
+  try {
+    const del = await supabase.from("devis_salles").delete().eq("devis_id", devisId);
+    if (del.error) return { warning: "Répartition des salles non enregistrée (table devis_salles absente ? exécuter le script v8)." };
+    if (salles.length > 0) {
+      const ins = await supabase.from("devis_salles").insert(
+        salles.map((s) => ({
+          devis_id: devisId,
+          session: s.session,
+          salle: s.salle,
+          etudiants: s.etudiants,
+          surveillants: s.surveillants,
+          pmr: s.pmr,
+          tiers_temps: s.tiersTemps,
+          debut: s.debut || null,
+          fin: s.fin || null,
+          observations: s.observations || null,
+          ordre: s.ordre,
+        }))
+      );
+      if (ins.error) return { warning: `Répartition des salles partiellement enregistrée : ${ins.error.message}` };
+    }
+    revalidatePath(`/operations/devis/${devisId}`);
+    return {};
+  } catch (e) {
+    return { warning: e instanceof Error ? e.message : "Répartition des salles non enregistrée." };
+  }
+}
+
 function parseForm(fd: FormData) {
   const reference = (fd.get("reference") as string | null)?.trim();
   const client = (fd.get("client") as string | null)?.trim();
@@ -77,31 +151,36 @@ async function creerMissionDepuisDevis(
   return { missionRef: mission.reference };
 }
 
-export async function createDevis(fd: FormData): Promise<{ error?: string }> {
+export async function createDevis(fd: FormData): Promise<{ error?: string; warning?: string }> {
   const fields = parseForm(fd);
   if (!fields.reference) return { error: "La référence est obligatoire" };
   if (!fields.client) return { error: "Le client est obligatoire" };
+  const salles = parseSalles(fd);
 
   try {
     const supabase = await createClient();
-    const { error } = await supabase.from("devis").insert(fields);
+    const { data: inserted, error } = await supabase.from("devis").insert(fields).select("id").single();
     if (error) return { error: `Création échouée : ${error.message}` };
+    const { warning } = inserted ? await syncSalles(supabase, inserted.id, salles) : {};
     revalidateOps();
-    return {};
+    return { warning };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erreur inconnue" };
   }
 }
 
-export async function updateDevis(id: number, fd: FormData): Promise<{ error?: string; missionRef?: string }> {
+export async function updateDevis(id: number, fd: FormData): Promise<{ error?: string; missionRef?: string; warning?: string }> {
   const fields = parseForm(fd);
   if (!fields.reference) return { error: "La référence est obligatoire" };
   if (!fields.client) return { error: "Le client est obligatoire" };
+  const salles = parseSalles(fd);
 
   try {
     const supabase = await createClient();
     const { error } = await supabase.from("devis").update(fields).eq("id", id);
     if (error) return { error: `Mise à jour échouée : ${error.message}` };
+
+    const { warning } = await syncSalles(supabase, id, salles);
 
     let missionRef: string | undefined;
     if (fields.statut === "Accepté") {
@@ -111,7 +190,7 @@ export async function updateDevis(id: number, fd: FormData): Promise<{ error?: s
     }
 
     revalidateOps();
-    return { missionRef };
+    return { missionRef, warning };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erreur inconnue" };
   }

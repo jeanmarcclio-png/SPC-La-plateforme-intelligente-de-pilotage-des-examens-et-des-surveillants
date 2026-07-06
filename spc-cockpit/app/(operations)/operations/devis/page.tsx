@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { getDevisList } from "@/lib/operations/queries";
+import { getDevisList, getDevisSalles } from "@/lib/operations/queries";
 import { DevisTable } from "@/components/ops/DevisTable";
 import { Kpi } from "@/components/ops/Kpi";
 import { euro } from "@/lib/operations/format";
@@ -8,7 +8,7 @@ import { FileText, PenLine, Send, CheckCircle2, Euro } from "lucide-react";
 import { PageHeader } from "@/components/ops/shell";
 
 export default async function DevisPage() {
-  const devis = await getDevisList();
+  const [devis, devisSalles] = await Promise.all([getDevisList(), getDevisSalles()]);
   const brouillons = devis.filter((d) => d.statut === "Brouillon").length;
   const envoyes = devis.filter((d) => d.statut === "Envoyé").length;
   const acceptes = devis.filter((d) => d.statut === "Accepté" || d.statut === "Facturé");
@@ -26,7 +26,7 @@ export default async function DevisPage() {
         <Kpi label="CA accepté HT" value={euro(caAccepteHT)} sub="devis acceptés ou facturés" icon={<Euro className="w-4 h-4" />} />
       </div>
 
-      <DevisTable devis={devis} />
+      <DevisTable devis={devis} devisSalles={devisSalles} />
     </div>
   );
 }

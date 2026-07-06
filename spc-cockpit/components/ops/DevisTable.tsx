@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
-import type { Devis } from "@/lib/operations/types";
+import type { Devis, DevisSalle } from "@/lib/operations/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DevisSallesEditor } from "@/components/ops/DevisSallesEditor";
 import { createDevis, updateDevis, deleteDevis, duplicateDevis } from "@/app/actions/devis";
 import { showToast } from "@/components/Toast";
 import { DevisBadge } from "@/components/ops/badges";
@@ -36,12 +37,14 @@ const inputCls =
 
 function DevisForm({
   initial,
+  initialSalles,
   suggestedRef,
   pending,
   onSubmit,
   onCancel,
 }: {
   initial?: Devis;
+  initialSalles: DevisSalle[];
   suggestedRef: string;
   pending: boolean;
   onSubmit: (fd: FormData) => void;
@@ -134,6 +137,12 @@ function DevisForm({
         </Field>
       </div>
       <p className="text-[11px] text-gray-400">Le TTC se calcule automatiquement (TVA 20 %) tant que tu ne le modifies pas à la main.</p>
+
+      <div className="pt-2 border-t border-gray-100">
+        <h2 className="text-[13px] font-bold text-gray-900 mb-3">Répartition des salles par session</h2>
+        <DevisSallesEditor initial={initialSalles} />
+      </div>
+
       <div className="flex gap-2.5 pt-1">
         <button type="button" onClick={onCancel} className="flex-1 py-2.5 rounded-lg border border-gray-200 text-[13px] text-gray-600 hover:bg-gray-50">
           Annuler
@@ -151,7 +160,7 @@ function DevisForm({
   );
 }
 
-export function DevisTable({ devis }: { devis: Devis[] }) {
+export function DevisTable({ devis, devisSalles = [] }: { devis: Devis[]; devisSalles?: DevisSalle[] }) {
   const [search, setSearch] = useState("");
   const [statut, setStatut] = useState("");
   const [dialog, setDialog] = useState<{ mode: "create" } | { mode: "edit"; devis: Devis } | null>(null);
@@ -194,6 +203,8 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
             ? `${fd.get("reference")} accepté — mission ${missionRef} créée`
             : dialog.mode === "edit" ? `${fd.get("reference")} mis à jour` : `Devis ${fd.get("reference")} créé`
         );
+        const warning = "warning" in result ? result.warning : undefined;
+        if (warning) showToast(warning, "error");
         setDialog(null);
       }
     });
@@ -309,7 +320,7 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
       </div>
 
       <Dialog open={!!dialog} onOpenChange={(v) => !v && setDialog(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {dialog?.mode === "edit" ? `Modifier — ${dialog.devis.reference}` : "Nouveau devis"}
@@ -319,6 +330,7 @@ export function DevisTable({ devis }: { devis: Devis[] }) {
             <DevisForm
               key={dialog.mode === "edit" ? dialog.devis.id : "create"}
               initial={dialog.mode === "edit" ? dialog.devis : undefined}
+              initialSalles={dialog.mode === "edit" ? devisSalles.filter((s) => s.devisId === dialog.devis.id) : []}
               suggestedRef={suggestReference(devis)}
               pending={pending}
               onSubmit={submit}
