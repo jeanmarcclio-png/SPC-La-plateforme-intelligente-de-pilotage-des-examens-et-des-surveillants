@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle, DevisEquipe } from "./types";
-import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures, mockDevisLignes, mockDevisSalles, mockDevisEquipe } from "./mock";
+import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle, DevisEquipe , JournalEntry } from "./types";
+import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures, mockDevisLignes, mockDevisSalles, mockDevisEquipe, mockJournal } from "./mock";
 
 export async function getSurveillants(): Promise<Surveillant[]> {
   try {
@@ -243,5 +243,28 @@ export async function getDevisEquipe(): Promise<DevisEquipe[]> {
     }));
   } catch {
     return mockDevisEquipe;
+  }
+}
+
+export async function getJournal(): Promise<JournalEntry[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("journal_sessions")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error || !data?.length) return mockJournal;
+    return data.map((r) => ({
+      id: r.id,
+      missionId: r.mission_id ?? null,
+      utilisateur: r.utilisateur ?? "inconnu",
+      objet: r.objet,
+      ancienne: r.ancienne ?? null,
+      nouvelle: r.nouvelle ?? null,
+      createdAt: r.created_at,
+    }));
+  } catch {
+    return mockJournal;
   }
 }

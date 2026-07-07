@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
-import type { Mission, Surveillant, Affectation } from "@/lib/operations/types";
+import type { Mission, Surveillant, Affectation, JournalEntry } from "@/lib/operations/types";
 import { updateAffectation, addAffectation, deleteAffectation, type AffectationFields } from "@/app/actions/affectations";
 import { validerSession } from "@/app/actions/missions";
 import { SurveillantPicker } from "@/components/ops/SurveillantPicker";
@@ -69,10 +69,12 @@ export function PlanificationBoard({
   missions,
   surveillants,
   affectations,
+  journal = [],
 }: {
   missions: Mission[];
   surveillants: Surveillant[];
   affectations: Affectation[];
+  journal?: JournalEntry[];
 }) {
   const planifiables = useMemo(
     () => missions.filter((m) => m.statut === "En cours" || m.statut === "Planifiée" || m.statut === "Validée").concat(missions.filter((m) => m.statut === "Terminée")),
@@ -141,6 +143,8 @@ export function PlanificationBoard({
       else showToast(`${s.nom} ajouté à la session`);
     });
   }
+
+  const journalMission = journal.filter((j) => j.missionId === missionId);
 
   // Résumé + alertes
   const salles = new Set(rows.map((a) => stateOf(a).salle.trim()).filter(Boolean));
@@ -389,6 +393,45 @@ export function PlanificationBoard({
               </table>
             </div>
           </div>
+
+          {/* Journal de session — append-only (Master Prompt §15.6) */}
+          {journalMission.length > 0 && (
+            <div className="mt-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
+              <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100">
+                <h2 className="text-[14px] font-bold text-gray-900">Journal de session</h2>
+                <p className="text-[12px] text-gray-400">Historique immuable des modifications — utilisateur, date, ancienne et nouvelle valeur</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse min-w-[720px]">
+                  <thead>
+                    <tr className="bg-gray-50/70 border-b border-gray-100">
+                      {["Date", "Utilisateur", "Objet", "Ancienne valeur", "Nouvelle valeur"].map((h) => (
+                        <th key={h} className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {journalMission.slice(0, 12).map((j) => (
+                      <tr key={j.id} className="border-b border-gray-50 last:border-0">
+                        <td className="px-5 py-2.5 text-[12px] text-gray-500 whitespace-nowrap">
+                          {new Date(j.createdAt).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                        </td>
+                        <td className="px-5 py-2.5 text-[12px] text-gray-600 whitespace-nowrap">{j.utilisateur}</td>
+                        <td className="px-5 py-2.5 text-[12.5px] font-semibold text-gray-800">{j.objet}</td>
+                        <td className="px-5 py-2.5 text-[12px] text-gray-500">{j.ancienne ?? <span className="text-gray-300">—</span>}</td>
+                        <td className="px-5 py-2.5 text-[12px] font-medium text-gray-700">{j.nouvelle ?? <span className="text-gray-300">—</span>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {journalMission.length > 12 && (
+                <div className="px-5 py-2.5 text-[11.5px] text-gray-400 border-t border-gray-100">
+                  {journalMission.length - 12} entrée(s) plus ancienne(s) non affichée(s)
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
     </>

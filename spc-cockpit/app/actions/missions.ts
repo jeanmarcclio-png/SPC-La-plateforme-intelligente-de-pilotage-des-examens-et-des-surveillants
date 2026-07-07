@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { journaliser } from "@/lib/operations/journal";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -61,8 +62,16 @@ export async function updateMission(id: number, fd: FormData): Promise<{ error?:
 export async function validerSession(id: number): Promise<{ error?: string }> {
   try {
     const supabase = await createClient();
+    const { data: avant } = await supabase.from("missions").select("statut, client").eq("id", id).single();
     const { error } = await supabase.from("missions").update({ statut: "Validée" }).eq("id", id);
     if (error) return { error: `Validation échouée : ${error.message}` };
+
+    await journaliser(supabase, {
+      missionId: id,
+      objet: `Statut de session — ${avant?.client ?? `mission #${id}`}`,
+      ancienne: avant?.statut ?? null,
+      nouvelle: "Validée",
+    });
     revalidateOps();
     revalidatePath("/operations/planification");
     revalidatePath("/operations/cockpit");

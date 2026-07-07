@@ -1,4 +1,5 @@
-import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle, DevisEquipe } from "./types";
+import type {
+  JournalEntry, Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle, DevisEquipe } from "./types";
 
 // Données de secours affichées tant que les tables Supabase (supabase-operations.sql)
 // n'ont pas été créées — l'écran ne doit jamais être vide.
@@ -86,4 +87,10 @@ export const mockDevisEquipe: DevisEquipe[] = [
 
 export const mockIncidents: Incident[] = [
   { id: 1, titre: "Fraude suspectée", salle: "A21", dateIncident: "2026-05-28", gravite: "critique", statut: "Ouvert", description: "Comportement suspect signalé par le surveillant de salle — rapport à valider sous 48h." },
+];
+
+export const mockJournal: JournalEntry[] = [
+  { id: 1, missionId: 1, utilisateur: "demo@spc.fr", objet: "Affectation — Marie Lecomte", ancienne: "sans salle · matin 08:00–13:00 · pas d'après-midi", nouvelle: "salle A21 · matin 08:00–14:00 · pas d'après-midi", createdAt: "2026-07-05T09:12:00Z" },
+  { id: 2, missionId: 1, utilisateur: "demo@spc.fr", objet: "Affectation — Karim Osei", ancienne: null, nouvelle: "ajouté à la session (Surveillant salle)", createdAt: "2026-07-05T09:15:00Z" },
+  { id: 3, missionId: 1, utilisateur: "demo@spc.fr", objet: "Statut de session — ICP Paris", ancienne: "Planifiée", nouvelle: "Validée", createdAt: "2026-07-06T17:40:00Z" },
 ];

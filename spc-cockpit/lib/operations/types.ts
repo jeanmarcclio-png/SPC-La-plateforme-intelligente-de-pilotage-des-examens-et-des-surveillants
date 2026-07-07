@@ -151,3 +151,13 @@ export interface Incident {
   description?: string;
   missionId?: number;
 }
+
+export interface JournalEntry {
+  id: number;
+  missionId: number | null;
+  utilisateur: string;
+  objet: string;
+  ancienne: string | null;
+  nouvelle: string | null;
+  createdAt: string; // ISO
+}
