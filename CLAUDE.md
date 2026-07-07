@@ -50,6 +50,16 @@ brand.md              → garde-fou transverse (ton, vocabulaire, palette, cible
 | analyste | .claude/agents/analyste.md | claude-opus-4-8 | analytics/ |
 | presentateur | .claude/agents/presentateur.md | claude-sonnet-4-6 | decks/ |
 
+### Agents produit SaaS (spc-cockpit)
+
+| Agent | Fichier | Modèle | Rôle |
+|-------|---------|--------|------|
+| audit-saas | .claude/agents/audit-saas.md | claude-opus-4-8 | Audit lecture seule vs Master Prompt / Product Bible |
+| dev-saas | .claude/agents/dev-saas.md | claude-sonnet-5 | Implémentation de chantiers scopés (moteur central, shell) |
+| qa-saas | .claude/agents/qa-saas.md | claude-sonnet-5 | Tests, build, lint, cas de référence métier |
+
+Workflow SaaS : `audit-saas → dev-saas → qa-saas` puis commit/push par l'orchestrateur.
+
 ### Agents commerciaux B2B (prospection)
 
 | Agent | Fichier | Modèle | Dossier sortie |
