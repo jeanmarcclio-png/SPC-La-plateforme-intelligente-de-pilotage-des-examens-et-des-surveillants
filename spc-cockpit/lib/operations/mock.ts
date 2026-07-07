@@ -78,7 +78,8 @@ export const mockDevisSalles: DevisSalle[] = [
 ];
 
 export const mockDevisEquipe: DevisEquipe[] = [
-  { id: 1, devisId: 4, role: "Surveillant·e en salle", effectif: 6, heuresPers: 43.72, tauxH: 28, ordre: 1 },
+  { id: 1, devisId: 4, role: "Surveillant·e en salle — semaine du 15 au 19 juin", effectif: 5, heuresPers: 23.64, tauxH: 28, ordre: 1 },
+  { id: 4, devisId: 4, role: "Surveillant·e en salle — semaine du 22 au 26 juin", effectif: 5, heuresPers: 28.82, tauxH: 28, ordre: 2 },
   { id: 2, devisId: 1, role: "Coordinateur·rice", effectif: 2, heuresPers: 10, tauxH: 35, ordre: 1 },
   { id: 3, devisId: 1, role: "Surveillant·e en salle", effectif: 16, heuresPers: 11.25, tauxH: 25, ordre: 2 },
 ];

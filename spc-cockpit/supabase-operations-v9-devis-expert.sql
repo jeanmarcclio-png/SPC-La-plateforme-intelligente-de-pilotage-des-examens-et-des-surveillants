@@ -42,7 +42,8 @@ insert into devis_equipe (devis_id, role, effectif, heures_pers, taux_h, ordre)
 select d.id, v.role, v.effectif, v.heures_pers, v.taux_h, v.ordre
 from devis d
 join (values
-  ('SPC-20260605-001', 'Surveillant·e en salle', 6, 43.72, 28.00, 1)
+  ('SPC-20260605-001', 'Surveillant·e en salle — semaine du 15 au 19 juin', 5, 23.64, 28.00, 1),
+  ('SPC-20260605-001', 'Surveillant·e en salle — semaine du 22 au 26 juin', 5, 28.82, 28.00, 2)
 ) as v(ref, role, effectif, heures_pers, taux_h, ordre) on v.ref = d.reference
 on conflict (devis_id, role) do nothing;
 
