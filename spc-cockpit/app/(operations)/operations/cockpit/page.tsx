@@ -81,7 +81,9 @@ export default async function CockpitOpsPage() {
   const enCours = missions.filter((m) => m.statut === "En cours").length;
   const rows = active ? affectations.filter((a) => a.missionId === active.id) : [];
 
-  const sallesCouvertes = rows.filter((a) => a.salle).length;
+  const aPreparer = missions.filter((m) => m.statut === "Planifiée" || m.statut === "Validée").length;
+  const sallesAffectees = new Set(rows.filter((a) => a.salle).map((a) => a.salle)).size;
+  const sallesRequises = active?.nbSalles ?? 0;
   const creneauxDefinis = rows.filter((a) => a.matin || a.apm).length;
   const coordinateurOk = rows.some((a) => (a.roleMission ?? "").toLowerCase().includes("coordinat") && (a.matin || a.apm) && a.salle);
 
@@ -90,11 +92,15 @@ export default async function CockpitOpsPage() {
 
   for (const a of rows) {
     const nom = survById.get(a.surveillantId)?.nom ?? `Surveillant #${a.surveillantId}`;
-    const session = `Session "${active?.client} — ${active?.session ?? "Session"}"`;
-    if (!a.matin && !a.apm) {
+    const session = `Session "${active?.client} — ${active?.session ?? "Session"}"${active?.reference ? ` · ${active.reference}` : ""}`;
+    const sansCreneau = !a.matin && !a.apm;
+    const sansSalle = !a.salle;
+    if (sansCreneau && sansSalle) {
+      // Regroupement : un seul signal par surveillant, jamais deux cartes pour le même problème.
+      alertes.push({ niveau: "avertissement", tag: "Planning", titre: `Affectation incomplète — ${nom}`, detail: `${session} : salle et créneau à compléter`, href: "/operations/planification" });
+    } else if (sansCreneau) {
       alertes.push({ niveau: "avertissement", tag: "Planning", titre: `Créneau manquant — ${nom}`, detail: `${session} : ni matin ni après-midi`, href: "/operations/planification" });
-    }
-    if (!a.salle) {
+    } else if (sansSalle) {
       alertes.push({ niveau: "avertissement", tag: "Planning", titre: `Salle manquante — ${nom}`, detail: `${session} : aucune salle affectée`, href: "/operations/planification" });
     }
   }
@@ -143,16 +149,25 @@ export default async function CockpitOpsPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
-        <CockpitKpi
-          label="Sessions actives"
-          value={active ? "1" : "0"}
-          sub={enCours > 0 ? `${enCours} session(s) en cours` : "Aucune session en cours"}
-          icon={<Activity className="w-4 h-4" />}
-        />
+        {enCours > 0 ? (
+          <CockpitKpi
+            label="Sessions en cours"
+            value={String(enCours)}
+            sub="sur le terrain en ce moment"
+            icon={<Activity className="w-4 h-4" />}
+          />
+        ) : (
+          <CockpitKpi
+            label="Sessions à préparer"
+            value={String(aPreparer)}
+            sub="aucune session en cours"
+            icon={<Activity className="w-4 h-4" />}
+          />
+        )}
         <CockpitKpi
           label="Salles couvertes"
-          value={`${sallesCouvertes}/${rows.length}`}
-          sub={`${rows.length - sallesCouvertes} salle(s) manquante(s)`}
+          value={`${sallesAffectees}/${sallesRequises}`}
+          sub={`${Math.max(0, sallesRequises - sallesAffectees)} salle(s) à couvrir`}
           icon={<DoorOpen className="w-4 h-4" />}
           variant="amber"
         />
@@ -165,7 +180,7 @@ export default async function CockpitOpsPage() {
         <CockpitKpi
           label="Alertes"
           value={String(alertes.length)}
-          sub={`${avertissements.length} avert.`}
+          sub={`${avertissements.length} avert. · ${informations.length} info(s)`}
           icon={<AlertTriangle className="w-4 h-4" />}
           variant="alerte"
         />
@@ -250,8 +265,8 @@ export default async function CockpitOpsPage() {
               <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-[12.5px] flex-wrap gap-2">
                 <div className="flex items-center gap-4 flex-wrap">
                   <span className="inline-flex items-center gap-1.5 text-gray-600"><Users className="w-3.5 h-3.5 text-gray-400" aria-hidden />{rows.length} surveillants</span>
-                  <span className={`inline-flex items-center gap-1.5 font-bold ${sallesCouvertes < rows.length ? "text-red-500" : "text-emerald-600"}`}>
-                    <Landmark className="w-3.5 h-3.5" aria-hidden />{sallesCouvertes}/{rows.length} salles
+                  <span className={`inline-flex items-center gap-1.5 font-bold ${sallesAffectees < sallesRequises ? "text-red-500" : "text-emerald-600"}`}>
+                    <Landmark className="w-3.5 h-3.5" aria-hidden />{sallesAffectees}/{sallesRequises} salles
                   </span>
                   <span className={`inline-flex items-center gap-1.5 font-bold ${coordinateurOk ? "text-emerald-600" : "text-amber-600"}`}>
                     <UserCheck className="w-3.5 h-3.5" aria-hidden />{coordinateurOk ? "Coordinateur OK" : "Coordinateur à confirmer"}
@@ -283,6 +298,7 @@ export default async function CockpitOpsPage() {
                 </div>
                 <div className="text-[13px] font-bold text-gray-900 mt-1.5">{a.titre}</div>
                 <div className="text-[11.5px] text-gray-500 mt-0.5">{a.detail}</div>
+                <div className="text-[11.5px] font-bold text-amber-700 mt-1.5">{a.tag === "Staff" ? "Rééquilibrer la charge →" : "Corriger l'affectation →"}</div>
               </Link>
             ))}
             {informations.map((a, i) => (
@@ -297,6 +313,7 @@ export default async function CockpitOpsPage() {
                 </div>
                 <div className="text-[13px] font-bold text-gray-900 mt-1.5">{a.titre}</div>
                 <div className="text-[11.5px] text-gray-500 mt-0.5">{a.detail}</div>
+                <div className="text-[11.5px] font-bold text-blue-600 mt-1.5">Voir la mission →</div>
               </Link>
             ))}
           </div>

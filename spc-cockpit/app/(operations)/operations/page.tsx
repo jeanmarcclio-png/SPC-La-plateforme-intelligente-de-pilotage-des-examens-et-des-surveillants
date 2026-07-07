@@ -58,7 +58,8 @@ export default async function OperationsPage() {
     getSurveillants(), getMissions(), getDevisList(), getIncidents(), getAffectations(),
   ]);
 
-  const dispo = surveillants.filter((s) => s.statut === "Disponible" || s.statut === "Planifié");
+  const disponibles = surveillants.filter((s) => s.statut === "Disponible");
+  const planifies = surveillants.filter((s) => s.statut === "Planifié");
   const missionsAVenir = missions.filter((m) => m.statut === "Planifiée" || m.statut === "Validée" || m.statut === "En cours");
   const pipeline = devis.filter((d) => (STATUTS_PIPELINE as readonly string[]).includes(d.statut));
   const confirmes = devis.filter((d) => (STATUTS_CA_CONFIRME as readonly string[]).includes(d.statut));
@@ -88,7 +89,7 @@ export default async function OperationsPage() {
         severite: "attention",
         tag: "En cours",
         titre: "Mission active à sécuriser",
-        detail: `${missionActive.client} · ${dateFR(missionActive.dateMission)} · ${incomplets} affectation${incomplets > 1 ? "s" : ""} incomplète${incomplets > 1 ? "s" : ""}`,
+        detail: `${missionActive.client} · ${missionActive.reference} · ${dateFR(missionActive.dateMission)} · ${incomplets} affectation${incomplets > 1 ? "s" : ""} incomplète${incomplets > 1 ? "s" : ""}`,
         action: "Piloter",
         href: "/operations/planification",
         icon: <ClipboardList className="w-4 h-4" />,
@@ -101,7 +102,7 @@ export default async function OperationsPage() {
       severite: "attention",
       tag: "Sans devis accepté",
       titre: "Devis à finaliser",
-      detail: `${d.client} · ${euro(d.montantHT)} HT · brouillon`,
+      detail: `${d.client} · ${d.reference} · ${euro(d.montantHT)} HT · brouillon`,
       action: "Finaliser",
       href: "/operations/devis",
       icon: <FileText className="w-4 h-4" />,
@@ -113,7 +114,7 @@ export default async function OperationsPage() {
       severite: "suivre",
       tag: "En attente de réponse",
       titre: "Relance commerciale",
-      detail: `${d.client} · ${euro(d.montantHT)} HT · envoyé`,
+      detail: `${d.client} · ${d.reference} · ${euro(d.montantHT)} HT · envoyé`,
       action: "Relancer",
       href: "/operations/devis",
       icon: <Send className="w-4 h-4" />,
@@ -152,7 +153,7 @@ export default async function OperationsPage() {
       {/* KPIs — terminologie stable, chaque tuile mène à sa page source */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
         <Kpi label="Missions à venir" value={String(missionsAVenir.length)} sub={`${missions.length} au total`} icon={<Briefcase className="w-4 h-4" />} href="/operations/missions" />
-        <Kpi label="Équipe mobilisable" value={`${dispo.length}/${surveillants.length}`} sub="disponibles ou planifiés" icon={<Users className="w-4 h-4" />} href="/operations/surveillants" />
+        <Kpi label="Équipe mobilisable" value={String(disponibles.length)} sub={`disponibles · ${planifies.length} déjà planifié${planifies.length > 1 ? "s" : ""} · ${surveillants.length} au total`} icon={<Users className="w-4 h-4" />} href="/operations/surveillants" />
         <Kpi label="Pipeline commercial HT" value={euro(pipeline.reduce((s, d) => s + d.montantHT, 0))} sub={`${pipeline.length} devis brouillon ou envoyé`} icon={<Euro className="w-4 h-4" />} href="/operations/devis" />
         <Kpi label="CA confirmé HT" value={euro(confirmes.reduce((s, d) => s + d.montantHT, 0))} sub={`${confirmes.length} devis accepté${confirmes.length > 1 ? "s" : ""} ou facturé${confirmes.length > 1 ? "s" : ""}`} icon={<FileCheck2 className="w-4 h-4" />} href="/operations/devis" />
       </div>
@@ -304,7 +305,7 @@ export default async function OperationsPage() {
         <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-baseline justify-between gap-2">
           <div>
             <h2 className="text-[14px] font-bold text-gray-900">Équipe — Disponibilité</h2>
-            <p className="text-[12px] text-gray-400">{dispo.length} mobilisables sur {surveillants.length}</p>
+            <p className="text-[12px] text-gray-400">{disponibles.length} disponibles · {planifies.length} planifiés · {surveillants.length} au total</p>
           </div>
           <Link href="/operations/surveillants" className="text-[12px] font-bold text-blue-600 hover:text-blue-800 whitespace-nowrap">
             Voir l&apos;équipe →
