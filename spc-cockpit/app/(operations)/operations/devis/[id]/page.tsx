@@ -126,8 +126,10 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
   const totalLignes = lignesDevis.reduce((s, l) => s + l.quantite * l.prixUnitaire, 0);
   const totalEquipe = equipe.reduce((s, e) => s + e.effectif * e.heuresPers * e.tauxH, 0);
   const baseBrute = equipe.length > 0 ? totalEquipe : lignesDevis.length > 0 ? totalLignes : devis.montantHT;
-  const { ht, tva, ttc } = calculateDevisTotals({
+  const coefficient = devis.coefficient > 0 ? devis.coefficient : 1;
+  const { baseAjustee, ht, tva, ttc } = calculateDevisTotals({
     baseBruteHT: baseBrute,
+    coefficient,
     fraisDeplacement: devis.fraisDeplacement,
     fraisCoordination: devis.fraisCoordination,
     remise: devis.remise,
@@ -313,6 +315,17 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
               <span>Base brute HT ({equipe.length > 0 ? "heures × tarifs" : "détail des prestations"})</span>
               <span className="font-semibold">{euro(baseBrute)}</span>
             </div>
+            {coefficient !== 1 && (
+              <>
+                <div className="flex justify-between px-4 py-2.5 text-[13px] text-gray-700">
+                  <span>Coefficient d&apos;ajustement <span className="font-semibold">× {coefficient.toFixed(2).replace(".", ",")}</span></span>
+                  <span className="font-semibold">{euro(baseAjustee)}</span>
+                </div>
+                <div className="px-4 py-2 text-[11px] text-gray-400 bg-gray-50/60">
+                  Le coefficient d&apos;ajustement représente une marge opérationnelle appliquée au volume horaire afin de couvrir les imprévus, renforts, remplacements, retards ou ajustements de dernière minute.
+                </div>
+              </>
+            )}
             {devis.fraisDeplacement > 0 && (
               <div className="flex justify-between px-4 py-2.5 text-[13px] text-gray-700">
                 <span>Frais de déplacement</span>

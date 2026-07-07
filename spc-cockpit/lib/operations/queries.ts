@@ -94,6 +94,7 @@ export async function getDevisList(): Promise<Devis[]> {
       typeEpreuve: r.type_epreuve ?? undefined,
       dateDebut: r.date_debut ?? undefined,
       dateFin: r.date_fin ?? undefined,
+      coefficient: Number(r.coefficient ?? 1) || 1,
       fraisDeplacement: Number(r.frais_deplacement ?? 0),
       fraisCoordination: Number(r.frais_coordination ?? 0),
       remise: Number(r.remise ?? 0),

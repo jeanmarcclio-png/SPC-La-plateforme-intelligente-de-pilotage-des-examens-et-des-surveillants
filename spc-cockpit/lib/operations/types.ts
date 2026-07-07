@@ -98,6 +98,7 @@ export interface Devis {
   typeEpreuve?: string;
   dateDebut?: string; // ISO
   dateFin?: string;
+  coefficient: number; // 1.00 = aucun ajustement
   fraisDeplacement: number;
   fraisCoordination: number;
   remise: number;

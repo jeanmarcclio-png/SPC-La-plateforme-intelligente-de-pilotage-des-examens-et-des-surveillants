@@ -34,10 +34,10 @@ export const mockAffectations: Affectation[] = [
 ];
 
 export const mockDevis: Devis[] = [
-  { id: 1, reference: "SPC-20260514-001", client: "Sciences Po",  session: "Concours écrit 2026",           statut: "Accepté",   montantHT: 5200, montantTTC: 6240,   nbSurveillants: 18, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
-  { id: 2, reference: "SPC-20260524-001", client: "ICP Paris",    session: "Session principale — mai 2026", statut: "Brouillon", montantHT: 4042, montantTTC: 4850.4, nbSurveillants: 14, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
-  { id: 3, reference: "SPC-20260528-001", client: "Dauphine PSL", session: "Rattrapages juin 2026",         statut: "Envoyé",    montantHT: 2600, montantTTC: 3120,   nbSurveillants: 8, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
-  { id: 4, reference: "SPC-20260605-001", client: "ICP Reims",    session: "Rattrapages juin 2026 — 74 créneaux · 262,3 h", statut: "Accepté", montantHT: 7344.4, montantTTC: 8813.28, nbSurveillants: 6, contact: "Mathilde Régnier — Pôle Scolarité", email: "scolarite.reims@icp.fr", ville: "Reims", typeEpreuve: "Rattrapage", dateDebut: "2026-06-15", dateFin: "2026-06-26", fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
+  { id: 1, reference: "SPC-20260514-001", client: "Sciences Po",  session: "Concours écrit 2026",           statut: "Accepté",   montantHT: 5200, montantTTC: 6240,   nbSurveillants: 18, coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
+  { id: 2, reference: "SPC-20260524-001", client: "ICP Paris",    session: "Session principale — mai 2026", statut: "Brouillon", montantHT: 4042, montantTTC: 4850.4, nbSurveillants: 14, coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
+  { id: 3, reference: "SPC-20260528-001", client: "Dauphine PSL", session: "Rattrapages juin 2026",         statut: "Envoyé",    montantHT: 2600, montantTTC: 3120,   nbSurveillants: 8, coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
+  { id: 4, reference: "SPC-20260605-001", client: "ICP Reims",    session: "Rattrapages juin 2026 — 74 créneaux · 262,3 h", statut: "Accepté", montantHT: 7344.4, montantTTC: 8813.28, nbSurveillants: 6, contact: "Mathilde Régnier — Pôle Scolarité", email: "scolarite.reims@icp.fr", ville: "Reims", typeEpreuve: "Rattrapage", dateDebut: "2026-06-15", dateFin: "2026-06-26", coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
 ];
 
 export const mockSalles: Salle[] = [

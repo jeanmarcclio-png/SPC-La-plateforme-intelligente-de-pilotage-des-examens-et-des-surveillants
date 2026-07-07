@@ -102,6 +102,7 @@ function parseForm(fd: FormData) {
     type_epreuve: (fd.get("type_epreuve") as string | null)?.trim() || null,
     date_debut: (fd.get("date_debut") as string | null) || null,
     date_fin: (fd.get("date_fin") as string | null) || null,
+    coefficient: Number(fd.get("coefficient") ?? 1) || 1,
     frais_deplacement: Number(fd.get("frais_deplacement") ?? 0) || 0,
     frais_coordination: Number(fd.get("frais_coordination") ?? 0) || 0,
     remise: Number(fd.get("remise") ?? 0) || 0,

@@ -123,6 +123,21 @@ describe("règles financières", () => {
     expect(t.ht).toBe(5300);
     expect(t.ttc).toBe(6360);
   });
+  it("coefficient 1.00 = aucun ajustement du devis", () => {
+    const t = calculateDevisTotals({ baseBruteHT: 7344.4, coefficient: 1 });
+    expect(t.baseAjustee).toBe(7344.4);
+    expect(t.ht).toBe(7344.4);
+  });
+  it("coefficient 1.20 appliqué une seule fois, avant les frais", () => {
+    const t = calculateDevisTotals({ baseBruteHT: 3000, coefficient: 1.2, fraisDeplacement: 50 });
+    expect(t.baseAjustee).toBe(3600);
+    expect(t.ht).toBe(3650);
+    expect(t.tva).toBe(730);
+    expect(t.ttc).toBe(4380);
+  });
+  it("coefficient invalide = erreur", () => {
+    expect(() => calculateDevisTotals({ baseBruteHT: 1000, coefficient: 0 })).toThrow();
+  });
 });
 
 describe("formatage (séparé des calculs)", () => {

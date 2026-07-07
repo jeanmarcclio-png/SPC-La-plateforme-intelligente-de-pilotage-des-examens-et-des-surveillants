@@ -106,6 +106,12 @@ function DevisForm({
           <input name="date_fin" type="date" defaultValue={initial?.dateFin ?? ""} className={inputCls} />
         </Field>
       </div>
+      <Field label="Coefficient d'ajustement">
+        <input name="coefficient" type="number" min="0.01" step="0.01" defaultValue={initial?.coefficient ?? 1} className={inputCls} />
+        <p className="text-[11px] text-gray-400 mt-1">
+          1,00 = aucun ajustement. Le coefficient représente une marge opérationnelle appliquée au volume horaire afin de couvrir les imprévus, renforts, remplacements, retards ou ajustements de dernière minute.
+        </p>
+      </Field>
       <div className="grid grid-cols-3 gap-3">
         <Field label="Frais déplacement (€)">
           <input name="frais_deplacement" type="number" min="0" step="0.01" defaultValue={initial?.fraisDeplacement ?? 0} className={inputCls} />

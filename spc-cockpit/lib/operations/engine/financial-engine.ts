@@ -137,23 +137,31 @@ export function calculateFinancialEstimate(input: FinancialInput): FinancialEsti
 }
 
 /**
- * Récapitulatif d'un devis SPC : base brute HT (euros) + frais − remise
- * → HT / TVA / TTC en euros exacts. Remplace les × 1.2 dispersés.
+ * Récapitulatif d'un devis SPC : base brute HT (euros) × coefficient
+ * d'ajustement (1.00 = aucun ajustement, appliqué UNE seule fois, avant
+ * les frais) + frais − remise → HT / TVA / TTC en euros exacts.
  */
 export function calculateDevisTotals(input: {
   baseBruteHT: number;
+  coefficient?: number;
   fraisDeplacement?: number;
   fraisCoordination?: number;
   remise?: number;
   vatRate?: number;
-}): { ht: number; tva: number; ttc: number } {
+}): { baseAjustee: number; ht: number; tva: number; ttc: number } {
+  const ajusteeCents = calculateAdjustedHTCents(eurosToCents(input.baseBruteHT), input.coefficient ?? 1);
   const htCents =
-    eurosToCents(input.baseBruteHT) +
+    ajusteeCents +
     eurosToCents(input.fraisDeplacement ?? 0) +
     eurosToCents(input.fraisCoordination ?? 0) -
     eurosToCents(input.remise ?? 0);
   const vatCents = calculateVATCents(htCents, input.vatRate ?? TVA_RATE);
-  return { ht: centsToEuros(htCents), tva: centsToEuros(vatCents), ttc: centsToEuros(calculateTTCents(htCents, vatCents)) };
+  return {
+    baseAjustee: centsToEuros(ajusteeCents),
+    ht: centsToEuros(htCents),
+    tva: centsToEuros(vatCents),
+    ttc: centsToEuros(calculateTTCents(htCents, vatCents)),
+  };
 }
 
 /** TTC depuis un HT en euros (TVA 20 % par défaut) — pour les formulaires. */
