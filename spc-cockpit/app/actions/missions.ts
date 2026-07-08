@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { journaliser } from "@/lib/operations/journal";
+import { requireCapability } from "@/lib/auth/session";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -60,6 +61,8 @@ export async function updateMission(id: number, fd: FormData): Promise<{ error?:
 // Validation de session (Master Prompt §15.4) : les contrôles bloquants sont
 // exécutés côté client via le moteur central ; cette action scelle le statut.
 export async function validerSession(id: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("validate");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { data: avant } = await supabase.from("missions").select("statut, client").eq("id", id).single();

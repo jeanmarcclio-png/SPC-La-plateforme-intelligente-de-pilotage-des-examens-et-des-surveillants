@@ -41,3 +41,46 @@ export function assertRole(role: Role, required: Role): AuthResult {
     ? { ok: true }
     : { ok: false, error: `Accès refusé : rôle « ${required} » requis (rôle actuel : « ${role} »).` };
 }
+
+// ---------------------------------------------------------------------------
+// Capacités opérationnelles (dérivées du rôle)
+// ---------------------------------------------------------------------------
+
+export type Capability = "read" | "plan" | "validate" | "finance" | "admin";
+
+/** Rôle minimal requis pour chaque capacité. */
+export const CAPABILITY_MIN_ROLE: Record<Capability, Role> = {
+  read: "lecteur",
+  plan: "planificateur",
+  validate: "coordinateur",
+  finance: "coordinateur",
+  admin: "administrateur",
+};
+
+export const canReadOperations = (role: Role) => hasRole(role, "lecteur");
+export const canPlanOperations = (role: Role) => hasRole(role, "planificateur");
+export const canValidateOperations = (role: Role) => hasRole(role, "coordinateur");
+export const canManageFinance = (role: Role) => hasRole(role, "coordinateur");
+export const canAdminOrg = (role: Role) => hasRole(role, "administrateur");
+
+/**
+ * Décision d'autorisation PURE (testable sans Supabase). Le câblage serveur
+ * (session.ts) fournit `authenticated`, `enforce` et `role`.
+ * - non authentifié → toujours refusé ;
+ * - mode transition (enforce = false) → autorisé dès lors qu'on est authentifié
+ *   (compatibilité ascendante tant que les rôles ne sont pas semés en base) ;
+ * - mode strict (enforce = true) → vérifie la capacité selon le rôle.
+ */
+export function authorize(input: {
+  authenticated: boolean;
+  enforce: boolean;
+  role: Role | null;
+  capability: Capability;
+}): AuthResult {
+  if (!input.authenticated) return { ok: false, error: "Non authentifié." };
+  if (!input.enforce) return { ok: true };
+  const role = input.role ?? "lecteur";
+  return hasRole(role, CAPABILITY_MIN_ROLE[input.capability])
+    ? { ok: true }
+    : { ok: false, error: `Accès refusé : capacité « ${input.capability} » non autorisée pour le rôle « ${role} ».` };
+}

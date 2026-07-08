@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { journaliser, resumeAffectation } from "@/lib/operations/journal";
+import { requireCapability } from "@/lib/auth/session";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -25,6 +26,8 @@ async function nomSurveillant(supabase: Awaited<ReturnType<typeof createClient>>
 }
 
 export async function updateAffectation(id: number, f: AffectationFields): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { data: avant } = await supabase.from("affectations").select("*").eq("id", id).single();
@@ -58,6 +61,8 @@ export async function updateAffectation(id: number, f: AffectationFields): Promi
 }
 
 export async function addAffectation(missionId: number, surveillantId: number, roleMission: string): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { error } = await supabase.from("affectations").insert({
@@ -83,6 +88,8 @@ export async function addAffectation(missionId: number, surveillantId: number, r
 }
 
 export async function setPresence(id: number, presence: "En attente" | "Présent" | "Absent"): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { data: avant } = await supabase.from("affectations").select("mission_id, surveillant_id, presence").eq("id", id).single();
@@ -107,6 +114,8 @@ export async function setPresence(id: number, presence: "En attente" | "Présent
 }
 
 export async function deleteAffectation(id: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { data: avant } = await supabase.from("affectations").select("*").eq("id", id).single();

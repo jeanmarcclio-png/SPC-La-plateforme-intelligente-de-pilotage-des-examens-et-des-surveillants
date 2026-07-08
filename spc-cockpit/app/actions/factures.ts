@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { ttcFromHT } from "@/lib/operations/engine";
+import { requireCapability } from "@/lib/auth/session";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -44,6 +45,8 @@ export async function createFacture(fd: FormData): Promise<{ error?: string }> {
 }
 
 export async function updateFactureStatut(id: number, statut: string): Promise<{ error?: string }> {
+  const auth = await requireCapability("finance");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { error } = await supabase.from("factures").update({ statut }).eq("id", id);
@@ -56,6 +59,8 @@ export async function updateFactureStatut(id: number, statut: string): Promise<{
 }
 
 export async function deleteFacture(id: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("finance");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { error } = await supabase.from("factures").delete().eq("id", id);

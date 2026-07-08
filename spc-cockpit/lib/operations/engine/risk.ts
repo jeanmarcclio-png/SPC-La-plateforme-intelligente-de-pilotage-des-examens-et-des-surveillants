@@ -12,9 +12,12 @@ export type RiskType =
   | "salle_sous_dotee"
   | "salle_sur_dotee"
   | "conflit_surveillant"
+  | "conflit_inter_missions"
   | "pmr_non_couvert"
   | "tiers_temps_incoherent"
-  | "delai_j48";
+  | "delai_j48"
+  | "incoherence_devis_planning"
+  | "incoherence_nb_salles";
 
 export interface RiskItem {
   type: RiskType;
@@ -136,6 +139,93 @@ export function detectAccessibilityRisks(
     }
   }
   return risks;
+}
+
+// ---------------------------------------------------------------------------
+// Conflits inter-missions le même jour
+// ---------------------------------------------------------------------------
+
+/**
+ * Même surveillant, MÊME JOUR, sur deux missions différentes, avec créneaux
+ * qui se chevauchent. L'appelant encode `sessionId` = `{date}-{période}` et
+ * fournit `missionId` distinct via roomId préfixé. On réutilise le détecteur
+ * central puis on ne garde que les paires de missions différentes.
+ */
+export function detectCrossMissionConflicts(
+  assignments: SupervisorAssignmentInput[]
+): RiskItem[] {
+  const missionOf = new Map(assignments.map((a) => [a.id, a.roomId.split(":")[0]]));
+  return detectSupervisorConflicts(assignments)
+    .filter((c) => missionOf.get(c.assignmentIdA) !== missionOf.get(c.assignmentIdB))
+    .map((c) => ({
+      type: "conflit_inter_missions" as const,
+      severity: "critique" as const,
+      title: `Surveillant ${c.supervisorId} sur deux missions le même jour`,
+      detail: `${c.message} — missions ${missionOf.get(c.assignmentIdA)} et ${missionOf.get(c.assignmentIdB)}`,
+      entities: [c.supervisorId],
+      evidence: { debut: c.startTime, fin: c.endTime },
+      recommendation: "Retirer le surveillant de l'une des deux missions.",
+      requiresHumanAction: true,
+    }));
+}
+
+// ---------------------------------------------------------------------------
+// Cohérence devis ↔ planning et nb_salles ↔ affectations
+// ---------------------------------------------------------------------------
+
+/** Compare le périmètre annoncé au devis à celui réellement planifié. */
+export function auditQuotePlanningConsistency(input: {
+  devisNbSalles: number;
+  planningNbSalles: number;
+  devisNbSurveillants: number;
+  planningNbSurveillants: number;
+}): RiskItem[] {
+  const risks: RiskItem[] = [];
+  if (input.devisNbSalles !== input.planningNbSalles) {
+    risks.push({
+      type: "incoherence_devis_planning",
+      severity: "avertissement",
+      title: "Écart devis ↔ planning : nombre de salles",
+      detail: `Devis : ${input.devisNbSalles} salle(s) · Planning : ${input.planningNbSalles}`,
+      entities: ["devis", "planning"],
+      evidence: { devisNbSalles: input.devisNbSalles, planningNbSalles: input.planningNbSalles },
+      recommendation: "Aligner la répartition des salles du planning sur le devis (ou mettre à jour le devis).",
+      requiresHumanAction: true,
+    });
+  }
+  if (input.devisNbSurveillants !== input.planningNbSurveillants) {
+    risks.push({
+      type: "incoherence_devis_planning",
+      severity: "avertissement",
+      title: "Écart devis ↔ planning : nombre de surveillants",
+      detail: `Devis : ${input.devisNbSurveillants} · Planning : ${input.planningNbSurveillants}`,
+      entities: ["devis", "planning"],
+      evidence: { devisNbSurveillants: input.devisNbSurveillants, planningNbSurveillants: input.planningNbSurveillants },
+      recommendation: "Aligner le nombre de surveillants planifiés sur le devis.",
+      requiresHumanAction: true,
+    });
+  }
+  return risks;
+}
+
+/** Compare le nb_salles déclaré de la mission au nombre de salles distinctes affectées. */
+export function auditRoomCountConsistency(input: {
+  declaredRooms: number;
+  distinctAssignedRooms: number;
+}): RiskItem[] {
+  if (input.declaredRooms === input.distinctAssignedRooms) return [];
+  return [
+    {
+      type: "incoherence_nb_salles",
+      severity: "avertissement",
+      title: "Écart nombre de salles déclaré ↔ affecté",
+      detail: `Mission : ${input.declaredRooms} salle(s) déclarée(s) · Affectées : ${input.distinctAssignedRooms}`,
+      entities: ["mission"],
+      evidence: { declaredRooms: input.declaredRooms, distinctAssignedRooms: input.distinctAssignedRooms },
+      recommendation: "Vérifier la répartition des salles ou le nombre de salles de la mission.",
+      requiresHumanAction: true,
+    },
+  ];
 }
 
 // ---------------------------------------------------------------------------

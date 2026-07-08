@@ -5,6 +5,9 @@ import {
   detectAccessibilityRisks,
   getJ48Risks,
   buildSessionRiskReport,
+  detectCrossMissionConflicts,
+  auditQuotePlanningConsistency,
+  auditRoomCountConsistency,
 } from "../risk";
 import type { RoomPlanningInput, SupervisorAssignmentInput } from "../types";
 
@@ -92,5 +95,45 @@ describe("buildSessionRiskReport", () => {
     expect(risks[0].severity).toBe("critique"); // tri : critiques en tête
     expect(counts.critique + counts.avertissement + counts.information).toBe(risks.length);
     expect(risks.every((r) => r.requiresHumanAction === true)).toBe(true);
+  });
+});
+
+describe("detectCrossMissionConflicts", () => {
+  it("même surveillant, deux missions, même jour, chevauchement = conflit inter-missions", () => {
+    const a = [
+      { id: "m1", sessionId: "2026-07-08-matin", roomId: "3:A21", supervisorId: "S-1", startTime: "08:00", endTime: "12:00", status: "confirmed" as const },
+      { id: "m2", sessionId: "2026-07-08-matin", roomId: "9:B10", supervisorId: "S-1", startTime: "10:00", endTime: "13:00", status: "confirmed" as const },
+    ];
+    const r = detectCrossMissionConflicts(a);
+    expect(r).toHaveLength(1);
+    expect(r[0].type).toBe("conflit_inter_missions");
+  });
+  it("même mission = pas un conflit inter-missions", () => {
+    const a = [
+      { id: "m1", sessionId: "2026-07-08-matin", roomId: "3:A21", supervisorId: "S-1", startTime: "08:00", endTime: "12:00", status: "confirmed" as const },
+      { id: "m2", sessionId: "2026-07-08-matin", roomId: "3:B10", supervisorId: "S-1", startTime: "10:00", endTime: "13:00", status: "confirmed" as const },
+    ];
+    expect(detectCrossMissionConflicts(a)).toHaveLength(0);
+  });
+});
+
+describe("auditQuotePlanningConsistency", () => {
+  it("planning aligné sur le devis = aucun risque", () => {
+    expect(auditQuotePlanningConsistency({ devisNbSalles: 4, planningNbSalles: 4, devisNbSurveillants: 9, planningNbSurveillants: 9 })).toHaveLength(0);
+  });
+  it("écart de salles et de surveillants = deux risques", () => {
+    const r = auditQuotePlanningConsistency({ devisNbSalles: 4, planningNbSalles: 3, devisNbSurveillants: 9, planningNbSurveillants: 7 });
+    expect(r).toHaveLength(2);
+    expect(r.every((x) => x.type === "incoherence_devis_planning")).toBe(true);
+  });
+});
+
+describe("auditRoomCountConsistency", () => {
+  it("aligné = aucun risque", () => {
+    expect(auditRoomCountConsistency({ declaredRooms: 4, distinctAssignedRooms: 4 })).toHaveLength(0);
+  });
+  it("écart = risque incoherence_nb_salles", () => {
+    const r = auditRoomCountConsistency({ declaredRooms: 4, distinctAssignedRooms: 2 });
+    expect(r[0].type).toBe("incoherence_nb_salles");
   });
 });
