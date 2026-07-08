@@ -1,41 +1,54 @@
 import type { StatutMission, StatutDevis, StatutSurveillant } from "@/lib/operations/types";
 
+// Badges statut — SPC Premium Operations Design System.
+// Palette sémantique douce : fond teinté + anneau subtil + texte contrasté,
+// point indicateur pour rester compréhensible sans la couleur seule.
+
+type Tone = "success" | "attention" | "critique" | "info" | "accent" | "neutral";
+
+const TONE: Record<Tone, string> = {
+  success: "bg-emerald-50 text-emerald-700 ring-emerald-600/15", // sauge — validé/conforme/terminé
+  attention: "bg-amber-50 text-amber-700 ring-amber-600/15", // ambre — à confirmer/en cours
+  critique: "bg-rose-50 text-rose-700 ring-rose-600/15", // corail — incident/annulé/refusé
+  info: "bg-sky-50 text-sky-700 ring-sky-600/15", // bleu paon — planifié/à venir
+  accent: "bg-indigo-50 text-indigo-700 ring-indigo-600/15", // indigo — validée/facturé/analyse
+  neutral: "bg-slate-100 text-slate-600 ring-slate-500/15", // ardoise — brouillon/archivé
+};
+
+const BASE = "inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ring-1 ring-inset";
+
+function Dot() {
+  return <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />;
+}
+
 export function MissionBadge({ statut }: { statut: StatutMission }) {
-  const cls: Record<StatutMission, string> = {
-    "Planifiée": "bg-blue-50 text-blue-600",
-    "Validée":   "bg-indigo-50 text-indigo-600",
-    "En cours":  "bg-amber-50 text-amber-600",
-    "Terminée":  "bg-emerald-50 text-emerald-600",
-    "Annulée":   "bg-red-50 text-red-500",
+  const tone: Record<StatutMission, Tone> = {
+    "Planifiée": "info",
+    "Validée": "accent",
+    "En cours": "attention",
+    "Terminée": "success",
+    "Annulée": "critique",
   };
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-1 rounded-full ${cls[statut]}`}>
-      <span className="w-1.5 h-1.5 rounded-full bg-current" />{statut}
-    </span>
-  );
+  return <span className={`${BASE} ${TONE[tone[statut]]}`}><Dot />{statut}</span>;
 }
 
 export function DevisBadge({ statut }: { statut: StatutDevis }) {
-  const cls: Record<StatutDevis, string> = {
-    "Brouillon": "bg-gray-100 text-gray-500",
-    "Envoyé":    "bg-sky-50 text-sky-600",
-    "Accepté":   "bg-emerald-50 text-emerald-600",
-    "Refusé":    "bg-red-50 text-red-500",
-    "Facturé":   "bg-blue-50 text-blue-600",
+  const tone: Record<StatutDevis, Tone> = {
+    "Brouillon": "neutral",
+    "Envoyé": "info",
+    "Accepté": "success",
+    "Refusé": "critique",
+    "Facturé": "accent",
   };
-  return <span className={`text-[11px] font-bold px-2 py-1 rounded-full ${cls[statut]}`}>{statut}</span>;
+  return <span className={`${BASE} ${TONE[tone[statut]]}`}><Dot />{statut}</span>;
 }
 
 export function SurvBadge({ statut }: { statut: StatutSurveillant }) {
-  const cls: Record<StatutSurveillant, string> = {
-    "Disponible":   "bg-emerald-50 text-emerald-600",
-    "Planifié":     "bg-blue-50 text-blue-600",
-    "Annulé":       "bg-red-50 text-red-500",
-    "Indisponible": "bg-gray-100 text-gray-500",
+  const tone: Record<StatutSurveillant, Tone> = {
+    "Disponible": "success",
+    "Planifié": "info",
+    "Annulé": "critique",
+    "Indisponible": "neutral",
   };
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-1 rounded-full ${cls[statut]}`}>
-      <span className="w-1.5 h-1.5 rounded-full bg-current" />{statut}
-    </span>
-  );
+  return <span className={`${BASE} ${TONE[tone[statut]]}`}><Dot />{statut}</span>;
 }

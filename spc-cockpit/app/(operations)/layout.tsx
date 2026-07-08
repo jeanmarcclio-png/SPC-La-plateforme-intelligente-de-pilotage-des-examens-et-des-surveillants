@@ -10,7 +10,7 @@ export default async function OperationsLayout({ children }: { children: React.R
   const activeMission = active ? { client: active.client, dateLabel: dateFR(active.dateMission) } : null;
 
   return (
-    <div className="flex h-dvh overflow-hidden flex-col md:flex-row" style={{ background: "#f1f5f9" }}>
+    <div className="flex h-dvh overflow-hidden flex-col md:flex-row" style={{ background: "#F5F6F8" }}>
       <OpsMobileHeader />
       <OpsSidebar activeMission={activeMission} />
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
