@@ -215,8 +215,9 @@ export function PlanificationBoard({
             <button
               key={m.id}
               onClick={() => { setMissionId(m.id); setEdits({}); }}
-              className={`px-3.5 py-2 rounded-xl text-[12.5px] font-semibold border transition-colors ${
-                active ? "text-white border-transparent" : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+              aria-pressed={active}
+              className={`px-3.5 py-2 rounded-xl text-[12.5px] font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 ${
+                active ? "text-white border-transparent shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
               }`}
               style={active ? { background: "#0d2137" } : {}}
             >
