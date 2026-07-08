@@ -7,7 +7,7 @@ import { buildImportPreview, type ImportPreview } from "@/lib/operations/surveil
 import { importSurveillants, type ImportRowInput } from "@/app/actions/surveillants";
 import { showToast } from "@/components/Toast";
 import { Button } from "@/components/ops/Button";
-import { UploadCloud, Download, FileSpreadsheet, CheckCircle2, AlertTriangle, Copy, X } from "lucide-react";
+import { UploadCloud, Download, FileSpreadsheet, CheckCircle2, AlertTriangle, Copy, X, MapPin } from "lucide-react";
 
 const EXPORT_HEADER = ["Prénom", "Nom", "Téléphone", "Email", "Rôle", "Disponibilité matin", "Disponibilité après-midi", "Statut", "Zone", "Observations"];
 
@@ -25,7 +25,19 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function SurveillantsImportExport({ surveillants }: { surveillants: Surveillant[] }) {
+/** Surveillant déjà présent + salles où il est actuellement affecté. */
+export interface AssignmentInfo {
+  nom: string;
+  salles: string[];
+}
+
+export function SurveillantsImportExport({
+  surveillants,
+  assignments = [],
+}: {
+  surveillants: Surveillant[];
+  assignments?: AssignmentInfo[];
+}) {
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [fileName, setFileName] = useState("");
@@ -36,7 +48,15 @@ export function SurveillantsImportExport({ surveillants }: { surveillants: Surve
 
   function showRows(rows: string[][], name: string) {
     if (rows.length < 2) { showToast("Fichier vide ou sans données.", "error"); return; }
-    setPreview(buildImportPreview(rows, surveillants));
+    // Fusionne l'annuaire (dédup) avec les salles déjà affectées (cross-check).
+    const sallesByNom = new Map(assignments.map((a) => [a.nom, a.salles]));
+    const existing = surveillants.map((s) => ({
+      nom: s.nom,
+      email: s.email ?? null,
+      telephone: s.telephone ?? null,
+      salles: sallesByNom.get(s.nom) ?? [],
+    }));
+    setPreview(buildImportPreview(rows, existing));
     setFileName(name);
     setOpen(true);
   }
@@ -139,7 +159,7 @@ export function SurveillantsImportExport({ surveillants }: { surveillants: Surve
           <span className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><FileSpreadsheet className="w-4.5 h-4.5" aria-hidden /></span>
           <div>
             <h2 className="text-[14px] font-bold text-gray-900">Import Excel / CSV</h2>
-            <p className="text-[12px] text-slate-500">Feuille « Contacts Surveillants » · Prénom · Nom · Téléphone · Email · Rôle · Dispo · Statut · Zone · Observations</p>
+            <p className="text-[12px] text-slate-500">Extrait prénom + nom · ajoute à la liste existante · signale les surveillants déjà affectés à d&apos;autres salles</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -174,16 +194,17 @@ export function SurveillantsImportExport({ surveillants }: { surveillants: Surve
               <span className="font-bold text-gray-900">Aperçu — {fileName}</span> · {preview.total} ligne(s) ·
               <span className="text-emerald-600 font-semibold"> {preview.valides} valide(s)</span> ·
               <span className="text-amber-600 font-semibold"> {preview.aCorriger} à corriger</span> ·
-              <span className="text-sky-600 font-semibold"> {preview.doublons} doublon(s)</span>
+              <span className="text-sky-600 font-semibold"> {preview.doublons} doublon(s)</span> ·
+              <span className="text-amber-600 font-semibold"> {preview.rows.filter((r) => r.dejaAffecte.length > 0).length} déjà affecté(s)</span>
             </div>
             <button onClick={() => { setOpen(false); setPreview(null); }} className="text-slate-400 hover:text-slate-600" aria-label="Fermer l'aperçu"><X className="w-4 h-4" /></button>
           </div>
 
           <div className="max-h-[320px] overflow-auto">
-            <table className="w-full border-collapse min-w-[720px]">
+            <table className="w-full border-collapse min-w-[820px]">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
-                  {["Nom complet", "Téléphone", "Email", "Rôle", "Statut", "État"].map((h) => (
+                  {["Prénom", "Nom", "Déjà affecté", "Téléphone", "Statut", "État"].map((h) => (
                     <th key={h} className="text-left px-4 py-2 text-[10.5px] font-bold text-slate-400 uppercase tracking-[.6px]">{h}</th>
                   ))}
                 </tr>
@@ -191,10 +212,19 @@ export function SurveillantsImportExport({ surveillants }: { surveillants: Surve
               <tbody>
                 {preview.rows.map((r, i) => (
                   <tr key={i} className="border-b border-slate-100 last:border-0 even:bg-slate-50/40">
-                    <td className="px-4 py-2 text-[12.5px] font-semibold text-gray-800">{r.nomComplet || <span className="text-rose-500">—</span>}</td>
+                    <td className="px-4 py-2 text-[12.5px] text-slate-700">{r.prenom || "—"}</td>
+                    <td className="px-4 py-2 text-[12.5px] font-semibold text-gray-800">{r.nom || <span className="text-rose-500">—</span>}</td>
+                    <td className="px-4 py-2 text-[12px]">
+                      {r.dejaAffecte.length > 0 ? (
+                        <span className="inline-flex items-center gap-1 text-[11.5px] font-semibold text-amber-600" title={r.dejaAffecte.join(", ")}>
+                          <MapPin className="w-3.5 h-3.5" aria-hidden />
+                          {r.dejaAffecte.length} salle{r.dejaAffecte.length > 1 ? "s" : ""} · {r.dejaAffecte.slice(0, 2).join(", ")}{r.dejaAffecte.length > 2 ? "…" : ""}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-[12px] text-slate-600">{r.data.telephone || "—"}</td>
-                    <td className="px-4 py-2 text-[12px] text-slate-600 truncate max-w-[180px]">{r.data.email || "—"}</td>
-                    <td className="px-4 py-2 text-[12px] text-slate-600">{r.data.role || "Surveillant salle"}</td>
                     <td className="px-4 py-2 text-[12px] text-slate-600">{r.statutNormalise}</td>
                     <td className="px-4 py-2">
                       {r.errors.length > 0 ? (

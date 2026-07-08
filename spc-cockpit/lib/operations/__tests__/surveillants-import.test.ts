@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseCSV, toCSV, detectDelimiter } from "../csv";
-import { buildImportPreview, normalizeStatut, isValidEmail } from "../surveillants-import";
+import { buildImportPreview, normalizeStatut, isValidEmail, splitFullName } from "../surveillants-import";
 
 describe("CSV parse", () => {
   it("détecte le séparateur ; et ,", () => {
@@ -109,5 +109,39 @@ describe("nettoyage marqueur d'absence", () => {
   it("retire le suffixe ABS et fusionne le doublon", () => {
     expect(stripCivility("M. Clio Jean Marc ABS")).toBe("Clio Jean Marc");
     expect(stripCivility("Cériac Matéo (abs)")).toBe("Cériac Matéo");
+  });
+});
+
+describe("splitFullName (extraction prénom + nom)", () => {
+  it("nom en tête, prénom composé", () => {
+    expect(splitFullName("Meunier Jean Louis")).toEqual({ nom: "Meunier", prenom: "Jean Louis" });
+    expect(splitFullName("Clio Jean Marc")).toEqual({ nom: "Clio", prenom: "Jean Marc" });
+  });
+  it("nettoie la civilité avant de découper", () => {
+    expect(splitFullName("M. Auguste Miguel")).toEqual({ nom: "Auguste", prenom: "Miguel" });
+  });
+  it("nom seul → prénom vide", () => {
+    expect(splitFullName("Volant")).toEqual({ nom: "Volant", prenom: "" });
+  });
+});
+
+describe("cross-check des affectations existantes", () => {
+  it("signale les salles déjà affectées pour un nom importé", () => {
+    const existing = [
+      { nom: "Clio Jean Marc", salles: ["B22", "B23"] },
+      { nom: "Ben Sassi Faouzia", salles: [] },
+    ];
+    const rows = [
+      ["SURVEILLANT"],
+      ["Clio Jean Marc"],
+      ["Ben Sassi Faouzia"],
+      ["Nouveau Venu"],
+    ];
+    const p = buildImportPreview(rows, existing);
+    expect(p.rows[0].dejaAffecte).toEqual(["B22", "B23"]);
+    expect(p.rows[0].prenom).toBe("Jean Marc");
+    expect(p.rows[0].nom).toBe("Clio");
+    expect(p.rows[1].dejaAffecte).toEqual([]); // présent mais aucune salle
+    expect(p.rows[2].dejaAffecte).toEqual([]); // inconnu
   });
 });

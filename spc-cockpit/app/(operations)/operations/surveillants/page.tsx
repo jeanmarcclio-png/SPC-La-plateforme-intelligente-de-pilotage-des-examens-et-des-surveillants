@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { getSurveillants } from "@/lib/operations/queries";
+import { getSurveillants, getAffectations } from "@/lib/operations/queries";
 import { SurveillantsTable } from "@/components/ops/SurveillantsTable";
 import { SurveillantsImportExport } from "@/components/ops/SurveillantsImportExport";
 import { Kpi } from "@/components/ops/Kpi";
@@ -22,7 +22,19 @@ function PilotageCard({ tag, titre, detail, icon }: { tag: string; titre: string
 }
 
 export default async function SurveillantsPage() {
-  const surveillants = await getSurveillants();
+  const [surveillants, affectations] = await Promise.all([getSurveillants(), getAffectations()]);
+
+  // Salles où chaque surveillant est déjà affecté (cross-check à l'import).
+  const sallesBySurvId = new Map<number, Set<string>>();
+  for (const a of affectations) {
+    if (!a.salle) continue;
+    const set = sallesBySurvId.get(a.surveillantId) ?? new Set<string>();
+    set.add(a.salle);
+    sallesBySurvId.set(a.surveillantId, set);
+  }
+  const assignments = surveillants
+    .map((s) => ({ nom: s.nom, salles: [...(sallesBySurvId.get(s.id) ?? [])] }))
+    .filter((a) => a.salles.length > 0);
   const dispo = surveillants.filter((s) => s.statut === "Disponible" || s.statut === "Planifié");
   const heuresMoy = surveillants.length
     ? Math.round(surveillants.reduce((s, x) => s + x.heures, 0) / surveillants.length)
@@ -41,7 +53,7 @@ export default async function SurveillantsPage() {
       <PageHeader page="Surveillants" subtitle="Annuaire, rôles et disponibilités de l&apos;équipe" />
 
       {/* Import / Export CSV */}
-      <SurveillantsImportExport surveillants={surveillants} />
+      <SurveillantsImportExport surveillants={surveillants} assignments={assignments} />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">

@@ -23,10 +23,13 @@ export interface ImportedSurveillant {
 export interface PreviewRow {
   data: ImportedSurveillant;
   nomComplet: string;
+  prenom: string; // extrait du nom complet (heuristique nom-en-tête)
+  nom: string; // extrait du nom complet
   qualifications: string;
   statutNormalise: string;
   errors: string[];
   duplicate: boolean; // doublon avec l'existant OU répétition interne au fichier
+  dejaAffecte: string[]; // salles/surveillances où ce surveillant est déjà affecté
   valid: boolean;
 }
 
@@ -59,6 +62,20 @@ export function stripCivility(name: string): string {
     .replace(/\s*\(?\b(abs|absent[e]?|excuse[ée]?)\b\)?\.?$/i, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/**
+ * Sépare un nom complet en prénom + nom. Les plannings d'examens listent le
+ * plus souvent le nom de famille EN TÊTE (« Meunier Jean Louis » = nom
+ * « Meunier », prénom « Jean Louis »), convention retenue ici : le premier mot
+ * est le nom, le reste le prénom. Heuristique (pas de séparateur fiable) — le
+ * nom complet reste la clé de référence, prénom/nom ne sont qu'un affichage.
+ */
+export function splitFullName(full: string): { prenom: string; nom: string } {
+  const clean = stripCivility(full);
+  const parts = clean.split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) return { prenom: "", nom: clean };
+  return { nom: parts[0], prenom: parts.slice(1).join(" ") };
 }
 
 export function normalizeStatut(raw: string): string {
@@ -124,7 +141,7 @@ function locateHeader(rawRows: string[][]): { headerIdx: number; map: (keyof Imp
 
 export function buildImportPreview(
   rawRows: string[][],
-  existing: { nom: string; email?: string | null; telephone?: string | null }[]
+  existing: { nom: string; email?: string | null; telephone?: string | null; salles?: string[] }[]
 ): ImportPreview {
   if (rawRows.length === 0) return { rows: [], total: 0, valides: 0, aCorriger: 0, doublons: 0 };
 
@@ -134,6 +151,11 @@ export function buildImportPreview(
   const existNoms = new Set(existing.map((e) => norm(e.nom)));
   const existEmails = new Set(existing.map((e) => norm(e.email ?? "")).filter(Boolean));
   const existTels = new Set(existing.map((e) => (e.telephone ?? "").replace(/\D/g, "")).filter(Boolean));
+  // Salles/surveillances déjà affectées, indexées par nom normalisé.
+  const affectByNom = new Map<string, string[]>();
+  for (const e of existing) {
+    if (e.salles?.length) affectByNom.set(norm(e.nom), e.salles);
+  }
 
   const seenInFile = new Set<string>(); // dédup interne (planning : noms répétés)
 
@@ -173,7 +195,10 @@ export function buildImportPreview(
       (!!data.email && existEmails.has(norm(data.email))) ||
       (!!data.telephone && existTels.has(data.telephone.replace(/\D/g, "")));
 
-    return { data, nomComplet, qualifications, statutNormalise, errors, duplicate, valid: errors.length === 0 };
+    const { prenom, nom } = splitFullName(nomComplet);
+    const dejaAffecte = affectByNom.get(key) ?? [];
+
+    return { data, nomComplet, prenom, nom, qualifications, statutNormalise, errors, duplicate, dejaAffecte, valid: errors.length === 0 };
   });
 
   return {
