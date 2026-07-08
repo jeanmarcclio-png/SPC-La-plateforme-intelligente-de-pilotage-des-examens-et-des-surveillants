@@ -27,9 +27,9 @@ export function OpsTopbar() {
   }
 
   return (
-    <header className="hidden md:flex print:!hidden sticky top-0 z-30 h-16 flex-shrink-0 items-center gap-4 px-6 bg-white border-b border-gray-200/80">
+    <header className="hidden md:flex print:!hidden sticky top-0 z-30 h-16 flex-shrink-0 items-center gap-4 px-6 bg-white/80 backdrop-blur-md border-b border-slate-200/70">
       <div className="relative flex-1 max-w-[560px]">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden />
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -39,7 +39,7 @@ export function OpsTopbar() {
           }}
           placeholder="Rechercher une page — missions, devis, salles…"
           aria-label="Rechercher une page du module Opérations"
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-[13px] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:bg-white transition-colors"
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-100/70 border border-transparent text-[13px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-200 focus:bg-white transition-all"
         />
         {matches.length > 0 && (
           <div className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">

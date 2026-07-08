@@ -161,7 +161,7 @@ export default async function CockpitOpsPage() {
         <div className="lg:col-span-3">
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="text-[12px] font-bold uppercase tracking-[1px] text-gray-700">Sessions actives</h2>
-            <Link href="/operations/planification" className="text-[12.5px] font-bold text-blue-600 hover:text-blue-800">Voir planning →</Link>
+            <Link href="/operations/planification" className="text-[12.5px] font-bold text-indigo-600 hover:text-indigo-700">Voir planning →</Link>
           </div>
 
           {!active ? (
@@ -242,7 +242,7 @@ export default async function CockpitOpsPage() {
                     <UserCheck className="w-3.5 h-3.5" aria-hidden />{coordinateurOk ? "Coordinateur OK" : "Coordinateur à confirmer"}
                   </span>
                 </div>
-                <Link href="/operations/planification" className="font-bold text-blue-600 hover:text-blue-800">Ouvrir →</Link>
+                <Link href="/operations/planification" className="font-bold text-indigo-600 hover:text-indigo-700">Ouvrir →</Link>
               </div>
             </section>
           )}
@@ -260,7 +260,7 @@ export default async function CockpitOpsPage() {
               <Link
                 key={`w-${i}`}
                 href={a.href}
-                className="block bg-white rounded-2xl border border-gray-200/80 border-l-[3px] border-l-amber-400 shadow-sm px-4 py-3.5 hover:bg-amber-50/40 transition-colors"
+                className="block bg-white rounded-2xl ring-1 ring-slate-900/5 border-l-[3px] border-l-amber-400 shadow-sm px-4 py-3.5 hover:shadow-md hover:ring-amber-200 transition-all"
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[10px] font-extrabold uppercase tracking-wide bg-amber-100 text-amber-700 rounded px-1.5 py-0.5">{a.tag}</span>
@@ -275,7 +275,7 @@ export default async function CockpitOpsPage() {
               <Link
                 key={`i-${i}`}
                 href={a.href}
-                className="block bg-white rounded-2xl border border-gray-200/80 border-l-[3px] border-l-blue-400 shadow-sm px-4 py-3.5 hover:bg-blue-50/40 transition-colors"
+                className="block bg-white rounded-2xl ring-1 ring-slate-900/5 border-l-[3px] border-l-sky-400 shadow-sm px-4 py-3.5 hover:shadow-md hover:ring-sky-200 transition-all"
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[10px] font-extrabold uppercase tracking-wide bg-rose-50 text-rose-500 rounded px-1.5 py-0.5">{a.tag}</span>

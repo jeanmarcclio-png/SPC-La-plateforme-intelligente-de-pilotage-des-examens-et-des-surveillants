@@ -46,7 +46,7 @@ function PrioriteCard({ p }: { p: Priorite }) {
       <div className="text-[12px] text-gray-500 mt-0.5 flex-1">{p.detail}</div>
       <Link
         href={p.href}
-        className="inline-flex items-center gap-1 text-[12.5px] font-bold text-blue-600 hover:text-blue-800 mt-3 focus-visible:outline-2 focus-visible:outline-blue-500"
+        className="inline-flex items-center gap-1 text-[12.5px] font-bold text-indigo-600 hover:text-indigo-700 mt-3 focus-visible:outline-2 focus-visible:outline-blue-500"
       >
         {p.action} <ArrowRight className="w-3.5 h-3.5" aria-hidden />
       </Link>
@@ -176,7 +176,7 @@ export default async function OperationsPage() {
               <h2 className="text-[14px] font-bold text-gray-900">Missions récentes</h2>
               <p className="text-[12px] text-gray-400">Sessions d&apos;examens planifiées et récentes</p>
             </div>
-            <Link href="/operations/missions" className="text-[12px] font-bold text-blue-600 hover:text-blue-800 whitespace-nowrap">
+            <Link href="/operations/missions" className="text-[12px] font-bold text-indigo-600 hover:text-indigo-700 whitespace-nowrap">
               Voir tout →
             </Link>
           </div>
@@ -239,7 +239,7 @@ export default async function OperationsPage() {
                     </div>
                   ))}
                 </div>
-                <Link href="/operations/devis" className="inline-flex items-center gap-1 text-[12px] font-bold text-blue-600 hover:text-blue-800 mt-3.5">
+                <Link href="/operations/devis" className="inline-flex items-center gap-1 text-[12px] font-bold text-indigo-600 hover:text-indigo-700 mt-3.5">
                   Voir les devis <ArrowRight className="w-3.5 h-3.5" aria-hidden />
                 </Link>
               </>
@@ -277,7 +277,7 @@ export default async function OperationsPage() {
           <section aria-label="Devis" className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
             <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-baseline justify-between gap-2">
               <h2 className="text-[14px] font-bold text-gray-900">Devis</h2>
-              <Link href="/operations/devis" className="text-[12px] font-bold text-blue-600 hover:text-blue-800">Voir tout →</Link>
+              <Link href="/operations/devis" className="text-[12px] font-bold text-indigo-600 hover:text-indigo-700">Voir tout →</Link>
             </div>
             <div>
               {devis.map((d) => (
@@ -304,7 +304,7 @@ export default async function OperationsPage() {
             <h2 className="text-[14px] font-bold text-gray-900">Équipe — Disponibilité</h2>
             <p className="text-[12px] text-gray-400">{disponibles.length} disponibles · {planifies.length} planifiés · {surveillants.length} au total</p>
           </div>
-          <Link href="/operations/surveillants" className="text-[12px] font-bold text-blue-600 hover:text-blue-800 whitespace-nowrap">
+          <Link href="/operations/surveillants" className="text-[12px] font-bold text-indigo-600 hover:text-indigo-700 whitespace-nowrap">
             Voir l&apos;équipe →
           </Link>
         </div>
