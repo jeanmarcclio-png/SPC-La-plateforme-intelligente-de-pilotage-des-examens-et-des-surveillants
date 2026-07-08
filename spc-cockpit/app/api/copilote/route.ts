@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { CONFIGS, DEFAULT_CONFIG } from "@/lib/tenant/configs";
+import { removeFreeTextPII } from "@/lib/agents/redaction";
 
 export const runtime = "nodejs";
 
@@ -35,6 +36,16 @@ export async function POST(req: NextRequest) {
 
     const today = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
+    // Défense en profondeur RGPD : les noms d'établissements (raison sociale)
+    // ne sont pas des données personnelles et restent lisibles, mais tout
+    // email/téléphone qui s'y serait glissé est neutralisé avant l'envoi au modèle.
+    const campagnesLine = removeFreeTextPII(
+      campagnes?.map((c) => `${c.nom} (${c.statut}, score ${c.score})`).join(", ") ?? "aucune"
+    );
+    const topProspectsLine = removeFreeTextPII(
+      prospects?.slice(0, 5).map((p) => `${p.nom} [${p.segment}, ${cfg.scoring.dimensions[0]} ${p.score_bant}, ${p.statut}${p.valeur_potentielle ? `, ${p.valeur_potentielle}k€` : ""}]`).join(" | ") ?? "aucun"
+    );
+
     const systemPrompt = `Tu es le copilote IA de JMC Cockpit, assistant personnel du directeur commercial de JMC.
 JMC est spécialisé dans le secteur : ${cfg.nom} ${cfg.emoji}
 Cible : ${cfg.interlocuteurs.join(", ")}
@@ -58,8 +69,8 @@ DONNÉES TEMPS RÉEL :
 - ${convertis} convertis
 - Score ${cfg.scoring.dimensions[0]} moyen : ${scoreMoyen}/10
 - ${cfg.vocabulaire.pipeline} CA estimé : ${pipelineCA > 0 ? `${pipelineCA}k€` : "non renseigné"}
-- ${cfg.vocabulaire.mission}s : ${campagnes?.map((c) => `${c.nom} (${c.statut}, score ${c.score})`).join(", ") ?? "aucune"}
-- Top ${cfg.vocabulaire.ressource.toLowerCase()}s : ${prospects?.slice(0, 5).map((p) => `${p.nom} [${p.segment}, ${cfg.scoring.dimensions[0]} ${p.score_bant}, ${p.statut}${p.valeur_potentielle ? `, ${p.valeur_potentielle}k€` : ""}]`).join(" | ") ?? "aucun"}
+- ${cfg.vocabulaire.mission}s : ${campagnesLine}
+- Top ${cfg.vocabulaire.ressource.toLowerCase()}s : ${topProspectsLine}
 
 Risques courants dans ce secteur : ${cfg.risques.join(", ")}
 Points forts à valoriser : ${cfg.points_forts.join(", ")}
