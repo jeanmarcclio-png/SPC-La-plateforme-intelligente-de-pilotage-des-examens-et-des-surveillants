@@ -142,20 +142,22 @@ export default async function CockpitOpsPage() {
           value={`${sallesAffectees}/${sallesRequises}`}
           sub={`${Math.max(0, sallesRequises - sallesAffectees)} salle(s) à couvrir`}
           icon={<DoorOpen className="w-4 h-4" />}
-          variant="amber"
+          accent="amber"
         />
         <Kpi
           label="Créneaux définis"
           value={`${creneauxDefinis}/${rows.length}`}
           sub={`${rows.length - creneauxDefinis} surveillant(s) sans créneau`}
           icon={<UserCheck className="w-4 h-4" />}
+          accent="blue"
         />
         <Kpi
           label="Alertes"
           value={String(alertes.length)}
           sub={`${avertissements.length} avert. · ${informations.length} info(s)`}
           icon={<AlertTriangle className="w-4 h-4" />}
-          variant="alert"
+          accent="amber"
+          emphasis="strong"
         />
       </div>
 
