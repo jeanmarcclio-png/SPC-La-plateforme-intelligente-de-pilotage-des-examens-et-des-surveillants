@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Bell, Plus } from "lucide-react";
+import { ButtonLink } from "@/components/ops/Button";
 import { NAV } from "./OpsSidebar";
 
 // Topbar Opérations — hauteur fixe 64px, recherche de navigation,
@@ -65,14 +66,10 @@ export function OpsTopbar() {
         >
           <Bell className="w-[18px] h-[18px]" aria-hidden />
         </Link>
-        <Link
-          href="/operations/devis"
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold transition-opacity hover:opacity-90"
-          style={{ background: "#0d2137" }}
-        >
+        <ButtonLink href="/operations/devis" variant="primary">
           <Plus className="w-4 h-4" aria-hidden />
           Nouveau devis
-        </Link>
+        </ButtonLink>
       </div>
     </header>
   );

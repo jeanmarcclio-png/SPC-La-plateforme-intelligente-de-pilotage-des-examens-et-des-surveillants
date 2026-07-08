@@ -54,11 +54,14 @@ export function OpsSidebar({ activeMission }: { activeMission?: ActiveMissionInf
       {activeMission && (
         <Link
           href="/operations/planification"
-          className="mx-3 mb-4 rounded-xl bg-white/[0.06] border border-white/[0.08] px-3.5 py-3 flex items-center justify-between gap-2 hover:bg-white/[0.1] transition-colors"
+          className="mx-3 mb-4 rounded-2xl bg-white/[0.05] ring-1 ring-inset ring-white/10 px-3.5 py-3 flex items-center justify-between gap-2 hover:bg-white/[0.09] hover:ring-white/20 transition-colors shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
         >
           <div className="min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-[1.2px] text-[#8fa3b8]">Mission active</div>
-            <div className="text-[12.5px] font-bold text-white mt-0.5 truncate">
+            <div className="flex items-center gap-1.5">
+              <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
+              <span className="text-[10px] font-bold uppercase tracking-[1.2px] text-[#93a7bd]">Mission active</span>
+            </div>
+            <div className="text-[12.5px] font-bold text-white mt-1 truncate">
               {activeMission.client} — {activeMission.dateLabel}
             </div>
           </div>

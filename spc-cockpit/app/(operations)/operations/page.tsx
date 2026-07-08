@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getSurveillants, getMissions, getDevisList, getIncidents, getAffectations } from "@/lib/operations/queries";
 import { MissionBadge, DevisBadge, SurvBadge } from "@/components/ops/badges";
 import { Kpi } from "@/components/ops/Kpi";
+import { ButtonLink } from "@/components/ops/Button";
 import { euro, dateFR } from "@/lib/operations/format";
 import { SEUIL_SURCHARGE_H, STATUTS_PIPELINE, STATUTS_CA_CONFIRME } from "@/lib/operations/constants";
 import { tendanceCA } from "@/lib/operations/stats";
@@ -140,14 +141,10 @@ export default async function OperationsPage() {
           <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">Vue d&apos;ensemble</h1>
           <p className="text-[13px] text-gray-400 mt-0.5">Pilotage opérationnel des examens — missions, équipe, devis, incidents</p>
         </div>
-        <Link
-          href="/operations/missions"
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-blue-500"
-          style={{ background: "#0d2137" }}
-        >
+        <ButtonLink href="/operations/missions" variant="primary">
           <Plus className="w-4 h-4" aria-hidden />
           Nouvelle mission
-        </Link>
+        </ButtonLink>
       </div>
 
       {/* KPIs — terminologie stable, chaque tuile mène à sa page source */}

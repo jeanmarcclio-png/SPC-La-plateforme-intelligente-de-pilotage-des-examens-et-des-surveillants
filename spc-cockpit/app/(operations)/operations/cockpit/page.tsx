@@ -8,8 +8,7 @@ import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
 import { Activity, DoorOpen, CalendarClock, AlertTriangle, CheckCircle2, MapPin, Zap, Users, Landmark, UserCheck } from "lucide-react";
 import { PageHeader } from "@/components/ops/shell";
 import { Kpi } from "@/components/ops/Kpi";
-
-const NAVY = "#0d2137";
+import { ButtonLink } from "@/components/ops/Button";
 
 type StatutLigne = "Conforme" | "Salle manquante" | "Sans créneau";
 
@@ -108,14 +107,10 @@ export default async function CockpitOpsPage() {
         actions={
           <>
             <RefreshButton />
-            <Link
-              href="/operations/planification"
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold transition-opacity hover:opacity-90"
-              style={{ background: NAVY }}
-            >
+            <ButtonLink href="/operations/planification" variant="primary">
               <Zap className="w-4 h-4" aria-hidden />
               Planification
-            </Link>
+            </ButtonLink>
           </>
         }
       />
