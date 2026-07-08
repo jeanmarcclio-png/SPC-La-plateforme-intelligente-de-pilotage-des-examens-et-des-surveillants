@@ -405,7 +405,7 @@ export function PlanificationBoard({
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse min-w-[720px]">
                   <thead>
-                    <tr className="bg-gray-50/70 border-b border-gray-100">
+                    <tr className="bg-slate-50 border-b border-slate-100">
                       {["Date", "Utilisateur", "Objet", "Ancienne valeur", "Nouvelle valeur"].map((h) => (
                         <th key={h} className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">{h}</th>
                       ))}

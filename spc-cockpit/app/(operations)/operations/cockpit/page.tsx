@@ -206,7 +206,7 @@ export default async function CockpitOpsPage() {
                       const st = statutLigne(a);
                       const coord = (a.roleMission ?? "").toLowerCase().includes("coordinat");
                       return (
-                        <tr key={a.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                        <tr key={a.id} className="border-b border-slate-100 last:border-0 even:bg-slate-50/40 hover:bg-indigo-50/50 transition-colors">
                           <td className="px-5 py-3">
                             <div className="flex items-center gap-2.5">
                               <span

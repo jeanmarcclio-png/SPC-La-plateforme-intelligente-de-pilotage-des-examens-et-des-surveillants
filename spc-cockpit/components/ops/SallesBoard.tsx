@@ -179,7 +179,7 @@ export function SallesBoard({ salles }: { salles: Salle[] }) {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse min-w-[720px]">
             <thead>
-              <tr className="bg-gray-50/70 border-b border-gray-100">
+              <tr className="bg-slate-50 border-b border-slate-100">
                 {["Salle", "Bâtiment", "Capacité", "Étudiants", "Occupation", "Surv.", "PMR", "TT", ""].map((h) => (
                   <th key={h} className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">{h}</th>
                 ))}
@@ -192,7 +192,7 @@ export function SallesBoard({ salles }: { salles: Salle[] }) {
               {salles.map((s) => {
                 const pct = occupation(s);
                 return (
-                  <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                  <tr key={s.id} className="border-b border-slate-100 last:border-0 even:bg-slate-50/40 hover:bg-indigo-50/50 transition-colors">
                     <td className="px-5 py-3">
                       <div className="text-[13px] font-semibold text-gray-800">{s.nom}</div>
                       {s.etage && <div className="text-[11.5px] text-gray-400">{s.etage}</div>}

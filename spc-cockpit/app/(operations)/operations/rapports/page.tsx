@@ -68,7 +68,7 @@ export default async function RapportsPage() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse min-w-[560px]">
               <thead>
-                <tr className="bg-gray-50/70 border-b border-gray-100">
+                <tr className="bg-slate-50 border-b border-slate-100">
                   {["Réf.", "Client", "Date", "Périmètre", "Statut", "Montant HT"].map((h) => (
                     <th key={h} className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">{h}</th>
                   ))}
@@ -76,7 +76,7 @@ export default async function RapportsPage() {
               </thead>
               <tbody>
                 {missions.map((m) => (
-                  <tr key={m.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                  <tr key={m.id} className="border-b border-slate-100 last:border-0 even:bg-slate-50/40 hover:bg-indigo-50/50 transition-colors">
                     <td className="px-5 py-3 text-[12px] font-mono text-gray-400 whitespace-nowrap">{m.reference}</td>
                     <td className="px-5 py-3 text-[13px] font-semibold text-gray-800">{m.client}</td>
                     <td className="px-5 py-3 text-[12.5px] text-gray-600 whitespace-nowrap">{dateFR(m.dateMission)}</td>

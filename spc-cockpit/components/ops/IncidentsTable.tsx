@@ -163,7 +163,7 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse min-w-[680px]">
             <thead>
-              <tr className="bg-gray-50/70 border-b border-gray-100">
+              <tr className="bg-slate-50 border-b border-slate-100">
                 {["Référence", "Date", "Salle", "Type", "Gravité", "Statut", ""].map((h) => (
                   <th key={h} className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">{h}</th>
                 ))}
@@ -174,7 +174,7 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
                 <tr><td colSpan={7} className="text-center py-10 text-[13px] text-gray-400">Aucun incident déclaré. C&apos;est une bonne nouvelle.</td></tr>
               )}
               {incidents.map((i) => (
-                <tr key={i.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                <tr key={i.id} className="border-b border-slate-100 last:border-0 even:bg-slate-50/40 hover:bg-indigo-50/50 transition-colors">
                   <td className="px-5 py-3 text-[12px] font-mono text-gray-400 whitespace-nowrap">INC-{String(i.id).padStart(3, "0")}</td>
                   <td className="px-5 py-3 text-[12.5px] text-gray-600 whitespace-nowrap">{dateFR(i.dateIncident)}</td>
                   <td className="px-5 py-3">

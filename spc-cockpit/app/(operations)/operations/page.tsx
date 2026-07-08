@@ -186,7 +186,7 @@ export default async function OperationsPage() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse min-w-[460px]">
               <thead>
-                <tr className="bg-gray-50/70 border-b border-gray-100">
+                <tr className="bg-slate-50 border-b border-slate-100">
                   <th className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">Client</th>
                   <th className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px] hidden sm:table-cell">Date</th>
                   <th className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">Périmètre</th>
@@ -195,7 +195,7 @@ export default async function OperationsPage() {
               </thead>
               <tbody>
                 {missions.map((m) => (
-                  <tr key={m.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                  <tr key={m.id} className="border-b border-slate-100 last:border-0 even:bg-slate-50/40 hover:bg-indigo-50/50 transition-colors">
                     <td className="px-5 py-3">
                       <div className="text-[13px] font-semibold text-gray-800">{m.client}</div>
                       <div className="text-[11px] font-mono text-gray-400">{m.reference}</div>
@@ -314,7 +314,7 @@ export default async function OperationsPage() {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse min-w-[560px]">
             <thead>
-              <tr className="bg-gray-50/70 border-b border-gray-100">
+              <tr className="bg-slate-50 border-b border-slate-100">
                 {["Surveillant", "Statut", "Examens", "Heures", "Note"].map((h) => (
                   <th key={h} className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">{h}</th>
                 ))}
@@ -322,7 +322,7 @@ export default async function OperationsPage() {
             </thead>
             <tbody>
               {surveillants.map((s, i) => (
-                <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                <tr key={s.id} className="border-b border-slate-100 last:border-0 even:bg-slate-50/40 hover:bg-indigo-50/50 transition-colors">
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       <span

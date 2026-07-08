@@ -168,7 +168,7 @@ export function FacturationTable({ factures }: { factures: Facture[] }) {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse min-w-[760px]">
             <thead>
-              <tr className="bg-gray-50/70 border-b border-gray-100">
+              <tr className="bg-slate-50 border-b border-slate-100">
                 {["Référence", "Client", "Session", "Statut", "Montant HT", "Montant TTC", "Émission", "Échéance", ""].map((h) => (
                   <th key={h} className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">{h}</th>
                 ))}
@@ -179,7 +179,7 @@ export function FacturationTable({ factures }: { factures: Facture[] }) {
                 <tr><td colSpan={9} className="text-center py-10 text-[13px] text-gray-400">Aucune facture émise.</td></tr>
               )}
               {factures.map((f) => (
-                <tr key={f.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                <tr key={f.id} className="border-b border-slate-100 last:border-0 even:bg-slate-50/40 hover:bg-indigo-50/50 transition-colors">
                   <td className="px-5 py-3 text-[12px] font-mono text-gray-400 whitespace-nowrap">{f.reference}</td>
                   <td className="px-5 py-3 text-[13px] font-semibold text-gray-800">{f.client}</td>
                   <td className="px-5 py-3 text-[12.5px] text-gray-500 max-w-[180px] truncate">{f.session ?? "—"}</td>

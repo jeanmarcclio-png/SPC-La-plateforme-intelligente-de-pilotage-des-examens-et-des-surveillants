@@ -258,7 +258,7 @@ export function DevisTable({ devis, devisSalles = [] }: { devis: Devis[]; devisS
         <div className="overflow-x-auto">
           <table className="w-full border-collapse min-w-[720px]">
             <thead>
-              <tr className="bg-gray-50/70 border-b border-gray-100">
+              <tr className="bg-slate-50 border-b border-slate-100">
                 {["Référence", "Client", "Session", "Période", "Statut", "Montant HT", "Montant TTC", "Équipe", ""].map((h) => (
                   <th key={h} className="text-left px-5 py-2.5 text-[11px] font-bold text-gray-500 uppercase tracking-[.8px]">{h}</th>
                 ))}
@@ -269,7 +269,7 @@ export function DevisTable({ devis, devisSalles = [] }: { devis: Devis[]; devisS
                 <tr><td colSpan={9} className="text-center py-10 text-[13px] text-gray-400">Aucun devis ne correspond aux filtres.</td></tr>
               )}
               {filtered.map((d) => (
-                <tr key={d.id} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                <tr key={d.id} className="border-b border-slate-100 last:border-0 even:bg-slate-50/40 hover:bg-indigo-50/50 transition-colors">
                   <td className="px-5 py-3 text-[12px] font-mono text-gray-400 whitespace-nowrap">{d.reference}</td>
                   <td className="px-5 py-3 text-[13px] font-semibold text-gray-800">{d.client}</td>
                   <td className="px-5 py-3 text-[12.5px] text-gray-500 max-w-[200px] truncate">{d.session ?? "—"}</td>
