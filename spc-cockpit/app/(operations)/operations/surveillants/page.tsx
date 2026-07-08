@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { getSurveillants } from "@/lib/operations/queries";
 import { SurveillantsTable } from "@/components/ops/SurveillantsTable";
+import { SurveillantsImportExport } from "@/components/ops/SurveillantsImportExport";
 import { Kpi } from "@/components/ops/Kpi";
 import { Users, UserCheck, Clock, Star, AlertTriangle, Shield, UsersRound } from "lucide-react";
 import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
@@ -38,6 +39,9 @@ export default async function SurveillantsPage() {
   return (
     <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
       <PageHeader page="Surveillants" subtitle="Annuaire, rôles et disponibilités de l&apos;équipe" />
+
+      {/* Import / Export CSV */}
+      <SurveillantsImportExport surveillants={surveillants} />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">

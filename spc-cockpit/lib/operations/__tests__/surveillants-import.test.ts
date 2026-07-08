@@ -1,0 +1,75 @@
+import { describe, it, expect } from "vitest";
+import { parseCSV, toCSV, detectDelimiter } from "../csv";
+import { buildImportPreview, normalizeStatut, isValidEmail } from "../surveillants-import";
+
+describe("CSV parse", () => {
+  it("détecte le séparateur ; et ,", () => {
+    expect(detectDelimiter("a;b;c")).toBe(";");
+    expect(detectDelimiter("a,b,c")).toBe(",");
+  });
+  it("gère guillemets, accents, virgule interne", () => {
+    const rows = parseCSV('Prénom;Nom;Observations\nÉlodie;Renard;"Amphi, salle A"');
+    expect(rows).toHaveLength(2);
+    expect(rows[1]).toEqual(["Élodie", "Renard", "Amphi, salle A"]);
+  });
+  it("ignore les lignes vides et le BOM", () => {
+    const rows = parseCSV("﻿a;b\n\n1;2\n");
+    expect(rows).toEqual([["a", "b"], ["1", "2"]]);
+  });
+  it("toCSV échappe les valeurs sensibles", () => {
+    expect(toCSV([["a;b", 'c"d']])).toBe('"a;b";"c""d"');
+  });
+});
+
+describe("normalizeStatut", () => {
+  it("mappe les libellés courants", () => {
+    expect(normalizeStatut("Actif")).toBe("Disponible");
+    expect(normalizeStatut("")).toBe("Disponible");
+    expect(normalizeStatut("planifié")).toBe("Planifié");
+    expect(normalizeStatut("Indisponible")).toBe("Indisponible");
+    expect(normalizeStatut("annulé")).toBe("Annulé");
+  });
+});
+
+describe("isValidEmail", () => {
+  it("valide/invalide correctement", () => {
+    expect(isValidEmail("a@b.fr")).toBe(true);
+    expect(isValidEmail("")).toBe(true); // non obligatoire
+    expect(isValidEmail("pasunmail")).toBe(false);
+  });
+});
+
+describe("buildImportPreview", () => {
+  const existing = [{ nom: "Marie Lecomte", email: "marie@spc.fr", telephone: "06 11 22 33 44" }];
+
+  it("mappe par en-têtes, valide et détecte doublon par nom", () => {
+    const rows = parseCSV("Prénom;Nom;Téléphone;Email;Rôle;Statut\nMarie;Lecomte;;;Coordinatrice;Actif\nKarim;Osei;06 99 88 77 66;k@spc.fr;Surveillant;Disponible");
+    const p = buildImportPreview(rows, existing);
+    expect(p.total).toBe(2);
+    expect(p.rows[0].duplicate).toBe(true);      // Marie Lecomte existe
+    expect(p.rows[1].valid).toBe(true);
+    expect(p.rows[1].duplicate).toBe(false);
+    expect(p.valides).toBe(1);
+  });
+
+  it("signale email invalide et nom manquant", () => {
+    const rows = parseCSV("Prénom;Nom;Email\n;;bad\nJean;Val;j@v.fr");
+    const p = buildImportPreview(rows, []);
+    expect(p.rows[0].errors).toContain("Nom manquant");
+    expect(p.rows[0].errors).toContain("Email invalide");
+    expect(p.rows[1].valid).toBe(true);
+  });
+
+  it("détecte doublon par email et par téléphone", () => {
+    const rows = parseCSV("Prénom;Nom;Téléphone;Email\nX;Y;;marie@spc.fr\nZ;W;06 11 22 33 44;");
+    const p = buildImportPreview(rows, existing);
+    expect(p.rows[0].duplicate).toBe(true);
+    expect(p.rows[1].duplicate).toBe(true);
+  });
+
+  it("repli positionnel si en-têtes non reconnus", () => {
+    const rows = parseCSV("colA;colB;colC\nAlice;Martin;06 00 00 00 00");
+    const p = buildImportPreview(rows, []);
+    expect(p.rows[0].nomComplet).toBe("Alice Martin");
+  });
+});
