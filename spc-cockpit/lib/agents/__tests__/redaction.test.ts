@@ -20,6 +20,10 @@ describe("containsPII", () => {
     expect(containsPII("appelle le 06 12 34 56 78")).toBe(true);
     expect(containsPII("Salle A101 sous-dotée")).toBe(false);
   });
+  it("ne confond pas une date ISO avec un téléphone", () => {
+    expect(containsPII("Session du 2026-07-08")).toBe(false);
+    expect(containsPII('{"date":"2026-07-08","statut":"Planifiée"}')).toBe(false);
+  });
 });
 
 describe("assertNoPII", () => {

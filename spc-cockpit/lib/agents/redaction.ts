@@ -36,7 +36,10 @@ export function redactSupervisors(list: RawSupervisor[]): RedactedSupervisor[] {
 
 /** Détecte grossièrement une PII résiduelle dans une chaîne (garde-fou). */
 const EMAIL_RE = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
-const PHONE_RE = /(?:\+?\d[\s.-]?){8,}/;
+// Téléphone : au moins 10 chiffres (numéro FR) éventuellement séparés par
+// espaces/points/tirets. Le seuil de 10 évite les faux positifs sur les dates
+// ISO (« 2026-07-08 » = 8 chiffres) qui ne sont PAS des données personnelles.
+const PHONE_RE = /(?:\+?\d[\s.-]?){10,}/;
 
 export function containsPII(text: string): boolean {
   return EMAIL_RE.test(text) || PHONE_RE.test(text);
