@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Gauge, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Gauge, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert } from "lucide-react";
 
 export const NAV = [
   { href: "/operations",                label: "Dashboard",        icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -17,6 +17,7 @@ export const NAV = [
   { href: "/operations/presence",       label: "Présence",         icon: <ClipboardCheck className="w-4 h-4" /> },
   { href: "/operations/incidents",      label: "Incidents",        icon: <AlertTriangle className="w-4 h-4" /> },
   { href: "/operations/rapports",       label: "Rapports",         icon: <BarChart3 className="w-4 h-4" /> },
+  { href: "/operations/risques",        label: "Risques IA",       icon: <ShieldAlert className="w-4 h-4" /> },
 ];
 
 export interface ActiveMissionInfo {
