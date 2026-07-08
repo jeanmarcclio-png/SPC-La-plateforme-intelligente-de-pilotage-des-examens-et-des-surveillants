@@ -73,3 +73,41 @@ describe("buildImportPreview", () => {
     expect(p.rows[0].nomComplet).toBe("Alice Martin");
   });
 });
+
+import { stripCivility } from "../surveillants-import";
+
+describe("import format PLANNING (colonne SURVEILLANT)", () => {
+  it("stripCivility retire M./Mme/Mlle", () => {
+    expect(stripCivility("M. Clio Jean Marc")).toBe("Clio Jean Marc");
+    expect(stripCivility("Mme Ben Sassi")).toBe("Ben Sassi");
+    expect(stripCivility("M.Auguste Miguel")).toBe("Auguste Miguel");
+    expect(stripCivility("Lainé Myriam")).toBe("Lainé Myriam");
+  });
+
+  it("trouve l'en-tête décalé, extrait la colonne SURVEILLANT, déduplique et retire la civilité", () => {
+    const rows = [
+      ["PLANNING DES SURVEILLANCES", "", "", "", "", "", "", "", ""],
+      ["Sessions : 15-19 juin", "", "", "", "", "", "", "", ""],
+      ["JOUR / DATE", "DÉBUT", "FIN", "FORMATION", "SALLE", "ÉTUDIANTS", "SURVEILLANT", "REMARQUES", "PRÉSENCE"],
+      ["Lundi 15/06", "8h30", "12h15", "Rattrapage", "B22", "30", "M. Clio Jean Marc", "", "Présent"],
+      ["Lundi 15/06", "13h30", "16h15", "Rattrapage", "B23", "30", "M. Clio Jean Marc", "", "Présent"], // répété
+      ["Mardi 16/06", "8h30", "12h15", "Rattrapage", "B22", "30", "Mme Ben Sassi", "", "Présent"],
+      ["Lundi 15/06", "8h30", "13h15", "Surveillant volant", "—", "—", "—", "", ""], // pas de nom
+    ];
+    const p = buildImportPreview(rows, []);
+    expect(p.total).toBe(4);
+    // Clio (1×) + Ben Sassi (1×) = 2 uniques valides ; 1 répétition + 1 sans nom
+    expect(p.valides).toBe(2);
+    const noms = p.rows.filter((r) => r.valid && !r.duplicate).map((r) => r.nomComplet);
+    expect(noms).toEqual(["Clio Jean Marc", "Ben Sassi"]);
+    expect(p.rows[1].duplicate).toBe(true); // 2e Clio
+    expect(p.rows[3].errors).toContain("Nom manquant"); // ligne « — »
+  });
+});
+
+describe("nettoyage marqueur d'absence", () => {
+  it("retire le suffixe ABS et fusionne le doublon", () => {
+    expect(stripCivility("M. Clio Jean Marc ABS")).toBe("Clio Jean Marc");
+    expect(stripCivility("Cériac Matéo (abs)")).toBe("Cériac Matéo");
+  });
+});
