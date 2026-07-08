@@ -7,6 +7,7 @@ import { dateFR } from "@/lib/operations/format";
 import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
 import { Activity, DoorOpen, CalendarClock, AlertTriangle, CheckCircle2, MapPin, Zap, Users, Landmark, UserCheck } from "lucide-react";
 import { PageHeader } from "@/components/ops/shell";
+import { Kpi } from "@/components/ops/Kpi";
 
 const NAVY = "#0d2137";
 
@@ -31,34 +32,6 @@ function LigneBadge({ statut }: { statut: StatutLigne }) {
 function Creneau({ on, debut, fin }: { on: boolean; debut?: string; fin?: string }) {
   if (!on || !debut || !fin) return <span className="text-gray-300">—</span>;
   return <span className="text-[11.5px] font-mono font-bold bg-emerald-50 text-emerald-700 rounded px-1.5 py-0.5 whitespace-nowrap">{debut}→{fin}</span>;
-}
-
-function CockpitKpi({ label, value, sub, icon, variant = "default" }: {
-  label: string; value: string; sub: string; icon: React.ReactNode; variant?: "default" | "amber" | "alerte";
-}) {
-  const iconBg = variant === "default" ? "bg-blue-50 text-blue-600" : "bg-amber-50 text-amber-600";
-  if (variant === "alerte") {
-    return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50/70 shadow-sm p-5">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-bold uppercase tracking-[1px] text-amber-700">{label}</span>
-          <span aria-hidden className="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-100 text-amber-600">{icon}</span>
-        </div>
-        <div className="text-[26px] font-extrabold text-amber-600 leading-none">{value}</div>
-        <div className="text-[12px] font-semibold text-amber-600 mt-1.5">{sub}</div>
-      </div>
-    );
-  }
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] font-bold uppercase tracking-[1px] text-gray-500">{label}</span>
-        <span aria-hidden className={`w-8 h-8 rounded-lg flex items-center justify-center ${iconBg}`}>{icon}</span>
-      </div>
-      <div className="text-[26px] font-extrabold leading-none" style={{ color: NAVY }}>{value}</div>
-      <div className="text-[12px] text-gray-500 mt-1.5">{sub}</div>
-    </div>
-  );
 }
 
 const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#2563eb"];
@@ -150,39 +123,39 @@ export default async function CockpitOpsPage() {
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
         {enCours > 0 ? (
-          <CockpitKpi
+          <Kpi
             label="Sessions en cours"
             value={String(enCours)}
             sub="sur le terrain en ce moment"
             icon={<Activity className="w-4 h-4" />}
           />
         ) : (
-          <CockpitKpi
+          <Kpi
             label="Sessions à préparer"
             value={String(aPreparer)}
             sub="aucune session en cours"
             icon={<Activity className="w-4 h-4" />}
           />
         )}
-        <CockpitKpi
+        <Kpi
           label="Salles couvertes"
           value={`${sallesAffectees}/${sallesRequises}`}
           sub={`${Math.max(0, sallesRequises - sallesAffectees)} salle(s) à couvrir`}
           icon={<DoorOpen className="w-4 h-4" />}
           variant="amber"
         />
-        <CockpitKpi
+        <Kpi
           label="Créneaux définis"
           value={`${creneauxDefinis}/${rows.length}`}
           sub={`${rows.length - creneauxDefinis} surveillant(s) sans créneau`}
           icon={<UserCheck className="w-4 h-4" />}
         />
-        <CockpitKpi
+        <Kpi
           label="Alertes"
           value={String(alertes.length)}
           sub={`${avertissements.length} avert. · ${informations.length} info(s)`}
           icon={<AlertTriangle className="w-4 h-4" />}
-          variant="alerte"
+          variant="alert"
         />
       </div>
 

@@ -1,12 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/ops/shell";
+import { Kpi } from "@/components/ops/Kpi";
 import { RisqueNarrative } from "@/components/ops/RisqueNarrative";
 import { getPlanningRiskReport } from "@/lib/agents/planning-risk/tools";
 import type { RiskSeverity } from "@/lib/operations/engine/risk";
 import { ShieldAlert, AlertTriangle, Info, CircleCheck } from "lucide-react";
-
-const NAVY = "#0d2137";
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -44,10 +43,10 @@ export default async function RisquesPage() {
         <>
           {/* Récapitulatif */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-            <Kpi label="Session analysée" value={report.mission.client} sub={`${report.mission.reference} · ${report.mission.date}`} />
-            <Kpi label="Critiques" value={String(report.counts.critique)} sub="à traiter en priorité" tone="red" />
-            <Kpi label="Avertissements" value={String(report.counts.avertissement)} sub="à surveiller" tone="amber" />
-            <Kpi label="Informations" value={String(report.counts.information)} sub="pour information" tone="blue" />
+            <Kpi label="Session analysée" value={report.mission.client} sub={`${report.mission.reference} · ${report.mission.date}`} truncate />
+            <Kpi label="Critiques" value={String(report.counts.critique)} sub="à traiter en priorité" valueTone="red" />
+            <Kpi label="Avertissements" value={String(report.counts.avertissement)} sub="à surveiller" valueTone="amber" />
+            <Kpi label="Informations" value={String(report.counts.information)} sub="pour information" valueTone="blue" />
           </div>
 
           <div className="grid lg:grid-cols-5 gap-5 items-start">
@@ -95,13 +94,3 @@ export default async function RisquesPage() {
   );
 }
 
-function Kpi({ label, value, sub, tone }: { label: string; value: string; sub: string; tone?: "red" | "amber" | "blue" }) {
-  const color = tone === "red" ? "text-red-600" : tone === "amber" ? "text-amber-600" : tone === "blue" ? "text-blue-600" : "";
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
-      <div className="text-[11px] font-bold uppercase tracking-[1px] text-gray-500 mb-2">{label}</div>
-      <div className={`text-[22px] font-extrabold leading-none truncate ${color}`} style={color ? {} : { color: NAVY }}>{value}</div>
-      <div className="text-[12px] text-gray-500 mt-1.5">{sub}</div>
-    </div>
-  );
-}
