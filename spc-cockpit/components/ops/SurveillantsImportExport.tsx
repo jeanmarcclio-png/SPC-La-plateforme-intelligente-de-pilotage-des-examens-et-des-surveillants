@@ -34,24 +34,43 @@ export function SurveillantsImportExport({ surveillants }: { surveillants: Surve
   const [pending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
 
+  function showRows(rows: string[][], name: string) {
+    if (rows.length < 2) { showToast("Fichier vide ou sans données.", "error"); return; }
+    setPreview(buildImportPreview(rows, surveillants));
+    setFileName(name);
+    setOpen(true);
+  }
+
   function handleFile(file: File) {
     const ext = file.name.toLowerCase().split(".").pop();
     if (ext === "xlsx" || ext === "xls") {
-      showToast("Fichier Excel : ouvrez-le puis « Enregistrer sous » CSV (UTF-8), et réimportez le .csv.", "error");
+      // Lecture réelle du binaire Excel (SheetJS chargé à la demande).
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const XLSX = await import("xlsx");
+          const wb = XLSX.read(reader.result, { type: "array" });
+          // Feuille « Contacts Surveillants » si présente, sinon la première.
+          const sheetName = wb.SheetNames.find((n) => n.toLowerCase().includes("contacts surveillants")) ?? wb.SheetNames[0];
+          const sheet = wb.Sheets[sheetName];
+          const rows = (XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false, defval: "" }) as unknown[][])
+            .map((r) => r.map((c) => (c == null ? "" : String(c))));
+          showRows(rows, file.name);
+        } catch {
+          showToast("Impossible de lire ce fichier Excel.", "error");
+        }
+      };
+      reader.readAsArrayBuffer(file);
       return;
     }
     if (ext !== "csv") {
-      showToast("Format non accepté. Importez un fichier .csv (ou exportez votre Excel en CSV).", "error");
+      showToast("Format non accepté. Importez un fichier .xlsx, .xls ou .csv.", "error");
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const rows = parseCSV(String(reader.result ?? ""));
-        if (rows.length < 2) { showToast("Fichier vide ou sans données.", "error"); return; }
-        setPreview(buildImportPreview(rows, surveillants));
-        setFileName(file.name);
-        setOpen(true);
+        showRows(parseCSV(String(reader.result ?? "")), file.name);
       } catch {
         showToast("Impossible de lire ce fichier CSV.", "error");
       }
@@ -83,21 +102,34 @@ export function SurveillantsImportExport({ surveillants }: { surveillants: Surve
     });
   }
 
+  const exportRows = () => [
+    EXPORT_HEADER,
+    ...surveillants.map((s) => ["", s.nom, s.telephone ?? "", s.email ?? "", s.role, "", "", s.statut, "", s.qualifications ?? ""]),
+  ];
+
+  async function downloadXLSX(name: string, rows: (string | number)[][], sheet = "Contacts Surveillants") {
+    const XLSX = await import("xlsx");
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, sheet);
+    XLSX.writeFile(wb, name);
+  }
+
+  function exportExcel() {
+    downloadXLSX(`SPC_surveillants_export_${today()}.xlsx`, exportRows());
+    showToast(`${surveillants.length} surveillant(s) exporté(s) en Excel.`);
+  }
+
   function exportCSV() {
-    const rows = [
-      EXPORT_HEADER,
-      ...surveillants.map((s) => ["", s.nom, s.telephone ?? "", s.email ?? "", s.role, "", "", s.statut, "", s.qualifications ?? ""]),
-    ];
-    downloadFile(`SPC_surveillants_export_${today()}.csv`, toCSV(rows));
-    showToast(`${surveillants.length} surveillant(s) exporté(s).`);
+    downloadFile(`SPC_surveillants_export_${today()}.csv`, toCSV(exportRows()));
+    showToast(`${surveillants.length} surveillant(s) exporté(s) en CSV.`);
   }
 
   function downloadTemplate() {
-    const rows = [
+    downloadXLSX("SPC_modele_surveillants.xlsx", [
       EXPORT_HEADER,
-      ["Marie", "Lecomte", "06 00 00 00 00", "marie.lecomte@email.com", "Coordinatrice", "Disponible", "Disponible", "Disponible", "Paris", "Référente"],
-    ];
-    downloadFile("SPC_modele_surveillants.csv", toCSV(rows));
+      ["Marie", "Lecomte", "06 00 00 00 00", "marie.lecomte@email.com", "Coordinatrice", "Disponible", "Disponible", "Actif", "Paris", "Référente"],
+    ]);
   }
 
   return (
@@ -106,13 +138,14 @@ export function SurveillantsImportExport({ surveillants }: { surveillants: Surve
         <div className="flex items-center gap-2.5">
           <span className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><FileSpreadsheet className="w-4.5 h-4.5" aria-hidden /></span>
           <div>
-            <h2 className="text-[14px] font-bold text-gray-900">Import / Export CSV</h2>
-            <p className="text-[12px] text-slate-500">Colonnes : Prénom · Nom · Téléphone · Email · Rôle · Dispo · Statut · Zone · Observations</p>
+            <h2 className="text-[14px] font-bold text-gray-900">Import Excel / CSV</h2>
+            <p className="text-[12px] text-slate-500">Feuille « Contacts Surveillants » · Prénom · Nom · Téléphone · Email · Rôle · Dispo · Statut · Zone · Observations</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="secondary" size="sm" onClick={downloadTemplate}><Download className="w-3.5 h-3.5" aria-hidden />Modèle</Button>
-          <Button variant="secondary" size="sm" onClick={exportCSV}><Download className="w-3.5 h-3.5" aria-hidden />Exporter</Button>
+          <Button variant="secondary" size="sm" onClick={downloadTemplate}><Download className="w-3.5 h-3.5" aria-hidden />Modèle Excel</Button>
+          <Button variant="secondary" size="sm" onClick={exportExcel}><Download className="w-3.5 h-3.5" aria-hidden />Export Excel</Button>
+          <Button variant="secondary" size="sm" onClick={exportCSV}><Download className="w-3.5 h-3.5" aria-hidden />Export CSV</Button>
         </div>
       </div>
 
@@ -129,7 +162,7 @@ export function SurveillantsImportExport({ surveillants }: { surveillants: Surve
       >
         <UploadCloud className={`w-8 h-8 mx-auto mb-2 ${dragOver ? "text-indigo-500" : "text-slate-400"}`} aria-hidden />
         <div className="text-[13.5px] font-semibold text-gray-800">Déposez votre fichier ici ou cliquez pour parcourir</div>
-        <div className="text-[12px] text-slate-400 mt-0.5">.csv — Excel : « Enregistrer sous » CSV avant l&apos;import</div>
+        <div className="text-[12px] text-slate-400 mt-0.5">.xlsx, .xls, .csv</div>
         <input ref={inputRef} type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
       </div>
 
