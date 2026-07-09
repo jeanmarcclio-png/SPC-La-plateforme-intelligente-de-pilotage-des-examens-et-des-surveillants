@@ -8,7 +8,8 @@ import { SurveillantPicker } from "@/components/ops/SurveillantPicker";
 import { Kpi } from "@/components/ops/Kpi";
 import { Button, ButtonLink } from "@/components/ops/Button";
 import { showToast } from "@/components/Toast";
-import { dateFR } from "@/lib/operations/format";
+import { dateFR, euro } from "@/lib/operations/format";
+import { analyseRentabilite } from "@/lib/operations/rentabilite";
 import { toCSV } from "@/lib/operations/csv";
 import { parseTimeToMinutes, detectSupervisorConflicts, type SupervisorAssignmentInput } from "@/lib/operations/engine";
 import { statutOptions, estPlanifiable } from "@/lib/operations/mission-status";
@@ -227,6 +228,14 @@ export function PlanificationBoard({
   const salles = new Set(rows.map((a) => stateOf(a).salle.trim()).filter(Boolean));
   const affectes = rows.filter((a) => { const r = stateOf(a); return r.matin.on || r.apm.on; });
   const totalHeures = rows.reduce((s, a) => s + rowHours(stateOf(a)), 0);
+
+  // Rentabilité de la session (§21) : CA vs coût estimé des surveillants.
+  const rentabilite = mission
+    ? analyseRentabilite({
+        caHT: mission.montantHT,
+        lignes: rows.map((a) => ({ heures: rowHours(stateOf(a)), tauxHoraire: survById.get(a.surveillantId)?.tauxHoraire ?? 18 })),
+      })
+    : null;
 
   type Alerte = { affId: number; text: string };
   const alertes: Alerte[] = [];
@@ -499,6 +508,39 @@ export function PlanificationBoard({
               </div>
             )}
           </div>
+
+          {/* Rentabilité de la session (§21) */}
+          {rentabilite && (() => {
+            const n = rentabilite.niveau;
+            const tone = n === "saine" ? "bg-emerald-50 text-emerald-700 ring-emerald-600/15" : n === "surveiller" ? "bg-amber-50 text-amber-700 ring-amber-600/15" : "bg-rose-50 text-rose-700 ring-rose-600/15";
+            const label = n === "saine" ? "Marge saine" : n === "surveiller" ? "Marge à surveiller" : "Marge critique";
+            return (
+              <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
+                <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <h2 className="text-[14px] font-bold text-gray-900">Rentabilité de la session</h2>
+                    <p className="text-[12px] text-gray-400">CA HT − coût estimé des surveillants ({rentabilite.heuresTotal.toFixed(1)}h planifiées)</p>
+                  </div>
+                  <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${tone}`}>
+                    <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{label} · {Math.round(rentabilite.tauxMarge * 100)} %
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100">
+                  {[
+                    { label: "CA HT", value: euro(rentabilite.caHT), accent: "text-gray-900" },
+                    { label: "Coût surveillants", value: euro(rentabilite.coutHT), accent: "text-slate-600" },
+                    { label: "Marge HT", value: euro(rentabilite.margeHT), accent: rentabilite.margeHT >= 0 ? "text-emerald-700" : "text-rose-600" },
+                    { label: "Taux de marge", value: `${Math.round(rentabilite.tauxMarge * 100)} %`, accent: n === "saine" ? "text-emerald-700" : n === "surveiller" ? "text-amber-700" : "text-rose-600" },
+                  ].map((m) => (
+                    <div key={m.label} className="px-5 py-3.5">
+                      <div className="text-[10.5px] font-bold uppercase tracking-[.8px] text-gray-400">{m.label}</div>
+                      <div className={`text-[17px] font-extrabold mt-0.5 ${m.accent}`}>{m.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Tableau d'affectation */}
           <div id="session-table" className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
