@@ -125,7 +125,7 @@ describe("adaptateurs SPC", () => {
     apm: true,
     apmDebut: "13:30",
     apmFin: "18:00",
-    presence: "Non pointé",
+    presence: "En attente",
   };
   it("affectation matin + après-midi → deux sessions moteur indépendantes", () => {
     const out = affectationToAssignments(aff);

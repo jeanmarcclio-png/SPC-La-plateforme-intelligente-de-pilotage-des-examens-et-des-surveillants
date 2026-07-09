@@ -27,6 +27,8 @@ function parseForm(fd: FormData) {
 }
 
 export async function createMission(fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.reference) return { error: "La référence est obligatoire" };
   if (!fields.client) return { error: "Le client est obligatoire" };
@@ -43,6 +45,8 @@ export async function createMission(fd: FormData): Promise<{ error?: string }> {
 }
 
 export async function updateMission(id: number, fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.reference) return { error: "La référence est obligatoire" };
   if (!fields.client) return { error: "Le client est obligatoire" };
@@ -85,6 +89,8 @@ export async function validerSession(id: number): Promise<{ error?: string }> {
 }
 
 export async function deleteMission(id: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("validate");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { error } = await supabase.from("missions").delete().eq("id", id);

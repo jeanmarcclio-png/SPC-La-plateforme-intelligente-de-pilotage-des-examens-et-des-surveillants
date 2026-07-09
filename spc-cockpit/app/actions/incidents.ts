@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { requireCapability } from "@/lib/auth/session";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -21,6 +22,8 @@ function parseForm(fd: FormData) {
 }
 
 export async function createIncident(fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.titre) return { error: "Le type d'incident est obligatoire" };
 
@@ -36,6 +39,8 @@ export async function createIncident(fd: FormData): Promise<{ error?: string }> 
 }
 
 export async function updateIncident(id: number, fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.titre) return { error: "Le type d'incident est obligatoire" };
 
@@ -51,6 +56,8 @@ export async function updateIncident(id: number, fd: FormData): Promise<{ error?
 }
 
 export async function deleteIncident(id: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { error } = await supabase.from("incidents").delete().eq("id", id);

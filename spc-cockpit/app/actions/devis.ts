@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { ttcFromHT } from "@/lib/operations/engine";
+import { requireCapability } from "@/lib/auth/session";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -153,6 +154,8 @@ async function creerMissionDepuisDevis(
 }
 
 export async function createDevis(fd: FormData): Promise<{ error?: string; warning?: string }> {
+  const auth = await requireCapability("finance");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.reference) return { error: "La référence est obligatoire" };
   if (!fields.client) return { error: "Le client est obligatoire" };
@@ -171,6 +174,8 @@ export async function createDevis(fd: FormData): Promise<{ error?: string; warni
 }
 
 export async function updateDevis(id: number, fd: FormData): Promise<{ error?: string; missionRef?: string; warning?: string }> {
+  const auth = await requireCapability("finance");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.reference) return { error: "La référence est obligatoire" };
   if (!fields.client) return { error: "Le client est obligatoire" };
@@ -198,6 +203,8 @@ export async function updateDevis(id: number, fd: FormData): Promise<{ error?: s
 }
 
 export async function duplicateDevis(id: number): Promise<{ error?: string; newId?: number }> {
+  const auth = await requireCapability("finance");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { data: src, error: e1 } = await supabase.from("devis").select("*").eq("id", id).single();
@@ -230,6 +237,8 @@ export async function duplicateDevis(id: number): Promise<{ error?: string; newI
 }
 
 export async function deleteDevis(id: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("finance");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { error } = await supabase.from("devis").delete().eq("id", id);

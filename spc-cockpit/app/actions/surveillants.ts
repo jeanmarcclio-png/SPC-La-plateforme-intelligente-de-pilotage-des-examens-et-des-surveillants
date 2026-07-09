@@ -32,6 +32,8 @@ function parseForm(fd: FormData) {
 }
 
 export async function createSurveillant(fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.nom) return { error: "Le nom est obligatoire" };
 
@@ -47,6 +49,8 @@ export async function createSurveillant(fd: FormData): Promise<{ error?: string 
 }
 
 export async function updateSurveillant(id: number, fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.nom) return { error: "Le nom est obligatoire" };
 
@@ -62,6 +66,8 @@ export async function updateSurveillant(id: number, fd: FormData): Promise<{ err
 }
 
 export async function deleteSurveillant(id: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { error } = await supabase.from("surveillants").delete().eq("id", id);

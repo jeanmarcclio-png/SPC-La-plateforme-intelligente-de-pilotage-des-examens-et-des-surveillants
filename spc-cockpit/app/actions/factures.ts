@@ -29,6 +29,8 @@ function parseForm(fd: FormData) {
 }
 
 export async function createFacture(fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("finance");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.reference) return { error: "La référence est obligatoire" };
   if (!fields.client) return { error: "Le client est obligatoire" };

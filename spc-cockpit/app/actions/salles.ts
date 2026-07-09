@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { requireCapability } from "@/lib/auth/session";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -23,6 +24,8 @@ function parseForm(fd: FormData) {
 }
 
 export async function createSalle(fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.nom) return { error: "Le nom de la salle est obligatoire" };
   if (fields.etudiants > fields.capacite) return { error: "Le nombre d'étudiants dépasse la capacité de la salle" };
@@ -39,6 +42,8 @@ export async function createSalle(fd: FormData): Promise<{ error?: string }> {
 }
 
 export async function updateSalle(id: number, fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.nom) return { error: "Le nom de la salle est obligatoire" };
   if (fields.etudiants > fields.capacite) return { error: "Le nombre d'étudiants dépasse la capacité de la salle" };
@@ -55,6 +60,8 @@ export async function updateSalle(id: number, fd: FormData): Promise<{ error?: s
 }
 
 export async function deleteSalle(id: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { error } = await supabase.from("salles").delete().eq("id", id);

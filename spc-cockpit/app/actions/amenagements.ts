@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { requireCapability } from "@/lib/auth/session";
 
 function revalidateOps() {
   revalidatePath("/operations/pmr");
@@ -18,6 +19,8 @@ function parseForm(fd: FormData) {
 }
 
 export async function createAmenagement(fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.amenagement) return { error: "Le type d'aménagement est obligatoire" };
 
@@ -33,6 +36,8 @@ export async function createAmenagement(fd: FormData): Promise<{ error?: string 
 }
 
 export async function updateAmenagement(id: number, fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   const fields = parseForm(fd);
   if (!fields.amenagement) return { error: "Le type d'aménagement est obligatoire" };
 
@@ -48,6 +53,8 @@ export async function updateAmenagement(id: number, fd: FormData): Promise<{ err
 }
 
 export async function deleteAmenagement(id: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
     const { error } = await supabase.from("amenagements").delete().eq("id", id);
