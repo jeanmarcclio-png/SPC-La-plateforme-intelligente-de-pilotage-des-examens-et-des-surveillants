@@ -12,9 +12,10 @@ import { dateFR } from "@/lib/operations/format";
 import { toCSV } from "@/lib/operations/csv";
 import { parseTimeToMinutes, detectSupervisorConflicts, type SupervisorAssignmentInput } from "@/lib/operations/engine";
 import { statutOptions, estPlanifiable } from "@/lib/operations/mission-status";
+import { suggererSurveillants } from "@/lib/operations/suggestions";
 import {
   AlertTriangle, Trash2, Check, ShieldCheck, Calendar, CalendarDays, CalendarCheck,
-  Download, Pencil, Plus, Send, Users, Clock, Search, ArrowRight,
+  Download, Pencil, Plus, Send, Users, Clock, Search, ArrowRight, Sparkles,
 } from "lucide-react";
 
 const ACCENT = "#2563eb";
@@ -171,6 +172,7 @@ export function PlanificationBoard({
 
   const survById = useMemo(() => new Map(surveillants.map((s) => [s.id, s])), [surveillants]);
   const nonAffectes = surveillants.filter((s) => !rows.some((r) => r.surveillantId === s.id));
+  const suggestions = suggererSurveillants(nonAffectes, { limite: 6 });
 
   function stateOf(a: Affectation): RowState {
     return edits[a.id] ?? toRowState(a);
@@ -651,6 +653,45 @@ export function PlanificationBoard({
               </table>
             </div>
           </div>
+
+          {/* Copilote d'affectation — suggestions explicables (§21) */}
+          {validable && suggestions.length > 0 && (
+            <div className="mt-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
+              <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-center gap-2.5">
+                <span aria-hidden className="w-8 h-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center"><Sparkles className="w-4 h-4" /></span>
+                <div>
+                  <h2 className="text-[14px] font-bold text-gray-900">Copilote d&apos;affectation · IA</h2>
+                  <p className="text-[12px] text-gray-400">Surveillants mobilisables classés par fiabilité et charge — vous gardez la décision</p>
+                </div>
+              </div>
+              <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                {suggestions.map(({ surveillant: s, score, reasons }, i) => {
+                  const tone = score >= 80 ? "bg-emerald-50 text-emerald-700" : score >= 60 ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600";
+                  return (
+                    <div key={s.id} className="flex items-center gap-3 rounded-xl border border-slate-200 p-3 hover:border-violet-300 transition-colors">
+                      <span className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0" style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}>
+                        {initials(s.nom)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[13px] font-semibold text-gray-800 truncate">{s.nom}</span>
+                          <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md ${tone}`} title="Score d'adéquation /100">{score}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {reasons.slice(0, 4).map((r, j) => (
+                            <span key={j} className="text-[10.5px] font-medium text-slate-500 bg-slate-100 rounded px-1.5 py-0.5">{r}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <Button variant="accent" size="sm" onClick={() => add(s)} disabled={pending} aria-label={`Affecter ${s.nom}`}>
+                        <Plus className="w-3.5 h-3.5" aria-hidden />Affecter
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Présence par créneau (timeline) */}
           {affectes.length > 0 && (

@@ -12,6 +12,8 @@ export const mockSurveillants: Surveillant[] = [
   { id: 6, nom: "Karim Haddad",       role: "Surveillant salle",  statut: "Disponible",   qualifications: "Salles multiples",            nbExamens: 9,  heures: 66,  note: 4.5, tauxHoraire: 18 },
   { id: 7, nom: "Léa Fontaine",       role: "Surveillant volant", statut: "Disponible",   qualifications: "Renforts · Concours",         nbExamens: 5,  heures: 38,  note: 4.8, tauxHoraire: 18 },
   { id: 8, nom: "Marc Petit",         role: "Surveillant salle",  statut: "Indisponible", qualifications: "",                            nbExamens: 7,  heures: 52,  note: 4.3, tauxHoraire: 18 },
+  { id: 9, nom: "Faouzia Ben Sassi",  prenom: "Faouzia", zone: "Paris 13e", role: "Surveillant salle",  statut: "Disponible", qualifications: "Amphithéâtres",     nbExamens: 4, heures: 22, note: 4.6, tauxHoraire: 18 },
+  { id: 10, nom: "Miguel Auguste",    prenom: "Miguel",  zone: "Saclay",    role: "Surveillant volant", statut: "Disponible", qualifications: "Renforts · Concours", nbExamens: 3, heures: 15, note: 4.4, tauxHoraire: 18 },
 ];
 
 export const mockMissions: Mission[] = [
