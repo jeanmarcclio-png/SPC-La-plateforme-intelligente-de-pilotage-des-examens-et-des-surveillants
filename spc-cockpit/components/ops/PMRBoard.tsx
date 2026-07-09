@@ -5,6 +5,7 @@ import type { Amenagement, Surveillant } from "@/lib/operations/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { createAmenagement, updateAmenagement, deleteAmenagement } from "@/app/actions/amenagements";
 import { showToast } from "@/components/Toast";
+import { Button } from "@/components/ops/Button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 const ACCENT = "#2563eb";
@@ -119,7 +120,7 @@ export function PMRBoard({ amenagements, surveillants }: { amenagements: Amenage
           </button>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse min-w-[560px]">
+          <table className="w-full border-collapse min-w-[720px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
                 {["Réf.", "Aménagement", "Salle", "Tiers-temps", "Surveillant dédié", ""].map((h) => (
@@ -147,22 +148,13 @@ export function PMRBoard({ amenagements, surveillants }: { amenagements: Amenage
                   </td>
                   <td className="px-5 py-3 text-[12.5px] text-gray-600">{a.surveillant ?? "—"}</td>
                   <td className="px-5 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => setDialog({ mode: "edit", amenagement: a })}
-                        title="Modifier l'aménagement"
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(a)}
-                        disabled={pending}
-                        title="Supprimer l'aménagement"
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button variant="secondary" size="sm" onClick={() => setDialog({ mode: "edit", amenagement: a })} aria-label="Modifier l'aménagement">
+                        <Pencil className="w-3.5 h-3.5" aria-hidden />Modifier
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDelete(a)} disabled={pending} aria-label="Supprimer l'aménagement">
+                        <Trash2 className="w-3.5 h-3.5" aria-hidden />Supprimer
+                      </Button>
                     </div>
                   </td>
                 </tr>

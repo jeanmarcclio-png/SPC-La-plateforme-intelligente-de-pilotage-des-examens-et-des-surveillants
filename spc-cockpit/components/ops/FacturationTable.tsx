@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { createFacture, updateFactureStatut, deleteFacture } from "@/app/actions/factures";
 import { showToast } from "@/components/Toast";
 import { euro, dateFR } from "@/lib/operations/format";
+import { Button } from "@/components/ops/Button";
 import { Plus, Trash2 } from "lucide-react";
 import { ttcFromHT } from "@/lib/operations/engine";
 
@@ -166,7 +167,7 @@ export function FacturationTable({ factures }: { factures: Facture[] }) {
           <h2 className="text-[14px] font-bold text-gray-900">Factures <span className="text-gray-400 font-normal">({factures.length})</span></h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse min-w-[760px]">
+          <table className="w-full border-collapse min-w-[820px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
                 {["Référence", "Client", "Session", "Statut", "Montant HT", "Montant TTC", "Émission", "Échéance", ""].map((h) => (
@@ -199,14 +200,11 @@ export function FacturationTable({ factures }: { factures: Facture[] }) {
                   <td className="px-5 py-3 text-[12.5px] text-gray-600 whitespace-nowrap">{dateFR(f.emission)}</td>
                   <td className="px-5 py-3 text-[12.5px] text-gray-600 whitespace-nowrap">{dateFR(f.echeance)}</td>
                   <td className="px-5 py-3">
-                    <button
-                      onClick={() => handleDelete(f)}
-                      disabled={pending}
-                      title={`Supprimer ${f.reference}`}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center justify-end">
+                      <Button variant="danger" size="sm" onClick={() => handleDelete(f)} disabled={pending} aria-label={`Supprimer ${f.reference}`}>
+                        <Trash2 className="w-3.5 h-3.5" aria-hidden />Supprimer
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}

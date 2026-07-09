@@ -7,6 +7,7 @@ import { createMission, updateMission, deleteMission } from "@/app/actions/missi
 import { showToast } from "@/components/Toast";
 import { MissionBadge } from "@/components/ops/badges";
 import { euro, dateFR } from "@/lib/operations/format";
+import { Button } from "@/components/ops/Button";
 import { Search, Plus, Pencil, Trash2, Briefcase } from "lucide-react";
 
 const ACCENT = "#2563eb";
@@ -214,7 +215,7 @@ export function MissionsTable({ missions }: { missions: Mission[] }) {
       {/* Table */}
       <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse min-w-[760px]">
+          <table className="w-full border-collapse min-w-[920px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
                 {["Référence", "Client", "Date", "Type", "Volume", "Montant HT", "Statut", ""].map((h) => (
@@ -244,22 +245,13 @@ export function MissionsTable({ missions }: { missions: Mission[] }) {
                   <td className="px-5 py-3 text-[13px] font-extrabold text-gray-900 whitespace-nowrap">{euro(m.montantHT)}</td>
                   <td className="px-5 py-3"><MissionBadge statut={m.statut} /></td>
                   <td className="px-5 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => setDialog({ mode: "edit", mission: m })}
-                        title={`Modifier ${m.reference}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(m)}
-                        disabled={pending}
-                        title={`Supprimer ${m.reference}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button variant="secondary" size="sm" onClick={() => setDialog({ mode: "edit", mission: m })} aria-label={`Modifier ${m.reference}`}>
+                        <Pencil className="w-3.5 h-3.5" aria-hidden />Modifier
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDelete(m)} disabled={pending} aria-label={`Supprimer ${m.reference}`}>
+                        <Trash2 className="w-3.5 h-3.5" aria-hidden />Supprimer
+                      </Button>
                     </div>
                   </td>
                 </tr>

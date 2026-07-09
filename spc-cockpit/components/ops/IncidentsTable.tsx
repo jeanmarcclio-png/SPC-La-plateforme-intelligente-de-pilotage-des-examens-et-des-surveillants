@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { createIncident, updateIncident, deleteIncident } from "@/app/actions/incidents";
 import { showToast } from "@/components/Toast";
 import { dateFR } from "@/lib/operations/format";
+import { Button } from "@/components/ops/Button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 const ACCENT = "#2563eb";
@@ -161,7 +162,7 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
 
       <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse min-w-[680px]">
+          <table className="w-full border-collapse min-w-[840px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
                 {["Référence", "Date", "Salle", "Type", "Gravité", "Statut", ""].map((h) => (
@@ -189,22 +190,13 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
                   <td className="px-5 py-3"><GraviteBadge gravite={i.gravite} /></td>
                   <td className="px-5 py-3"><StatutIncidentBadge statut={i.statut} /></td>
                   <td className="px-5 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => setDialog({ mode: "edit", incident: i })}
-                        title="Modifier l'incident"
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(i)}
-                        disabled={pending}
-                        title="Supprimer l'incident"
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button variant="secondary" size="sm" onClick={() => setDialog({ mode: "edit", incident: i })} aria-label="Modifier l'incident">
+                        <Pencil className="w-3.5 h-3.5" aria-hidden />Modifier
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDelete(i)} disabled={pending} aria-label="Supprimer l'incident">
+                        <Trash2 className="w-3.5 h-3.5" aria-hidden />Supprimer
+                      </Button>
                     </div>
                   </td>
                 </tr>

@@ -8,7 +8,7 @@ import { createDevis, updateDevis, deleteDevis, duplicateDevis } from "@/app/act
 import { showToast } from "@/components/Toast";
 import { DevisBadge } from "@/components/ops/badges";
 import { euro, dateFR } from "@/lib/operations/format";
-import Link from "next/link";
+import { Button, ButtonLink } from "@/components/ops/Button";
 import { useRouter } from "next/navigation";
 import { Search, Plus, Pencil, Trash2, Eye, Copy } from "lucide-react";
 import { ttcFromHT } from "@/lib/operations/engine";
@@ -256,7 +256,7 @@ export function DevisTable({ devis, devisSalles = [] }: { devis: Devis[]; devisS
 
       <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse min-w-[720px]">
+          <table className="w-full border-collapse min-w-[1040px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
                 {["Référence", "Client", "Session", "Période", "Statut", "Montant HT", "Montant TTC", "Équipe", ""].map((h) => (
@@ -281,41 +281,19 @@ export function DevisTable({ devis, devisSalles = [] }: { devis: Devis[]; devisS
                   <td className="px-5 py-3 text-[13px] font-extrabold text-gray-900 whitespace-nowrap">{euro(d.montantTTC)}</td>
                   <td className="px-5 py-3 text-[12.5px] text-gray-500 whitespace-nowrap">{d.nbSurveillants} surv.</td>
                   <td className="px-5 py-3">
-                    <div className="flex items-center justify-end gap-2.5">
-                      <button
-                        onClick={() => setDialog({ mode: "edit", devis: d })}
-                        title={`Modifier ${d.reference}`}
-                        className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-gray-500 hover:text-gray-800 transition-colors"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                        Modifier
-                      </button>
-                      <Link
-                        href={`/operations/devis/${d.id}`}
-                        title={`Voir le devis ${d.reference}`}
-                        className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-gray-500 hover:text-gray-800 transition-colors"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        Voir
-                      </Link>
-                      <button
-                        onClick={() => handleDuplicate(d)}
-                        disabled={pending}
-                        title={`Dupliquer ${d.reference}`}
-                        aria-label={`Dupliquer ${d.reference}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-40"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(d)}
-                        disabled={pending}
-                        title={`Supprimer ${d.reference}`}
-                        aria-label={`Supprimer ${d.reference}`}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-red-200 bg-red-50/50 text-red-500 hover:bg-red-100 hover:border-red-300 transition-colors disabled:opacity-40"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <ButtonLink href={`/operations/devis/${d.id}`} variant="secondary" size="sm" aria-label={`Voir le devis ${d.reference}`}>
+                        <Eye className="w-3.5 h-3.5" aria-hidden />Voir
+                      </ButtonLink>
+                      <Button variant="secondary" size="sm" onClick={() => setDialog({ mode: "edit", devis: d })} aria-label={`Modifier ${d.reference}`}>
+                        <Pencil className="w-3.5 h-3.5" aria-hidden />Modifier
+                      </Button>
+                      <Button variant="secondary" size="sm" onClick={() => handleDuplicate(d)} disabled={pending} aria-label={`Dupliquer ${d.reference}`}>
+                        <Copy className="w-3.5 h-3.5" aria-hidden />Dupliquer
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDelete(d)} disabled={pending} aria-label={`Supprimer ${d.reference}`}>
+                        <Trash2 className="w-3.5 h-3.5" aria-hidden />Supprimer
+                      </Button>
                     </div>
                   </td>
                 </tr>

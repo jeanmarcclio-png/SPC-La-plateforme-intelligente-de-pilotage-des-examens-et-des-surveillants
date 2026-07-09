@@ -5,6 +5,7 @@ import type { Salle } from "@/lib/operations/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { createSalle, updateSalle, deleteSalle } from "@/app/actions/salles";
 import { showToast } from "@/components/Toast";
+import { Button } from "@/components/ops/Button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 const ACCENT = "#2563eb";
@@ -177,7 +178,7 @@ export function SallesBoard({ salles }: { salles: Salle[] }) {
           <h2 className="text-[14px] font-bold text-gray-900">Détail des salles</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse min-w-[720px]">
+          <table className="w-full border-collapse min-w-[880px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
                 {["Salle", "Bâtiment", "Capacité", "Étudiants", "Occupation", "Surv.", "PMR", "TT", ""].map((h) => (
@@ -212,22 +213,13 @@ export function SallesBoard({ salles }: { salles: Salle[] }) {
                     <td className="px-5 py-3">{s.pmr ? <TagPMR /> : <span className="text-gray-300">—</span>}</td>
                     <td className="px-5 py-3">{s.tiersTemps ? <TagTT /> : <span className="text-gray-300">—</span>}</td>
                     <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => setDialog({ mode: "edit", salle: s })}
-                          title={`Modifier ${s.nom}`}
-                          className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(s)}
-                          disabled={pending}
-                          title={`Supprimer ${s.nom}`}
-                          className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button variant="secondary" size="sm" onClick={() => setDialog({ mode: "edit", salle: s })} aria-label={`Modifier ${s.nom}`}>
+                          <Pencil className="w-3.5 h-3.5" aria-hidden />Modifier
+                        </Button>
+                        <Button variant="danger" size="sm" onClick={() => handleDelete(s)} disabled={pending} aria-label={`Supprimer ${s.nom}`}>
+                          <Trash2 className="w-3.5 h-3.5" aria-hidden />Supprimer
+                        </Button>
                       </div>
                     </td>
                   </tr>
