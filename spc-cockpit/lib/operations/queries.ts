@@ -10,6 +10,10 @@ export async function getSurveillants(): Promise<Surveillant[]> {
     return data.map((r) => ({
       id: r.id,
       nom: r.nom,
+      prenom: r.prenom ?? undefined,
+      zone: r.zone ?? undefined,
+      dispoMatin: r.dispo_matin ?? undefined,
+      dispoApm: r.dispo_apm ?? undefined,
       role: r.role ?? "Surveillant salle",
       statut: r.statut ?? "Disponible",
       email: r.email ?? undefined,

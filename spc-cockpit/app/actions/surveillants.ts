@@ -10,9 +10,17 @@ function revalidateOps() {
 }
 
 function parseForm(fd: FormData) {
-  const nom = (fd.get("nom") as string | null)?.trim();
+  // Prénom et nom (de famille) sont saisis séparément ; `nom` stocke le nom
+  // complet affiché partout, `prenom` conserve le prénom structuré.
+  const prenom = (fd.get("prenom") as string | null)?.trim() || "";
+  const nomFamille = (fd.get("nom") as string | null)?.trim() || "";
+  const nom = [prenom, nomFamille].filter(Boolean).join(" ").trim();
   return {
     nom,
+    prenom: prenom || null,
+    zone: (fd.get("zone") as string | null)?.trim() || null,
+    dispo_matin: (fd.get("dispo_matin") as string | null)?.trim() || null,
+    dispo_apm: (fd.get("dispo_apm") as string | null)?.trim() || null,
     role: (fd.get("role") as string | null) ?? "Surveillant salle",
     statut: (fd.get("statut") as string | null) ?? "Disponible",
     email: (fd.get("email") as string | null)?.trim() || null,
@@ -67,6 +75,10 @@ export async function deleteSurveillant(id: number): Promise<{ error?: string }>
 
 export interface ImportRowInput {
   nom: string;
+  prenom?: string | null;
+  zone?: string | null;
+  dispoMatin?: string | null;
+  dispoApm?: string | null;
   role: string;
   statut: string;
   email: string | null;
@@ -111,6 +123,10 @@ export async function importSurveillants(
 
       const fields = {
         nom: r.nom.trim(),
+        prenom: r.prenom || null,
+        zone: r.zone || null,
+        dispo_matin: r.dispoMatin || null,
+        dispo_apm: r.dispoApm || null,
         role: r.role || "Surveillant salle",
         statut: r.statut || "Disponible",
         email: r.email || null,

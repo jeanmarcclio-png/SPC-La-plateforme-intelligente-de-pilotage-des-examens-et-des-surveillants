@@ -104,6 +104,10 @@ export function SurveillantsImportExport({
       .filter((r) => r.valid)
       .map((r) => ({
         nom: r.nomComplet,
+        prenom: r.prenom || null,
+        zone: r.data.zone || null,
+        dispoMatin: r.data.dispoMatin || null,
+        dispoApm: r.data.dispoApm || null,
         role: r.data.role || "Surveillant salle",
         statut: r.statutNormalise,
         email: r.data.email || null,
@@ -124,7 +128,10 @@ export function SurveillantsImportExport({
 
   const exportRows = () => [
     EXPORT_HEADER,
-    ...surveillants.map((s) => ["", s.nom, s.telephone ?? "", s.email ?? "", s.role, "", "", s.statut, "", s.qualifications ?? ""]),
+    ...surveillants.map((s) => {
+      const famille = s.prenom && s.nom.startsWith(s.prenom) ? s.nom.slice(s.prenom.length).trim() : s.nom;
+      return [s.prenom ?? "", famille, s.telephone ?? "", s.email ?? "", s.role, s.dispoMatin ?? "", s.dispoApm ?? "", s.statut, s.zone ?? "", s.qualifications ?? ""];
+    }),
   ];
 
   async function downloadXLSX(name: string, rows: (string | number)[][], sheet = "Contacts Surveillants") {

@@ -4,8 +4,8 @@ import type {
 // Données de secours affichées tant que les tables Supabase (supabase-operations.sql)
 // n'ont pas été créées — l'écran ne doit jamais être vide.
 export const mockSurveillants: Surveillant[] = [
-  { id: 1, nom: "Marie Lecomte",      role: "Coordinatrice",      statut: "Planifié",     qualifications: "Coordination · Tiers-temps", nbExamens: 12, heures: 94,  note: 4.9, tauxHoraire: 22 },
-  { id: 2, nom: "Jean-Pierre Moreau", role: "Surveillant volant", statut: "Planifié",     qualifications: "Renforts",                    nbExamens: 8,  heures: 61,  note: 4.7, tauxHoraire: 18 },
+  { id: 1, nom: "Marie Lecomte",      prenom: "Marie",      zone: "Paris 15e",  dispoMatin: "08:00–13:00", dispoApm: "13:30–18:00", role: "Coordinatrice",      statut: "Planifié",     qualifications: "Coordination · Tiers-temps", nbExamens: 12, heures: 94,  note: 4.9, tauxHoraire: 22 },
+  { id: 2, nom: "Jean-Pierre Moreau", prenom: "Jean-Pierre", zone: "Saclay",    dispoMatin: "Oui",         dispoApm: "Oui",         role: "Surveillant volant", statut: "Planifié",     qualifications: "Renforts",                    nbExamens: 8,  heures: 61,  note: 4.7, tauxHoraire: 18 },
   { id: 3, nom: "Fatima Benali",      role: "Surveillant salle",  statut: "Annulé",       qualifications: "Amphithéâtres",               nbExamens: 15, heures: 108, note: 4.8, tauxHoraire: 18 },
   { id: 4, nom: "Thomas Girard",      role: "Surveillant PMR",    statut: "Planifié",     qualifications: "PMR · Tiers-temps",           nbExamens: 6,  heures: 47,  note: 4.6, tauxHoraire: 19 },
   { id: 5, nom: "Sophie Dubois",      role: "Coordinatrice",      statut: "Planifié",     qualifications: "Coordination",                nbExamens: 10, heures: 78,  note: 5.0, tauxHoraire: 22 },

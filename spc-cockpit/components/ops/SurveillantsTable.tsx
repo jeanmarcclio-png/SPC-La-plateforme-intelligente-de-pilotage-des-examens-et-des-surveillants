@@ -26,6 +26,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const inputCls =
   "w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400";
 
+// Nom de famille pour pré-remplir le formulaire : le nom complet moins le prénom.
+function familyNameOf(s?: Surveillant): string {
+  if (!s) return "";
+  if (s.prenom && s.nom.startsWith(s.prenom)) return s.nom.slice(s.prenom.length).trim();
+  return s.nom;
+}
+
 function SurveillantForm({
   initial,
   pending,
@@ -44,9 +51,14 @@ function SurveillantForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3.5 mt-1">
-      <Field label="Nom complet *">
-        <input name="nom" required defaultValue={initial?.nom} placeholder="ex: Marie Lecomte" className={inputCls} />
-      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Prénom">
+          <input name="prenom" defaultValue={initial?.prenom ?? ""} placeholder="ex: Marie" className={inputCls} />
+        </Field>
+        <Field label="Nom *">
+          <input name="nom" required defaultValue={familyNameOf(initial)} placeholder="ex: Lecomte" className={inputCls} />
+        </Field>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Rôle">
           <select name="role" defaultValue={initial?.role ?? "Surveillant salle"} className={inputCls}>
@@ -67,9 +79,22 @@ function SurveillantForm({
           <input name="telephone" defaultValue={initial?.telephone ?? ""} placeholder="06 12 34 56 78" className={inputCls} />
         </Field>
       </div>
-      <Field label="Qualifications">
-        <input name="qualifications" defaultValue={initial?.qualifications ?? ""} placeholder="ex: PMR · Tiers-temps · Coordination" className={inputCls} />
-      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Disponibilité matin">
+          <input name="dispo_matin" defaultValue={initial?.dispoMatin ?? ""} placeholder="ex: 08:00–13:00 · Oui" className={inputCls} />
+        </Field>
+        <Field label="Disponibilité après-midi">
+          <input name="dispo_apm" defaultValue={initial?.dispoApm ?? ""} placeholder="ex: 13:30–18:00 · Non" className={inputCls} />
+        </Field>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Zone / secteur">
+          <input name="zone" defaultValue={initial?.zone ?? ""} placeholder="ex: Paris 15e · Saclay" className={inputCls} />
+        </Field>
+        <Field label="Qualifications">
+          <input name="qualifications" defaultValue={initial?.qualifications ?? ""} placeholder="ex: PMR · Tiers-temps" className={inputCls} />
+        </Field>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Taux horaire (€)">
           <input name="taux_horaire" type="number" min="0" step="0.5" defaultValue={initial?.tauxHoraire ?? 18} className={inputCls} />
@@ -105,7 +130,7 @@ export function SurveillantsTable({ surveillants }: { surveillants: Surveillant[
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return surveillants.filter((s) => {
-      if (q && !s.nom.toLowerCase().includes(q) && !(s.qualifications ?? "").toLowerCase().includes(q)) return false;
+      if (q && !s.nom.toLowerCase().includes(q) && !(s.qualifications ?? "").toLowerCase().includes(q) && !(s.zone ?? "").toLowerCase().includes(q)) return false;
       if (statut && s.statut !== statut) return false;
       if (role && s.role !== role) return false;
       return true;

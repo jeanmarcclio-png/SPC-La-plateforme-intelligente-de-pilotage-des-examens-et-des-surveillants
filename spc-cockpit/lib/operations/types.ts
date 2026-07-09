@@ -5,7 +5,11 @@ export type StatutIncident = "Ouvert" | "En cours" | "Résolu";
 
 export interface Surveillant {
   id: number;
-  nom: string;
+  nom: string; // nom complet affiché (« Prénom Nom »)
+  prenom?: string; // prénom structuré (optionnel)
+  zone?: string; // secteur d'intervention
+  dispoMatin?: string; // disponibilité matin (texte libre)
+  dispoApm?: string; // disponibilité après-midi
   role: string;
   statut: StatutSurveillant;
   email?: string;
