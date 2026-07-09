@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { createSurveillant, updateSurveillant, deleteSurveillant } from "@/app/actions/surveillants";
 import { showToast } from "@/components/Toast";
 import { SurvBadge } from "@/components/ops/badges";
+import { Button } from "@/components/ops/Button";
 import { Search, Plus, Pencil, Trash2, Star } from "lucide-react";
 
 const ACCENT = "#2563eb";
@@ -176,7 +177,7 @@ export function SurveillantsTable({ surveillants }: { surveillants: Surveillant[
       {/* Table */}
       <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse min-w-[720px]">
+          <table className="w-full border-collapse min-w-[880px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
                 {["Surveillant", "Contact", "Qualifications", "Statut", "Heures", "Taux", "Note", ""].map((h) => (
@@ -218,22 +219,26 @@ export function SurveillantsTable({ surveillants }: { surveillants: Surveillant[
                     </span>
                   </td>
                   <td className="px-5 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         onClick={() => setDialog({ mode: "edit", surveillant: s })}
-                        title={`Modifier ${s.nom}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
+                        aria-label={`Modifier ${s.nom}`}
                       >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button
+                        <Pencil className="w-3.5 h-3.5" aria-hidden />
+                        Modifier
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
                         onClick={() => handleDelete(s)}
                         disabled={pending}
-                        title={`Supprimer ${s.nom}`}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+                        aria-label={`Supprimer ${s.nom}`}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                        <Trash2 className="w-3.5 h-3.5" aria-hidden />
+                        Supprimer
+                      </Button>
                     </div>
                   </td>
                 </tr>
