@@ -86,7 +86,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 
 function TimeInputs({ slot, onChange }: { slot: Slot; onChange: (s: Slot) => void }) {
   if (!slot.on) return <span className="text-[12px] text-gray-300">—</span>;
-  const cls = "w-[74px] px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/25";
+  const cls = "w-[112px] px-2.5 py-1.5 rounded-lg border border-gray-200 text-[12.5px] font-mono tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500/25";
   return (
     <span className="inline-flex items-center gap-1">
       <input type="time" value={slot.debut} onChange={(e) => onChange({ ...slot, debut: e.target.value })} className={cls} />
@@ -560,7 +560,7 @@ export function PlanificationBoard({
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[940px]">
+              <table className="w-full border-collapse min-w-[1040px]">
                 <thead>
                   <tr className="border-b border-gray-100" style={{ background: NAVY }}>
                     {["Surveillant", "Rôle", "Salle", "● Matin", "● Après-midi", "Heures", ""].map((h) => (
