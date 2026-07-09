@@ -11,6 +11,7 @@ import { showToast } from "@/components/Toast";
 import { dateFR } from "@/lib/operations/format";
 import { toCSV } from "@/lib/operations/csv";
 import { parseTimeToMinutes, detectSupervisorConflicts, type SupervisorAssignmentInput } from "@/lib/operations/engine";
+import { statutOptions, estPlanifiable } from "@/lib/operations/mission-status";
 import {
   AlertTriangle, Trash2, Check, ShieldCheck, Calendar, CalendarDays, CalendarCheck,
   Download, Pencil, Plus, Send, Users, Clock, Search, ArrowRight,
@@ -155,7 +156,7 @@ export function PlanificationBoard({
   journal?: JournalEntry[];
 }) {
   const planifiables = useMemo(
-    () => missions.filter((m) => m.statut === "En cours" || m.statut === "Planifiée" || m.statut === "Validée").concat(missions.filter((m) => m.statut === "Terminée")),
+    () => missions.filter((m) => estPlanifiable(m.statut)).concat(missions.filter((m) => m.statut === "Terminée")),
     [missions]
   );
   const [missionId, setMissionId] = useState<number | null>(planifiables[0]?.id ?? null);
@@ -381,7 +382,7 @@ export function PlanificationBoard({
     });
   }
 
-  const validable = mission && mission.statut !== "Validée" && mission.statut !== "Terminée";
+  const validable = mission && estPlanifiable(mission.statut) && mission.statut !== "Validée";
 
   return (
     <>
@@ -518,7 +519,7 @@ export function PlanificationBoard({
                   aria-label="Statut de la session"
                   className="px-2.5 py-2 rounded-lg border border-gray-200 bg-white text-[12.5px] font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/25 disabled:opacity-50"
                 >
-                  {(["Planifiée", "En cours", "Validée", "Terminée", "Annulée"] as StatutMission[]).map((s) => (
+                  {statutOptions(mission.statut).map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>

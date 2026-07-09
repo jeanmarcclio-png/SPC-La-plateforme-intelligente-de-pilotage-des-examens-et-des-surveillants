@@ -8,11 +8,12 @@ import { showToast } from "@/components/Toast";
 import { MissionBadge } from "@/components/ops/badges";
 import { euro, dateFR } from "@/lib/operations/format";
 import { Button } from "@/components/ops/Button";
+import { MISSION_STATUTS } from "@/lib/operations/mission-status";
 import { Search, Plus, Pencil, Trash2, Briefcase } from "lucide-react";
 
 const ACCENT = "#2563eb";
 const TYPES = ["Examen écrit", "Examen oral", "Concours", "Certification RNCP", "Partiels"];
-const STATUTS = ["Planifiée", "Validée", "En cours", "Terminée", "Annulée"];
+const STATUTS = MISSION_STATUTS;
 
 function nextReference(missions: Mission[]): string {
   const year = missions[0]?.reference.match(/^EX-(\d{4})-/)?.[1] ?? "2026";

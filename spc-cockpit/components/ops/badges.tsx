@@ -23,10 +23,16 @@ function Dot() {
 
 export function MissionBadge({ statut }: { statut: StatutMission }) {
   const tone: Record<StatutMission, Tone> = {
+    "Brouillon": "neutral",
+    "À chiffrer": "attention",
+    "Devis envoyé": "info",
+    "Acceptée": "info",
     "Planifiée": "info",
     "Validée": "accent",
     "En cours": "attention",
     "Terminée": "success",
+    "Facturée": "accent",
+    "Archivée": "neutral",
     "Annulée": "critique",
   };
   return <span className={`${BASE} ${TONE[tone[statut]]}`}><Dot />{statut}</span>;

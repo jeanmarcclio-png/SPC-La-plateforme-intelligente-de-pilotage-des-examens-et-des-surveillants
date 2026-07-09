@@ -1,5 +1,16 @@
 export type StatutSurveillant = "Disponible" | "Planifié" | "Annulé" | "Indisponible";
-export type StatutMission = "Planifiée" | "Validée" | "En cours" | "Terminée" | "Annulée";
+export type StatutMission =
+  | "Brouillon"
+  | "À chiffrer"
+  | "Devis envoyé"
+  | "Acceptée"
+  | "Planifiée"
+  | "Validée"
+  | "En cours"
+  | "Terminée"
+  | "Facturée"
+  | "Archivée"
+  | "Annulée";
 export type StatutDevis = "Brouillon" | "Envoyé" | "Accepté" | "Refusé" | "Facturé";
 export type StatutIncident = "Ouvert" | "En cours" | "Résolu";
 

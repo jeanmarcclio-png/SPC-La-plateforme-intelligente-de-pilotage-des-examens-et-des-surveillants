@@ -53,7 +53,7 @@ export default async function CockpitOpsPage() {
   const enCours = missions.filter((m) => m.statut === "En cours").length;
   const rows = active ? affectations.filter((a) => a.missionId === active.id) : [];
 
-  const aPreparer = missions.filter((m) => m.statut === "Planifiée" || m.statut === "Validée").length;
+  const aPreparer = missions.filter((m) => m.statut === "Acceptée" || m.statut === "Planifiée" || m.statut === "Validée").length;
   const sallesAffectees = new Set(rows.filter((a) => a.salle).map((a) => a.salle)).size;
   const sallesRequises = active?.nbSalles ?? 0;
   const creneauxDefinis = rows.filter((a) => a.matin || a.apm).length;
