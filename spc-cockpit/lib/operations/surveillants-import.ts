@@ -78,6 +78,23 @@ export function splitFullName(full: string): { prenom: string; nom: string } {
   return { nom: parts[0], prenom: parts.slice(1).join(" ") };
 }
 
+// Mots typiques d'une ligne d'en-tête / titre de planning (jamais un vrai nom).
+const HEADER_NOISE = /\b(session|sessions|filtre|filtres|colonne|colonnes|planning|horaire|horaires|creneau|epreuve|epreuves|salle|salles|etudiant|etudiants|bareme|feuille|liste|total|totaux|emargement|disponible|disponibles|jour|date|dates|rattrapage|rattrapages)\b/i;
+
+/**
+ * Vérifie qu'un nom extrait ressemble à un vrai nom de personne et non à une
+ * ligne d'en-tête / titre du fichier (« Sessions : 15-19 juin | Filtres ▼… »).
+ * Rejette : chiffres, séparateurs structurels, longueur excessive, mots d'en-tête.
+ */
+export function looksLikeName(name: string): boolean {
+  const n = (name ?? "").trim();
+  if (n.length < 2 || n.length > 45) return false;
+  if (/\d/.test(n)) return false; // un nom ne contient pas de chiffre
+  if (/[:|/•▼▲►◄»«]/.test(n)) return false; // caractères de titre/menu
+  if (HEADER_NOISE.test(stripAccents(n))) return false;
+  return true;
+}
+
 export function normalizeStatut(raw: string): string {
   const r = norm(raw);
   if (!r || r === "actif" || r.startsWith("dispo")) return "Disponible";
@@ -183,6 +200,7 @@ export function buildImportPreview(
     const key = norm(nomComplet);
     // Ignore les faux noms de planning (« — », « volant », vides).
     if (!nomComplet || nomComplet === "—") errors.push("Nom manquant");
+    else if (!looksLikeName(nomComplet)) errors.push("Ligne ignorée (en-tête ou titre, pas un nom)");
     if (!isValidEmail(data.email)) errors.push("Email invalide");
     if (!isValidPhone(data.telephone)) errors.push("Téléphone invalide");
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseCSV, toCSV, detectDelimiter } from "../csv";
-import { buildImportPreview, normalizeStatut, isValidEmail, splitFullName } from "../surveillants-import";
+import { buildImportPreview, normalizeStatut, isValidEmail, splitFullName, looksLikeName } from "../surveillants-import";
 
 describe("CSV parse", () => {
   it("détecte le séparateur ; et ,", () => {
@@ -122,6 +122,35 @@ describe("splitFullName (extraction prénom + nom)", () => {
   });
   it("nom seul → prénom vide", () => {
     expect(splitFullName("Volant")).toEqual({ nom: "Volant", prenom: "" });
+  });
+});
+
+describe("looksLikeName (rejet des lignes d'en-tête / titres)", () => {
+  it("accepte les vrais noms", () => {
+    expect(looksLikeName("Marie Lecomte")).toBe(true);
+    expect(looksLikeName("Ben Sassi Faouzia")).toBe(true);
+    expect(looksLikeName("Nolleau Gilbert")).toBe(true);
+  });
+  it("rejette les lignes d'en-tête / titres de planning", () => {
+    expect(looksLikeName("Sessions : 15-19 juin | 22-26 juin 2026 — Filtres ▼ disponibles sur chaque colonne")).toBe(false);
+    expect(looksLikeName("Salle B22")).toBe(false); // chiffre + mot « salle »
+    expect(looksLikeName("Date / Jour")).toBe(false); // séparateur + mot d'en-tête
+    expect(looksLikeName("Total heures planifiées")).toBe(false); // mot d'en-tête
+  });
+});
+
+describe("buildImportPreview rejette la ligne parasite", () => {
+  it("marque la ligne d'en-tête comme à corriger et ne la compte pas comme valide", () => {
+    const rows = [
+      ["SURVEILLANT"],
+      ["Meunier Jean Louis"],
+      ["Sessions : 15-19 juin | 22-26 juin 2026 — Filtres ▼ disponibles sur chaque colonne"],
+    ];
+    const p = buildImportPreview(rows, []);
+    expect(p.rows[0].valid).toBe(true); // Meunier Jean Louis
+    expect(p.rows[1].valid).toBe(false); // ligne parasite
+    expect(p.rows[1].errors[0]).toMatch(/en-tête ou titre/);
+    expect(p.valides).toBe(1);
   });
 });
 
