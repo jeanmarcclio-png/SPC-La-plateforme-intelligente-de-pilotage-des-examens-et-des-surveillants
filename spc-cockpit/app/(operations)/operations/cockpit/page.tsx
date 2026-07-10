@@ -5,6 +5,7 @@ import { getMissions, getSurveillants, getAffectations } from "@/lib/operations/
 import { CockpitSubtitle, RefreshButton } from "@/components/ops/CockpitRefresh";
 import { dateFR } from "@/lib/operations/format";
 import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
+import { joursAvant, prioriteAlerte, trierParPriorite, type NiveauAlerte } from "@/lib/operations/alertes";
 import { Activity, DoorOpen, CalendarClock, AlertTriangle, CheckCircle2, MapPin, Zap, Users, Landmark, UserCheck } from "lucide-react";
 import { PageHeader } from "@/components/ops/shell";
 import { Kpi } from "@/components/ops/Kpi";
@@ -36,11 +37,12 @@ function Creneau({ on, debut, fin }: { on: boolean; debut?: string; fin?: string
 const AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#06b6d4", "#2563eb"];
 
 interface Alerte {
-  niveau: "avertissement" | "information";
+  niveau: NiveauAlerte;
   tag: "Planning" | "Staff" | "Délai";
   titre: string;
   detail: string;
   href: string;
+  priorite: number;
 }
 
 export default async function CockpitOpsPage() {
@@ -59,21 +61,27 @@ export default async function CockpitOpsPage() {
   const creneauxDefinis = rows.filter((a) => a.matin || a.apm).length;
   const coordinateurOk = rows.some((a) => (a.roleMission ?? "").toLowerCase().includes("coordinat") && (a.matin || a.apm) && a.salle);
 
-  // ── Alertes ────────────────────────────────────────────────────────────────
+  // ── Alertes (priorisées automatiquement · §21) ──────────────────────────────
+  const now = new Date();
   const alertes: Alerte[] = [];
+
+  // Session active imminente (≤ 2 j) → les manques de planning deviennent critiques.
+  const joursActive = joursAvant(active?.dateMission, now);
+  const planningNiveau: NiveauAlerte = joursActive != null && joursActive >= 0 && joursActive <= 2 ? "critique" : "avertissement";
 
   for (const a of rows) {
     const nom = survById.get(a.surveillantId)?.nom ?? `Surveillant #${a.surveillantId}`;
     const session = `Session "${active?.client} — ${active?.session ?? "Session"}"${active?.reference ? ` · ${active.reference}` : ""}`;
     const sansCreneau = !a.matin && !a.apm;
     const sansSalle = !a.salle;
+    const priorite = prioriteAlerte(planningNiveau, joursActive);
     if (sansCreneau && sansSalle) {
       // Regroupement : un seul signal par surveillant, jamais deux cartes pour le même problème.
-      alertes.push({ niveau: "avertissement", tag: "Planning", titre: `Affectation incomplète — ${nom}`, detail: `${session} : salle et créneau à compléter`, href: "/operations/planification" });
+      alertes.push({ niveau: planningNiveau, tag: "Planning", titre: `Affectation incomplète — ${nom}`, detail: `${session} : salle et créneau à compléter`, href: "/operations/planification", priorite });
     } else if (sansCreneau) {
-      alertes.push({ niveau: "avertissement", tag: "Planning", titre: `Créneau manquant — ${nom}`, detail: `${session} : ni matin ni après-midi`, href: "/operations/planification" });
+      alertes.push({ niveau: planningNiveau, tag: "Planning", titre: `Créneau manquant — ${nom}`, detail: `${session} : ni matin ni après-midi`, href: "/operations/planification", priorite });
     } else if (sansSalle) {
-      alertes.push({ niveau: "avertissement", tag: "Planning", titre: `Salle manquante — ${nom}`, detail: `${session} : aucune salle affectée`, href: "/operations/planification" });
+      alertes.push({ niveau: planningNiveau, tag: "Planning", titre: `Salle manquante — ${nom}`, detail: `${session} : aucune salle affectée`, href: "/operations/planification", priorite });
     }
   }
 
@@ -83,20 +91,27 @@ export default async function CockpitOpsPage() {
       titre: `Charge critique — ${s.nom}`,
       detail: `${s.heures}h planifiées — seuil de surcharge dépassé`,
       href: "/operations/surveillants",
+      priorite: prioriteAlerte("avertissement", null),
     });
   }
 
   for (const m of missions.filter((x) => x.statut !== "Annulée" && x.dateMission)) {
+    const j = joursAvant(m.dateMission, now);
     alertes.push({
       niveau: "information", tag: "Délai",
       titre: `Session du ${dateFR(m.dateMission)} — ${m.client}`,
       detail: `${m.nbSalles} salles · ${m.nbSurveillants} surveillants · statut : ${m.statut}`,
       href: "/operations/missions",
+      priorite: prioriteAlerte("information", j),
     });
   }
 
+  // Tri par priorité décroissante — le plus urgent remonte en tête.
+  const alertesTriees = trierParPriorite(alertes);
+  const actionnables = alertesTriees.filter((a) => a.niveau !== "information");
+  const informations = alertesTriees.filter((a) => a.niveau === "information");
+  const critiques = alertes.filter((a) => a.niveau === "critique");
   const avertissements = alertes.filter((a) => a.niveau === "avertissement");
-  const informations = alertes.filter((a) => a.niveau === "information");
 
   return (
     <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
@@ -149,9 +164,9 @@ export default async function CockpitOpsPage() {
         <Kpi
           label="Alertes"
           value={String(alertes.length)}
-          sub={`${avertissements.length} avert. · ${informations.length} info(s)`}
+          sub={`${critiques.length ? `${critiques.length} critique(s) · ` : ""}${avertissements.length} avert. · ${informations.length} info(s)`}
           icon={<AlertTriangle className="w-4 h-4" />}
-          accent="amber"
+          accent={critiques.length ? "red" : "amber"}
           emphasis="strong"
         />
       </div>
@@ -182,7 +197,7 @@ export default async function CockpitOpsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">{avertissements.length} alertes</span>
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">{actionnables.length} alertes</span>
                   <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-200">En préparation</span>
                 </div>
               </div>
@@ -252,25 +267,31 @@ export default async function CockpitOpsPage() {
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-[12px] font-bold uppercase tracking-[1px] text-gray-700">Alertes</h2>
-            <span className="w-6 h-6 rounded-full bg-amber-400 text-white text-[11px] font-extrabold flex items-center justify-center">{avertissements.length}</span>
+            <span className={`w-6 h-6 rounded-full text-white text-[11px] font-extrabold flex items-center justify-center ${critiques.length ? "bg-rose-500" : "bg-amber-400"}`}>{actionnables.length}</span>
           </div>
 
           <div className="space-y-2.5 max-h-[560px] overflow-y-auto pr-1">
-            {avertissements.map((a, i) => (
-              <Link
-                key={`w-${i}`}
-                href={a.href}
-                className="block bg-white rounded-2xl ring-1 ring-slate-900/5 border-l-[3px] border-l-amber-400 shadow-sm px-4 py-3.5 hover:shadow-md hover:ring-amber-200 transition-all"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wide bg-amber-100 text-amber-700 rounded px-1.5 py-0.5">{a.tag}</span>
-                  <span className="text-gray-300">›</span>
-                </div>
-                <div className="text-[13px] font-bold text-gray-900 mt-1.5">{a.titre}</div>
-                <div className="text-[11.5px] text-gray-500 mt-0.5">{a.detail}</div>
-                <div className="text-[11.5px] font-bold text-amber-700 mt-1.5">{a.tag === "Staff" ? "Rééquilibrer la charge →" : "Corriger l'affectation →"}</div>
-              </Link>
-            ))}
+            {actionnables.map((a, i) => {
+              const crit = a.niveau === "critique";
+              return (
+                <Link
+                  key={`a-${i}`}
+                  href={a.href}
+                  className={`block bg-white rounded-2xl ring-1 ring-slate-900/5 border-l-[3px] shadow-sm px-4 py-3.5 hover:shadow-md transition-all ${crit ? "border-l-rose-500 hover:ring-rose-200" : "border-l-amber-400 hover:ring-amber-200"}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-1.5">
+                      <span className={`text-[10px] font-extrabold uppercase tracking-wide rounded px-1.5 py-0.5 ${crit ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"}`}>{a.tag}</span>
+                      {crit && <span className="text-[9.5px] font-extrabold uppercase tracking-wide rounded px-1.5 py-0.5 bg-rose-600 text-white">Critique</span>}
+                    </span>
+                    <span className="text-gray-300">›</span>
+                  </div>
+                  <div className="text-[13px] font-bold text-gray-900 mt-1.5">{a.titre}</div>
+                  <div className="text-[11.5px] text-gray-500 mt-0.5">{a.detail}</div>
+                  <div className={`text-[11.5px] font-bold mt-1.5 ${crit ? "text-rose-700" : "text-amber-700"}`}>{a.tag === "Staff" ? "Rééquilibrer la charge →" : "Corriger l'affectation →"}</div>
+                </Link>
+              );
+            })}
             {informations.map((a, i) => (
               <Link
                 key={`i-${i}`}
@@ -293,8 +314,8 @@ export default async function CockpitOpsPage() {
             <h3 className="text-[12px] font-bold uppercase tracking-[1px] text-gray-700 mb-3">Récapitulatif</h3>
             <div className="space-y-2.5 text-[13px]">
               <div className="flex items-center justify-between text-gray-600">
-                <span>Critiques</span>
-                <span className="font-extrabold text-gray-900">0</span>
+                <span className="inline-flex items-center gap-2"><span aria-hidden className="w-2 h-2 rounded-full bg-rose-500" />Critiques</span>
+                <span className="font-extrabold text-gray-900">{critiques.length}</span>
               </div>
               <div className="flex items-center justify-between text-gray-600">
                 <span className="inline-flex items-center gap-2"><span aria-hidden className="w-2 h-2 rounded-full bg-amber-400" />Avertissements</span>
