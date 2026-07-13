@@ -10,6 +10,7 @@ import { Button, ButtonLink } from "@/components/ops/Button";
 import { showToast } from "@/components/Toast";
 import { dateFR, euro } from "@/lib/operations/format";
 import { analyseRentabilite } from "@/lib/operations/rentabilite";
+import { analyseCouverture } from "@/lib/operations/couverture";
 import { toCSV } from "@/lib/operations/csv";
 import { parseTimeToMinutes, detectSupervisorConflicts, type SupervisorAssignmentInput } from "@/lib/operations/engine";
 import { statutOptions, estPlanifiable } from "@/lib/operations/mission-status";
@@ -236,6 +237,9 @@ export function PlanificationBoard({
         lignes: rows.map((a) => ({ heures: rowHours(stateOf(a)), tauxHoraire: survById.get(a.surveillantId)?.tauxHoraire ?? 18 })),
       })
     : null;
+
+  // Prédiction de sous-effectif (§21) : surveillants requis vs affectés.
+  const couverture = mission ? analyseCouverture({ requis: mission.nbSurveillants, affectes: affectes.length }) : null;
 
   type Alerte = { affId: number; text: string };
   const alertes: Alerte[] = [];
@@ -537,6 +541,38 @@ export function PlanificationBoard({
                       <div className={`text-[17px] font-extrabold mt-0.5 ${m.accent}`}>{m.value}</div>
                     </div>
                   ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Prédiction de sous-effectif (§21) */}
+          {couverture && (() => {
+            const map = {
+              "complet": { pill: "bg-emerald-50 text-emerald-700 ring-emerald-600/15", bar: "#059669", label: "Effectif complet" },
+              "tendu": { pill: "bg-amber-50 text-amber-700 ring-amber-600/15", bar: "#d97706", label: "Effectif tendu" },
+              "sous-effectif": { pill: "bg-rose-50 text-rose-700 ring-rose-600/15", bar: "#e11d48", label: "Sous-effectif" },
+            }[couverture.niveau];
+            const pct = Math.min(100, Math.round(couverture.tauxCouverture * 100));
+            return (
+              <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <h2 className="text-[14px] font-bold text-gray-900">Couverture surveillants</h2>
+                    <p className="text-[12px] text-gray-400">Prédiction de sous-effectif — anticiper les renforts avant le jour J</p>
+                  </div>
+                  <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${map.pill}`}>
+                    <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{map.label} · {pct} %
+                  </span>
+                </div>
+                <div className="mt-3 h-2.5 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: map.bar }} />
+                </div>
+                <div className="mt-2 text-[12.5px] text-slate-600">
+                  <span className="font-bold text-gray-900">{couverture.affectes}</span> affecté{couverture.affectes > 1 ? "s" : ""} / {couverture.requis} requis
+                  {couverture.manque > 0 && (
+                    <span className="font-semibold text-rose-600"> — {couverture.manque} surveillant{couverture.manque > 1 ? "s" : ""} à trouver</span>
+                  )}
                 </div>
               </div>
             );
