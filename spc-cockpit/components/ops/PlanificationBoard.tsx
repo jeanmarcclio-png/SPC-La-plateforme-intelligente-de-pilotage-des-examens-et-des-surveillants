@@ -11,6 +11,7 @@ import { showToast } from "@/components/Toast";
 import { dateFR, euro } from "@/lib/operations/format";
 import { analyseRentabilite } from "@/lib/operations/rentabilite";
 import { analyseCouverture } from "@/lib/operations/couverture";
+import { scoreSanteSession } from "@/lib/operations/sante-session";
 import { toCSV } from "@/lib/operations/csv";
 import { parseTimeToMinutes, detectSupervisorConflicts, type SupervisorAssignmentInput } from "@/lib/operations/engine";
 import { statutOptions, estPlanifiable } from "@/lib/operations/mission-status";
@@ -275,6 +276,17 @@ export function PlanificationBoard({
   }
   const alertAffIds = new Set(alertes.map((a) => a.affId));
 
+  // Score de santé de session (§21) : synthèse couverture + rentabilité + alertes.
+  const sante = mission && couverture && rentabilite
+    ? scoreSanteSession({
+        tauxCouverture: couverture.tauxCouverture,
+        manqueSurveillants: couverture.manque,
+        tauxMarge: rentabilite.tauxMarge,
+        margeNiveau: rentabilite.niveau,
+        nbAlertes: alertes.length,
+      })
+    : null;
+
   // ---- Statistiques d'en-tête (toutes sessions) ----
   const sessionsCreees = missions.length;
   const sessionsTerminees = missions.filter((m) => m.statut === "Terminée").length;
@@ -459,6 +471,41 @@ export function PlanificationBoard({
 
       {mission && (
         <>
+          {/* Score de santé de session — synthèse IA (§21) */}
+          {sante && (() => {
+            const col = sante.niveau === "prête" ? "#059669" : sante.niveau === "à consolider" ? "#d97706" : "#e11d48";
+            const pill = sante.niveau === "prête" ? "bg-emerald-50 text-emerald-700 ring-emerald-600/15" : sante.niveau === "à consolider" ? "bg-amber-50 text-amber-700 ring-amber-600/15" : "bg-rose-50 text-rose-700 ring-rose-600/15";
+            const R = 34, CIRC = 2 * Math.PI * R, off = CIRC * (1 - sante.score / 100);
+            return (
+              <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5 flex items-center gap-5 flex-wrap">
+                <div className="relative w-[92px] h-[92px] flex-shrink-0">
+                  <svg width="92" height="92" viewBox="0 0 92 92" className="-rotate-90">
+                    <circle cx="46" cy="46" r={R} fill="none" stroke="#eef0f2" strokeWidth="8" />
+                    <circle cx="46" cy="46" r={R} fill="none" stroke={col} strokeWidth="8" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={off} />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-[22px] font-extrabold text-gray-900 leading-none">{sante.score}</span>
+                    <span className="text-[9px] font-bold text-gray-400">/ 100</span>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-[240px]">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-[15px] font-extrabold text-gray-900">Santé de la session</h2>
+                    <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${pill}`}><span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{sante.niveau}</span>
+                  </div>
+                  <div className="text-[11.5px] text-gray-400 mt-0.5 mb-2">Synthèse couverture · alertes · rentabilité — {sante.detail.couverture}/40 · {sante.detail.alertes}/35 · {sante.detail.marge}/25</div>
+                  <ul className="space-y-1">
+                    {sante.recommandations.map((r, i) => (
+                      <li key={i} className="flex items-start gap-2 text-[12.5px] text-slate-600">
+                        <ArrowRight className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: col }} aria-hidden />{r}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Résumé de session (bleu nuit) */}
           <div className="rounded-2xl p-5 mb-5 text-white shadow-sm" style={{ background: NAVY }}>
             <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
