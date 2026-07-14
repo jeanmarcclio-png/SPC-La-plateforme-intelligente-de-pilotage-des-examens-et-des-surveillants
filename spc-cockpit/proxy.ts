@@ -4,6 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 export default async function proxy(req: NextRequest) {
   const res = NextResponse.next();
 
+  // Bypass d'authentification RÉSERVÉ AUX TESTS E2E (Playwright). Actif seulement
+  // si SPC_E2E=1 — variable jamais définie en production ni sur Vercel. Permet de
+  // piloter les écrans avec les données de démonstration (mock-fallback) sans
+  // session Supabase. N'affecte en rien le déploiement réel.
+  if (process.env.SPC_E2E === "1") return res;
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
