@@ -17,6 +17,7 @@ export function PullToRefresh() {
 
   // Reset on navigation
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- init client-only (hydratation-safe)
     setPull(0);
     setRefreshing(false);
     active.current = false;

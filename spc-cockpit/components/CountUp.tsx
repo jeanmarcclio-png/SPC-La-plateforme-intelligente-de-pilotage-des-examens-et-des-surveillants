@@ -22,6 +22,7 @@ export function CountUp({ value, duration = 900, suffix = "" }: CountUpProps) {
   const startRef = useRef<number>(0);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- init client-only (hydratation-safe)
     if (isNaN(numericValue)) { setDisplay(displayStr); return; }
 
     startRef.current = performance.now();

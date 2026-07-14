@@ -346,7 +346,7 @@ export default async function DashboardPage() {
                     {/* Timing impact */}
                     <div className="flex gap-1.5 mb-2.5">
                       <div className="flex-1 bg-teal-50 border border-teal-100 rounded-lg p-1.5 text-center">
-                        <div className="text-[11px] font-semibold text-teal-600">Aujourd'hui</div>
+                        <div className="text-[11px] font-semibold text-teal-600">Aujourd’hui</div>
                         <div className="text-[12px] font-extrabold text-teal-700">+{rec.todayBoost}%</div>
                       </div>
                       <div className="flex-1 bg-red-50 border border-red-100 rounded-lg p-1.5 text-center">
@@ -574,16 +574,15 @@ function Sparkline({ values, color }: { values: number[]; color: string }) {
 
 function DonutChart({ data }: { data: { nom: string; count: number; color: string }[] }) {
   const total = data.reduce((s, d) => s + d.count, 0);
-  let offset  = 0;
   const r = 40, cx = 50, cy = 50, circumference = 2 * Math.PI * r;
   return (
     <div className="flex justify-center">
       <svg viewBox="0 0 100 100" className="w-[100px] h-[100px]">
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="#edf2f7" strokeWidth="16" />
-        {data.map((d) => {
+        {data.map((d, i) => {
+          const offset   = data.slice(0, i).reduce((sum, x) => sum + x.count, 0);
           const dash     = (d.count / total) * circumference;
           const rotation = (offset / total) * 360 - 90;
-          offset += d.count;
           return <circle key={d.nom} cx={cx} cy={cy} r={r} fill="none" stroke={d.color} strokeWidth="16" strokeDasharray={`${dash} ${circumference - dash}`} strokeDashoffset={0} transform={`rotate(${rotation} ${cx} ${cy})`} />;
         })}
         <text x="50" y="54" textAnchor="middle" style={{ fontSize: 14, fontWeight: 700, fill: "#1a202c" }}>{total}</text>

@@ -12,6 +12,7 @@ export function SectorPicker() {
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- init client-only (hydratation-safe)
     if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
   }, []);
 
@@ -36,7 +37,7 @@ export function SectorPicker() {
             <div className="text-3xl mb-2">🚀</div>
             <h2 className="text-[20px] font-extrabold text-gray-900 mb-1">Choisissez votre secteur</h2>
             <p className="text-[13px] text-gray-400">
-              JMC Cockpit s'adapte automatiquement à votre métier
+              JMC Cockpit s’adapte automatiquement à votre métier
             </p>
           </div>
 

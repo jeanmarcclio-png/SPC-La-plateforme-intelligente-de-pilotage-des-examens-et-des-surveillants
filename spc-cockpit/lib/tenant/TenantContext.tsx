@@ -24,6 +24,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- init client-only (hydratation-safe)
     if (stored && CONFIGS[stored]) setConfig(CONFIGS[stored]);
     setIsReady(true);
   }, []);

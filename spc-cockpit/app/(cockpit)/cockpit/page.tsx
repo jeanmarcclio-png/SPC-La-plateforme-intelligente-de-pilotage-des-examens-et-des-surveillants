@@ -168,7 +168,7 @@ export default async function CockpitPage() {
             {/* Top prospects très chaud */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[13px] font-semibold text-gray-900">🔥 Prospects "Très chaud"</span>
+                <span className="text-[13px] font-semibold text-gray-900">🔥 Prospects « Très chaud »</span>
                 <span className="text-[11px] text-gray-400">{tresChaudes} actifs</span>
               </div>
               <div className="space-y-2">

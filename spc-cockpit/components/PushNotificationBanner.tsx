@@ -18,6 +18,7 @@ export function PushNotificationBanner() {
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const isStandalone = ("standalone" in navigator) && (navigator as { standalone?: boolean }).standalone;
     if (isIOS && !isStandalone) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- init client-only (hydratation-safe)
       setPerm("ios-browser");
       setDismissed(false); // Always show iOS instructions — no localStorage check
       return;
@@ -87,8 +88,8 @@ export function PushNotificationBanner() {
             {showIOSHelp && (
               <ol className="mt-2 space-y-1 text-[11px] text-gray-600">
                 <li>1. Tapez <strong>↑</strong> (partager) dans Safari</li>
-                <li>2. Choisissez <strong>"Sur l'écran d'accueil"</strong></li>
-                <li>3. Ouvrez l'app depuis l'icône créée</li>
+                <li>2. Choisissez <strong>« Sur l’écran d’accueil »</strong></li>
+                <li>3. Ouvrez l’app depuis l’icône créée</li>
                 <li>4. La bannière de notifications apparaîtra</li>
               </ol>
             )}
@@ -136,6 +137,7 @@ export function PushNotificationToggle() {
   useEffect(() => {
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const sa  = ("standalone" in navigator) && (navigator as { standalone?: boolean }).standalone === true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- init client-only (hydratation-safe)
     setIsIOS(ios);
     setIsStandalone(sa);
     if (!("Notification" in window)) { setPerm("unsupported"); return; }
@@ -201,8 +203,8 @@ export function PushNotificationToggle() {
         <div className="bg-blue-50 rounded-xl p-3 text-[11.5px] text-gray-700 space-y-1">
           <div className="font-bold text-[var(--color-primary)] mb-1.5">Comment activer sur iPhone :</div>
           <div>1. Dans Safari → appuyez sur <strong>↑</strong> (bouton partage)</div>
-          <div>2. Choisissez <strong>"Sur l'écran d'accueil"</strong></div>
-          <div>3. Ouvrez l'app depuis la nouvelle icône</div>
+          <div>2. Choisissez <strong>« Sur l’écran d’accueil »</strong></div>
+          <div>3. Ouvrez l’app depuis la nouvelle icône</div>
           <div>4. Revenez dans Paramètres → bouton Activer apparaît</div>
         </div>
       )}

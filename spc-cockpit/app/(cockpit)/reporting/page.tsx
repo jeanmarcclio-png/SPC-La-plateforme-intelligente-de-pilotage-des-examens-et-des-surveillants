@@ -415,16 +415,15 @@ export default async function ReportingPage() {
 function DonutChart({ data, total }: { data: { nom: string; count: number; color: string }[]; total: number }) {
   const cx = 54, cy = 54, r = 40, strokeW = 14;
   const circumference = 2 * Math.PI * r;
-  let offset = 0;
 
   return (
     <svg viewBox="0 0 108 108" className="w-[108px] h-[108px] flex-shrink-0">
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="#edf2f7" strokeWidth={strokeW} />
-      {data.map((s) => {
+      {data.map((s, i) => {
+        const offset = data.slice(0, i).reduce((sum, x) => sum + x.count, 0);
         const dash = (s.count / total) * circumference;
         const gap  = circumference - dash;
         const rotation = (offset / total) * 360 - 90;
-        offset += s.count;
         return (
           <circle
             key={s.nom}

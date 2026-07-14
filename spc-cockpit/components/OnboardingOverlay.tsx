@@ -15,6 +15,7 @@ export function OnboardingOverlay() {
   const { config, setSecteur, isReady } = useTenant();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- init client-only (hydratation-safe)
     if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
   }, []);
 

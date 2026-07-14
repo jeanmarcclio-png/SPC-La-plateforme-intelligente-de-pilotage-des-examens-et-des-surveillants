@@ -28,6 +28,7 @@ export default function OfflinePage() {
 
   useEffect(() => {
     const stored = localStorage.getItem("spc_last_sync");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- init client-only (hydratation-safe)
     if (stored) setLastSync(formatRelative(new Date(stored)));
 
     if ("caches" in window) {
