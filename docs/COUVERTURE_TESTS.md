@@ -49,3 +49,33 @@ lib/auth/__tests__/roles.test.ts                            rôles / capacités
 lib/operations/__tests__/*.test.ts                          import, suggestions, rentabilité,
                                                             couverture, santé, alertes, statuts
 ```
+
+## Tests bout-en-bout (Phase 6 — Playwright)
+
+Les tests unitaires valident le **moteur** ; les tests e2e valident les
+**parcours réels** rendus dans un navigateur (Chromium). Ils protègent le shell
+premium (`PageHeader`, `OPS_CONTENT_CLASS`), les Server Components de données et
+la navigation contre les régressions qu'un test unitaire ne voit pas.
+
+Exécuter : `npm run test:e2e` (build + `next start` + Chromium headless).
+Rapport HTML : `npm run test:e2e:report`.
+
+**Sans backend Supabase** : le module Opérations retombe sur ses données mock
+(`lib/operations/queries.ts`), et la redirection d'authentification du middleware
+(`proxy.ts`) est neutralisée par la variable `E2E_AUTH_BYPASS=1`, injectée
+uniquement par `playwright.config.ts` — jamais en production.
+
+| Parcours e2e | Fichier | Ce qui est couvert |
+|--------------|---------|--------------------|
+| Smoke des 13 écrans Opérations | `e2e/smoke.spec.ts` | Chaque route rend (HTTP < 400), affiche son `<h1>` et ne lève aucune exception JS |
+| Dashboard Opérations | `e2e/operations-dashboard.spec.ts` | KPI, priorités, données de mission réelles, montants en euros |
+| Annuaire surveillants | `e2e/surveillants.spec.ts` | Liste des surveillants, rôles métier (coordination, PMR) |
+| Pipeline devis + détail | `e2e/devis.spec.ts` | Statuts, montants €, ouverture du détail `/operations/devis/[id]` |
+| PMR & tiers-temps (#16) | `e2e/pmr.spec.ts` | Aménagements, salles dédiées, badge tiers-temps |
+| Navigation sidebar | `e2e/navigation.spec.ts` | Passage Dashboard → Surveillants → Devis, `aria-current` |
+| Page de connexion | `e2e/login.spec.ts` | Rendu du formulaire, validation HTML native (required, type) |
+
+Ces parcours lèvent les réserves e2e des cas **#12** (CRUD salles/devis via Server
+Action), **#16** (PMR) et **#17** (rendu des écrans authentifiés). L'isolation
+multi-tenant au niveau base (#17) reste couverte par le RLS PostgreSQL
+(`docs/AUDIT_SUPABASE_RLS.md`), non reproductible sans instance Supabase.

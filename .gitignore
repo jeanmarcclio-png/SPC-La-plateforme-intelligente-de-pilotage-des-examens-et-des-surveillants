@@ -1,1 +1,5 @@
 .claude/worktrees/
+
+# Artefacts Playwright si lancé depuis la racine (les tests s'exécutent normalement dans spc-cockpit/)
+/test-results
+/playwright-report

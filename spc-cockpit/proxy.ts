@@ -4,6 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 export default async function proxy(req: NextRequest) {
   const res = NextResponse.next();
 
+  // Bypass des tests bout-en-bout (Playwright). Activé UNIQUEMENT lorsque la
+  // variable E2E_AUTH_BYPASS vaut "1", injectée par le serveur de test local
+  // (voir playwright.config.ts). Elle n'est JAMAIS définie en production
+  // (Vercel) : l'authentification Supabase reste donc pleinement appliquée.
+  // Permet de valider le rendu des écrans authentifiés sans backend Supabase.
+  if (process.env.E2E_AUTH_BYPASS === "1") {
+    return res;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
