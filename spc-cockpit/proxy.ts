@@ -27,10 +27,16 @@ export default async function proxy(req: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  const isLoginPage = req.nextUrl.pathname.startsWith("/login");
+  const { pathname } = req.nextUrl;
+  const isLoginPage = pathname.startsWith("/login");
+  // Routes publiques : login + callback OAuth/magic link (/auth/*) + offline.
+  // Le callback DOIT rester accessible sans session : c'est lui qui l'établit.
+  const isPublic = isLoginPage || pathname.startsWith("/auth") || pathname === "/offline";
 
-  if (!user && !isLoginPage) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  if (!user && !isPublic) {
+    const url = new URL("/login", req.url);
+    url.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(url);
   }
 
   if (user && isLoginPage) {

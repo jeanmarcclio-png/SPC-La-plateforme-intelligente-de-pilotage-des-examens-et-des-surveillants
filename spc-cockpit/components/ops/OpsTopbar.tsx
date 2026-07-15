@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 import { Search, Bell, Plus } from "lucide-react";
 import { ButtonLink } from "@/components/ops/Button";
 import { NAV } from "./OpsSidebar";
+import { OrgSwitcher, type OrgOption } from "./OrgSwitcher";
 
 // Topbar Opérations — hauteur fixe 64px, recherche de navigation,
-// accès au centre d'alertes (Cockpit) et création de devis.
-export function OpsTopbar() {
+// sélecteur d'organisation, accès au centre d'alertes (Cockpit) et création de devis.
+export function OpsTopbar({ orgs = [], activeOrgId = null }: { orgs?: OrgOption[]; activeOrgId?: string | null }) {
   const router = useRouter();
   const [q, setQ] = useState("");
 
@@ -58,6 +59,7 @@ export function OpsTopbar() {
       </div>
 
       <div className="ml-auto flex items-center gap-3">
+        <OrgSwitcher orgs={orgs} activeId={activeOrgId} />
         <Link
           href="/operations/cockpit"
           title="Centre d'alertes — Cockpit opérationnel"

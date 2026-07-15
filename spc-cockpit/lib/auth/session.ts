@@ -4,6 +4,7 @@
 // un utilisateur authentifié est autorisé — le durcissement par rôle s'active
 // une fois les rôles opérationnels semés en base (après migrations v12/v13).
 
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeRole, authorize, type Role, type Capability, type AuthResult } from "./roles";
 
@@ -20,17 +21,28 @@ export async function getCurrentUser() {
 }
 
 /**
- * Rôle opérationnel de l'utilisateur courant, lu depuis team_members.role.
- * Dégrade en « lecteur » si la table/ligne est absente (jamais d'élévation
- * de privilège par défaut).
+ * Rôle opérationnel de l'utilisateur courant, lu depuis
+ * organization_members.role (par user_id) pour l'organisation active.
+ * L'organisation active suit le cookie `spc_org_id` (sélecteur d'org), sinon
+ * la première appartenance. `normalizeRole` mappe le vocabulaire spec
+ * (« admin » → administrateur, « surveillant » → lecteur/lecture seule).
+ * Dégrade en « lecteur » si aucune appartenance (jamais d'élévation par défaut).
  */
 export async function getCurrentRole(): Promise<Role | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user?.email) return null;
+  if (!user) return null;
   try {
-    const { data } = await supabase.from("team_members").select("role").eq("email", user.email).maybeSingle();
-    return normalizeRole(data?.role ?? null);
+    const { data } = await supabase
+      .from("organization_members")
+      .select("org_id, role")
+      .eq("user_id", user.id);
+    if (!data?.length) return "lecteur";
+
+    const cookieStore = await cookies();
+    const preferred = cookieStore.get("spc_org_id")?.value;
+    const row = (preferred && data.find((r) => String(r.org_id) === preferred)) || data[0];
+    return normalizeRole(row?.role ?? null);
   } catch {
     return "lecteur";
   }
