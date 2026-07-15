@@ -3,6 +3,7 @@
 // signalé en console mais l'utilisateur n'est pas interrompu.
 
 import type { createClient } from "@/lib/supabase/server";
+import { getActiveOrgId } from "@/lib/auth/org";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
@@ -13,13 +14,18 @@ export async function journaliser(
     objet: string;
     ancienne?: string | null;
     nouvelle?: string | null;
+    orgId?: string | null;
   }
 ): Promise<void> {
   try {
     const { data } = await supabase.auth.getUser();
     const utilisateur = data.user?.email ?? "inconnu";
+    // org_id : fourni par l'appelant sinon résolu depuis l'org active
+    // (nécessaire pour que l'insert passe la RLS stricte au durcissement).
+    const org_id = entry.orgId !== undefined ? entry.orgId : await getActiveOrgId();
     const { error } = await supabase.from("journal_sessions").insert({
       mission_id: entry.missionId,
+      org_id,
       utilisateur,
       objet: entry.objet,
       ancienne: entry.ancienne ?? null,

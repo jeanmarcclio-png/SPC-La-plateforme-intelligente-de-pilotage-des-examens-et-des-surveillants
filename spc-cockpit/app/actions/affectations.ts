@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { journaliser, resumeAffectation } from "@/lib/operations/journal";
 import { requireCapability } from "@/lib/auth/session";
+import { getActiveOrgId } from "@/lib/auth/org";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -65,11 +66,13 @@ export async function addAffectation(missionId: number, surveillantId: number, r
   if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
+    const org_id = await getActiveOrgId();
     const { error } = await supabase.from("affectations").insert({
       mission_id: missionId,
       surveillant_id: surveillantId,
       role_mission: roleMission,
       statut: "Proposé",
+      org_id,
     });
     if (error) return { error: `Ajout échoué : ${error.message}` };
 

@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "db:types": "supabase gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" --schema public > lib/supabase/database.types.ts"
   },
   "engines": {
     "node": ">=20.9.0"

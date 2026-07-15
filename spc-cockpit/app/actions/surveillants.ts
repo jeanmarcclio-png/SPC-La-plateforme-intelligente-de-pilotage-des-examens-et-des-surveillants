@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { requireCapability } from "@/lib/auth/session";
+import { getActiveOrgId } from "@/lib/auth/org";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -39,7 +40,11 @@ export async function createSurveillant(fd: FormData): Promise<{ error?: string 
 
   try {
     const supabase = await createClient();
-    const { error } = await supabase.from("surveillants").insert(fields);
+    // org_id injecté systématiquement : la ligne créée est rattachée à
+    // l'organisation active (prépare la RLS stricte). NULL si aucune org (mode
+    // transition / avant backfill) — non bloquant.
+    const org_id = await getActiveOrgId();
+    const { error } = await supabase.from("surveillants").insert({ ...fields, org_id });
     if (error) return { error: `Création échouée : ${error.message}` };
     revalidateOps();
     return {};
@@ -109,6 +114,7 @@ export async function importSurveillants(
 
   try {
     const supabase = await createClient();
+    const org_id = await getActiveOrgId();
     const { data: existing } = await supabase.from("surveillants").select("id, nom, email, telephone");
     const byNom = new Map<string, number>();
     const byEmail = new Map<string, number>();
@@ -147,7 +153,7 @@ export async function importSurveillants(
         if (error) return { error: `Mise à jour de ${r.nom} échouée : ${error.message}` };
         misAJour++;
       } else {
-        const { data: inserted, error } = await supabase.from("surveillants").insert(fields).select("id, nom, email, telephone").single();
+        const { data: inserted, error } = await supabase.from("surveillants").insert({ ...fields, org_id }).select("id, nom, email, telephone").single();
         if (error) return { error: `Import de ${r.nom} échoué : ${error.message}` };
         // évite les doublons internes au fichier
         if (inserted) {

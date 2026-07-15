@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { ttcFromHT } from "@/lib/operations/engine";
 import { requireCapability } from "@/lib/auth/session";
+import { getActiveOrgId } from "@/lib/auth/org";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -53,7 +54,8 @@ function parseSalles(fd: FormData): SalleInput[] | null {
 async function syncSalles(
   supabase: Awaited<ReturnType<typeof createClient>>,
   devisId: number,
-  salles: SalleInput[] | null
+  salles: SalleInput[] | null,
+  orgId: string | null
 ): Promise<{ warning?: string }> {
   if (salles === null) return {}; // formulaire sans éditeur de salles — ne touche à rien
   try {
@@ -63,6 +65,7 @@ async function syncSalles(
       const ins = await supabase.from("devis_salles").insert(
         salles.map((s) => ({
           devis_id: devisId,
+          org_id: orgId,
           session: s.session,
           salle: s.salle,
           etudiants: s.etudiants,
@@ -113,7 +116,8 @@ function parseForm(fd: FormData) {
 // Chaînage métier : un devis accepté crée (ou retrouve) sa mission.
 async function creerMissionDepuisDevis(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  devisId: number
+  devisId: number,
+  orgId: string | null
 ): Promise<{ missionRef?: string; error?: string }> {
   const { data: d } = await supabase.from("devis").select("*").eq("id", devisId).single();
   if (!d) return { error: "Devis introuvable" };
@@ -144,6 +148,7 @@ async function creerMissionDepuisDevis(
     nb_surveillants: d.nb_surveillants ?? 1,
     montant_ht: d.montant_ht ?? 0,
     statut: "Planifiée",
+    org_id: d.org_id ?? orgId, // la mission hérite de l'org du devis
   }).select("id, reference").single();
   if (error || !mission) return { error: `Création de la mission échouée : ${error?.message}` };
 
@@ -163,9 +168,10 @@ export async function createDevis(fd: FormData): Promise<{ error?: string; warni
 
   try {
     const supabase = await createClient();
-    const { data: inserted, error } = await supabase.from("devis").insert(fields).select("id").single();
+    const org_id = await getActiveOrgId();
+    const { data: inserted, error } = await supabase.from("devis").insert({ ...fields, org_id }).select("id").single();
     if (error) return { error: `Création échouée : ${error.message}` };
-    const { warning } = inserted ? await syncSalles(supabase, inserted.id, salles) : {};
+    const { warning } = inserted ? await syncSalles(supabase, inserted.id, salles, org_id) : {};
     revalidateOps();
     return { warning };
   } catch (e) {
@@ -183,14 +189,15 @@ export async function updateDevis(id: number, fd: FormData): Promise<{ error?: s
 
   try {
     const supabase = await createClient();
+    const org_id = await getActiveOrgId();
     const { error } = await supabase.from("devis").update(fields).eq("id", id);
     if (error) return { error: `Mise à jour échouée : ${error.message}` };
 
-    const { warning } = await syncSalles(supabase, id, salles);
+    const { warning } = await syncSalles(supabase, id, salles, org_id);
 
     let missionRef: string | undefined;
     if (fields.statut === "Accepté") {
-      const chaine = await creerMissionDepuisDevis(supabase, id);
+      const chaine = await creerMissionDepuisDevis(supabase, id, org_id);
       if (chaine.error) return { error: chaine.error };
       missionRef = chaine.missionRef;
     }
