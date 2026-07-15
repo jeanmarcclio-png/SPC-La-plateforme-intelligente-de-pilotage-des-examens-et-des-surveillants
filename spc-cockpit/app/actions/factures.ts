@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { ttcFromHT } from "@/lib/operations/engine";
 import { requireCapability } from "@/lib/auth/session";
+import { getActiveOrgId } from "@/lib/auth/org";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -37,7 +38,8 @@ export async function createFacture(fd: FormData): Promise<{ error?: string }> {
 
   try {
     const supabase = await createClient();
-    const { error } = await supabase.from("factures").insert(fields);
+    const org_id = await getActiveOrgId();
+    const { error } = await supabase.from("factures").insert({ ...fields, org_id });
     if (error) return { error: `Création échouée : ${error.message}` };
     revalidateOps();
     return {};

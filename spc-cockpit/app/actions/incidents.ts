@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { requireCapability } from "@/lib/auth/session";
+import { getActiveOrgId } from "@/lib/auth/org";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -29,7 +30,8 @@ export async function createIncident(fd: FormData): Promise<{ error?: string }> 
 
   try {
     const supabase = await createClient();
-    const { error } = await supabase.from("incidents").insert(fields);
+    const org_id = await getActiveOrgId();
+    const { error } = await supabase.from("incidents").insert({ ...fields, org_id });
     if (error) return { error: `Déclaration échouée : ${error.message}` };
     revalidateOps();
     return {};
