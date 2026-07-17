@@ -57,16 +57,25 @@ export function scoreAffectation(s: Surveillant): { score: number; reasons: stri
 
 /**
  * Classe les surveillants mobilisables pour une session, du plus adapté au
- * moins adapté. Exclut les déjà-affectés (`exclureIds`) et les statuts
- * Indisponible / Annulé.
+ * moins adapté. Exclut les déjà-affectés (`exclureIds`), les statuts
+ * Indisponible / Annulé, et — CONTRAINTE DURE — les surveillants déclarés
+ * indisponibles pour la date/créneau visé (`indisponibleIds`, calculé depuis la
+ * table `disponibilites` du portail). Un indisponible n'est JAMAIS suggéré.
  */
 export function suggererSurveillants(
   surveillants: Surveillant[],
-  opts: { exclureIds?: number[]; limite?: number } = {}
+  opts: { exclureIds?: number[]; indisponibleIds?: number[]; limite?: number } = {}
 ): Suggestion[] {
   const exclus = new Set(opts.exclureIds ?? []);
+  const indispo = new Set(opts.indisponibleIds ?? []);
   const suggestions = surveillants
-    .filter((s) => !exclus.has(s.id) && s.statut !== "Indisponible" && s.statut !== "Annulé")
+    .filter(
+      (s) =>
+        !exclus.has(s.id) &&
+        !indispo.has(s.id) &&
+        s.statut !== "Indisponible" &&
+        s.statut !== "Annulé"
+    )
     .map((s) => {
       const { score, reasons } = scoreAffectation(s);
       return { surveillant: s, score, fiabilite: fiabilite(s), reasons };

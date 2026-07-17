@@ -1,8 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { getSurveillants, getAffectations } from "@/lib/operations/queries";
+import { getInvitationStatuses } from "@/lib/supabase/portail";
 import { SurveillantsTable } from "@/components/ops/SurveillantsTable";
 import { SurveillantsImportExport } from "@/components/ops/SurveillantsImportExport";
+import { InvitationsPanel } from "@/components/ops/InvitationsPanel";
 import { Kpi } from "@/components/ops/Kpi";
 import { Users, UserCheck, Clock, Star, AlertTriangle, Shield, UsersRound } from "lucide-react";
 import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
@@ -22,7 +24,9 @@ function PilotageCard({ tag, titre, detail, icon }: { tag: string; titre: string
 }
 
 export default async function SurveillantsPage() {
-  const [surveillants, affectations] = await Promise.all([getSurveillants(), getAffectations()]);
+  const [surveillants, affectations, invitations] = await Promise.all([
+    getSurveillants(), getAffectations(), getInvitationStatuses(),
+  ]);
 
   // Salles où chaque surveillant est déjà affecté (cross-check à l'import).
   const sallesBySurvId = new Map<number, Set<string>>();
@@ -51,6 +55,9 @@ export default async function SurveillantsPage() {
   return (
     <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
       <PageHeader page="Surveillants" subtitle="Annuaire, rôles et disponibilités de l&apos;équipe" />
+
+      {/* Accès portail surveillant — invitations */}
+      <InvitationsPanel rows={invitations} />
 
       {/* Import / Export CSV */}
       <SurveillantsImportExport surveillants={surveillants} assignments={assignments} />

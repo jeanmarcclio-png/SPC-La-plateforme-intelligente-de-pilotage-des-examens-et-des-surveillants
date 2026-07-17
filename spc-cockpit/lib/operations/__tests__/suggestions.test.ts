@@ -52,4 +52,11 @@ describe("suggererSurveillants", () => {
     expect(s).toHaveLength(1);
     expect(s[0].surveillant.id).toBe(5);
   });
+
+  it("contrainte dure : un indisponible déclaré n'est JAMAIS suggéré", () => {
+    // A (id 1) est le meilleur score mais indisponible ce jour-là → exclu.
+    const s = suggererSurveillants(equipe, { indisponibleIds: [1] });
+    expect(s.map((x) => x.surveillant.id)).not.toContain(1);
+    expect(s[0].surveillant.id).toBe(5); // E prend la tête
+  });
 });
