@@ -56,11 +56,28 @@ export async function inviterSurveillant(
     }
     if (!userId) return { error: "Impossible de créer ou retrouver le compte." };
 
-    // 2) Membership 'surveillant' dans l'org active (idempotent).
-    const { error: mErr } = await admin
+    // Garde-fou : ne JAMAIS rétrograder un compte admin/coordinateur/planificateur
+    // (ex. si l'email du surveillant est celui d'un membre déjà privilégié).
+    const { data: existingMember } = await admin
       .from("organization_members")
-      .upsert({ org_id: orgId, user_id: userId, role: "surveillant" }, { onConflict: "org_id,user_id" });
-    if (mErr) return { error: `Rattachement échoué : ${mErr.message}` };
+      .select("role")
+      .eq("org_id", orgId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    const existingRole = existingMember?.role?.toLowerCase();
+    if (existingMember && existingRole !== "surveillant") {
+      return {
+        error: `Cet email appartient déjà à un compte « ${existingMember.role} » dans cette organisation : impossible de l'inviter comme surveillant.`,
+      };
+    }
+
+    // 2) Membership 'surveillant' (créé seulement si absent — jamais de downgrade).
+    if (!existingMember) {
+      const { error: mErr } = await admin
+        .from("organization_members")
+        .insert({ org_id: orgId, user_id: userId, role: "surveillant" });
+      if (mErr) return { error: `Rattachement échoué : ${mErr.message}` };
+    }
 
     // 3) Lier la fiche surveillant + tracer l'invitation.
     const { error: uErr } = await admin
