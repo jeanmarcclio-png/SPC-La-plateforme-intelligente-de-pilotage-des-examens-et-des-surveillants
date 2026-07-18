@@ -92,3 +92,104 @@ export async function inviterSurveillant(
     return { error: e instanceof Error ? e.message : "Erreur inconnue" };
   }
 }
+
+// Mot de passe lisible (sans caractères ambigus 0/O, 1/l/I).
+function genererMotDePasse(): string {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  let s = "";
+  for (let i = 0; i < 10; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
+
+/**
+ * Définit (ou réinitialise) un mot de passe pour un surveillant, SANS email :
+ * le coordinateur transmet lui-même l'identifiant + le mot de passe généré.
+ * Crée le compte + membership 'surveillant' + liaison si nécessaire.
+ * Ne touche jamais un compte admin/coordinateur (garde-fou).
+ */
+export async function definirMotDePasseSurveillant(
+  surveillantId: number
+): Promise<{ error?: string; email?: string; motDePasse?: string }> {
+  const auth = await requireCapability("validate"); // coordinateur+
+  if (!auth.ok) return { error: auth.error };
+
+  const admin = createServiceClient();
+  if (!admin) {
+    return { error: "Indisponible : SUPABASE_SERVICE_ROLE_KEY non configurée." };
+  }
+  const orgId = await getActiveOrgId();
+  if (!orgId) return { error: "Aucune organisation active." };
+
+  const supabase = await createClient();
+  const { data: surv, error: sErr } = await supabase
+    .from("surveillants")
+    .select("id, nom, email, user_id")
+    .eq("id", surveillantId)
+    .maybeSingle();
+  if (sErr || !surv) return { error: "Surveillant introuvable." };
+  if (!surv.email) {
+    return { error: "Ce surveillant n'a pas d'email — renseignez-en un (il sert d'identifiant de connexion)." };
+  }
+  const email = String(surv.email).trim().toLowerCase();
+  const motDePasse = genererMotDePasse();
+
+  try {
+    // Retrouver le compte (via lien ou par email).
+    let userId = (surv.user_id as string | null) ?? null;
+    if (!userId) {
+      const { data: list } = await admin.auth.admin.listUsers();
+      userId = list?.users.find((u) => u.email?.toLowerCase() === email)?.id ?? null;
+    }
+
+    // Garde-fou : ne jamais toucher un compte admin/coordinateur.
+    if (userId) {
+      const { data: m } = await admin
+        .from("organization_members")
+        .select("role")
+        .eq("org_id", orgId)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (m && m.role?.toLowerCase() !== "surveillant") {
+        return { error: `Cet email appartient déjà à un compte « ${m.role} » : action refusée.` };
+      }
+    }
+
+    // Créer le compte s'il n'existe pas, sinon fixer le mot de passe.
+    if (!userId) {
+      const { data: created, error } = await admin.auth.admin.createUser({
+        email,
+        password: motDePasse,
+        email_confirm: true,
+        user_metadata: { nom: surv.nom },
+      });
+      if (error || !created?.user) return { error: `Création du compte échouée : ${error?.message}` };
+      userId = created.user.id;
+    } else {
+      const { error } = await admin.auth.admin.updateUserById(userId, {
+        password: motDePasse,
+        email_confirm: true,
+      });
+      if (error) return { error: `Mise à jour du mot de passe échouée : ${error.message}` };
+    }
+
+    // Membership 'surveillant' (si absent) + liaison de la fiche.
+    const { data: existingMember } = await admin
+      .from("organization_members")
+      .select("role")
+      .eq("org_id", orgId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!existingMember) {
+      await admin.from("organization_members").insert({ org_id: orgId, user_id: userId, role: "surveillant" });
+    }
+    await admin
+      .from("surveillants")
+      .update({ user_id: userId, invited_at: new Date().toISOString() })
+      .eq("id", surveillantId);
+
+    revalidatePath("/operations/surveillants");
+    return { email, motDePasse };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
