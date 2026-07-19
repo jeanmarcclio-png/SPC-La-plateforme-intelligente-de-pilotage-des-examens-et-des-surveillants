@@ -39,6 +39,7 @@ export interface ImportPreview {
   valides: number;
   aCorriger: number;
   doublons: number;
+  colonnesIgnorees: string[]; // en-têtes non reconnus → NON importés (minimisation RGPD)
 }
 
 const STATUTS = ["Disponible", "Planifié", "Annulé", "Indisponible"] as const;
@@ -160,10 +161,17 @@ export function buildImportPreview(
   rawRows: string[][],
   existing: { nom: string; email?: string | null; telephone?: string | null; salles?: string[] }[]
 ): ImportPreview {
-  if (rawRows.length === 0) return { rows: [], total: 0, valides: 0, aCorriger: 0, doublons: 0 };
+  if (rawRows.length === 0) return { rows: [], total: 0, valides: 0, aCorriger: 0, doublons: 0, colonnesIgnorees: [] };
 
   const { headerIdx, map } = locateHeader(rawRows);
   const body = rawRows.slice(headerIdx + 1);
+
+  // Minimisation RGPD : en-têtes présents dans le fichier mais NON reconnus par
+  // HEADER_MAP → aucune donnée de ces colonnes n'est importée. On les liste pour
+  // l'afficher à l'utilisateur (transparence sur ce qui est ignoré).
+  const colonnesIgnorees = (rawRows[headerIdx] ?? [])
+    .filter((h, i) => (h ?? "").trim() !== "" && map[i] == null)
+    .map((h) => h.trim());
 
   const existNoms = new Set(existing.map((e) => norm(e.nom)));
   const existEmails = new Set(existing.map((e) => norm(e.email ?? "")).filter(Boolean));
@@ -225,6 +233,7 @@ export function buildImportPreview(
     valides: rows.filter((r) => r.valid && !r.duplicate).length,
     aCorriger: rows.filter((r) => !r.valid).length,
     doublons: rows.filter((r) => r.duplicate).length,
+    colonnesIgnorees,
   };
 }
 

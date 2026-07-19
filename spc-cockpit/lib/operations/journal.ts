@@ -4,6 +4,7 @@
 
 import type { createClient } from "@/lib/supabase/server";
 import { getActiveOrgId } from "@/lib/auth/org";
+import { log } from "@/lib/log";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
@@ -31,9 +32,9 @@ export async function journaliser(
       ancienne: entry.ancienne ?? null,
       nouvelle: entry.nouvelle ?? null,
     });
-    if (error) console.warn("Journal de session non écrit :", error.message);
+    if (error) log.warn("Journal de session non écrit :", error.message);
   } catch (e) {
-    console.warn("Journal de session non écrit :", e instanceof Error ? e.message : e);
+    log.warn("Journal de session non écrit :", e instanceof Error ? e.message : e);
   }
 }
 
