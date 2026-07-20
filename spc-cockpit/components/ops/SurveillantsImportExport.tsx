@@ -207,6 +207,13 @@ export function SurveillantsImportExport({
             <button onClick={() => { setOpen(false); setPreview(null); }} className="text-slate-400 hover:text-slate-600" aria-label="Fermer l'aperçu"><X className="w-4 h-4" /></button>
           </div>
 
+          {preview.colonnesIgnorees.length > 0 && (
+            <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-100 text-[12px] text-amber-800">
+              <span className="font-semibold">Colonnes non importées</span> (en-têtes non reconnus, aucune donnée conservée) :{" "}
+              {preview.colonnesIgnorees.join(", ")}
+            </div>
+          )}
+
           <div className="max-h-[320px] overflow-auto">
             <table className="w-full border-collapse min-w-[820px]">
               <thead>

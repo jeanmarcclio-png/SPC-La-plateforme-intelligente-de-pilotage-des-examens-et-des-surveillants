@@ -10,7 +10,10 @@ function revalidateOps() {
 }
 
 function parseForm(fd: FormData) {
-  const amenagement = (fd.get("amenagement") as string | null)?.trim();
+  // Minimisation RGPD : le libellé d'aménagement est un champ libre → on le
+  // plafonne à 200 caractères pour décourager la saisie de données identifiantes
+  // (les aménagements sont rattachés à une session, jamais à un étudiant nommé).
+  const amenagement = (fd.get("amenagement") as string | null)?.trim().slice(0, 200);
   return {
     amenagement,
     salle: (fd.get("salle") as string | null)?.trim() || null,

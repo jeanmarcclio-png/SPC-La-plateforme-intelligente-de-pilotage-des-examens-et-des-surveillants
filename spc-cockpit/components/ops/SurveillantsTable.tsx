@@ -4,10 +4,21 @@ import { useState, useMemo, useTransition } from "react";
 import type { Surveillant } from "@/lib/operations/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { createSurveillant, updateSurveillant, deleteSurveillant } from "@/app/actions/surveillants";
+import { exporterDonneesSurveillant, anonymiserSurveillant } from "@/app/actions/rgpd";
 import { showToast } from "@/components/Toast";
 import { SurvBadge } from "@/components/ops/badges";
 import { Button } from "@/components/ops/Button";
-import { Search, Plus, Pencil, Trash2, Star } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Star, Download, ShieldOff } from "lucide-react";
+
+function downloadTextFile(name: string, content: string, mime: string) {
+  const blob = new Blob([mime.startsWith("text/csv") ? "﻿" + content : content], { type: `${mime};charset=utf-8;` });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const ACCENT = "#2563eb";
 const ROLES = ["Coordinatrice", "Surveillant salle", "Surveillant volant", "Surveillant PMR"];
@@ -161,6 +172,34 @@ export function SurveillantsTable({ surveillants }: { surveillants: Surveillant[
     });
   }
 
+  // RGPD — droit d'accès / portabilité : télécharge JSON + CSV des données.
+  function handleExport(s: Surveillant) {
+    startTransition(async () => {
+      const res = await exporterDonneesSurveillant(s.id);
+      if (res.error || !res.json) { showToast(res.error ?? "Export impossible", "error"); return; }
+      const slug = (res.nom ?? s.nom).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "");
+      downloadTextFile(`SPC_donnees_${slug}.json`, res.json, "application/json");
+      if (res.csv) downloadTextFile(`SPC_affectations_${slug}.csv`, res.csv, "text/csv");
+      showToast(`Données de « ${res.nom ?? s.nom} » exportées (JSON + CSV).`);
+    });
+  }
+
+  // RGPD — droit à l'effacement : anonymise (heures conservées pour la paie).
+  function handleAnonymize(s: Surveillant) {
+    if (!confirm(
+      `Anonymiser définitivement « ${s.nom} » ?\n\n` +
+      `• Nom, email et téléphone seront effacés\n` +
+      `• Le compte de connexion sera supprimé\n` +
+      `• Les heures et le taux sont conservés (obligations de paie)\n\n` +
+      `Cette action est irréversible et sera journalisée.`
+    )) return;
+    startTransition(async () => {
+      const res = await anonymiserSurveillant(s.id);
+      if (res.error) showToast(res.error, "error");
+      else { showToast(`« ${s.nom} » anonymisé. Agrégats d'heures conservés.`); setDialog(null); }
+    });
+  }
+
   const hasFilters = search || statut || role;
 
   return (
@@ -288,6 +327,22 @@ export function SurveillantsTable({ surveillants }: { surveillants: Surveillant[
               onSubmit={submit}
               onCancel={() => setDialog(null)}
             />
+          )}
+          {dialog?.mode === "edit" && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="text-[11px] font-bold uppercase tracking-[.6px] text-gray-400 mb-2">Données personnelles (RGPD)</div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" size="sm" onClick={() => handleExport(dialog.surveillant)} disabled={pending}>
+                  <Download className="w-3.5 h-3.5" aria-hidden />Exporter les données
+                </Button>
+                <Button variant="danger" size="sm" onClick={() => handleAnonymize(dialog.surveillant)} disabled={pending}>
+                  <ShieldOff className="w-3.5 h-3.5" aria-hidden />Anonymiser (effacement)
+                </Button>
+              </div>
+              <p className="mt-2 text-[11px] text-gray-400">
+                L&apos;export couvre l&apos;identité, les disponibilités et les affectations. L&apos;anonymisation efface les données identifiantes tout en conservant les heures pour la paie (5 ans).
+              </p>
+            </div>
           )}
         </DialogContent>
       </Dialog>

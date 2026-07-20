@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { CONFIGS, DEFAULT_CONFIG } from "@/lib/tenant/configs";
 import { removeFreeTextPII } from "@/lib/agents/redaction";
+import { checkRateLimitBy, clientIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -20,6 +21,15 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+
+    // Limite anti-abus sur cet endpoint IA coûteux (par utilisateur + IP).
+    const rl = checkRateLimitBy(`copilote:${user.id}:${clientIp(req.headers)}`, 20, 60_000);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Trop de requêtes. Réessayez dans un instant." },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } }
+      );
+    }
 
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const [{ data: prospects }, { data: campagnes }] = await Promise.all([

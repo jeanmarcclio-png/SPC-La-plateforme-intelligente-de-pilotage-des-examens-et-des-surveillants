@@ -10,7 +10,12 @@ export default function MoiLayout({ children }: { children: React.ReactNode }) {
           <span className="font-extrabold tracking-tight text-[#0d1e2e]">SPC · Mon espace</span>
         </div>
       </header>
-      <main className="max-w-md mx-auto px-4 py-5 pb-24">{children}</main>
+      <main className="max-w-md mx-auto px-4 py-5 pb-16">{children}</main>
+      <footer className="max-w-md mx-auto px-4 pb-8 text-center">
+        <a href="/confidentialite" className="text-[11px] text-gray-400 hover:underline">
+          Politique de confidentialité
+        </a>
+      </footer>
       <Toaster />
     </div>
   );

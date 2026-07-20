@@ -43,7 +43,10 @@ function AmenagementForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-3.5 mt-1">
       <Field label="Aménagement *">
-        <input name="amenagement" required defaultValue={initial?.amenagement} placeholder="ex: PMR — Fauteuil roulant" className={inputCls} />
+        <input name="amenagement" required maxLength={200} defaultValue={initial?.amenagement} placeholder="ex: PMR — Fauteuil roulant" className={inputCls} />
+        <p className="mt-1 text-[11px] text-amber-700">
+          Ne saisissez aucune donnée permettant d&apos;identifier un étudiant (nom, prénom, n° candidat…). 200 caractères max.
+        </p>
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Salle">

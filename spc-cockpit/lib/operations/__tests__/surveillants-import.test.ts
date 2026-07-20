@@ -72,6 +72,29 @@ describe("buildImportPreview", () => {
     const p = buildImportPreview(rows, []);
     expect(p.rows[0].nomComplet).toBe("Alice Martin");
   });
+
+  it("minimisation RGPD : liste les colonnes non reconnues et n'importe pas leur contenu", () => {
+    const rows = parseCSV(
+      "Prénom;Nom;Numéro de sécurité sociale;IBAN;Email\n" +
+      "Jean;Val;1 85 12 75 116 001 42;FR76 3000 4000 05;j@v.fr"
+    );
+    const p = buildImportPreview(rows, []);
+    // en-têtes hors HEADER_MAP → listés
+    expect(p.colonnesIgnorees).toEqual(["Numéro de sécurité sociale", "IBAN"]);
+    // colonnes reconnues bien importées
+    expect(p.rows[0].nomComplet).toBe("Jean Val");
+    expect(p.rows[0].data.email).toBe("j@v.fr");
+    // aucun champ ne contient le NIR ou l'IBAN (non importés)
+    const serialized = JSON.stringify(p.rows[0].data);
+    expect(serialized).not.toContain("116 001 42");
+    expect(serialized).not.toContain("FR76");
+  });
+
+  it("colonnesIgnorees vide quand toutes les colonnes sont reconnues", () => {
+    const rows = parseCSV("Prénom;Nom;Email\nJean;Val;j@v.fr");
+    const p = buildImportPreview(rows, []);
+    expect(p.colonnesIgnorees).toEqual([]);
+  });
 });
 
 import { stripCivility } from "../surveillants-import";

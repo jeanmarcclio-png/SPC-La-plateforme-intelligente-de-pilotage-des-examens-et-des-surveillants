@@ -138,6 +138,9 @@ function LoginForm() {
         <p className="text-center text-[11px] text-gray-400 mt-6">
           Accès réservé aux collaborateurs autorisés
         </p>
+        <p className="text-center text-[11px] mt-2">
+          <a href="/confidentialite" className="text-[#4a90d9] hover:underline">Politique de confidentialité</a>
+        </p>
       </div>
     </div>
   );
