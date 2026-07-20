@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/admin";
-import { requireCapability } from "@/lib/auth/session";
+import { requireCapability, requireCapabilityStrict } from "@/lib/auth/session";
 import { getActiveOrgId } from "@/lib/auth/org";
 import { anonymizedSurveillantFields } from "@/lib/rgpd/anonymize";
 import { buildExportDossier, buildAffectationsCsv } from "@/lib/rgpd/export";
@@ -45,7 +45,9 @@ export async function exporterDonneesSurveillant(
 export async function anonymiserSurveillant(
   surveillantId: number
 ): Promise<{ error?: string; ok?: boolean }> {
-  const auth = await requireCapability("admin"); // admin uniquement
+  // Contrôle STRICT (indépendant du mode transition) : cette action contourne la
+  // RLS via service_role et est irréversible → le rôle admin est exigé en dur.
+  const auth = await requireCapabilityStrict("admin");
   if (!auth.ok) return { error: auth.error };
 
   const admin = createServiceClient();

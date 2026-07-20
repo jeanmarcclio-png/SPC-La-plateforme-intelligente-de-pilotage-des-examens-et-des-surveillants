@@ -60,6 +60,19 @@ export async function requireCapability(capability: Capability): Promise<AuthRes
   return authorize({ authenticated: !!user, enforce, role, capability });
 }
 
+/**
+ * Garde STRICTE : applique toujours le contrôle de rôle, même en mode transition
+ * (`SPC_ENFORCE_ROLES ≠ 1`). Réservée aux opérations destructrices qui contournent
+ * la RLS via `service_role` (ex. anonymisation). Échoue « fermé » : un compte sans
+ * appartenance résolue est refusé (voir migration 27 qui garantit les appartenances).
+ */
+export async function requireCapabilityStrict(capability: Capability): Promise<AuthResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const role = user ? await getCurrentRole() : null;
+  return authorize({ authenticated: !!user, enforce: true, role, capability });
+}
+
 // ---------------------------------------------------------------------------
 // Isolation par organisation — activée une fois la migration v12 appliquée.
 // Défensif : si les tables org n'existent pas encore, on ne bloque pas (mode
