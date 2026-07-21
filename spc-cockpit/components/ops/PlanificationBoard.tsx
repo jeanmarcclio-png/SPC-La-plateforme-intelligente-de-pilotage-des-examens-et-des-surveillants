@@ -437,7 +437,8 @@ export function PlanificationBoard({
         <Kpi variant="vivid" label="Sessions créées" value={String(sessionsCreees)} sub="au total" accent="blue" icon={<CalendarDays className="w-4 h-4" />} />
         {/* Vert sémantique : sessions clôturées = achevées. */}
         <Kpi variant="vivid" label="Sessions terminées" value={String(sessionsTerminees)} sub="sessions clôturées" accent="emerald" icon={<CalendarCheck className="w-4 h-4" />} />
-        <Kpi variant="vivid" label="Heures accumulées" value={`${Math.round(heuresAccumulees)}h`} sub="planifiées toutes sessions" accent="teal" icon={<Clock className="w-4 h-4" />} />
+        {/* Neutre (encre) : total agrégé, pas de couleur décorative — équilibre le vert. */}
+        <Kpi variant="vivid" label="Heures accumulées" value={`${Math.round(heuresAccumulees)}h`} sub="planifiées toutes sessions" accent="slate" icon={<Clock className="w-4 h-4" />} />
       </div>
 
       {/* Sélecteur de sessions (pastilles date) */}
@@ -530,7 +531,7 @@ export function PlanificationBoard({
                   { label: "Heures tot.", value: `${totalHeures.toFixed(1)}h` },
                 ].map((k) => (
                   <div key={k.label} className="rounded-xl px-4 py-3 text-center bg-slate-50 border border-slate-200/60">
-                    <div className="text-[10px] font-bold uppercase tracking-[1px] text-teal-700">{k.label}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-[1px] text-slate-500">{k.label}</div>
                     <div className="text-[20px] font-extrabold mt-0.5 text-slate-900">{k.value}</div>
                   </div>
                 ))}
