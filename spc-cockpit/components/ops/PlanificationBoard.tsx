@@ -433,11 +433,11 @@ export function PlanificationBoard({
 
       {/* Cartes statistiques */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-        <Kpi variant="vivid" label="Total surveillants" value={String(surveillants.length)} sub="dans l'annuaire" accent="indigo" icon={<Users className="w-4 h-4" />} />
+        <Kpi variant="vivid" label="Total surveillants" value={String(surveillants.length)} sub="dans l'annuaire" accent="teal" icon={<Users className="w-4 h-4" />} />
         <Kpi variant="vivid" label="Sessions créées" value={String(sessionsCreees)} sub="au total" accent="blue" icon={<CalendarDays className="w-4 h-4" />} />
-        {/* Carte mise en avant — violet IA (identité Survéo) */}
-        <Kpi variant="vivid" label="Sessions terminées" value={String(sessionsTerminees)} sub="sessions clôturées" accent="violet" icon={<CalendarCheck className="w-4 h-4" />} />
-        <Kpi variant="vivid" label="Heures accumulées" value={`${Math.round(heuresAccumulees)}h`} sub="planifiées toutes sessions" accent="emerald" icon={<Clock className="w-4 h-4" />} />
+        {/* Vert sémantique : sessions clôturées = achevées. */}
+        <Kpi variant="vivid" label="Sessions terminées" value={String(sessionsTerminees)} sub="sessions clôturées" accent="emerald" icon={<CalendarCheck className="w-4 h-4" />} />
+        <Kpi variant="vivid" label="Heures accumulées" value={`${Math.round(heuresAccumulees)}h`} sub="planifiées toutes sessions" accent="teal" icon={<Clock className="w-4 h-4" />} />
       </div>
 
       {/* Sélecteur de sessions (pastilles date) */}
@@ -449,10 +449,10 @@ export function PlanificationBoard({
               key={m.id}
               onClick={() => { setMissionId(m.id); setEdits({}); setFilter("all"); setQuery(""); }}
               aria-pressed={active}
-              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[12.5px] font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/40 ${
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[12.5px] font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 ${
                 active ? "text-white border-transparent shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
               }`}
-              style={active ? { background: "#7c5cff" } : {}}
+              style={active ? { background: "#0d9488" } : {}}
             >
               <Calendar className={`w-3.5 h-3.5 ${active ? "text-white/80" : "text-gray-400"}`} aria-hidden />
               <span>{dateFR(m.dateMission)}</span>
@@ -484,6 +484,7 @@ export function PlanificationBoard({
                 <div className="flex-1 min-w-[240px]">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-[15px] font-extrabold text-gray-900">Santé de la session</h2>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-600/15"><Sparkles className="w-3 h-3" aria-hidden />IA</span>
                     <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${pill}`}><span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{sante.niveau}</span>
                   </div>
                   <div className="text-[11.5px] text-gray-400 mt-0.5 mb-2">Synthèse couverture · alertes · rentabilité — {sante.detail.couverture}/40 · {sante.detail.alertes}/35 · {sante.detail.marge}/25</div>
@@ -523,14 +524,14 @@ export function PlanificationBoard({
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
                 {[
-                  { label: "Surveillants", value: String(rows.length), bg: "bg-indigo-50", tl: "text-indigo-500", tv: "text-indigo-700" },
-                  { label: "Salles", value: String(salles.size), bg: "bg-teal-50", tl: "text-teal-600", tv: "text-teal-700" },
-                  { label: "Affectés", value: String(affectes.length), bg: "bg-violet-50", tl: "text-violet-500", tv: "text-violet-700" },
-                  { label: "Heures tot.", value: `${totalHeures.toFixed(1)}h`, bg: "bg-emerald-50", tl: "text-emerald-600", tv: "text-emerald-700" },
+                  { label: "Surveillants", value: String(rows.length) },
+                  { label: "Salles", value: String(salles.size) },
+                  { label: "Affectés", value: String(affectes.length) },
+                  { label: "Heures tot.", value: `${totalHeures.toFixed(1)}h` },
                 ].map((k) => (
-                  <div key={k.label} className={`rounded-xl px-4 py-3 text-center ${k.bg}`}>
-                    <div className={`text-[10px] font-bold uppercase tracking-[1px] ${k.tl}`}>{k.label}</div>
-                    <div className={`text-[20px] font-extrabold mt-0.5 ${k.tv}`}>{k.value}</div>
+                  <div key={k.label} className="rounded-xl px-4 py-3 text-center bg-slate-50 border border-slate-200/60">
+                    <div className="text-[10px] font-bold uppercase tracking-[1px] text-teal-700">{k.label}</div>
+                    <div className="text-[20px] font-extrabold mt-0.5 text-slate-900">{k.value}</div>
                   </div>
                 ))}
               </div>

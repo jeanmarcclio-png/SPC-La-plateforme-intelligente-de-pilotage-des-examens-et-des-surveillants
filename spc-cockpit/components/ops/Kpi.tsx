@@ -7,7 +7,7 @@ import Link from "next/link";
 //              couleur SATURÉE — puce d'icône pleine + chiffre coloré + filet haut)
 //   icon     : optionnel · href : carte cliquable · truncate : valeurs longues
 
-export type KpiAccent = "indigo" | "amber" | "emerald" | "blue" | "red" | "slate" | "violet";
+export type KpiAccent = "indigo" | "amber" | "emerald" | "blue" | "red" | "slate" | "violet" | "teal";
 export type KpiEmphasis = "soft" | "strong";
 export type KpiVariant = "soft" | "vivid";
 
@@ -30,6 +30,7 @@ const ACCENTS: Record<KpiAccent, AccentStyle> = {
   red: { soft: "bg-rose-50/60 border-rose-100", strong: "bg-rose-100/70 border-rose-200", chip: "bg-rose-100 text-rose-600", value: "text-rose-700", label: "text-slate-500", bar: "bg-rose-500", chipVivid: "bg-rose-600 text-white", valueVivid: "text-rose-600" },
   slate: { soft: "bg-white border-gray-200/80", strong: "bg-slate-50 border-slate-200", chip: "bg-slate-100 text-slate-600", value: "text-slate-900", label: "text-slate-500", bar: "bg-slate-400", chipVivid: "bg-slate-700 text-white", valueVivid: "text-slate-800" },
   violet: { soft: "bg-violet-50/60 border-violet-100", strong: "bg-violet-100/70 border-violet-200", chip: "bg-violet-100 text-violet-600", value: "text-violet-700", label: "text-slate-500", bar: "bg-violet-500", chipVivid: "bg-violet-600 text-white", valueVivid: "text-violet-600" },
+  teal: { soft: "bg-teal-50/60 border-teal-100", strong: "bg-teal-100/70 border-teal-200", chip: "bg-teal-100 text-teal-700", value: "text-teal-700", label: "text-slate-500", bar: "bg-teal-500", chipVivid: "bg-teal-600 text-white", valueVivid: "text-teal-700" },
 };
 
 function KpiBody({
@@ -40,7 +41,9 @@ function KpiBody({
 }) {
   const vivid = variant === "vivid";
   const chipCls = vivid ? style.chipVivid : style.chip;
-  const valCls = vivid ? style.valueVivid : style.value;
+  // Direction « vibrant discipliné » : puce d'icône colorée mais CHIFFRE EN ENCRE
+  // (hiérarchie premium, la couleur ne décore pas le chiffre).
+  const valCls = vivid ? "text-slate-900" : style.value;
   return (
     <>
       <div className="flex items-center justify-between mb-3">
