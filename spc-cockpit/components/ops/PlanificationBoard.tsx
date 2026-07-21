@@ -436,7 +436,7 @@ export function PlanificationBoard({
         {/* Palette distribuée (indigo · bleu · vert sémantique · teal marque) :
             la couleur est répartie, jamais concentrée sur une seule teinte. */}
         <Kpi variant="vivid" label="Total surveillants" value={String(surveillants.length)} sub="dans l'annuaire" accent="indigo" icon={<Users className="w-4 h-4" />} />
-        <Kpi variant="vivid" label="Sessions créées" value={String(sessionsCreees)} sub="au total" accent="blue" icon={<CalendarDays className="w-4 h-4" />} />
+        <Kpi variant="vivid" label="Sessions créées" value={String(sessionsCreees)} sub="au total" accent="cyan" icon={<CalendarDays className="w-4 h-4" />} />
         {/* Vert sémantique : sessions clôturées = achevées. */}
         <Kpi variant="vivid" label="Sessions terminées" value={String(sessionsTerminees)} sub="sessions clôturées" accent="emerald" icon={<CalendarCheck className="w-4 h-4" />} />
         {/* Ambre : les heures (temps) — teinte chaude, sort du registre vert/teal. */}

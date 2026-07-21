@@ -149,10 +149,11 @@ export default async function OperationsPage() {
 
       {/* KPIs — terminologie stable, chaque tuile mène à sa page source */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
-        <Kpi label="Missions à venir" value={String(missionsAVenir.length)} sub={`${missions.length} au total`} icon={<Briefcase className="w-4 h-4" />} href="/operations/missions" />
-        <Kpi label="Équipe mobilisable" value={String(disponibles.length)} sub={`disponibles · ${planifies.length} déjà planifié${planifies.length > 1 ? "s" : ""} · ${surveillants.length} au total`} icon={<Users className="w-4 h-4" />} href="/operations/surveillants" />
-        <Kpi label="Pipeline commercial HT" value={euro(pipeline.reduce((s, d) => s + d.montantHT, 0))} sub={`${pipeline.length} devis brouillon ou envoyé`} icon={<Euro className="w-4 h-4" />} href="/operations/devis" />
-        <Kpi label="CA confirmé HT" value={euro(confirmes.reduce((s, d) => s + d.montantHT, 0))} sub={`${confirmes.length} devis accepté${confirmes.length > 1 ? "s" : ""} ou facturé${confirmes.length > 1 ? "s" : ""}`} icon={<FileCheck2 className="w-4 h-4" />} href="/operations/devis" />
+        {/* Grammaire couleur distribuée : indigo · teal marque · cyan · vert sémantique (CA confirmé). */}
+        <Kpi variant="vivid" accent="indigo" label="Missions à venir" value={String(missionsAVenir.length)} sub={`${missions.length} au total`} icon={<Briefcase className="w-4 h-4" />} href="/operations/missions" />
+        <Kpi variant="vivid" accent="teal" label="Équipe mobilisable" value={String(disponibles.length)} sub={`disponibles · ${planifies.length} déjà planifié${planifies.length > 1 ? "s" : ""} · ${surveillants.length} au total`} icon={<Users className="w-4 h-4" />} href="/operations/surveillants" />
+        <Kpi variant="vivid" accent="cyan" label="Pipeline commercial HT" value={euro(pipeline.reduce((s, d) => s + d.montantHT, 0))} sub={`${pipeline.length} devis brouillon ou envoyé`} icon={<Euro className="w-4 h-4" />} href="/operations/devis" />
+        <Kpi variant="vivid" accent="emerald" label="CA confirmé HT" value={euro(confirmes.reduce((s, d) => s + d.montantHT, 0))} sub={`${confirmes.length} devis accepté${confirmes.length > 1 ? "s" : ""} ou facturé${confirmes.length > 1 ? "s" : ""}`} icon={<FileCheck2 className="w-4 h-4" />} href="/operations/devis" />
       </div>
 
       {/* Priorités du jour */}
@@ -233,7 +234,7 @@ export default async function OperationsPage() {
                     <div key={t.key} className="flex items-center gap-2.5">
                       <span className="text-[11px] text-gray-500 w-12 flex-shrink-0">{t.label}</span>
                       <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${Math.round((t.total / maxMois) * 100)}%`, background: "#0d2137" }} />
+                        <div className="h-full rounded-full" style={{ width: `${Math.round((t.total / maxMois) * 100)}%`, background: "#059669" }} />
                       </div>
                       <span className="text-[11.5px] font-semibold text-gray-700 w-[84px] text-right flex-shrink-0">{euro(t.total)}</span>
                     </div>

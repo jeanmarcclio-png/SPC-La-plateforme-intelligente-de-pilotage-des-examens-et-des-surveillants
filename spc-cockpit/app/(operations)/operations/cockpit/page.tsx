@@ -132,8 +132,11 @@ export default async function CockpitOpsPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
+        {/* Grammaire couleur distribuée : teal marque (live) · ambre (couverture) · cyan · rouge/ambre sémantique (alertes). */}
         {enCours > 0 ? (
           <Kpi
+            variant="vivid"
+            accent="teal"
             label="Sessions en cours"
             value={String(enCours)}
             sub="sur le terrain en ce moment"
@@ -141,6 +144,8 @@ export default async function CockpitOpsPage() {
           />
         ) : (
           <Kpi
+            variant="vivid"
+            accent="teal"
             label="Sessions à préparer"
             value={String(aPreparer)}
             sub="aucune session en cours"
@@ -148,6 +153,7 @@ export default async function CockpitOpsPage() {
           />
         )}
         <Kpi
+          variant="vivid"
           label="Salles couvertes"
           value={`${sallesAffectees}/${sallesRequises}`}
           sub={`${Math.max(0, sallesRequises - sallesAffectees)} salle(s) à couvrir`}
@@ -155,19 +161,20 @@ export default async function CockpitOpsPage() {
           accent="amber"
         />
         <Kpi
+          variant="vivid"
           label="Créneaux définis"
           value={`${creneauxDefinis}/${rows.length}`}
           sub={`${rows.length - creneauxDefinis} surveillant(s) sans créneau`}
           icon={<UserCheck className="w-4 h-4" />}
-          accent="blue"
+          accent="cyan"
         />
         <Kpi
+          variant="vivid"
           label="Alertes"
           value={String(alertes.length)}
           sub={`${critiques.length ? `${critiques.length} critique(s) · ` : ""}${avertissements.length} avert. · ${informations.length} info(s)`}
           icon={<AlertTriangle className="w-4 h-4" />}
           accent={critiques.length ? "red" : "amber"}
-          emphasis="strong"
         />
       </div>
 
