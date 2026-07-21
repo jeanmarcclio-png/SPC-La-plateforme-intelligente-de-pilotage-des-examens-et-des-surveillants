@@ -7,7 +7,7 @@ import Link from "next/link";
 //   emphasis : "soft" (fond très clair) | "strong" (fond plus marqué, ex. Alertes)
 //   icon     : optionnel · href : carte cliquable · truncate : valeurs longues
 
-export type KpiAccent = "indigo" | "amber" | "emerald" | "blue" | "red" | "slate";
+export type KpiAccent = "indigo" | "amber" | "emerald" | "blue" | "red" | "slate" | "violet";
 export type KpiEmphasis = "soft" | "strong";
 
 interface AccentStyle {
@@ -25,6 +25,7 @@ const ACCENTS: Record<KpiAccent, AccentStyle> = {
   blue: { soft: "bg-sky-50/60 border-sky-100", strong: "bg-sky-100/70 border-sky-200", chip: "bg-sky-100 text-sky-600", value: "text-sky-700", label: "text-slate-500" },
   red: { soft: "bg-rose-50/60 border-rose-100", strong: "bg-rose-100/70 border-rose-200", chip: "bg-rose-100 text-rose-600", value: "text-rose-700", label: "text-slate-500" },
   slate: { soft: "bg-white border-gray-200/80", strong: "bg-slate-50 border-slate-200", chip: "bg-slate-100 text-slate-600", value: "text-slate-900", label: "text-slate-500" },
+  violet: { soft: "bg-violet-50/60 border-violet-100", strong: "bg-violet-100/70 border-violet-200", chip: "bg-violet-100 text-violet-600", value: "text-violet-700", label: "text-slate-500" },
 };
 
 function KpiBody({
