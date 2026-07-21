@@ -439,7 +439,8 @@ export function PlanificationBoard({
         <Kpi variant="vivid" label="Sessions créées" value={String(sessionsCreees)} sub="au total" accent="blue" icon={<CalendarDays className="w-4 h-4" />} />
         {/* Vert sémantique : sessions clôturées = achevées. */}
         <Kpi variant="vivid" label="Sessions terminées" value={String(sessionsTerminees)} sub="sessions clôturées" accent="emerald" icon={<CalendarCheck className="w-4 h-4" />} />
-        <Kpi variant="vivid" label="Heures accumulées" value={`${Math.round(heuresAccumulees)}h`} sub="planifiées toutes sessions" accent="teal" icon={<Clock className="w-4 h-4" />} />
+        {/* Ambre : les heures (temps) — teinte chaude, sort du registre vert/teal. */}
+        <Kpi variant="vivid" label="Heures accumulées" value={`${Math.round(heuresAccumulees)}h`} sub="planifiées toutes sessions" accent="amber" icon={<Clock className="w-4 h-4" />} />
       </div>
 
       {/* Sélecteur de sessions (pastilles date) */}
@@ -531,7 +532,7 @@ export function PlanificationBoard({
                   { label: "Surveillants", value: String(rows.length), bg: "bg-indigo-50 border-indigo-100", lab: "text-indigo-600" },
                   { label: "Salles", value: String(salles.size), bg: "bg-sky-50 border-sky-100", lab: "text-sky-600" },
                   { label: "Affectés", value: String(affectes.length), bg: "bg-teal-50 border-teal-100", lab: "text-teal-700" },
-                  { label: "Heures tot.", value: `${totalHeures.toFixed(1)}h`, bg: "bg-emerald-50 border-emerald-100", lab: "text-emerald-600" },
+                  { label: "Heures tot.", value: `${totalHeures.toFixed(1)}h`, bg: "bg-amber-50 border-amber-100", lab: "text-amber-600" },
                 ].map((k) => (
                   <div key={k.label} className={`rounded-xl px-4 py-3 text-center border ${k.bg}`}>
                     <div className={`text-[10px] font-bold uppercase tracking-[1px] ${k.lab}`}>{k.label}</div>
