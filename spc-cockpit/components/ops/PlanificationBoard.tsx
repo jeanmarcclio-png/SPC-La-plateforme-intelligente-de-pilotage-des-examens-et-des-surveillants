@@ -433,11 +433,11 @@ export function PlanificationBoard({
 
       {/* Cartes statistiques */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-        <Kpi label="Total surveillants" value={String(surveillants.length)} sub="dans l'annuaire" accent="indigo" icon={<Users className="w-4 h-4" />} />
-        <Kpi label="Sessions créées" value={String(sessionsCreees)} sub="au total" accent="blue" icon={<CalendarDays className="w-4 h-4" />} />
+        <Kpi variant="vivid" label="Total surveillants" value={String(surveillants.length)} sub="dans l'annuaire" accent="indigo" icon={<Users className="w-4 h-4" />} />
+        <Kpi variant="vivid" label="Sessions créées" value={String(sessionsCreees)} sub="au total" accent="blue" icon={<CalendarDays className="w-4 h-4" />} />
         {/* Carte mise en avant — violet IA (identité Survéo) */}
-        <Kpi label="Sessions terminées" value={String(sessionsTerminees)} sub="sessions clôturées" accent="violet" icon={<CalendarCheck className="w-4 h-4" />} />
-        <Kpi label="Heures accumulées" value={`${Math.round(heuresAccumulees)}h`} sub="planifiées toutes sessions" accent="emerald" icon={<Clock className="w-4 h-4" />} />
+        <Kpi variant="vivid" label="Sessions terminées" value={String(sessionsTerminees)} sub="sessions clôturées" accent="violet" icon={<CalendarCheck className="w-4 h-4" />} />
+        <Kpi variant="vivid" label="Heures accumulées" value={`${Math.round(heuresAccumulees)}h`} sub="planifiées toutes sessions" accent="emerald" icon={<Clock className="w-4 h-4" />} />
       </div>
 
       {/* Sélecteur de sessions (pastilles date) */}
@@ -499,9 +499,8 @@ export function PlanificationBoard({
             );
           })()}
 
-          {/* Résumé de session — carte claire, liseré IA teal→violet */}
-          <div className="rounded-2xl mb-5 bg-white border border-gray-200/80 shadow-sm overflow-hidden">
-            <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #1a6b7e, #7c5cff)" }} aria-hidden />
+          {/* Résumé de session — carte claire, tuiles colorées (direction vibrante) */}
+          <div className="rounded-2xl mb-5 bg-white border border-gray-200/80 shadow-sm">
             <div className="p-5">
               <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
                 <div>
@@ -524,14 +523,14 @@ export function PlanificationBoard({
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
                 {[
-                  { label: "Surveillants", value: String(rows.length) },
-                  { label: "Salles", value: String(salles.size) },
-                  { label: "Affectés", value: String(affectes.length) },
-                  { label: "Heures tot.", value: `${totalHeures.toFixed(1)}h` },
+                  { label: "Surveillants", value: String(rows.length), bg: "bg-indigo-50", tl: "text-indigo-500", tv: "text-indigo-700" },
+                  { label: "Salles", value: String(salles.size), bg: "bg-teal-50", tl: "text-teal-600", tv: "text-teal-700" },
+                  { label: "Affectés", value: String(affectes.length), bg: "bg-violet-50", tl: "text-violet-500", tv: "text-violet-700" },
+                  { label: "Heures tot.", value: `${totalHeures.toFixed(1)}h`, bg: "bg-emerald-50", tl: "text-emerald-600", tv: "text-emerald-700" },
                 ].map((k) => (
-                  <div key={k.label} className="rounded-xl bg-slate-50 border border-slate-200/70 px-4 py-3 text-center">
-                    <div className="text-[10px] font-bold uppercase tracking-[1px] text-slate-500">{k.label}</div>
-                    <div className="text-[20px] font-extrabold mt-0.5 text-gray-900">{k.value}</div>
+                  <div key={k.label} className={`rounded-xl px-4 py-3 text-center ${k.bg}`}>
+                    <div className={`text-[10px] font-bold uppercase tracking-[1px] ${k.tl}`}>{k.label}</div>
+                    <div className={`text-[20px] font-extrabold mt-0.5 ${k.tv}`}>{k.value}</div>
                   </div>
                 ))}
               </div>
