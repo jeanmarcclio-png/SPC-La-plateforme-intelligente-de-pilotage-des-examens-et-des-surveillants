@@ -58,12 +58,12 @@ function LoginForm() {
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-8">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2.5 font-extrabold text-[#0d1e2e] text-xl tracking-tight mb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#4a90d9] flex-shrink-0" />
-            JMC COCKPIT
+          <div className="flex items-center justify-center gap-2 font-extrabold text-[#0d1e2e] text-2xl tracking-tight mb-1">
+            <span className="text-[#7c5cff] text-xl leading-none flex-shrink-0" aria-hidden>✦</span>
+            Survéo
           </div>
-          <div className="text-[11px] text-[#4a90d9] uppercase tracking-[2px] mt-0.5">
-            Plateforme de pilotage B2B
+          <div className="text-[10.5px] text-gray-500 uppercase tracking-[1.5px] mt-0.5">
+            Pilotage des examens <span className="text-[#7c5cff] font-semibold">augmenté par l&apos;IA</span>
           </div>
         </div>
 

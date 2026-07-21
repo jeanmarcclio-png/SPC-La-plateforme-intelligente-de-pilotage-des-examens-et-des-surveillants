@@ -6,11 +6,14 @@ import { SECTEURS_LISTE } from "@/lib/tenant/configs";
 export function SectorSection({ cols = 2 }: { cols?: 2 | 5 }) {
   const { config, setSecteur } = useTenant();
 
+  // Produit vertical « examens » : un seul secteur → sélecteur sans objet, masqué.
+  if (SECTEURS_LISTE.length <= 1) return null;
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
       <div className="text-[13px] font-bold text-gray-800 mb-1">Secteur d’activité</div>
       <div className="text-[11px] text-gray-400 mb-3">
-        JMC Cockpit adapte le vocabulaire, les KPIs et les emails à votre métier.
+        Survéo adapte le vocabulaire, les KPIs et les emails à votre métier.
       </div>
 
       <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>

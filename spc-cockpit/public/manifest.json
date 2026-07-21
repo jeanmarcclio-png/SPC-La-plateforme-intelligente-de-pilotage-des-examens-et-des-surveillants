@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "JMC Cockpit",
-  "short_name": "JMC",
-  "description": "Pilotage prospection B2B — surveillance d'examens",
+  "name": "Survéo",
+  "short_name": "Survéo",
+  "description": "Pilotage des examens et des surveillants, augmenté par l'IA",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",

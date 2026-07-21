@@ -16,12 +16,12 @@ function getTemplates(secteur: string) {
 
 Je me permets de vous contacter au sujet de votre gestion des ${vocabulaire.mission.toLowerCase()}s.
 
-JMC accompagne les ${vocabulaire.ressource.toLowerCase()}s dans l'optimisation de leurs ${vocabulaire.mission.toLowerCase()}s, l'amélioration de leurs process et la réduction des coûts opérationnels.
+Survéo accompagne les ${vocabulaire.ressource.toLowerCase()}s dans l'optimisation de leurs ${vocabulaire.mission.toLowerCase()}s, l'amélioration de leurs process et la réduction des coûts opérationnels.
 
 Seriez-vous disponible pour un échange de 30 minutes afin de vous présenter notre solution ?
 
 Cordialement,
-L'équipe JMC`,
+L'équipe Survéo`,
     },
     j3: {
       subject: `Re : ${vocabulaire.mission} — Suivi`,
@@ -32,7 +32,7 @@ Je fais suite à mon message de la semaine dernière concernant la gestion de vo
 Avez-vous eu l'occasion d'en prendre connaissance ? Je serais ravi d'échanger avec vous sur vos besoins actuels.
 
 Bien cordialement,
-L'équipe JMC`,
+L'équipe Survéo`,
     },
     j7: {
       subject: email.j7_sujet,
@@ -45,7 +45,7 @@ Ce diagnostic est sans engagement et vous permettra d'obtenir un rapport personn
 Seriez-vous disponible cette semaine ou la semaine prochaine ?
 
 Bien cordialement,
-L'équipe JMC`,
+L'équipe Survéo`,
     },
     j15: {
       subject: email.j15_sujet,
@@ -58,7 +58,7 @@ Si l'optimisation de vos ${vocabulaire.mission.toLowerCase()}s n'est pas une pri
 Dans le cas contraire, je suis joignable jusqu'à vendredi pour convenir d'un échange.
 
 Bien cordialement,
-L'équipe JMC`,
+L'équipe Survéo`,
     },
   };
 }

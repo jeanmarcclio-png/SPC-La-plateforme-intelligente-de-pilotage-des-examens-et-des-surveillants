@@ -50,7 +50,7 @@ export function FacturationButton(props: Props) {
 </head>
 <body>
 <div class="header">
-  <div class="logo">JMC Cockpit ${config.emoji}</div>
+  <div class="logo">Survéo ${config.emoji}</div>
   <div class="subtitle">Rapport de Performance Commerciale</div>
   <div class="meta">${date} · ${config.nom}</div>
 </div>
@@ -78,7 +78,7 @@ ${pipelineCA > 0 ? `<div class="section">Pipeline CA estimé</div>
   <div class="kpi"><div class="kpi-v">${convertis}</div><div class="kpi-l">Convertis</div></div>
 </div>
 
-<div class="footer">Rapport généré par JMC Cockpit · ${date}</div>
+<div class="footer">Rapport généré par Survéo · ${date}</div>
 </body>
 </html>`;
 

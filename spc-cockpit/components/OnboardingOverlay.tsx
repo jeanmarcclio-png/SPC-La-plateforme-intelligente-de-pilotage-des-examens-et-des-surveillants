@@ -2,17 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useTenant } from "@/lib/tenant/TenantContext";
-import { SECTEURS_LISTE } from "@/lib/tenant/configs";
 
 const STORAGE_KEY = "spc_onboarding_done";
 
-type StepId = "welcome" | "secteur" | "fonctions" | "done";
-const STEPS: StepId[] = ["welcome", "secteur", "fonctions", "done"];
+type StepId = "welcome" | "fonctions" | "done";
+const STEPS: StepId[] = ["welcome", "fonctions", "done"];
 
 export function OnboardingOverlay() {
   const [visible, setVisible]   = useState(false);
   const [stepIdx, setStepIdx]   = useState(0);
-  const { config, setSecteur, isReady } = useTenant();
+  const { config, isReady } = useTenant();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- init client-only (hydratation-safe)
@@ -74,48 +73,15 @@ export function OnboardingOverlay() {
                 🎯
               </div>
               <h2 className="text-[20px] font-extrabold text-gray-900 text-center mb-2 leading-snug">
-                Bienvenue sur JMC Cockpit
+                Bienvenue sur Survéo
               </h2>
               <p className="text-[14px] text-gray-500 text-center leading-relaxed">
-                Votre plateforme de pilotage commercial B2B. Configurez votre espace en&nbsp;3&nbsp;étapes.
+                Votre plateforme de pilotage des examens et des surveillants, augmentée par l&apos;IA.
               </p>
             </div>
           )}
 
-          {/* ── Step 1 : Sector picker ── */}
-          {step === "secteur" && (
-            <div className="animate-fade-up">
-              <h2 className="text-[18px] font-extrabold text-gray-900 text-center mb-1">
-                Votre secteur d&apos;activité
-              </h2>
-              <p className="text-[12px] text-gray-400 text-center mb-4">
-                JMC adapte le vocabulaire et les KPIs à votre métier
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {SECTEURS_LISTE.map((cfg) => (
-                  <button
-                    key={cfg.secteur}
-                    onClick={() => setSecteur(cfg.secteur)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-all text-[12px] font-semibold"
-                    style={{
-                      borderColor: config.secteur === cfg.secteur ? cfg.couleur : "#e2e8f0",
-                      background:  config.secteur === cfg.secteur ? `${cfg.couleur}12` : "white",
-                      color:       config.secteur === cfg.secteur ? cfg.couleur : "#374151",
-                    }}
-                  >
-                    <span className="text-base">{cfg.emoji}</span>
-                    <span className="leading-tight">{cfg.nom}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="mt-3 text-[11px] text-gray-400 text-center">
-                Secteur sélectionné :{" "}
-                <strong style={{ color }}>{config.emoji} {config.nom}</strong>
-              </div>
-            </div>
-          )}
-
-          {/* ── Step 2 : Feature tour ── */}
+          {/* ── Step 1 : Feature tour ── */}
           {step === "fonctions" && (
             <div className="animate-fade-up">
               <div

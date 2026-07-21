@@ -146,7 +146,7 @@ export function CopiloteDrawer() {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Copilote IA JMC"
+          aria-label="Copilote IA Survéo"
           className="fixed bottom-0 right-0 z-50 flex flex-col bg-white shadow-2xl
           w-full h-[88vh] rounded-t-2xl
           md:w-[420px] md:h-[620px] md:rounded-2xl md:bottom-20 md:right-6"
@@ -157,7 +157,7 @@ export function CopiloteDrawer() {
             <div className="flex items-center gap-2.5">
               <Bot className="w-5 h-5 text-white" />
               <div>
-                <div className="text-[13px] font-bold text-white">Copilote JMC</div>
+                <div className="text-[13px] font-bold text-white">Copilote Survéo</div>
                 <div className="text-[11px] text-white/70">Alimenté par Claude · {config.nom}</div>
               </div>
             </div>

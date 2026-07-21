@@ -116,11 +116,12 @@ export function Sidebar() {
     <aside className="hidden md:flex w-[220px] flex-shrink-0 flex-col" style={{ background: "#0d1e2e" }}>
       {/* Logo */}
       <div className="px-[18px] py-[18px] pb-3.5 border-b border-white/[0.08]">
-        <div className="flex items-center gap-2 text-white font-extrabold text-base tracking-tight">
-          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: accent }} />
-          JMC COCKPIT
+        <div className="flex items-center gap-1.5 text-white font-extrabold text-base tracking-tight">
+          <span className="text-[#7c5cff] text-[15px] leading-none flex-shrink-0" aria-hidden>✦</span>
+          Survéo
+          <span className="text-[8.5px] font-extrabold text-white rounded px-1.5 py-0.5 tracking-[0.03em]" style={{ background: "#7c5cff" }}>IA</span>
         </div>
-        <div className="text-[11px] uppercase tracking-[1.5px] mt-0.5 pl-4" style={{ color: accent }}>
+        <div className="text-[11px] uppercase tracking-[1.5px] mt-0.5 pl-5" style={{ color: accent }}>
           {config.emoji} {config.nom}
         </div>
       </div>
