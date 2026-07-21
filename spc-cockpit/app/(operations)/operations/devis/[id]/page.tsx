@@ -191,10 +191,10 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
         <header className="flex items-start justify-between gap-4 flex-wrap pb-5 border-b-2" style={{ borderColor: NAVY }}>
           <div>
             <div className="flex items-center gap-2.5 mb-3">
-              <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-[12px] font-extrabold" style={{ background: NAVY }}>
-                SPC
+              <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-[15px] font-extrabold" style={{ background: NAVY }} aria-hidden>
+                ✦
               </span>
-              <span className="text-[13.5px] font-bold text-gray-700">SPC Platform · Surveillance d&apos;examens</span>
+              <span className="text-[13.5px] font-bold text-gray-700">Survéo · Surveillance d&apos;examens</span>
             </div>
             <h1 className="text-[24px] font-extrabold tracking-tight" style={{ color: NAVY }}>DEVIS PRÉVISIONNEL</h1>
             {devis.session && <p className="text-[13px] text-gray-500 mt-0.5">{devis.session}</p>}

@@ -29,12 +29,15 @@ export interface ActiveMissionInfo {
 function LogoBlock() {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center text-white text-[12px] font-extrabold tracking-tight flex-shrink-0">
-        SPC
+      <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white flex-shrink-0" style={{ background: "linear-gradient(135deg, #1a6b7e, #7c5cff)" }} aria-hidden>
+        ✦
       </span>
       <div>
-        <div className="text-white font-extrabold text-[14.5px] tracking-tight leading-none">SPC Platform</div>
-        <div className="text-[11px] text-[#8fa3b8] mt-1">Gestion examens</div>
+        <div className="text-white font-extrabold text-[14.5px] tracking-tight leading-none flex items-center gap-1.5">
+          Survéo
+          <span className="text-[9px] font-extrabold text-white rounded px-1.5 py-0.5 tracking-[0.03em]" style={{ background: "#7c5cff" }}>IA</span>
+        </div>
+        <div className="text-[11px] text-[#8fa3b8] mt-1">Gestion des examens</div>
       </div>
     </div>
   );

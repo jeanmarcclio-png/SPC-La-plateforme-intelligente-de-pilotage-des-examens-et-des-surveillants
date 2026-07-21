@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
       prospects?.slice(0, 5).map((p) => `${p.nom} [${p.segment}, ${cfg.scoring.dimensions[0]} ${p.score_bant}, ${p.statut}${p.valeur_potentielle ? `, ${p.valeur_potentielle}k€` : ""}]`).join(" | ") ?? "aucun"
     );
 
-    const systemPrompt = `Tu es le copilote IA de JMC Cockpit, assistant personnel du directeur commercial de JMC.
-JMC est spécialisé dans le secteur : ${cfg.nom} ${cfg.emoji}
+    const systemPrompt = `Tu es le copilote IA de Survéo, assistant personnel du directeur commercial.
+Survéo est spécialisé dans le secteur : ${cfg.nom} ${cfg.emoji}
 Cible : ${cfg.interlocuteurs.join(", ")}
 Segments : ${cfg.segments.join(", ")}
 Zones : ${cfg.clusters.join(", ")}

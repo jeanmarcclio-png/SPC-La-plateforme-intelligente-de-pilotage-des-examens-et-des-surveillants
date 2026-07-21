@@ -21,13 +21,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "JMC Cockpit — Pilotage Prospection B2B",
-  description: "Plateforme de pilotage commercial JMC — surveillance d'examens",
+  title: "Survéo — Pilotage des examens et des surveillants",
+  description: "Survéo — pilotage des examens et des surveillants, augmenté par l'IA",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "JMC",
+    title: "Survéo",
   },
   icons: {
     apple: [

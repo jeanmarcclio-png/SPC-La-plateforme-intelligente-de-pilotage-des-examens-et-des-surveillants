@@ -22,7 +22,7 @@ const ACTIONS = [
     label: "Préparer RDV",
     color: "bg-purple-50 text-purple-700",
     prompt: (p: Prospect, score: number) =>
-      `Aide-moi à préparer mon RDV avec ${p.nom} (${p.segment}). Score BANT ${score}/10. Donne-moi 5 questions clés, les 3 objections probables et un pitch de 2 minutes sur la valeur JMC.`,
+      `Aide-moi à préparer mon RDV avec ${p.nom} (${p.segment}). Score BANT ${score}/10. Donne-moi 5 questions clés, les 3 objections probables et un pitch de 2 minutes sur la valeur Survéo.`,
   },
 ];
 

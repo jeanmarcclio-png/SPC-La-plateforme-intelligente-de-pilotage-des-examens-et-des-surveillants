@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   );
   try {
     const body = await req.json().catch(() => ({}));
-    const title   = body.title   ?? "JMC Cockpit";
+    const title   = body.title   ?? "Survéo";
     const message = body.message ?? "Vous avez des relances à traiter aujourd'hui.";
     const url     = body.url     ?? "/dashboard";
 

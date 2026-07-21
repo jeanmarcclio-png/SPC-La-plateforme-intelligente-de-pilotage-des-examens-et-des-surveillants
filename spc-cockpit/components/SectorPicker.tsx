@@ -22,6 +22,8 @@ export function SectorPicker() {
     setVisible(false);
   }
 
+  // Produit vertical « examens » : un seul secteur → aucun choix à proposer.
+  if (SECTEURS_LISTE.length <= 1) return null;
   if (!visible) return null;
 
   return (
@@ -37,7 +39,7 @@ export function SectorPicker() {
             <div className="text-3xl mb-2">🚀</div>
             <h2 className="text-[20px] font-extrabold text-gray-900 mb-1">Choisissez votre secteur</h2>
             <p className="text-[13px] text-gray-400">
-              JMC Cockpit s’adapte automatiquement à votre métier
+              Survéo s’adapte automatiquement à votre métier
             </p>
           </div>
 
