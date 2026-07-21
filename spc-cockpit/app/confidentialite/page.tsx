@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Politique de confidentialité — SPC",
-  description: "Comment SPC traite les données personnelles de la plateforme de pilotage des examens.",
+  title: "Politique de confidentialité — Survéo",
+  description: "Comment Survéo traite les données personnelles de la plateforme de pilotage des examens.",
 };
 
 // Page publique (accessible sans authentification — voir proxy.ts).
@@ -11,10 +11,10 @@ export default function ConfidentialitePage() {
     <div className="min-h-dvh bg-[#f0f2f5] py-10 px-4">
       <article className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm p-6 md:p-10 text-[14px] leading-relaxed text-gray-700">
         <header className="mb-6">
-          <div className="text-[12px] font-bold uppercase tracking-[1.5px] text-[#4a90d9]">SAS Service Pédagogie Conseil (SPC)</div>
+          <div className="text-[12px] font-bold uppercase tracking-[1.5px] text-[#4a90d9]">SAS Henriques de Oliveira</div>
           <h1 className="text-2xl font-extrabold text-[#0d1e2e] mt-1">Politique de confidentialité</h1>
           <p className="text-[13px] text-gray-500 mt-1">
-            Plateforme SPC — pilotage des examens et des surveillants
+            Plateforme Survéo — pilotage des examens et des surveillants
           </p>
           <p className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3">
             PROJET — Version 0.1 — Juillet 2026 — À faire valider par un conseil juridique avant diffusion.
@@ -23,17 +23,17 @@ export default function ConfidentialitePage() {
 
         <p>
           Dernière mise à jour : [date de publication]. La présente politique décrit comment la SAS
-          Service Pédagogie Conseil (« SPC », « nous ») traite les données personnelles dans le cadre
-          de la plateforme SPC et de ses services de surveillance d’examens.
+          Henriques de Oliveira, éditrice de la plateforme Survéo (« Survéo », « nous »), traite les
+          données personnelles dans le cadre de la plateforme Survéo et de ses services de surveillance d’examens.
         </p>
 
         <Section n="1" titre="Qui est responsable de vos données ?">
           <p>Cela dépend de votre situation :</p>
           <ul className="list-disc pl-5 space-y-1 mt-2">
-            <li><b>Surveillant(e) ou candidat(e) chez SPC</b> : SPC est responsable de traitement.</li>
-            <li><b>Personnel d’un établissement client</b> (coordinateur, scolarité) : votre établissement est responsable de traitement ; SPC agit comme sous-traitant conformément à l’accord conclu avec lui.</li>
+            <li><b>Surveillant(e) ou candidat(e) chez Survéo</b> : Survéo est responsable de traitement.</li>
+            <li><b>Personnel d’un établissement client</b> (coordinateur, scolarité) : votre établissement est responsable de traitement ; Survéo agit comme sous-traitant conformément à l’accord conclu avec lui.</li>
           </ul>
-          <p className="mt-2">Contact : SAS Service Pédagogie Conseil — [adresse] — [email de contact RGPD].</p>
+          <p className="mt-2">Contact : SAS Henriques de Oliveira — [adresse] — [email de contact RGPD].</p>
         </Section>
 
         <Section n="2" titre="Quelles données traitons-nous, et pourquoi ?">
@@ -56,7 +56,7 @@ export default function ConfidentialitePage() {
 
         <Section n="3" titre="Qui accède à vos données ?">
           <ul className="list-disc pl-5 space-y-1">
-            <li>Les équipes SPC habilitées (coordination, administration), chacune selon son rôle.</li>
+            <li>Les équipes Survéo habilitées (coordination, administration), chacune selon son rôle.</li>
             <li>L’établissement dans lequel vous êtes affecté(e), pour le planning nominatif de ses propres sessions uniquement.</li>
             <li>Nos sous-traitants techniques : hébergement (Supabase, Vercel — données hébergées dans l’Union européenne), envoi de SMS ([prestataire]), paie ([prestataire]). Chacun est lié par un contrat conforme à l’article 28 du RGPD.</li>
           </ul>
@@ -122,7 +122,7 @@ export default function ConfidentialitePage() {
         </Section>
 
         <footer className="mt-8 pt-4 border-t border-gray-100 text-[12px] text-gray-400 flex items-center justify-between">
-          <span>© SAS Service Pédagogie Conseil</span>
+          <span>© SAS Henriques de Oliveira</span>
           <Link href="/login" className="text-[#4a90d9] hover:underline">Retour à la connexion</Link>
         </footer>
       </article>
