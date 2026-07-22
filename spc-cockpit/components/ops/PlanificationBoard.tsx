@@ -30,19 +30,26 @@ const DAY_START = 8 * 60;
 const DAY_END = 19 * 60;
 const DAY_SPAN = DAY_END - DAY_START;
 
-type Slot = { on: boolean; debut: string; fin: string };
-type RowState = { salle: string; matin: Slot; apm: Slot };
+// Un surveillant peut enchaîner plusieurs surveillances par demi-journée
+// (ex. 08:00–09:30, 10:00–11:30, 12:00–13:30) — jusqu'à MAX_CRENEAUX chacune.
+type Slot = { debut: string; fin: string };
+type RowState = { salle: string; matin: Slot[]; apm: Slot[] };
+
+const MAX_CRENEAUX = 3;
+const DEF_MATIN: Slot = { debut: "08:00", fin: "13:00" };
+const DEF_APM: Slot = { debut: "13:30", fin: "18:00" };
 
 function toRowState(a: Affectation): RowState {
-  return {
-    salle: a.salle ?? "",
-    matin: { on: a.matin, debut: a.matinDebut ?? "08:00", fin: a.matinFin ?? "13:00" },
-    apm: { on: a.apm, debut: a.apmDebut ?? "13:30", fin: a.apmFin ?? "18:00" },
-  };
+  const matin = a.matinCreneaux?.length
+    ? a.matinCreneaux
+    : a.matin ? [{ debut: a.matinDebut ?? "08:00", fin: a.matinFin ?? "13:00" }] : [];
+  const apm = a.apmCreneaux?.length
+    ? a.apmCreneaux
+    : a.apm ? [{ debut: a.apmDebut ?? "13:30", fin: a.apmFin ?? "18:00" }] : [];
+  return { salle: a.salle ?? "", matin, apm };
 }
 
 function slotHours(s: Slot): number {
-  if (!s.on) return 0;
   try {
     const mins = parseTimeToMinutes(s.fin) - parseTimeToMinutes(s.debut);
     return mins > 0 ? mins / 60 : 0;
@@ -51,8 +58,12 @@ function slotHours(s: Slot): number {
   }
 }
 
+function periodHours(slots: Slot[]): number {
+  return slots.reduce((n, s) => n + slotHours(s), 0);
+}
+
 function rowHours(r: RowState): number {
-  return slotHours(r.matin) + slotHours(r.apm);
+  return periodHours(r.matin) + periodHours(r.apm);
 }
 
 function initials(nom: string): string {
@@ -74,36 +85,49 @@ function RoleBadge({ role }: { role: string }) {
   );
 }
 
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+/** Éditeur de créneaux d'une demi-journée : 0 à MAX_CRENEAUX plages horaires,
+ *  ajoutables et supprimables (un surveillant peut faire plusieurs examens). */
+function SlotsEditor({ slots, onChange, def, tint }: { slots: Slot[]; onChange: (s: Slot[]) => void; def: Slot; tint: string }) {
+  const cls = "w-[104px] px-2 py-1.5 rounded-lg border border-gray-200 text-[12.5px] font-mono tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500/25";
+  if (slots.length === 0) {
+    return (
+      <button
+        type="button"
+        onClick={() => onChange([def])}
+        className="inline-flex items-center gap-1 text-[12px] font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <Plus className="w-3.5 h-3.5" aria-hidden />Ajouter
+      </button>
+    );
+  }
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      onClick={() => onChange(!on)}
-      className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${on ? "" : "bg-gray-200"}`}
-      style={on ? { background: TEAL } : {}}
-    >
-      <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${on ? "left-[18px]" : "left-0.5"}`} />
-    </button>
-  );
-}
-
-function TimeInputs({ slot, onChange }: { slot: Slot; onChange: (s: Slot) => void }) {
-  if (!slot.on) return <span className="text-[12px] text-gray-300">—</span>;
-  const cls = "w-[112px] px-2.5 py-1.5 rounded-lg border border-gray-200 text-[12.5px] font-mono tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500/25";
-  return (
-    <span className="inline-flex items-center gap-1">
-      <input type="time" value={slot.debut} onChange={(e) => onChange({ ...slot, debut: e.target.value })} className={cls} />
-      <span className="text-gray-300">–</span>
-      <input type="time" value={slot.fin} onChange={(e) => onChange({ ...slot, fin: e.target.value })} className={cls} />
-    </span>
+    <div className="flex flex-col gap-1.5">
+      {slots.map((s, i) => (
+        <div key={i} className="inline-flex items-center gap-1">
+          <input type="time" value={s.debut} aria-label={`Début créneau ${i + 1}`} onChange={(e) => onChange(slots.map((x, j) => (j === i ? { ...x, debut: e.target.value } : x)))} className={cls} />
+          <span className="text-gray-300">–</span>
+          <input type="time" value={s.fin} aria-label={`Fin créneau ${i + 1}`} onChange={(e) => onChange(slots.map((x, j) => (j === i ? { ...x, fin: e.target.value } : x)))} className={cls} />
+          <button type="button" onClick={() => onChange(slots.filter((_, j) => j !== i))} title="Supprimer ce créneau" aria-label={`Supprimer le créneau ${i + 1}`} className="w-6 h-6 flex items-center justify-center rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ))}
+      {slots.length < MAX_CRENEAUX && (
+        <button
+          type="button"
+          onClick={() => onChange([...slots, def])}
+          className="inline-flex items-center gap-1 text-[11.5px] font-bold w-fit hover:opacity-80 transition-opacity"
+          style={{ color: tint }}
+        >
+          <Plus className="w-3 h-3" aria-hidden />créneau
+        </button>
+      )}
+    </div>
   );
 }
 
 /** Barre d'un créneau sur la timeline (matin teal, après-midi bleu vif). */
 function SlotBar({ slot, color, label }: { slot: Slot; color: string; label: string }) {
-  if (!slot.on) return null;
   let start: number, end: number;
   try {
     start = parseTimeToMinutes(slot.debut);
@@ -192,8 +216,9 @@ export function PlanificationBoard({
     const r = stateOf(a);
     const fields: AffectationFields = {
       salle: r.salle.trim() || null,
-      matin: r.matin.on, matinDebut: r.matin.debut, matinFin: r.matin.fin,
-      apm: r.apm.on, apmDebut: r.apm.debut, apmFin: r.apm.fin,
+      matin: r.matin.length > 0, matinDebut: r.matin[0]?.debut ?? null, matinFin: r.matin[0]?.fin ?? null,
+      apm: r.apm.length > 0, apmDebut: r.apm[0]?.debut ?? null, apmFin: r.apm[0]?.fin ?? null,
+      matinCreneaux: r.matin, apmCreneaux: r.apm,
     };
     startTransition(async () => {
       const result = await updateAffectation(a.id, fields);
@@ -228,7 +253,7 @@ export function PlanificationBoard({
 
   // ---- Résumé + alertes (sur TOUTES les lignes de la session) ----
   const salles = new Set(rows.map((a) => stateOf(a).salle.trim()).filter(Boolean));
-  const affectes = rows.filter((a) => { const r = stateOf(a); return r.matin.on || r.apm.on; });
+  const affectes = rows.filter((a) => { const r = stateOf(a); return r.matin.length > 0 || r.apm.length > 0; });
   const totalHeures = rows.reduce((s, a) => s + rowHours(stateOf(a)), 0);
 
   // Rentabilité de la session (§21) : CA vs coût estimé des surveillants.
@@ -247,10 +272,10 @@ export function PlanificationBoard({
   for (const a of rows) {
     const r = stateOf(a);
     const nom = survById.get(a.surveillantId)?.nom ?? `#${a.surveillantId}`;
-    if (!r.matin.on && !r.apm.on) alertes.push({ affId: a.id, text: `${nom} : aucun créneau assigné (ni matin ni après-midi)` });
+    if (r.matin.length === 0 && r.apm.length === 0) alertes.push({ affId: a.id, text: `${nom} : aucun créneau assigné (ni matin ni après-midi)` });
     else if (!r.salle.trim()) alertes.push({ affId: a.id, text: `${nom} : aucune salle affectée` });
-    if (r.matin.on && slotHours(r.matin) === 0) alertes.push({ affId: a.id, text: `${nom} : horaire matin invalide (fin ≤ début)` });
-    if (r.apm.on && slotHours(r.apm) === 0) alertes.push({ affId: a.id, text: `${nom} : horaire après-midi invalide (fin ≤ début)` });
+    if (r.matin.some((s) => slotHours(s) === 0)) alertes.push({ affId: a.id, text: `${nom} : horaire matin invalide (fin ≤ début)` });
+    if (r.apm.some((s) => slotHours(s) === 0)) alertes.push({ affId: a.id, text: `${nom} : horaire après-midi invalide (fin ≤ début)` });
   }
 
   // Conflits inter-missions : même surveillant, même date, créneaux chevauchants
@@ -261,10 +286,10 @@ export function PlanificationBoard({
     if (!date) return [];
     const r = a.missionId === missionId ? stateOf(a) : toRowState(a);
     const out: SupervisorAssignmentInput[] = [];
-    if (r.matin.on)
-      out.push({ id: `${a.id}-matin`, sessionId: `${date}-matin`, roomId: `${a.missionId}:${r.salle}`, supervisorId: String(a.surveillantId), startTime: r.matin.debut, endTime: r.matin.fin });
-    if (r.apm.on)
-      out.push({ id: `${a.id}-apm`, sessionId: `${date}-apm`, roomId: `${a.missionId}:${r.salle}`, supervisorId: String(a.surveillantId), startTime: r.apm.debut, endTime: r.apm.fin });
+    r.matin.forEach((s, i) =>
+      out.push({ id: `${a.id}-matin-${i}`, sessionId: `${date}-matin`, roomId: `${a.missionId}:${r.salle}`, supervisorId: String(a.surveillantId), startTime: s.debut, endTime: s.fin }));
+    r.apm.forEach((s, i) =>
+      out.push({ id: `${a.id}-apm-${i}`, sessionId: `${date}-apm`, roomId: `${a.missionId}:${r.salle}`, supervisorId: String(a.surveillantId), startTime: s.debut, endTime: s.fin }));
     return out;
   });
   const affBySurvInMission = new Map(rows.map((r) => [String(r.surveillantId), r.id]));
@@ -304,8 +329,8 @@ export function PlanificationBoard({
     }
     switch (filter) {
       case "no-room": return !r.salle.trim();
-      case "matin": return r.matin.on;
-      case "apm": return r.apm.on;
+      case "matin": return r.matin.length > 0;
+      case "apm": return r.apm.length > 0;
       case "coord": return role.includes("coordinat");
       case "salle": return role.includes("salle");
       case "volant": return role.includes("volant");
@@ -333,8 +358,8 @@ export function PlanificationBoard({
         s?.nom ?? `#${a.surveillantId}`,
         a.roleMission ?? s?.role ?? "",
         r.salle || "",
-        r.matin.on ? `${r.matin.debut}-${r.matin.fin}` : "",
-        r.apm.on ? `${r.apm.debut}-${r.apm.fin}` : "",
+        r.matin.map((s) => `${s.debut}-${s.fin}`).join(" | "),
+        r.apm.map((s) => `${s.debut}-${s.fin}`).join(" | "),
         `${rowHours(r).toFixed(1)}h`,
       ];
     });
@@ -734,17 +759,11 @@ export function PlanificationBoard({
                             className={`w-[86px] px-2.5 py-1.5 rounded-lg border text-[12.5px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/25 ${r.salle.trim() ? "border-gray-200" : "border-amber-300 bg-amber-50/40"}`}
                           />
                         </td>
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-2.5">
-                            <Toggle on={r.matin.on} onChange={(v) => setRow(a, { ...r, matin: { ...r.matin, on: v } })} />
-                            <TimeInputs slot={r.matin} onChange={(slot) => setRow(a, { ...r, matin: slot })} />
-                          </div>
+                        <td className="px-5 py-3 align-top">
+                          <SlotsEditor slots={r.matin} onChange={(slots) => setRow(a, { ...r, matin: slots })} def={DEF_MATIN} tint={TEAL} />
                         </td>
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-2.5">
-                            <Toggle on={r.apm.on} onChange={(v) => setRow(a, { ...r, apm: { ...r.apm, on: v } })} />
-                            <TimeInputs slot={r.apm} onChange={(slot) => setRow(a, { ...r, apm: slot })} />
-                          </div>
+                        <td className="px-5 py-3 align-top">
+                          <SlotsEditor slots={r.apm} onChange={(slots) => setRow(a, { ...r, apm: slots })} def={DEF_APM} tint={ACCENT} />
                         </td>
                         <td className="px-5 py-3 text-[13.5px] font-extrabold text-gray-900 whitespace-nowrap">
                           {h > 0 ? `${h.toFixed(1)}h` : <span className="text-gray-300 font-normal">—</span>}
@@ -841,7 +860,7 @@ export function PlanificationBoard({
                     ))}
                   </div>
                 </div>
-                {(visibleRows.filter((a) => { const r = stateOf(a); return r.matin.on || r.apm.on; })).map((a) => {
+                {(visibleRows.filter((a) => { const r = stateOf(a); return r.matin.length > 0 || r.apm.length > 0; })).map((a) => {
                   const s = survById.get(a.surveillantId);
                   const r = stateOf(a);
                   const idx = rows.indexOf(a);
@@ -855,8 +874,8 @@ export function PlanificationBoard({
                         <span className="text-[11.5px] font-bold text-gray-500 ml-auto">{rowHours(r).toFixed(1)}h</span>
                       </div>
                       <div className="relative flex-1 min-w-[280px] h-7 rounded-lg bg-slate-100/70 overflow-hidden">
-                        <SlotBar slot={r.matin} color={TEAL} label="Matin" />
-                        <SlotBar slot={r.apm} color={ACCENT} label="Après-midi" />
+                        {r.matin.map((s, i) => <SlotBar key={`m${i}`} slot={s} color={TEAL} label="Matin" />)}
+                        {r.apm.map((s, i) => <SlotBar key={`a${i}`} slot={s} color={ACCENT} label="Après-midi" />)}
                       </div>
                     </div>
                   );

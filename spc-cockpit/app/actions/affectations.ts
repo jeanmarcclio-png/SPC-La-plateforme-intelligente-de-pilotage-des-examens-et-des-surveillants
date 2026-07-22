@@ -11,6 +11,11 @@ function revalidateOps() {
   revalidatePath("/operations/planification");
 }
 
+interface Creneau {
+  debut: string;
+  fin: string;
+}
+
 export interface AffectationFields {
   salle: string | null;
   matin: boolean;
@@ -19,6 +24,10 @@ export interface AffectationFields {
   apm: boolean;
   apmDebut: string | null;
   apmFin: string | null;
+  // Liste complète des créneaux d'une demi-journée (§29). Le 1er créneau est
+  // aussi recopié dans matin*/apm* ci-dessus pour la compatibilité.
+  matinCreneaux?: Creneau[];
+  apmCreneaux?: Creneau[];
 }
 
 async function nomSurveillant(supabase: Awaited<ReturnType<typeof createClient>>, surveillantId: number): Promise<string> {
@@ -33,6 +42,8 @@ export async function updateAffectation(id: number, f: AffectationFields): Promi
     const supabase = await createClient();
     const { data: avant } = await supabase.from("affectations").select("*").eq("id", id).single();
 
+    const matinList = (f.matinCreneaux ?? []).filter((c) => c.debut && c.fin);
+    const apmList = (f.apmCreneaux ?? []).filter((c) => c.debut && c.fin);
     const next = {
       salle: f.salle,
       matin: f.matin,
@@ -41,6 +52,10 @@ export async function updateAffectation(id: number, f: AffectationFields): Promi
       apm: f.apm,
       apm_debut: f.apm ? f.apmDebut : null,
       apm_fin: f.apm ? f.apmFin : null,
+      // Source de vérité multi-créneaux (§29) : liste complète, ou null si ≤ 1
+      // créneau (on retombe alors sur les colonnes matin*/apm*).
+      matin_creneaux: matinList.length > 1 ? matinList : null,
+      apm_creneaux: apmList.length > 1 ? apmList : null,
     };
     const { error } = await supabase.from("affectations").update(next).eq("id", id);
     if (error) return { error: `Enregistrement échoué : ${error.message}` };

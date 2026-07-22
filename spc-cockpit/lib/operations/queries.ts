@@ -70,6 +70,8 @@ export async function getAffectations(): Promise<Affectation[]> {
       apm: r.apm ?? false,
       apmDebut: r.apm_debut ?? undefined,
       apmFin: r.apm_fin ?? undefined,
+      matinCreneaux: Array.isArray(r.matin_creneaux) ? r.matin_creneaux : undefined,
+      apmCreneaux: Array.isArray(r.apm_creneaux) ? r.apm_creneaux : undefined,
       presence: r.presence ?? "En attente",
     }));
   } catch {

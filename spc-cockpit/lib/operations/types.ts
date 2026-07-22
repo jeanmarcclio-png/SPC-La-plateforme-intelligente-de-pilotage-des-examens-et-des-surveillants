@@ -48,6 +48,12 @@ export interface Mission {
 
 export type Presence = "En attente" | "Présent" | "Absent";
 
+/** Un créneau de surveillance : plage horaire "HH:MM"–"HH:MM". */
+export interface Creneau {
+  debut: string;
+  fin: string;
+}
+
 export interface Affectation {
   id: number;
   missionId: number;
@@ -56,11 +62,15 @@ export interface Affectation {
   statut: string;
   salle?: string;
   matin: boolean;
-  matinDebut?: string; // "HH:MM"
+  matinDebut?: string; // "HH:MM" — 1er créneau du matin (compat)
   matinFin?: string;
   apm: boolean;
   apmDebut?: string;
   apmFin?: string;
+  // Liste complète des créneaux d'une demi-journée (§29). Si absente, retomber
+  // sur le créneau unique matin*/apm* ci-dessus.
+  matinCreneaux?: Creneau[];
+  apmCreneaux?: Creneau[];
   presence: Presence;
 }
 
