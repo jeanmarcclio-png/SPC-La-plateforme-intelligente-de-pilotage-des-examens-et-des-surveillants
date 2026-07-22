@@ -66,6 +66,26 @@ function rowHours(r: RowState): number {
   return periodHours(r.matin) + periodHours(r.apm);
 }
 
+/** Deux créneaux d'une même demi-journée se chevauchent-ils ? (ex. 08:00–10:00
+ *  et 09:00–11:00). On ignore les créneaux invalides (déjà signalés ailleurs). */
+function hasOverlap(slots: Slot[]): boolean {
+  const iv = slots
+    .map((s): [number, number] | null => {
+      try {
+        const d = parseTimeToMinutes(s.debut), f = parseTimeToMinutes(s.fin);
+        return f > d ? [d, f] : null;
+      } catch {
+        return null;
+      }
+    })
+    .filter((x): x is [number, number] => x !== null)
+    .sort((a, b) => a[0] - b[0]);
+  for (let i = 1; i < iv.length; i++) {
+    if (iv[i][0] < iv[i - 1][1]) return true;
+  }
+  return false;
+}
+
 function initials(nom: string): string {
   return (nom ?? "??").split(" ").filter(Boolean).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 }
@@ -276,6 +296,8 @@ export function PlanificationBoard({
     else if (!r.salle.trim()) alertes.push({ affId: a.id, text: `${nom} : aucune salle affectée` });
     if (r.matin.some((s) => slotHours(s) === 0)) alertes.push({ affId: a.id, text: `${nom} : horaire matin invalide (fin ≤ début)` });
     if (r.apm.some((s) => slotHours(s) === 0)) alertes.push({ affId: a.id, text: `${nom} : horaire après-midi invalide (fin ≤ début)` });
+    if (hasOverlap(r.matin)) alertes.push({ affId: a.id, text: `${nom} : créneaux du matin qui se chevauchent` });
+    if (hasOverlap(r.apm)) alertes.push({ affId: a.id, text: `${nom} : créneaux de l'après-midi qui se chevauchent` });
   }
 
   // Conflits inter-missions : même surveillant, même date, créneaux chevauchants
