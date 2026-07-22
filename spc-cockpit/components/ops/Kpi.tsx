@@ -7,7 +7,7 @@ import Link from "next/link";
 //              couleur SATURÉE — puce d'icône pleine + chiffre coloré + filet haut)
 //   icon     : optionnel · href : carte cliquable · truncate : valeurs longues
 
-export type KpiAccent = "indigo" | "amber" | "emerald" | "blue" | "red" | "slate" | "violet" | "teal";
+export type KpiAccent = "indigo" | "amber" | "emerald" | "blue" | "cyan" | "red" | "slate" | "violet" | "teal";
 export type KpiEmphasis = "soft" | "strong";
 export type KpiVariant = "soft" | "vivid";
 
@@ -27,6 +27,7 @@ const ACCENTS: Record<KpiAccent, AccentStyle> = {
   amber: { soft: "bg-amber-50/60 border-amber-100", strong: "bg-amber-100/70 border-amber-200", chip: "bg-amber-100 text-amber-600", value: "text-amber-700", label: "text-slate-500", bar: "bg-amber-500", chipVivid: "bg-amber-500 text-white", valueVivid: "text-amber-600" },
   emerald: { soft: "bg-emerald-50/60 border-emerald-100", strong: "bg-emerald-100/70 border-emerald-200", chip: "bg-emerald-100 text-emerald-600", value: "text-emerald-700", label: "text-slate-500", bar: "bg-emerald-500", chipVivid: "bg-emerald-600 text-white", valueVivid: "text-emerald-600" },
   blue: { soft: "bg-sky-50/60 border-sky-100", strong: "bg-sky-100/70 border-sky-200", chip: "bg-sky-100 text-sky-600", value: "text-sky-700", label: "text-slate-500", bar: "bg-sky-500", chipVivid: "bg-sky-600 text-white", valueVivid: "text-sky-600" },
+  cyan: { soft: "bg-cyan-50/60 border-cyan-100", strong: "bg-cyan-100/70 border-cyan-200", chip: "bg-cyan-100 text-cyan-700", value: "text-cyan-700", label: "text-slate-500", bar: "bg-cyan-500", chipVivid: "bg-cyan-500 text-white", valueVivid: "text-cyan-700" },
   red: { soft: "bg-rose-50/60 border-rose-100", strong: "bg-rose-100/70 border-rose-200", chip: "bg-rose-100 text-rose-600", value: "text-rose-700", label: "text-slate-500", bar: "bg-rose-500", chipVivid: "bg-rose-600 text-white", valueVivid: "text-rose-600" },
   slate: { soft: "bg-white border-gray-200/80", strong: "bg-slate-50 border-slate-200", chip: "bg-slate-100 text-slate-600", value: "text-slate-900", label: "text-slate-500", bar: "bg-slate-400", chipVivid: "bg-slate-700 text-white", valueVivid: "text-slate-800" },
   violet: { soft: "bg-violet-50/60 border-violet-100", strong: "bg-violet-100/70 border-violet-200", chip: "bg-violet-100 text-violet-600", value: "text-violet-700", label: "text-slate-500", bar: "bg-violet-500", chipVivid: "bg-violet-600 text-white", valueVivid: "text-violet-600" },
