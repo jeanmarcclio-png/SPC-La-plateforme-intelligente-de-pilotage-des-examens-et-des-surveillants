@@ -89,7 +89,7 @@ export default async function DashboardPage() {
     ? [Math.max(0,pipelineTotal-12), Math.max(0,pipelineTotal-9), Math.max(0,pipelineTotal-6), Math.max(0,pipelineTotal-4), Math.max(0,pipelineTotal-2), Math.max(0,pipelineTotal-1), pipelineTotal]
     : [Math.max(0,rdvFixes-3), Math.max(0,rdvFixes-2), Math.max(0,rdvFixes-1), Math.max(0,rdvFixes-1), rdvFixes, rdvFixes, rdvFixes];
   const kpiTrends = [prospectsTrend, chaudTrend, scoreTrend, pipelineTrend];
-  const kpiTrendColors = ["#4a90d9", "var(--color-primary)", "#d97706", "#7c3aed"];
+  const kpiTrendColors = ["#4a90d9", "var(--color-primary)", "#d97706", "#059669"];
 
   return (
     <>
@@ -118,12 +118,12 @@ export default async function DashboardPage() {
             <InsightsBannerMobile insights={insights} />
 
             {/* Pipeline banner */}
-            <Link href="/qualification" className="block rounded-2xl p-4" style={{ background: "#0d1e2e" }}>
-              <div className="text-[12px] font-bold text-white/50 uppercase tracking-widest mb-1">Pipeline total</div>
-              <div className="text-[32px] font-extrabold text-[#4a90d9] leading-none">
+            <Link href="/qualification" className="block rounded-2xl p-4" style={{ background: "var(--color-primary)" }}>
+              <div className="text-[12px] font-bold text-white/60 uppercase tracking-widest mb-1">Pipeline total</div>
+              <div className="text-[32px] font-extrabold text-white leading-none">
                 {pipelineTotal > 0 ? `${Math.round(pipelineTotal)}k €` : `${total} prospects`}
               </div>
-              <div className="text-[13px] text-white/60 mt-1">{total} prospects · voir tout →</div>
+              <div className="text-[13px] text-white/70 mt-1">{total} prospects · voir tout →</div>
             </Link>
 
             {/* KPI 2x2 */}
@@ -195,7 +195,7 @@ export default async function DashboardPage() {
               { icon: "🔍", color: "bg-blue-50 text-blue-700",    num: total,           label: "établissements ciblés",  delta: `${contactRate}% contactés`,                                     trend: contactRate >= 50 ? "up" : "warn" as "up" | "warn" | "neutral", link: "Voir tous →",       href: "/campagnes" },
               { icon: "📈", color: "bg-teal-50 text-teal-700",    num: tresChaudes,     label: "prospects Très chaud",   delta: `${total > 0 ? Math.round((tresChaudes / total) * 100) : 0}% du pipeline`, trend: "up" as "up" | "warn" | "neutral",  link: "Voir la liste →",   href: "/qualification" },
               { icon: "🎯", color: "bg-orange-50 text-orange-700",num: scoreMoyen,      label: "Score BANT moyen /10",   delta: scoreMoyenNum >= 8 ? "Excellent ↑" : scoreMoyenNum >= 6 ? "Bon →" : "À renforcer ↓", trend: (scoreMoyenNum >= 8 ? "up" : scoreMoyenNum >= 6 ? "neutral" : "warn") as "up" | "warn" | "neutral", link: "Voir l'analyse →",  href: "/qualification" },
-              { icon: "💰", color: "bg-purple-50 text-purple-700",num: pipelineTotal > 0 ? Math.round(pipelineTotal) : rdvFixes, suffix: pipelineTotal > 0 ? "k€" : "", label: pipelineTotal > 0 ? "CA pipeline estimé" : "RDV fixés", delta: pipelineTotal > 0 ? `${prospects.filter(p => p.statut === "Converti").length} convertis · ${rdvFixes} RDV` : `${actionsUrgentes} alertes`, trend: "up" as "up" | "warn" | "neutral", link: pipelineTotal > 0 ? "Voir pipeline →" : "Voir le détail →", href: "/qualification" },
+              { icon: "💰", color: "bg-emerald-50 text-emerald-700",num: pipelineTotal > 0 ? Math.round(pipelineTotal) : rdvFixes, suffix: pipelineTotal > 0 ? "k€" : "", label: pipelineTotal > 0 ? "CA pipeline estimé" : "RDV fixés", delta: pipelineTotal > 0 ? `${prospects.filter(p => p.statut === "Converti").length} convertis · ${rdvFixes} RDV` : `${actionsUrgentes} alertes`, trend: "up" as "up" | "warn" | "neutral", link: pipelineTotal > 0 ? "Voir pipeline →" : "Voir le détail →", href: "/qualification" },
             ].map((kpi, i) => (
               <div
                 key={i}
