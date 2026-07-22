@@ -28,9 +28,9 @@ export default async function PresencePage() {
       />
 
       <div className="grid grid-cols-3 gap-3.5 mb-5">
-        <Kpi label="Présents" value={String(presents)} sub="émargés" icon={<CheckCircle2 className="w-4 h-4" />} />
-        <Kpi label="Absents" value={String(absents)} sub="signalés" icon={<XCircle className="w-4 h-4" />} />
-        <Kpi label="En attente" value={String(attente)} sub="pas encore émargés" icon={<Clock className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="emerald" label="Présents" value={String(presents)} sub="émargés" icon={<CheckCircle2 className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="red" label="Absents" value={String(absents)} sub="signalés" icon={<XCircle className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="amber" label="En attente" value={String(attente)} sub="pas encore émargés" icon={<Clock className="w-4 h-4" />} />
       </div>
 
       <PresenceBoard affectations={rows} surveillants={surveillants} />

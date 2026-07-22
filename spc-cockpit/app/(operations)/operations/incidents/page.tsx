@@ -16,9 +16,9 @@ export default async function IncidentsPage() {
       <PageHeader page="Incidents" subtitle="Déclaration, suivi et résolution des incidents pendant les examens" />
 
       <div className="grid grid-cols-3 gap-3.5 mb-5">
-        <Kpi label="Total" value={String(incidents.length)} sub="incidents déclarés" icon={<AlertTriangle className="w-4 h-4" />} />
-        <Kpi label="Ouverts" value={String(ouverts)} sub="à traiter" icon={<ShieldAlert className="w-4 h-4" />} />
-        <Kpi label="Résolus" value={String(resolus)} sub="clôturés" icon={<CheckCircle2 className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="indigo" label="Total" value={String(incidents.length)} sub="incidents déclarés" icon={<AlertTriangle className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="amber" label="Ouverts" value={String(ouverts)} sub="à traiter" icon={<ShieldAlert className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="emerald" label="Résolus" value={String(resolus)} sub="clôturés" icon={<CheckCircle2 className="w-4 h-4" />} />
       </div>
 
       <IncidentsTable incidents={incidents} />

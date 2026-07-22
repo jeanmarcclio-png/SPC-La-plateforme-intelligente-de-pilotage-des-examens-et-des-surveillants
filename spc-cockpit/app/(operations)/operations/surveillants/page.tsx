@@ -64,10 +64,10 @@ export default async function SurveillantsPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-        <Kpi label="Total" value={String(surveillants.length)} sub="surveillants" icon={<Users className="w-4 h-4" />} />
-        <Kpi label="Disponibles" value={String(dispo.length)} sub="mobilisables ce mois" icon={<UserCheck className="w-4 h-4" />} />
-        <Kpi label="Heures moy." value={`${heuresMoy}h`} sub="par surveillant" icon={<Clock className="w-4 h-4" />} />
-        <Kpi label="Note moy." value={`${noteMoy.toFixed(1)} / 5`} sub="satisfaction" icon={<Star className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="teal" label="Total" value={String(surveillants.length)} sub="surveillants" icon={<Users className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="emerald" label="Disponibles" value={String(dispo.length)} sub="mobilisables ce mois" icon={<UserCheck className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="amber" label="Heures moy." value={`${heuresMoy}h`} sub="par surveillant" icon={<Clock className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="indigo" label="Note moy." value={`${noteMoy.toFixed(1)} / 5`} sub="satisfaction" icon={<Star className="w-4 h-4" />} />
       </div>
 
       {/* Pilotage de l'équipe */}

@@ -11,7 +11,8 @@ import { euro, dateFR } from "@/lib/operations/format";
 import { calculateDevisTotals, parseTimeToMinutes, eurosToCents, centsToEuros } from "@/lib/operations/engine";
 import { ArrowLeft, CheckCircle2, Euro, CalendarClock, Briefcase, AlertTriangle } from "lucide-react";
 
-const NAVY = "#0d2137";
+// Couleur du document devis alignée sur la marque Survéo (deep teal, contraste AA texte blanc).
+const NAVY = "#0f766e";
 
 function mins(hm?: string): number | null {
   if (!hm) return null;

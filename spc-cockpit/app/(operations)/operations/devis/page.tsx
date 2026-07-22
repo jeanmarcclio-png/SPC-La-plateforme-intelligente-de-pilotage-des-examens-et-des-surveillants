@@ -19,11 +19,11 @@ export default async function DevisPage() {
       <PageHeader page="Devis" subtitle="Gestion des devis et suivi du pipeline commercial opérations" />
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 mb-5">
-        <Kpi label="Total devis" value={String(devis.length)} sub="créés" icon={<FileText className="w-4 h-4" />} />
-        <Kpi label="Brouillons" value={String(brouillons)} sub="à finaliser" icon={<PenLine className="w-4 h-4" />} />
-        <Kpi label="Envoyés" value={String(envoyes)} sub="en attente de réponse" icon={<Send className="w-4 h-4" />} />
-        <Kpi label="Acceptés" value={String(acceptes.length)} sub="missions confirmées" icon={<CheckCircle2 className="w-4 h-4" />} />
-        <Kpi label="CA accepté HT" value={euro(caAccepteHT)} sub="devis acceptés ou facturés" icon={<Euro className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="indigo" label="Total devis" value={String(devis.length)} sub="créés" icon={<FileText className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="slate" label="Brouillons" value={String(brouillons)} sub="à finaliser" icon={<PenLine className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="blue" label="Envoyés" value={String(envoyes)} sub="en attente de réponse" icon={<Send className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="emerald" label="Acceptés" value={String(acceptes.length)} sub="missions confirmées" icon={<CheckCircle2 className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="teal" label="CA accepté HT" value={euro(caAccepteHT)} sub="devis acceptés ou facturés" icon={<Euro className="w-4 h-4" />} />
       </div>
 
       <DevisTable devis={devis} devisSalles={devisSalles} />
