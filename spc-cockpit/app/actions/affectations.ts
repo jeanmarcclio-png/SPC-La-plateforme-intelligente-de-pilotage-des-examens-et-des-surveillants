@@ -60,6 +60,17 @@ export async function updateAffectation(id: number, f: AffectationFields): Promi
     const { error } = await supabase.from("affectations").update(next).eq("id", id);
     if (error) return { error: `Enregistrement échoué : ${error.message}` };
 
+    // Source de vérité des créneaux (§30) : on remplace la liste complète.
+    // Si la table n'existe pas encore (migration non appliquée), on ignore
+    // silencieusement — les colonnes matin*/apm* + jsonb assurent le repli.
+    const orgId = avant?.org_id ?? (await getActiveOrgId());
+    const rows = [
+      ...matinList.map((c, i) => ({ affectation_id: id, org_id: orgId, periode: "matin", debut: c.debut, fin: c.fin, ordre: i })),
+      ...apmList.map((c, i) => ({ affectation_id: id, org_id: orgId, periode: "apm", debut: c.debut, fin: c.fin, ordre: i })),
+    ];
+    const del = await supabase.from("creneaux").delete().eq("affectation_id", id);
+    if (!del.error && rows.length) await supabase.from("creneaux").insert(rows);
+
     if (avant) {
       await journaliser(supabase, {
         missionId: avant.mission_id ?? null,

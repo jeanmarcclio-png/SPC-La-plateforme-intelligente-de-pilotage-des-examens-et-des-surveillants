@@ -73,6 +73,15 @@ function AffectationCard({ a }: { a: MonAffectation }) {
         <div className="min-w-0">
           <div className="font-semibold text-[#0d1e2e] capitalize">{a.dateLabel}</div>
           <div className="text-[13px] text-gray-600 mt-0.5">{a.creneau}</div>
+          {a.creneaux.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              {a.creneaux.map((c, i) => (
+                <span key={i} className="inline-flex items-center gap-1 text-[11.5px] font-semibold text-teal-700 bg-teal-50 ring-1 ring-inset ring-teal-600/15 rounded-md px-2 py-0.5 tabular-nums">
+                  {c.debut}–{c.fin}
+                </span>
+              ))}
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-[12.5px] text-gray-500">
             {a.salle && (
               <span className="inline-flex items-center gap-1">

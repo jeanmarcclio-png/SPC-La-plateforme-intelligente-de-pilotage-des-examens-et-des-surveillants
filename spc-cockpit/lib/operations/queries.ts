@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Surveillant, Mission, Affectation, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle, DevisEquipe , JournalEntry } from "./types";
+import type { Surveillant, Mission, Affectation, Creneau, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle, DevisEquipe , JournalEntry } from "./types";
 import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures, mockDevisLignes, mockDevisSalles, mockDevisEquipe, mockJournal } from "./mock";
 
 export async function getSurveillants(): Promise<Surveillant[]> {
@@ -57,23 +57,45 @@ export async function getAffectations(): Promise<Affectation[]> {
     const supabase = await createClient();
     const { data, error } = await supabase.from("affectations").select("*").order("id");
     if (error || !data?.length) return mockAffectations;
-    return data.map((r) => ({
-      id: r.id,
-      missionId: r.mission_id,
-      surveillantId: r.surveillant_id,
-      roleMission: r.role_mission ?? undefined,
-      statut: r.statut ?? "Proposé",
-      salle: r.salle ?? undefined,
-      matin: r.matin ?? false,
-      matinDebut: r.matin_debut ?? undefined,
-      matinFin: r.matin_fin ?? undefined,
-      apm: r.apm ?? false,
-      apmDebut: r.apm_debut ?? undefined,
-      apmFin: r.apm_fin ?? undefined,
-      matinCreneaux: Array.isArray(r.matin_creneaux) ? r.matin_creneaux : undefined,
-      apmCreneaux: Array.isArray(r.apm_creneaux) ? r.apm_creneaux : undefined,
-      presence: r.presence ?? "En attente",
-    }));
+
+    // Source de vérité des créneaux : table `creneaux` (§30). Repli gracieux sur
+    // le jsonb (§29) puis sur les colonnes matin*/apm* si la table n'existe pas
+    // encore (migration non appliquée) — aucun crash dans ce cas.
+    const ids = data.map((r) => r.id);
+    const { data: creneaux } = await supabase
+      .from("creneaux")
+      .select("affectation_id, periode, debut, fin, ordre")
+      .in("affectation_id", ids.length ? ids : [-1])
+      .order("ordre");
+    const byAff = new Map<number, { matin: Creneau[]; apm: Creneau[] }>();
+    for (const c of creneaux ?? []) {
+      const e = byAff.get(c.affectation_id) ?? { matin: [], apm: [] };
+      (c.periode === "matin" ? e.matin : e.apm).push({ debut: c.debut, fin: c.fin });
+      byAff.set(c.affectation_id, e);
+    }
+
+    return data.map((r) => {
+      const cr = byAff.get(r.id);
+      const matinCreneaux = cr?.matin.length ? cr.matin : Array.isArray(r.matin_creneaux) ? r.matin_creneaux : undefined;
+      const apmCreneaux = cr?.apm.length ? cr.apm : Array.isArray(r.apm_creneaux) ? r.apm_creneaux : undefined;
+      return {
+        id: r.id,
+        missionId: r.mission_id,
+        surveillantId: r.surveillant_id,
+        roleMission: r.role_mission ?? undefined,
+        statut: r.statut ?? "Proposé",
+        salle: r.salle ?? undefined,
+        matin: r.matin ?? false,
+        matinDebut: r.matin_debut ?? undefined,
+        matinFin: r.matin_fin ?? undefined,
+        apm: r.apm ?? false,
+        apmDebut: r.apm_debut ?? undefined,
+        apmFin: r.apm_fin ?? undefined,
+        matinCreneaux,
+        apmCreneaux,
+        presence: r.presence ?? "En attente",
+      };
+    });
   } catch {
     return mockAffectations;
   }

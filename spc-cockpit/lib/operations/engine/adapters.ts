@@ -29,27 +29,18 @@ export function devisSalleToRoom(s: DevisSalle): RoomPlanningInput {
 export function affectationToAssignments(a: Affectation): SupervisorAssignmentInput[] {
   const out: SupervisorAssignmentInput[] = [];
   const statut = a.presence === "Absent" ? "absent" : "confirmed";
-  if (a.matin) {
-    out.push({
-      id: `${a.id}-matin`,
-      sessionId: `${a.missionId}-matin`,
-      roomId: a.salle ?? "",
-      supervisorId: String(a.surveillantId),
-      startTime: a.matinDebut ?? null,
-      endTime: a.matinFin ?? null,
-      status: statut,
-    });
-  }
-  if (a.apm) {
-    out.push({
-      id: `${a.id}-apm`,
-      sessionId: `${a.missionId}-apm`,
-      roomId: a.salle ?? "",
-      supervisorId: String(a.surveillantId),
-      startTime: a.apmDebut ?? null,
-      endTime: a.apmFin ?? null,
-      status: statut,
-    });
-  }
+  // Un item par créneau (§30) — repli sur le créneau unique matin*/apm*.
+  const matin: Array<readonly [string | null, string | null]> = a.matinCreneaux?.length
+    ? a.matinCreneaux.map((c) => [c.debut, c.fin] as const)
+    : a.matin ? [[a.matinDebut ?? null, a.matinFin ?? null] as const] : [];
+  const apm: Array<readonly [string | null, string | null]> = a.apmCreneaux?.length
+    ? a.apmCreneaux.map((c) => [c.debut, c.fin] as const)
+    : a.apm ? [[a.apmDebut ?? null, a.apmFin ?? null] as const] : [];
+  matin.forEach(([debut, fin], i) => {
+    out.push({ id: `${a.id}-matin-${i}`, sessionId: `${a.missionId}-matin`, roomId: a.salle ?? "", supervisorId: String(a.surveillantId), startTime: debut, endTime: fin, status: statut });
+  });
+  apm.forEach(([debut, fin], i) => {
+    out.push({ id: `${a.id}-apm-${i}`, sessionId: `${a.missionId}-apm`, roomId: a.salle ?? "", supervisorId: String(a.surveillantId), startTime: debut, endTime: fin, status: statut });
+  });
   return out;
 }

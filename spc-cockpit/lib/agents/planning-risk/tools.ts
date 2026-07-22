@@ -59,11 +59,16 @@ function missionRisks(
     } else if (sansSalle) {
       risks.push({ type: "salle_sous_dotee", severity: "avertissement", title: `Salle manquante — ${who}`, detail: "aucune salle affectée", entities: [who], evidence: { salle: false }, recommendation: "Affecter une salle à ce surveillant.", requiresHumanAction: true });
     }
-    if (a.matin && slotInvalid(a.matinDebut, a.matinFin)) {
-      risks.push({ type: "tiers_temps_incoherent", severity: "avertissement", title: `Horaire matin invalide — ${who}`, detail: `${a.matinDebut ?? "?"}–${a.matinFin ?? "?"} (fin ≤ début)`, entities: [who], evidence: { debut: a.matinDebut ?? "", fin: a.matinFin ?? "" }, recommendation: "Corriger l'horaire du matin.", requiresHumanAction: true });
+    // Validation sur CHAQUE créneau (§30) — repli sur le créneau unique.
+    const matinCr = a.matinCreneaux?.length ? a.matinCreneaux : a.matin ? [{ debut: a.matinDebut ?? "", fin: a.matinFin ?? "" }] : [];
+    const apmCr = a.apmCreneaux?.length ? a.apmCreneaux : a.apm ? [{ debut: a.apmDebut ?? "", fin: a.apmFin ?? "" }] : [];
+    if (matinCr.some((c) => slotInvalid(c.debut, c.fin))) {
+      const bad = matinCr.find((c) => slotInvalid(c.debut, c.fin))!;
+      risks.push({ type: "tiers_temps_incoherent", severity: "avertissement", title: `Horaire matin invalide — ${who}`, detail: `${bad.debut || "?"}–${bad.fin || "?"} (fin ≤ début)`, entities: [who], evidence: { debut: bad.debut, fin: bad.fin }, recommendation: "Corriger l'horaire du matin.", requiresHumanAction: true });
     }
-    if (a.apm && slotInvalid(a.apmDebut, a.apmFin)) {
-      risks.push({ type: "tiers_temps_incoherent", severity: "avertissement", title: `Horaire après-midi invalide — ${who}`, detail: `${a.apmDebut ?? "?"}–${a.apmFin ?? "?"} (fin ≤ début)`, entities: [who], evidence: { debut: a.apmDebut ?? "", fin: a.apmFin ?? "" }, recommendation: "Corriger l'horaire de l'après-midi.", requiresHumanAction: true });
+    if (apmCr.some((c) => slotInvalid(c.debut, c.fin))) {
+      const bad = apmCr.find((c) => slotInvalid(c.debut, c.fin))!;
+      risks.push({ type: "tiers_temps_incoherent", severity: "avertissement", title: `Horaire après-midi invalide — ${who}`, detail: `${bad.debut || "?"}–${bad.fin || "?"} (fin ≤ début)`, entities: [who], evidence: { debut: bad.debut, fin: bad.fin }, recommendation: "Corriger l'horaire de l'après-midi.", requiresHumanAction: true });
     }
   }
 
