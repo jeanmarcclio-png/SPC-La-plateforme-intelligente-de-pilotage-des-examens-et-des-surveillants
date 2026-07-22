@@ -32,10 +32,10 @@ export default async function RapportsPage() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-        <Kpi label="CA total (HT)" value={euro(caTotal)} sub="missions non annulées" icon={<Euro className="w-4 h-4" />} href="/operations/devis" />
-        <Kpi label="Examens réalisés" value={String(realisees.length)} sub="missions terminées" icon={<ClipboardCheck className="w-4 h-4" />} href="/operations/missions" />
-        <Kpi label="Surveillants actifs" value={String(actifs)} sub={`sur ${surveillants.length} dans l'équipe`} icon={<Users className="w-4 h-4" />} href="/operations/surveillants" />
-        <Kpi label="Salles utilisées" value={String(sallesUtilisees)} sub={`${salles.length} salles configurées`} icon={<DoorOpen className="w-4 h-4" />} href="/operations/salles" />
+        <Kpi variant="vivid" accent="emerald" label="CA total (HT)" value={euro(caTotal)} sub="missions non annulées" icon={<Euro className="w-4 h-4" />} href="/operations/devis" />
+        <Kpi variant="vivid" accent="indigo" label="Examens réalisés" value={String(realisees.length)} sub="missions terminées" icon={<ClipboardCheck className="w-4 h-4" />} href="/operations/missions" />
+        <Kpi variant="vivid" accent="teal" label="Surveillants actifs" value={String(actifs)} sub={`sur ${surveillants.length} dans l'équipe`} icon={<Users className="w-4 h-4" />} href="/operations/surveillants" />
+        <Kpi variant="vivid" accent="cyan" label="Salles utilisées" value={String(sallesUtilisees)} sub={`${salles.length} salles configurées`} icon={<DoorOpen className="w-4 h-4" />} href="/operations/salles" />
       </div>
 
       <div className="grid lg:grid-cols-5 gap-5">
@@ -51,7 +51,7 @@ export default async function RapportsPage() {
                 <div key={t.key} className="flex items-center gap-2.5">
                   <span className="text-[11px] text-gray-500 w-12 flex-shrink-0">{t.label}</span>
                   <div className="flex-1 h-2.5 rounded-full bg-gray-100 overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${Math.round((t.total / maxMois) * 100)}%`, background: "#0d2137" }} />
+                    <div className="h-full rounded-full" style={{ width: `${Math.round((t.total / maxMois) * 100)}%`, background: "#059669" }} />
                   </div>
                   <span className="text-[11.5px] font-semibold text-gray-700 w-[84px] text-right flex-shrink-0">{euro(t.total)}</span>
                 </div>

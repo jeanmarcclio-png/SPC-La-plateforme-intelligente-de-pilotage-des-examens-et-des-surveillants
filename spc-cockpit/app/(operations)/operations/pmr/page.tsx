@@ -19,9 +19,9 @@ export default async function PMRPage() {
       <PageHeader page="PMR & Tiers-temps" title="PMR &amp; Tiers-temps" subtitle="Gestion des aménagements pour étudiants à besoins spécifiques" />
 
       <div className="grid grid-cols-3 gap-3.5 mb-5">
-        <Kpi label="Étudiants PMR/TT" value={String(amenagements.length)} sub="aménagements suivis" icon={<Accessibility className="w-4 h-4" />} />
-        <Kpi label="Salles dédiées" value={String(sallesDediees.length)} sub="équipées PMR ou tiers-temps" icon={<DoorOpen className="w-4 h-4" />} href="/operations/salles" />
-        <Kpi label="Temps additionnel" value={`${tiersTemps}/3`} sub="étudiants en durée majorée" icon={<Clock className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="indigo" label="Étudiants PMR/TT" value={String(amenagements.length)} sub="aménagements suivis" icon={<Accessibility className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="cyan" label="Salles dédiées" value={String(sallesDediees.length)} sub="équipées PMR ou tiers-temps" icon={<DoorOpen className="w-4 h-4" />} href="/operations/salles" />
+        <Kpi variant="vivid" accent="amber" label="Temps additionnel" value={`${tiersTemps}/3`} sub="étudiants en durée majorée" icon={<Clock className="w-4 h-4" />} />
       </div>
 
       <div className="grid lg:grid-cols-5 gap-5">

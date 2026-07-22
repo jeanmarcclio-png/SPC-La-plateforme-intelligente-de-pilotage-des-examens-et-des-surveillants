@@ -43,10 +43,10 @@ export default async function RisquesPage() {
         <>
           {/* Récapitulatif */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-            <Kpi label="Session analysée" value={report.mission.client} sub={`${report.mission.reference} · ${report.mission.date}`} accent="slate" truncate />
-            <Kpi label="Critiques" value={String(report.counts.critique)} sub="à traiter en priorité" accent="red" />
-            <Kpi label="Avertissements" value={String(report.counts.avertissement)} sub="à surveiller" accent="amber" />
-            <Kpi label="Informations" value={String(report.counts.information)} sub="pour information" accent="blue" />
+            <Kpi variant="vivid" label="Session analysée" value={report.mission.client} sub={`${report.mission.reference} · ${report.mission.date}`} accent="slate" truncate />
+            <Kpi variant="vivid" label="Critiques" value={String(report.counts.critique)} sub="à traiter en priorité" accent="red" />
+            <Kpi variant="vivid" label="Avertissements" value={String(report.counts.avertissement)} sub="à surveiller" accent="amber" />
+            <Kpi variant="vivid" label="Informations" value={String(report.counts.information)} sub="pour information" accent="cyan" />
           </div>
 
           <div className="grid lg:grid-cols-5 gap-5 items-start">

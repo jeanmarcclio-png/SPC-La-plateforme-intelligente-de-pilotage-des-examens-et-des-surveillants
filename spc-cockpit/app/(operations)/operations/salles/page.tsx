@@ -17,10 +17,10 @@ export default async function SallesPage() {
       <PageHeader page="Salles" subtitle="Gestion des salles d&apos;examen, capacités et affectation des surveillants" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-        <Kpi label="Salles" value={String(salles.length)} sub="configurées" icon={<DoorOpen className="w-4 h-4" />} />
-        <Kpi label="Étudiants" value={String(etudiants)} sub="répartis" icon={<GraduationCap className="w-4 h-4" />} />
-        <Kpi label="Surveillants" value={String(surveillants)} sub="affectés aux salles" icon={<Users className="w-4 h-4" />} />
-        <Kpi label="Salles PMR/TT" value={String(pmrTT)} sub="aménagements spécifiques" icon={<Accessibility className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="teal" label="Salles" value={String(salles.length)} sub="configurées" icon={<DoorOpen className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="indigo" label="Étudiants" value={String(etudiants)} sub="répartis" icon={<GraduationCap className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="cyan" label="Surveillants" value={String(surveillants)} sub="affectés aux salles" icon={<Users className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="amber" label="Salles PMR/TT" value={String(pmrTT)} sub="aménagements spécifiques" icon={<Accessibility className="w-4 h-4" />} />
       </div>
 
       <SallesBoard salles={salles} />

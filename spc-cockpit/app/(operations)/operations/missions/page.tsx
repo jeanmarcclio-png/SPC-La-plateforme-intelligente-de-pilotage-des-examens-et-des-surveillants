@@ -18,10 +18,10 @@ export default async function MissionsPage() {
       <PageHeader page="Missions" subtitle="Suivi des sessions d&apos;examens et de la mission active" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-        <Kpi label="Total missions" value={String(missions.length)} sub="toutes périodes" icon={<Briefcase className="w-4 h-4" />} />
-        <Kpi label="En cours" value={String(enCours)} sub="planifiées ou actives" icon={<Activity className="w-4 h-4" />} />
-        <Kpi label="Terminées" value={String(terminees)} sub="sessions clôturées" icon={<CheckCircle2 className="w-4 h-4" />} />
-        <Kpi label="CA total" value={euro(caTotal)} sub="montants HT cumulés" icon={<Euro className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="indigo" label="Total missions" value={String(missions.length)} sub="toutes périodes" icon={<Briefcase className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="cyan" label="En cours" value={String(enCours)} sub="planifiées ou actives" icon={<Activity className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="emerald" label="Terminées" value={String(terminees)} sub="sessions clôturées" icon={<CheckCircle2 className="w-4 h-4" />} />
+        <Kpi variant="vivid" accent="teal" label="CA total" value={euro(caTotal)} sub="montants HT cumulés" icon={<Euro className="w-4 h-4" />} />
       </div>
 
       <MissionsTable missions={missions} />
