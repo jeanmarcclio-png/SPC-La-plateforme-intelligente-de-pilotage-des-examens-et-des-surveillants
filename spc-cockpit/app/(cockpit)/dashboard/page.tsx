@@ -14,7 +14,7 @@ import { computeRecommendations, detectRisks, generateInsights } from "@/lib/ai/
 import { InsightsBanner, InsightsBannerMobile } from "@/components/InsightsBanner";
 import { CountUp } from "@/components/CountUp";
 import { ContactDuJour } from "@/components/ContactDuJour";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Building2, Flame, Target, Euro } from "lucide-react";
 import { SectorDashboardWidget, SectorDashboardWidgetMobile } from "@/components/SectorDashboardWidget";
 import { SectorKPIPanel, SectorKPIPanelMobile } from "@/components/SectorKPIPanel";
 
@@ -89,7 +89,7 @@ export default async function DashboardPage() {
     ? [Math.max(0,pipelineTotal-12), Math.max(0,pipelineTotal-9), Math.max(0,pipelineTotal-6), Math.max(0,pipelineTotal-4), Math.max(0,pipelineTotal-2), Math.max(0,pipelineTotal-1), pipelineTotal]
     : [Math.max(0,rdvFixes-3), Math.max(0,rdvFixes-2), Math.max(0,rdvFixes-1), Math.max(0,rdvFixes-1), rdvFixes, rdvFixes, rdvFixes];
   const kpiTrends = [prospectsTrend, chaudTrend, scoreTrend, pipelineTrend];
-  const kpiTrendColors = ["#4a90d9", "var(--color-primary)", "#d97706", "#7c3aed"];
+  const kpiTrendColors = ["#4a90d9", "var(--color-primary)", "#d97706", "#059669"];
 
   return (
     <>
@@ -118,24 +118,25 @@ export default async function DashboardPage() {
             <InsightsBannerMobile insights={insights} />
 
             {/* Pipeline banner */}
-            <Link href="/qualification" className="block rounded-2xl p-4" style={{ background: "#0d1e2e" }}>
-              <div className="text-[12px] font-bold text-white/50 uppercase tracking-widest mb-1">Pipeline total</div>
-              <div className="text-[32px] font-extrabold text-[#4a90d9] leading-none">
+            <Link href="/qualification" className="block rounded-2xl p-4" style={{ background: "var(--color-primary)" }}>
+              <div className="text-[12px] font-bold text-white/60 uppercase tracking-widest mb-1">Pipeline total</div>
+              <div className="text-[32px] font-extrabold text-white leading-none">
                 {pipelineTotal > 0 ? `${Math.round(pipelineTotal)}k €` : `${total} prospects`}
               </div>
-              <div className="text-[13px] text-white/60 mt-1">{total} prospects · voir tout →</div>
+              <div className="text-[13px] text-white/70 mt-1">{total} prospects · voir tout →</div>
             </Link>
 
             {/* KPI 2x2 */}
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Prospects",    value: total,      color: "#1a202c", sub: `${aRelancer} à contacter`,                                         href: "/qualification" },
-                { label: "Priorité haute",value: tresChaudes,color: "#f6ad55", sub: `${prospects.filter(p => p.statut === "En cours").length} en cours`, href: "/qualification" },
-                { label: "RDV fixés",    value: rdvFixes,   color: "#38a169", sub: `${prospects.filter(p => p.statut === "Converti").length} convertis`, href: "/qualification" },
-                { label: "À relancer",   value: aRelancer,  color: "var(--color-primary)", sub: "voir l'agenda →",                                                   href: "/qualification" },
+                { label: "Prospects",     value: total,       bar: "bg-sky-500",     sub: `${aRelancer} à contacter`,                                          href: "/qualification" },
+                { label: "Priorité haute", value: tresChaudes, bar: "bg-amber-500",   sub: `${prospects.filter(p => p.statut === "En cours").length} en cours`, href: "/qualification" },
+                { label: "RDV fixés",     value: rdvFixes,    bar: "bg-emerald-500", sub: `${prospects.filter(p => p.statut === "Converti").length} convertis`, href: "/qualification" },
+                { label: "À relancer",    value: aRelancer,   bar: "bg-teal-500",    sub: "voir l'agenda →",                                                    href: "/qualification" },
               ].map((k) => (
-                <Link key={k.label} href={k.href} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm active:opacity-70">
-                  <div className="text-[30px] font-extrabold leading-none" style={{ color: k.color }}>
+                <Link key={k.label} href={k.href} className="relative bg-white rounded-2xl p-4 pt-[18px] overflow-hidden border border-gray-100 shadow-sm active:opacity-70">
+                  <span aria-hidden className={`absolute top-0 left-0 right-0 h-[3px] ${k.bar}`} />
+                  <div className="text-[30px] font-extrabold leading-none text-gray-900">
                     <CountUp value={k.value} />
                   </div>
                   <div className="text-[13px] font-semibold text-gray-700 mt-1">{k.label}</div>
@@ -192,18 +193,19 @@ export default async function DashboardPage() {
           {/* KPI */}
           <div className="grid grid-cols-4 gap-3.5 mb-5">
             {[
-              { icon: "🔍", color: "bg-blue-50 text-blue-700",    num: total,           label: "établissements ciblés",  delta: `${contactRate}% contactés`,                                     trend: contactRate >= 50 ? "up" : "warn" as "up" | "warn" | "neutral", link: "Voir tous →",       href: "/campagnes" },
-              { icon: "📈", color: "bg-teal-50 text-teal-700",    num: tresChaudes,     label: "prospects Très chaud",   delta: `${total > 0 ? Math.round((tresChaudes / total) * 100) : 0}% du pipeline`, trend: "up" as "up" | "warn" | "neutral",  link: "Voir la liste →",   href: "/qualification" },
-              { icon: "🎯", color: "bg-orange-50 text-orange-700",num: scoreMoyen,      label: "Score BANT moyen /10",   delta: scoreMoyenNum >= 8 ? "Excellent ↑" : scoreMoyenNum >= 6 ? "Bon →" : "À renforcer ↓", trend: (scoreMoyenNum >= 8 ? "up" : scoreMoyenNum >= 6 ? "neutral" : "warn") as "up" | "warn" | "neutral", link: "Voir l'analyse →",  href: "/qualification" },
-              { icon: "💰", color: "bg-purple-50 text-purple-700",num: pipelineTotal > 0 ? Math.round(pipelineTotal) : rdvFixes, suffix: pipelineTotal > 0 ? "k€" : "", label: pipelineTotal > 0 ? "CA pipeline estimé" : "RDV fixés", delta: pipelineTotal > 0 ? `${prospects.filter(p => p.statut === "Converti").length} convertis · ${rdvFixes} RDV` : `${actionsUrgentes} alertes`, trend: "up" as "up" | "warn" | "neutral", link: pipelineTotal > 0 ? "Voir pipeline →" : "Voir le détail →", href: "/qualification" },
+              { Icon: Building2, chip: "bg-sky-600",    bar: "bg-sky-500",    num: total,           label: "établissements ciblés",  delta: `${contactRate}% contactés`,                                     trend: contactRate >= 50 ? "up" : "warn" as "up" | "warn" | "neutral", link: "Voir tous →",       href: "/campagnes" },
+              { Icon: Flame,     chip: "bg-teal-600",   bar: "bg-teal-500",   num: tresChaudes,     label: "prospects Très chaud",   delta: `${total > 0 ? Math.round((tresChaudes / total) * 100) : 0}% du pipeline`, trend: "up" as "up" | "warn" | "neutral",  link: "Voir la liste →",   href: "/qualification" },
+              { Icon: Target,    chip: "bg-amber-500",  bar: "bg-amber-500",  num: scoreMoyen,      label: "Score BANT moyen /10",   delta: scoreMoyenNum >= 8 ? "Excellent ↑" : scoreMoyenNum >= 6 ? "Bon →" : "À renforcer ↓", trend: (scoreMoyenNum >= 8 ? "up" : scoreMoyenNum >= 6 ? "neutral" : "warn") as "up" | "warn" | "neutral", link: "Voir l'analyse →",  href: "/qualification" },
+              { Icon: Euro,      chip: "bg-emerald-600",bar: "bg-emerald-500",num: pipelineTotal > 0 ? Math.round(pipelineTotal) : rdvFixes, suffix: pipelineTotal > 0 ? "k€" : "", label: pipelineTotal > 0 ? "CA pipeline estimé" : "RDV fixés", delta: pipelineTotal > 0 ? `${prospects.filter(p => p.statut === "Converti").length} convertis · ${rdvFixes} RDV` : `${actionsUrgentes} alertes`, trend: "up" as "up" | "warn" | "neutral", link: pipelineTotal > 0 ? "Voir pipeline →" : "Voir le détail →", href: "/qualification" },
             ].map((kpi, i) => (
               <div
                 key={i}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 animate-fade-up hover:shadow-md transition-shadow duration-200"
+                className="relative bg-white rounded-xl border border-gray-200 shadow-sm p-4 pt-[18px] overflow-hidden animate-fade-up hover:shadow-md transition-shadow duration-200"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
+                <span aria-hidden className={`absolute top-0 left-0 right-0 h-[3px] ${kpi.bar}`} />
                 <div className="flex items-start justify-between mb-2.5">
-                  <div className={`w-9 h-9 rounded-[9px] flex items-center justify-center text-base ${kpi.color}`}>{kpi.icon}</div>
+                  <div className={`w-9 h-9 rounded-[9px] flex items-center justify-center text-white ${kpi.chip}`}><kpi.Icon className="w-[18px] h-[18px]" aria-hidden /></div>
                   <Sparkline values={kpiTrends[i]} color={kpiTrendColors[i]} />
                 </div>
                 <div className="text-[26px] font-extrabold text-gray-900 leading-none">
