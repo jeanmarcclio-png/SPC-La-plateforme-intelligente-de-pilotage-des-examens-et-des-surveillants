@@ -120,13 +120,14 @@ export default async function ReportingPage() {
             {/* 2×2 KPIs */}
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, color: "text-gray-900" },
-                { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, color: "text-orange-500" },
-                { label: "Score BANT", value: `${scoreMoyen}/10`, sub: "moyenne", color: "text-[var(--color-primary)]" },
-                { label: "RDV + Convertis", value: rdvFixes + convertis, sub: `taux ${tauxConversion}%`, color: "text-green-600" },
+                { label: "Prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, bar: "bg-sky-500" },
+                { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, bar: "bg-amber-500" },
+                { label: "Score BANT", value: `${scoreMoyen}/10`, sub: "moyenne", bar: "bg-teal-500" },
+                { label: "RDV + Convertis", value: rdvFixes + convertis, sub: `taux ${tauxConversion}%`, bar: "bg-emerald-500" },
               ].map((kpi, i) => (
-                <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-                  <div className={`text-[26px] font-extrabold leading-none ${kpi.color}`}>{kpi.value}</div>
+                <div key={i} className="relative overflow-hidden bg-white rounded-2xl p-4 pt-[18px] border border-gray-100 shadow-sm">
+                  <span aria-hidden className={`absolute top-0 left-0 right-0 h-[3px] ${kpi.bar}`} />
+                  <div className="text-[26px] font-extrabold leading-none text-gray-900">{kpi.value}</div>
                   <div className="text-[12px] font-semibold text-gray-700 mt-1.5">{kpi.label}</div>
                   <div className="text-[12px] text-gray-400 mt-0.5">{kpi.sub}</div>
                 </div>
@@ -274,13 +275,14 @@ export default async function ReportingPage() {
         {/* KPIs */}
         <div className="grid grid-cols-4 gap-3.5 mb-5">
           {[
-            { label: "Total prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, color: "text-gray-900" },
-            { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, color: "text-orange-500" },
-            { label: "Score BANT moyen", value: scoreMoyen, sub: "Sur 10 pts", color: "text-[var(--color-primary)]" },
-            { label: "RDV fixés", value: rdvFixes + convertis, sub: `dont ${convertis} converti${convertis !== 1 ? "s" : ""}`, color: "text-green-600" },
+            { label: "Total prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, bar: "bg-sky-500" },
+            { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, bar: "bg-amber-500" },
+            { label: "Score BANT moyen", value: scoreMoyen, sub: "Sur 10 pts", bar: "bg-teal-500" },
+            { label: "RDV fixés", value: rdvFixes + convertis, sub: `dont ${convertis} converti${convertis !== 1 ? "s" : ""}`, bar: "bg-emerald-500" },
           ].map((kpi, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-              <div className={`text-[28px] font-extrabold leading-none ${kpi.color}`}>{kpi.value}</div>
+            <div key={i} className="relative overflow-hidden bg-white rounded-xl border border-gray-200 shadow-sm p-4 pt-[18px]">
+              <span aria-hidden className={`absolute top-0 left-0 right-0 h-[3px] ${kpi.bar}`} />
+              <div className="text-[28px] font-extrabold leading-none text-gray-900">{kpi.value}</div>
               <div className="text-[12.5px] text-gray-600 mt-1.5 font-medium">{kpi.label}</div>
               <div className="text-[11px] text-gray-400 mt-0.5">{kpi.sub}</div>
             </div>
