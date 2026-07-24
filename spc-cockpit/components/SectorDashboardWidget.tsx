@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useTenant } from "@/lib/tenant/TenantContext";
-import { Pill, type PillTone } from "@/components/pilot";
 
 // ─── Seed data ─────────────────────────────────────────────────────────────────
 
@@ -45,28 +44,46 @@ function WidgetShell({ title, subtitle, emoji, href, ctaLabel, children }: {
   title: string; subtitle: string; emoji: string; href: string; ctaLabel: string; children: React.ReactNode;
 }) {
   return (
-    <div className="block" style={{ marginTop: 38 }}>
-      <div className="sechd">
-        <h2>{emoji} {title}</h2>
-        <Link href={href}>{ctaLabel} →</Link>
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5 animate-fade-up">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-base">{emoji}</span>
+          <div>
+            <div className="text-[13px] font-semibold text-gray-800">{title}</div>
+            <div className="text-[11px] text-gray-400">{subtitle}</div>
+          </div>
+        </div>
+        <Link href={href} className="text-[11.5px] text-[#4a90d9] hover:underline">{ctaLabel} →</Link>
       </div>
-      <div style={{ fontSize: 12, color: "var(--ink3)", marginTop: -2, marginBottom: 8 }}>{subtitle}</div>
       {children}
     </div>
   );
 }
 
 function ExamensWidget() {
-  const tone = (s: string): PillTone => (s === "Confirmé" ? "rdv" : s === "En attente" ? "warm" : "neutral");
   return (
     <WidgetShell title="Sessions à venir" subtitle="Prochaines surveillances planifiées" emoji="🗓" href="/planning" ctaLabel="Voir le planning">
-      <div>
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
         {SESSIONS.map((s, i) => (
-          <Link className="row" href="/planning" key={i}>
-            <span className="nm">{s.nom}</span>
-            <span className="sub">{s.city} · {s.date} · {s.nb} surveillants{s.tiers > 0 ? ` · ${s.tiers} tiers-temps` : ""}</span>
-            <span className="right"><Pill tone={tone(s.statut)}>{s.statut}</Pill></span>
-          </Link>
+          <div key={i} className="border border-gray-100 rounded-xl p-3 hover:border-[var(--color-primary)]/40 hover:bg-[var(--color-primary)]/[0.02] transition-all">
+            <div className="flex items-start justify-between mb-2">
+              <div className="w-9 h-9 rounded-lg bg-[var(--color-primary)]/10 flex flex-col items-center justify-center flex-shrink-0">
+                <span className="text-[11px] font-extrabold text-[var(--color-primary)] leading-none">{s.date.split(" ")[0]}</span>
+                <span className="text-[9px] text-[var(--color-primary)]/60 leading-none">{s.date.split(" ")[1]}</span>
+              </div>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                s.statut === "Confirmé" ? "bg-green-100 text-green-700" :
+                s.statut === "En attente" ? "bg-orange-100 text-orange-700" :
+                "bg-gray-100 text-gray-500"
+              }`}>{s.statut}</span>
+            </div>
+            <div className="text-[12px] font-semibold text-gray-800 leading-tight mb-1">{s.nom}</div>
+            <div className="text-[11px] text-gray-400">{s.city}</div>
+            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100">
+              <span className="text-[11px] text-gray-500">👤 {s.nb}</span>
+              {s.tiers > 0 && <span className="text-[11px] text-[var(--color-primary)]">⏱ {s.tiers} tiers-temps</span>}
+            </div>
+          </div>
         ))}
       </div>
     </WidgetShell>
