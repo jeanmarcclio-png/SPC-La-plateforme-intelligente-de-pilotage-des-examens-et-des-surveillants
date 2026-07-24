@@ -183,8 +183,8 @@ export default async function DashboardPage() {
           </section>
         )}
 
-        {/* Prévision IA — objectif fin de campagne */}
-        <section style={{ marginTop: 38 }}>
+        {/* Prévision IA — objectif fin de campagne (écho de rythme) */}
+        <section className="echo">
           <div className="sechd">
             <h2>Prévision IA — objectif fin de campagne</h2>
             <span className="n num" style={{ color: riskLevel === "faible" ? "var(--good)" : riskLevel === "moyen" ? "var(--warn)" : "var(--crit)" }}>Risque {riskLevel} · confiance {aiConfidencePct}%</span>

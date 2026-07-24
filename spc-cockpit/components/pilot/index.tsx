@@ -68,14 +68,14 @@ export const PILOT_CSS = `
 @keyframes pDraw{to{stroke-dashoffset:0;}}
 @keyframes pFade{to{opacity:1;}}
 
-/* Ancrage sombre — bloc de présence (hero pipeline, bandeau de vitals).
+/* Ancrage sombre — UN seul point d'ancrage dominant par page (hero).
    Donne du contraste sans assombrir toute la page. */
-.pilot .anchor{position:relative;overflow:hidden;border-radius:16px;padding:30px 34px 28px;margin-top:24px;
+.pilot .anchor{position:relative;overflow:hidden;border-radius:16px;padding:24px 34px 22px;margin-top:22px;
   background:linear-gradient(157deg,#1c2b28 0%,#141e1c 58%,#101917 100%);color:#eef1ee;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 16px 40px -24px rgba(12,20,18,.8);}
 .pilot .anchor::after{content:"";position:absolute;top:-42%;right:-4%;width:340px;height:340px;border-radius:50%;
   background:radial-gradient(closest-side,rgba(79,209,197,.16),transparent 70%);pointer-events:none;}
-.pilot .anchorGrid{display:grid;grid-template-columns:.92fr 1.08fr;gap:44px;align-items:end;position:relative;}
+.pilot .anchorGrid{display:grid;grid-template-columns:.92fr 1.08fr;gap:44px;align-items:center;position:relative;}
 @media(max-width:760px){.pilot .anchorGrid{grid-template-columns:1fr;gap:22px;align-items:stretch;}}
 .pilot .anchor .eyebrow{color:#6fd6c4;}
 .pilot .anchor .metric .big{color:#fff;}
@@ -94,6 +94,12 @@ export const PILOT_CSS = `
 .pilot .anchor .key .n{color:#fff;}
 .pilot .anchor .key .l{color:#c2ccc7;}
 .pilot .anchor .key .p{color:#8fa19b;}
+
+/* Écho clair-teinté — relance de rythme SANS 2e bloc sombre ni filet coloré.
+   C'est une zone (surface un cran plus soutenue que le papier), pas une carte. */
+.pilot .echo{border-radius:14px;padding:22px 26px;margin-top:32px;background:#eaece4;border:1px solid #dfe1d8;}
+.pilot .echo>.sechd:first-child{margin-top:0;}
+@media(max-width:640px){.pilot .echo{padding:18px 18px;}}
 
 .pilot .funnel{margin-top:12px;padding-top:22px;border-top:1px solid var(--line);}
 .pilot .track{display:flex;height:11px;border-radius:3px;overflow:hidden;background:var(--line);}
