@@ -79,7 +79,8 @@ export default async function MaPage() {
 ```
 
 ## Déploiement (généralisation)
-Référence établie sur `/dashboard/apercu`. Rollout **page par page**, chaque
+Référence établie sur l'aperçu, **fusionnée dans `/dashboard`** (route
+`/dashboard/apercu` conservée en redirection). Rollout **page par page**, chaque
 page revue en preview avant merge, en préservant les fonctionnalités existantes
 (pas de suppression de features au nom du design). Ordre proposé :
 `dashboard → reporting → cockpit → campagnes/qualification/livrables → paramètres`,
