@@ -113,7 +113,7 @@ export function DevisSallesEditor({ initial }: { initial: DevisSalle[] }) {
         newKey={newKey}
       />
 
-      <div className="rounded-xl border border-blue-100 bg-blue-50/50 px-4 py-3 text-[12.5px] text-gray-700 flex flex-wrap gap-x-6 gap-y-1">
+      <div className="rounded-xl border border-blue-100 bg-blue-50/50 px-4 py-3 text-[12.5px] text-blue-900 flex flex-wrap gap-x-6 gap-y-1">
         <span className="font-semibold text-gray-500">Volume horaire facturable</span>
         <span>Matin : <strong>{formatHours(matin.reduce((s, r) => s + billableHours(r, "morning"), 0))}</strong></span>
         <span>Après-midi : <strong>{formatHours(apm.reduce((s, r) => s + billableHours(r, "afternoon"), 0))}</strong></span>

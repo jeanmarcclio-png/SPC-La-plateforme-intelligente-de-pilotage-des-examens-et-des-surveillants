@@ -200,7 +200,7 @@ export function PushNotificationToggle() {
         )}
       </div>
       {isIOS && !isStandalone && (
-        <div className="bg-blue-50 rounded-xl p-3 text-[11.5px] text-gray-700 space-y-1">
+        <div className="bg-blue-50 rounded-xl p-3 text-[11.5px] text-blue-900 space-y-1">
           <div className="font-bold text-[var(--color-primary)] mb-1.5">Comment activer sur iPhone :</div>
           <div>1. Dans Safari → appuyez sur <strong>↑</strong> (bouton partage)</div>
           <div>2. Choisissez <strong>« Sur l’écran d’accueil »</strong></div>

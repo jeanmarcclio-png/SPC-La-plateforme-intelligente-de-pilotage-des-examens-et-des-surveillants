@@ -65,7 +65,7 @@ export function TeamSection({ members }: { members: Member[] }) {
           <button
             onClick={() => handleRemove(m.id, m.nom)}
             disabled={pending}
-            className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>

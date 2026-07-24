@@ -137,7 +137,7 @@ export function EcheanceActions({ echeance }: { echeance: Echeance }) {
         <button
           onClick={handleDelete}
           disabled={pending}
-          className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-40"
+          className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-40"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>

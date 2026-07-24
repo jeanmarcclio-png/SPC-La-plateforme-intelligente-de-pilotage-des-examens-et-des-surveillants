@@ -23,15 +23,15 @@ interface AccentStyle {
 }
 
 const ACCENTS: Record<KpiAccent, AccentStyle> = {
-  indigo: { soft: "bg-indigo-50/60 border-indigo-100", strong: "bg-indigo-100/70 border-indigo-200", chip: "bg-indigo-100 text-indigo-600", value: "text-indigo-700", label: "text-slate-500", bar: "bg-indigo-500", chipVivid: "bg-indigo-600 text-white", valueVivid: "text-indigo-600" },
-  amber: { soft: "bg-amber-50/60 border-amber-100", strong: "bg-amber-100/70 border-amber-200", chip: "bg-amber-100 text-amber-600", value: "text-amber-700", label: "text-slate-500", bar: "bg-amber-500", chipVivid: "bg-amber-500 text-white", valueVivid: "text-amber-600" },
-  emerald: { soft: "bg-emerald-50/60 border-emerald-100", strong: "bg-emerald-100/70 border-emerald-200", chip: "bg-emerald-100 text-emerald-600", value: "text-emerald-700", label: "text-slate-500", bar: "bg-emerald-500", chipVivid: "bg-emerald-600 text-white", valueVivid: "text-emerald-600" },
-  blue: { soft: "bg-sky-50/60 border-sky-100", strong: "bg-sky-100/70 border-sky-200", chip: "bg-sky-100 text-sky-600", value: "text-sky-700", label: "text-slate-500", bar: "bg-sky-500", chipVivid: "bg-sky-600 text-white", valueVivid: "text-sky-600" },
-  cyan: { soft: "bg-cyan-50/60 border-cyan-100", strong: "bg-cyan-100/70 border-cyan-200", chip: "bg-cyan-100 text-cyan-700", value: "text-cyan-700", label: "text-slate-500", bar: "bg-cyan-500", chipVivid: "bg-cyan-500 text-white", valueVivid: "text-cyan-700" },
-  red: { soft: "bg-rose-50/60 border-rose-100", strong: "bg-rose-100/70 border-rose-200", chip: "bg-rose-100 text-rose-600", value: "text-rose-700", label: "text-slate-500", bar: "bg-rose-500", chipVivid: "bg-rose-600 text-white", valueVivid: "text-rose-600" },
+  indigo: { soft: "bg-indigo-50/60 border-indigo-100", strong: "bg-indigo-100/70 border-indigo-200", chip: "bg-indigo-100 text-indigo-600", value: "text-indigo-700", label: "text-indigo-700/80", bar: "bg-indigo-500", chipVivid: "bg-indigo-600 text-white", valueVivid: "text-indigo-600" },
+  amber: { soft: "bg-amber-50/60 border-amber-100", strong: "bg-amber-100/70 border-amber-200", chip: "bg-amber-100 text-amber-600", value: "text-amber-700", label: "text-amber-800/80", bar: "bg-amber-500", chipVivid: "bg-amber-500 text-white", valueVivid: "text-amber-600" },
+  emerald: { soft: "bg-emerald-50/60 border-emerald-100", strong: "bg-emerald-100/70 border-emerald-200", chip: "bg-emerald-100 text-emerald-600", value: "text-emerald-700", label: "text-emerald-800/80", bar: "bg-emerald-500", chipVivid: "bg-emerald-600 text-white", valueVivid: "text-emerald-600" },
+  blue: { soft: "bg-sky-50/60 border-sky-100", strong: "bg-sky-100/70 border-sky-200", chip: "bg-sky-100 text-sky-600", value: "text-sky-700", label: "text-sky-800/80", bar: "bg-sky-500", chipVivid: "bg-sky-600 text-white", valueVivid: "text-sky-600" },
+  cyan: { soft: "bg-cyan-50/60 border-cyan-100", strong: "bg-cyan-100/70 border-cyan-200", chip: "bg-cyan-100 text-cyan-700", value: "text-cyan-700", label: "text-cyan-800/80", bar: "bg-cyan-500", chipVivid: "bg-cyan-500 text-white", valueVivid: "text-cyan-700" },
+  red: { soft: "bg-rose-50/60 border-rose-100", strong: "bg-rose-100/70 border-rose-200", chip: "bg-rose-100 text-rose-600", value: "text-rose-700", label: "text-rose-800/80", bar: "bg-rose-500", chipVivid: "bg-rose-600 text-white", valueVivid: "text-rose-600" },
   slate: { soft: "bg-white border-gray-200/80", strong: "bg-slate-50 border-slate-200", chip: "bg-slate-100 text-slate-600", value: "text-slate-900", label: "text-slate-500", bar: "bg-slate-400", chipVivid: "bg-slate-700 text-white", valueVivid: "text-slate-800" },
-  violet: { soft: "bg-violet-50/60 border-violet-100", strong: "bg-violet-100/70 border-violet-200", chip: "bg-violet-100 text-violet-600", value: "text-violet-700", label: "text-slate-500", bar: "bg-violet-500", chipVivid: "bg-violet-600 text-white", valueVivid: "text-violet-600" },
-  teal: { soft: "bg-teal-50/60 border-teal-100", strong: "bg-teal-100/70 border-teal-200", chip: "bg-teal-100 text-teal-700", value: "text-teal-700", label: "text-slate-500", bar: "bg-teal-500", chipVivid: "bg-teal-600 text-white", valueVivid: "text-teal-700" },
+  violet: { soft: "bg-violet-50/60 border-violet-100", strong: "bg-violet-100/70 border-violet-200", chip: "bg-violet-100 text-violet-600", value: "text-violet-700", label: "text-violet-800/80", bar: "bg-violet-500", chipVivid: "bg-violet-600 text-white", valueVivid: "text-violet-600" },
+  teal: { soft: "bg-teal-50/60 border-teal-100", strong: "bg-teal-100/70 border-teal-200", chip: "bg-teal-100 text-teal-700", value: "text-teal-700", label: "text-teal-800/80", bar: "bg-teal-500", chipVivid: "bg-teal-600 text-white", valueVivid: "text-teal-700" },
 };
 
 function KpiBody({
@@ -48,7 +48,7 @@ function KpiBody({
   return (
     <>
       <div className="flex items-center justify-between mb-3">
-        <span className={`text-[11px] font-bold uppercase tracking-[1px] ${style.label}`}>{label}</span>
+        <span className={`text-[11px] font-bold uppercase tracking-[1px] ${vivid ? "text-slate-500" : style.label}`}>{label}</span>
         {icon && <span aria-hidden className={`w-8 h-8 rounded-lg flex items-center justify-center ${chipCls}`}>{icon}</span>}
       </div>
       <div className={`text-[26px] font-extrabold leading-none ${valCls} ${truncate ? "truncate" : ""}`}>{value}</div>

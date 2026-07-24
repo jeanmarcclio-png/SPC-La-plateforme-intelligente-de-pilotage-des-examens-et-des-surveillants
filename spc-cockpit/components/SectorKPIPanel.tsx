@@ -27,7 +27,7 @@ export function SectorKPIPanel() {
       {/* Headline banner */}
       <div
         className="rounded-2xl p-4"
-        style={{ background: `linear-gradient(135deg, ${tenantConfig.couleur}18 0%, ${tenantConfig.couleur}08 100%)`, borderLeft: `3px solid ${tenantConfig.couleur}` }}
+        style={{ background: `linear-gradient(135deg, ${tenantConfig.couleur}18 0%, ${tenantConfig.couleur}08 100%)`, border: `1px solid ${tenantConfig.couleur}22` }}
       >
         <div className="text-[14px] font-bold" style={{ color: tenantConfig.couleur }}>{tenantConfig.emoji} {dashboard.headline}</div>
         <div className="text-[12px] text-gray-500 mt-0.5">{dashboard.subline}</div>

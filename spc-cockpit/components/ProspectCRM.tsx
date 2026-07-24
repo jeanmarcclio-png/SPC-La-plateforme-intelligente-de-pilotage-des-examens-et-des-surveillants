@@ -84,7 +84,7 @@ export function ProspectDeleteButton({ id, nom }: { id: string; nom: string }) {
       onClick={handleDelete}
       disabled={pending}
       title="Supprimer"
-      className="w-6 h-6 rounded flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+      className="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
     >
       <Trash2 className="w-3.5 h-3.5" />
     </button>

@@ -25,7 +25,7 @@ export function LivrableDeleteButton({ id, nom }: { id: number; nom: string }) {
       onClick={handleDelete}
       disabled={pending}
       title={`Supprimer "${nom}"`}
-      className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+      className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
     >
       <Trash2 className="w-3.5 h-3.5" />
     </button>

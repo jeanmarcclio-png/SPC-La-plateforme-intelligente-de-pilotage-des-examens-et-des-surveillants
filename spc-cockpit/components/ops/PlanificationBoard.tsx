@@ -127,7 +127,7 @@ function SlotsEditor({ slots, onChange, def, tint }: { slots: Slot[]; onChange: 
           <input type="time" value={s.debut} aria-label={`Début créneau ${i + 1}`} onChange={(e) => onChange(slots.map((x, j) => (j === i ? { ...x, debut: e.target.value } : x)))} className={cls} />
           <span className="text-gray-300">–</span>
           <input type="time" value={s.fin} aria-label={`Fin créneau ${i + 1}`} onChange={(e) => onChange(slots.map((x, j) => (j === i ? { ...x, fin: e.target.value } : x)))} className={cls} />
-          <button type="button" onClick={() => onChange(slots.filter((_, j) => j !== i))} title="Supprimer ce créneau" aria-label={`Supprimer le créneau ${i + 1}`} className="w-6 h-6 flex items-center justify-center rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors">
+          <button type="button" onClick={() => onChange(slots.filter((_, j) => j !== i))} title="Supprimer ce créneau" aria-label={`Supprimer le créneau ${i + 1}`} className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -797,7 +797,7 @@ export function PlanificationBoard({
                                 <Check className="w-3.5 h-3.5" />Enregistrer
                               </button>
                             )}
-                            <button onClick={() => remove(a)} disabled={pending} title="Retirer de la session" className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40">
+                            <button onClick={() => remove(a)} disabled={pending} title="Retirer de la session" className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40">
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
