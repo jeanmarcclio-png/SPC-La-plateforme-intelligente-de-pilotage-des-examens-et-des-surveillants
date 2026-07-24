@@ -68,6 +68,33 @@ export const PILOT_CSS = `
 @keyframes pDraw{to{stroke-dashoffset:0;}}
 @keyframes pFade{to{opacity:1;}}
 
+/* Ancrage sombre — bloc de présence (hero pipeline, bandeau de vitals).
+   Donne du contraste sans assombrir toute la page. */
+.pilot .anchor{position:relative;overflow:hidden;border-radius:16px;padding:30px 34px 28px;margin-top:24px;
+  background:linear-gradient(157deg,#1c2b28 0%,#141e1c 58%,#101917 100%);color:#eef1ee;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 16px 40px -24px rgba(12,20,18,.8);}
+.pilot .anchor::after{content:"";position:absolute;top:-42%;right:-4%;width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(79,209,197,.16),transparent 70%);pointer-events:none;}
+.pilot .anchorGrid{display:grid;grid-template-columns:.92fr 1.08fr;gap:44px;align-items:end;position:relative;}
+@media(max-width:760px){.pilot .anchorGrid{grid-template-columns:1fr;gap:22px;align-items:stretch;}}
+.pilot .anchor .eyebrow{color:#6fd6c4;}
+.pilot .anchor .metric .big{color:#fff;}
+.pilot .anchor .metric .big .u{color:#93a8a1;}
+.pilot .anchor .trend{color:#83e3b4;background:rgba(131,227,180,.14);}
+.pilot .anchor .trend.warn{color:#e8c07a;background:rgba(232,192,122,.15);}
+.pilot .anchor .trend.crit{color:#ef9a95;background:rgba(239,154,149,.15);}
+.pilot .anchor .story{color:#c2ccc7;}
+.pilot .anchor .story b{color:#fff;}
+.pilot .anchor .story mark{color:#b7a9ff;}
+.pilot .anchor .mini .n{color:#fff;}
+.pilot .anchor .mini .l{color:#8fa19b;}
+.pilot .anchor .chart .cap .t{color:#8ba09a;}
+.pilot .anchor .chart .cap .leg{color:#7f938d;}
+.pilot .anchor .track{background:rgba(255,255,255,.13);}
+.pilot .anchor .key .n{color:#fff;}
+.pilot .anchor .key .l{color:#c2ccc7;}
+.pilot .anchor .key .p{color:#8fa19b;}
+
 .pilot .funnel{margin-top:12px;padding-top:22px;border-top:1px solid var(--line);}
 .pilot .track{display:flex;height:11px;border-radius:3px;overflow:hidden;background:var(--line);}
 .pilot .track i{display:block;height:100%;transform:scaleX(0);transform-origin:left;animation:pGrow .8s cubic-bezier(.2,.7,.2,1) forwards;}

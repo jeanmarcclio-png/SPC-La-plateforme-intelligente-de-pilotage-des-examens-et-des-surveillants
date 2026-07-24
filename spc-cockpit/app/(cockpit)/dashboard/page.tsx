@@ -119,8 +119,9 @@ export default async function DashboardPage() {
           </section>
         )}
 
-        {/* Hero — pipeline + répartition réelle */}
-        <section className="hero">
+        {/* Hero — pipeline + répartition réelle (ancrage sombre) */}
+        <section className="anchor">
+          <div className="anchorGrid">
           <div>
             <div className="eyebrow">Pipeline commercial</div>
             <div className="metric">
@@ -156,9 +157,10 @@ export default async function DashboardPage() {
               </div>
             </div>
           </div>
+          </div>
         </section>
 
-        {/* Panneau KPI sectoriel (îlot secteur, données propres) */}
+        {/* Panneau KPI sectoriel (données propres au secteur) */}
         <section style={{ marginTop: 34 }}>
           <SectorKPIPanel />
         </section>
