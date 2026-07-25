@@ -186,3 +186,78 @@ export interface JournalEntry {
   nouvelle: string | null;
   createdAt: string; // ISO
 }
+
+// ─── MVP interne « Demandes client » ─────────────────────────────────────────
+// Structuration d'une demande de surveillance reçue, avant conversion en mission.
+
+export type StatutDemande =
+  | "Brouillon"
+  | "À vérifier"
+  | "Complète"
+  | "À corriger"
+  | "Validée SPC"
+  | "Convertie en mission"
+  | "Archivée"
+  | "Annulée";
+
+/** Interlocuteur (demandeur ou responsable client). */
+export interface Contact {
+  prenom?: string;
+  nom?: string;
+  fonction?: string;
+  email?: string;
+  telephone?: string;
+  service?: string;
+}
+
+/** Une ligne salle/horaire d'une demande (matin et après-midi indépendants). */
+export interface DemandeSalle {
+  id?: number;
+  dateExamen?: string;             // ISO yyyy-mm-dd
+  creneau: "matin" | "apres-midi";
+  salle: string;
+  batiment?: string;
+  etudiants: number;
+  surveillants: number;
+  pmr: boolean;
+  tiersTemps: boolean;
+  debutExamen?: string;            // heure d'examen (≠ surveillance)
+  finExamen?: string;
+  debutSurveillance?: string;      // heure de surveillance (base facturable après conversion)
+  finSurveillance?: string;
+  observations?: string;
+  ordre: number;
+}
+
+export interface DemandeClient {
+  id: number;
+  reference: string;
+  statut: StatutDemande;
+
+  etablissement: string;
+  campus?: string;
+  adresse?: string;
+  ville?: string;
+  codePostal?: string;
+  referenceClient?: string;
+  typeEtablissement?: string;
+  contactAdministratif?: string;
+
+  demandeur: Contact;
+  responsableClient: Contact;
+  responsableSpc: { nom?: string; email?: string; role?: string };
+
+  pmrPresent: boolean;
+  pmrNombre: number;
+  pmrDetails?: string;
+  tiersTempsPresent: boolean;
+  tiersTempsNombre: number;
+  tiersTempsDetails?: string;
+  besoinsSpecifiques: string[];
+
+  observations?: string;
+  salles: DemandeSalle[];
+
+  createdAt?: string;
+  updatedAt?: string;
+}
