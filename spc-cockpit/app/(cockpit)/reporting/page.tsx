@@ -117,6 +117,27 @@ export default async function ReportingPage() {
             </div>
           </div>
           <div className="p-4 pb-40 space-y-3">
+            {/* Prévision — ancre mobile (miroir du desktop) */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[var(--color-primary)]">Prévision</span>
+                <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-1.5 py-0.5">IA prédictive</span>
+              </div>
+              <div className="text-[15px] font-extrabold text-gray-900 tracking-tight mb-3">Objectif fin de trimestre</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="border border-gray-200 rounded-xl p-3 bg-gray-50">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1.5 font-medium">Trajectoire</div>
+                  <div className="text-[26px] font-extrabold text-gray-600 leading-none">{forecastConversions}</div>
+                  <div className="text-[10.5px] text-gray-400 mt-1">conversions estimées</div>
+                </div>
+                <div className="border border-[var(--color-primary)]/25 rounded-xl p-3 bg-teal-50/60">
+                  <div className="text-[10px] text-[var(--color-primary)] uppercase tracking-wider mb-1.5 font-bold">Avec accélération</div>
+                  <div className="text-[26px] font-extrabold text-[var(--color-primary)] leading-none">{forecastConversionsBoosted}</div>
+                  <div className="text-[10.5px] text-[var(--color-primary)]/80 mt-1 font-medium">+{gainPct}% vs trajectoire</div>
+                </div>
+              </div>
+            </div>
+
             {/* 2×2 KPIs */}
             <div className="grid grid-cols-2 gap-3">
               {[
@@ -225,7 +246,7 @@ export default async function ReportingPage() {
         </div>
 
         {/* ── DESKTOP ── */}
-        <div className="hidden md:block p-5 md:p-6">
+        <div className="hidden md:block p-6">
 
         {/* ── ANCRE : Prévision fin de trimestre (l'élément qui mène la page) ── */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
@@ -276,8 +297,8 @@ export default async function ReportingPage() {
         </div>
 
         {/* ── Groupe : Synthèse ── */}
-        <SectionRule label="Synthèse" />
-        <div className="grid grid-cols-4 gap-3.5 mb-4">
+        <SectionRule label="Synthèse" className="mt-8" />
+        <div className="grid grid-cols-4 gap-4 mb-4">
           {[
             { label: "Total prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, bar: "bg-sky-500" },
             { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, bar: "bg-amber-500" },
@@ -432,7 +453,12 @@ function DonutChart({ data, total }: { data: { nom: string; count: number; color
   const circumference = 2 * Math.PI * r;
 
   return (
-    <svg viewBox="0 0 108 108" className="w-[108px] h-[108px] flex-shrink-0">
+    <svg
+      viewBox="0 0 108 108"
+      className="w-[108px] h-[108px] flex-shrink-0"
+      role="img"
+      aria-label={`Répartition par segment sur ${total} prospects : ${data.map((s) => `${s.nom} ${s.count}`).join(", ")}`}
+    >
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="#edf2f7" strokeWidth={strokeW} />
       {data.map((s, i) => {
         const offset = data.slice(0, i).reduce((sum, x) => sum + x.count, 0);
@@ -463,7 +489,11 @@ function DonutChart({ data, total }: { data: { nom: string; count: number; color
 function FunnelChart({ steps }: { steps: { label: string; count: number; color: string }[] }) {
   const maxCount = Math.max(...steps.map((s) => s.count), 1);
   return (
-    <div className="space-y-2">
+    <div
+      className="space-y-2"
+      role="img"
+      aria-label={`Entonnoir de conversion : ${steps.map((s) => `${s.label} ${s.count}`).join(", ")}`}
+    >
       {steps.map((s, i) => {
         const pct = (s.count / maxCount) * 100;
         const dropPct = i > 0 && steps[i - 1].count > 0
@@ -503,7 +533,11 @@ function FunnelChart({ steps }: { steps: { label: string; count: number; color: 
 function ScoreHistogram({ buckets, maxCount }: { buckets: { label: string; count: number }[]; maxCount: number }) {
   const colors = ["#a0aec0", "#4a90d9", "#f6ad55", "#38a169", "var(--color-primary)"];
   return (
-    <div className="flex items-end gap-2 h-[100px]">
+    <div
+      className="flex items-end gap-2 h-[100px]"
+      role="img"
+      aria-label={`Distribution du score BANT : ${buckets.map((b) => `${b.label} points, ${b.count}`).join(", ")}`}
+    >
       {buckets.map((b, i) => {
         const heightPct = maxCount > 0 ? (b.count / maxCount) * 100 : 0;
         return (
