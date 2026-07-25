@@ -2,26 +2,29 @@
 
 import { useState, useTransition } from "react";
 import { ShieldCheck } from "lucide-react";
-import { STATUTS_DEMANDE, STATUT_META } from "@/lib/operations/demandes-constants";
+import { STATUTS_DEMANDE, STATUT_META, STATUT_NON_VALIDABLE } from "@/lib/operations/demandes-constants";
 import { updateDemandeStatut, validerDemande } from "@/app/actions/demandes";
 import type { StatutDemande } from "@/lib/operations/types";
 
 export function DemandeStatutActions({ id, statut }: { id: number; statut: StatutDemande }) {
   const [pending, startTransition] = useTransition();
   const [blocages, setBlocages] = useState<string[] | null>(null);
+  const [avertissements, setAvertissements] = useState<string[] | null>(null);
 
   function changeStatut(next: string) {
     startTransition(() => { void updateDemandeStatut(id, next); });
   }
   function valider() {
     setBlocages(null);
+    setAvertissements(null);
     startTransition(async () => {
       const res = await validerDemande(id);
       if (res.blocages?.length) setBlocages(res.blocages);
+      else if (res.avertissements?.length) setAvertissements(res.avertissements);
     });
   }
 
-  const canValidate = statut !== "Validée SPC" && statut !== "Convertie en mission" && statut !== "Annulée" && statut !== "Archivée";
+  const canValidate = !STATUT_NON_VALIDABLE.includes(statut);
 
   return (
     <div className="flex flex-col items-end gap-1.5">
@@ -53,6 +56,15 @@ export function DemandeStatutActions({ id, statut }: { id: number; statut: Statu
           <ul className="text-[10.5px] text-red-500 space-y-0.5">
             {blocages.slice(0, 4).map((b, i) => <li key={i}>· {b}</li>)}
             {blocages.length > 4 && <li>· … +{blocages.length - 4}</li>}
+          </ul>
+        </div>
+      )}
+      {avertissements && (
+        <div className="max-w-[280px] text-right rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5">
+          <div className="text-[10.5px] font-bold text-amber-700 mb-0.5">Validée · {avertissements.length} point(s) à vérifier</div>
+          <ul className="text-[10.5px] text-amber-600 space-y-0.5">
+            {avertissements.slice(0, 4).map((a, i) => <li key={i}>· {a}</li>)}
+            {avertissements.length > 4 && <li>· … +{avertissements.length - 4}</li>}
           </ul>
         </div>
       )}

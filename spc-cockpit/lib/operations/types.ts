@@ -191,14 +191,19 @@ export interface JournalEntry {
 // Structuration d'une demande de surveillance reçue, avant conversion en mission.
 
 export type StatutDemande =
-  | "Brouillon"
-  | "À vérifier"
-  | "Complète"
+  | "Brouillon interne"
+  | "Lien envoyé client"
+  | "Brouillon client"
+  | "Soumise par client"
+  | "Importée depuis Excel"
+  | "À vérifier SPC"
   | "À corriger"
+  | "Complète"
   | "Validée SPC"
   | "Convertie en mission"
   | "Archivée"
-  | "Annulée";
+  | "Annulée"
+  | "Expirée";
 
 /** Interlocuteur (demandeur ou responsable client). */
 export interface Contact {

@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { validateDemande, generateDemandeReference, buildMissionFromDemande, parseSallesFromText, normalizeDate } from "../demandes-constants";
+import { validateDemande, evaluateDemande, generateDemandeReference, buildMissionFromDemande, parseSallesFromText, normalizeDate } from "../demandes-constants";
 import type { DemandeClient } from "../types";
 
 function demandeComplete(): DemandeClient {
   return {
     id: 1,
     reference: "DC-2026-0001",
-    statut: "À vérifier",
+    statut: "À vérifier SPC",
     etablissement: "EM Lyon",
     demandeur: { nom: "Bonnet", email: "c.bonnet@x.fr" },
     responsableClient: { nom: "Delaunay", email: "m.delaunay@x.fr" },
@@ -63,6 +63,27 @@ describe("validateDemande", () => {
     const errors = validateDemande(d);
     expect(errors).toContain("Salle A21 : effectif étudiants manquant");
     expect(errors).toContain("Salle A21 : nombre de surveillants manquant");
+  });
+});
+
+describe("evaluateDemande (3 niveaux)", () => {
+  it("aucune erreur sur une demande conforme, mais des avertissements non bloquants", () => {
+    const ev = evaluateDemande(demandeComplete());
+    expect(ev.erreurs).toEqual([]);
+    expect(ev.avertissements).toContain("Téléphone du demandeur absent");
+    expect(ev.avertissements).toContain("Référence client absente");
+  });
+
+  it("classe un email invalide en erreur bloquante", () => {
+    const d = demandeComplete();
+    d.demandeur.email = "pas-un-email";
+    expect(evaluateDemande(d).erreurs).toContain("Email du demandeur invalide");
+  });
+
+  it("range campus/service absents en information (non bloquant)", () => {
+    const ev = evaluateDemande(demandeComplete());
+    expect(ev.infos).toContain("Campus / site non précisé");
+    expect(ev.erreurs).not.toContain("Campus / site non précisé");
   });
 });
 

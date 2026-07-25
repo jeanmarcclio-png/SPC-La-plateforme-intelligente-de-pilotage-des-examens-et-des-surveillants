@@ -9,7 +9,7 @@ export default function NouvelleDemandePage() {
   return (
     <>
       <div className="hidden md:block">
-        <Topbar context="Demandes clients" title="Nouvelle demande client" badge="Brouillon" badgeColor="blue" />
+        <Topbar context="Demandes clients" title="Nouvelle demande client" badge="Brouillon interne" badgeColor="blue" />
       </div>
 
       <main className="flex-1 overflow-y-auto">

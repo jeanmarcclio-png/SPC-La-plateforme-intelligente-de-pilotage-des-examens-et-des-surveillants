@@ -6,7 +6,7 @@ function demande(): DemandeClient {
   return {
     id: 1,
     reference: "DC-2026-0420",
-    statut: "À vérifier",
+    statut: "À vérifier SPC",
     etablissement: "EM Lyon Business School",
     campus: "Écully",
     ville: "Lyon",
@@ -48,7 +48,7 @@ describe("buildDemandeSheets", () => {
     expect(synth["Nombre total salles"]).toBe(2);
     expect(synth["Nombre total étudiants"]).toBe(210);
     expect(synth["Nombre total créneaux"]).toBe(2);
-    expect(synth["Statut"]).toBe("À vérifier");
+    expect(synth["Statut"]).toBe("À vérifier SPC");
   });
 
   it("liste une ligne d'en-tête + une ligne par salle", () => {

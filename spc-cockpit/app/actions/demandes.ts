@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireCapability } from "@/lib/auth/session";
 import { getActiveOrgId } from "@/lib/auth/org";
 import { getDemandeClient } from "@/lib/operations/demandes";
-import { generateDemandeReference, validateDemande, buildMissionFromDemande } from "@/lib/operations/demandes-constants";
+import { generateDemandeReference, evaluateDemande, buildMissionFromDemande } from "@/lib/operations/demandes-constants";
 import type { DemandeSalle } from "@/lib/operations/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -95,7 +95,7 @@ export async function createDemande(fd: FormData): Promise<{ error?: string; id?
 
   const salles = parseSalles(fd);
   const reference = str(fd, "reference") || generateDemandeReference();
-  const statut = str(fd, "statut") || "Brouillon";
+  const statut = str(fd, "statut") || "Brouillon interne";
 
   try {
     const supabase = await createClient();
@@ -182,19 +182,47 @@ export async function convertirEnMission(id: number): Promise<{ error?: string; 
 }
 
 /**
- * Validation SPC (spec §12) : exécute les contrôles bloquants puis scelle la
- * demande en « Validée SPC ». Retourne la liste des erreurs si non conforme.
+ * Validation SPC (spec §9, §11) : contrôle à 3 niveaux. Bloque sur les erreurs ;
+ * les avertissements sont remontés mais n'empêchent pas la validation.
  */
-export async function validerDemande(id: number): Promise<{ error?: string; blocages?: string[] }> {
+export async function validerDemande(id: number): Promise<{ error?: string; blocages?: string[]; avertissements?: string[] }> {
   const auth = await requireCapability("plan");
   if (!auth.ok) return { error: auth.error };
 
   const demande = await getDemandeClient(id);
   if (!demande) return { error: "Demande introuvable" };
 
-  const blocages = validateDemande(demande);
-  if (blocages.length > 0) {
-    return { error: `La demande ne peut pas être validée : ${blocages.length} élément(s) à corriger.`, blocages };
+  const { erreurs, avertissements } = evaluateDemande(demande);
+  if (erreurs.length > 0) {
+    return { error: `La demande ne peut pas être validée : ${erreurs.length} élément(s) à corriger.`, blocages: erreurs };
   }
-  return updateDemandeStatut(id, "Validée SPC");
+  const res = await updateDemandeStatut(id, "Validée SPC");
+  if (res.error) return res;
+  return { avertissements };
+}
+
+/**
+ * Demande de correction au client (spec §12) : passe la demande en « À corriger »
+ * et consigne le commentaire SPC dans l'historique.
+ */
+export async function demanderCorrection(id: number, commentaire: string): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
+  const msg = commentaire?.trim();
+  if (!msg) return { error: "Merci de préciser la correction demandée." };
+
+  try {
+    const supabase = await createClient();
+    const org_id = await getActiveOrgId();
+    const { error } = await supabase
+      .from("demandes_client")
+      .update({ statut: "À corriger", updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) return { error: `Demande de correction échouée : ${error.message}` };
+    await logDemande(supabase, org_id, id, "Demande de correction", msg);
+    revalidateDemandes(id);
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
 }

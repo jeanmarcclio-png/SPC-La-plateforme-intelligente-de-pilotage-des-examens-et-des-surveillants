@@ -7,7 +7,7 @@ export const mockDemandes: DemandeClient[] = [
   {
     id: 1,
     reference: "DC-2026-0420",
-    statut: "À vérifier",
+    statut: "À vérifier SPC",
     etablissement: "EM Lyon Business School",
     campus: "Écully",
     ville: "Lyon",
@@ -31,7 +31,7 @@ export const mockDemandes: DemandeClient[] = [
   {
     id: 2,
     reference: "DC-2026-0418",
-    statut: "Brouillon",
+    statut: "Brouillon interne",
     etablissement: "IFSI CHU Lyon",
     ville: "Lyon",
     typeEtablissement: "IFSI",

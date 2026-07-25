@@ -4,27 +4,40 @@
 import type { DemandeClient, DemandeSalle, StatutDemande } from "./types";
 
 export const STATUTS_DEMANDE: StatutDemande[] = [
-  "Brouillon",
-  "À vérifier",
-  "Complète",
+  "Brouillon interne",
+  "Lien envoyé client",
+  "Brouillon client",
+  "Soumise par client",
+  "Importée depuis Excel",
+  "À vérifier SPC",
   "À corriger",
+  "Complète",
   "Validée SPC",
   "Convertie en mission",
   "Archivée",
   "Annulée",
+  "Expirée",
 ];
 
-/** Métadonnées d'affichage par statut : libellé, couleurs de pastille. */
+/** Métadonnées d'affichage par statut : couleurs de pastille. */
 export const STATUT_META: Record<StatutDemande, { pill: string; dot: string }> = {
-  "Brouillon":            { pill: "bg-gray-100 text-gray-600",       dot: "#a0aec0" },
-  "À vérifier":           { pill: "bg-amber-50 text-amber-700",      dot: "#f6ad55" },
-  "Complète":             { pill: "bg-blue-50 text-blue-700",        dot: "#4a90d9" },
+  "Brouillon interne":    { pill: "bg-gray-100 text-gray-600",       dot: "#a0aec0" },
+  "Lien envoyé client":   { pill: "bg-sky-50 text-sky-700",          dot: "#38bdf8" },
+  "Brouillon client":     { pill: "bg-sky-50 text-sky-600",          dot: "#7dd3fc" },
+  "Soumise par client":   { pill: "bg-indigo-50 text-indigo-700",    dot: "#667eea" },
+  "Importée depuis Excel":{ pill: "bg-blue-50 text-blue-700",        dot: "#4a90d9" },
+  "À vérifier SPC":       { pill: "bg-amber-50 text-amber-700",      dot: "#f6ad55" },
   "À corriger":           { pill: "bg-red-50 text-red-600",          dot: "#fc8181" },
+  "Complète":             { pill: "bg-blue-50 text-blue-700",        dot: "#4a90d9" },
   "Validée SPC":          { pill: "bg-teal-50 text-[var(--color-primary)]", dot: "#0f766e" },
   "Convertie en mission": { pill: "bg-indigo-50 text-indigo-700",    dot: "#667eea" },
   "Archivée":             { pill: "bg-gray-100 text-gray-400",       dot: "#cbd5e0" },
   "Annulée":              { pill: "bg-gray-100 text-gray-400 line-through", dot: "#cbd5e0" },
+  "Expirée":              { pill: "bg-gray-100 text-gray-500",       dot: "#cbd5e0" },
 };
+
+/** Statuts depuis lesquels une validation SPC est encore possible. */
+export const STATUT_NON_VALIDABLE: StatutDemande[] = ["Validée SPC", "Convertie en mission", "Annulée", "Archivée", "Expirée"];
 
 /** Suggestions de besoins particuliers (spec §8.3). */
 export const BESOINS_SUGGESTIONS = [
@@ -44,33 +57,62 @@ function contactRenseigne(c: { nom?: string; email?: string }): boolean {
   return Boolean(c.nom?.trim() && c.email?.trim());
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const emailValide = (e?: string) => !e?.trim() || EMAIL_RE.test(e.trim());
+
+export interface DemandeEvaluation {
+  erreurs: string[];       // bloquant : empêche la validation SPC
+  avertissements: string[];// non bloquant : vérification recommandée
+  infos: string[];         // purement informatif
+}
+
 /**
- * Contrôles bloquants avant passage en « Validée SPC » (spec §12).
- * Retourne la liste des éléments à corriger (vide = validable).
+ * Contrôle à trois niveaux (spec §9) : erreur bloquante, avertissement, info.
+ * La validation SPC n'est possible que si `erreurs` est vide.
  */
-export function validateDemande(d: DemandeClient): string[] {
-  const errors: string[] = [];
-  if (!d.etablissement?.trim()) errors.push("Établissement non renseigné");
-  if (!contactRenseigne(d.demandeur)) errors.push("Demandeur incomplet (nom + email requis)");
-  if (!contactRenseigne(d.responsableClient)) errors.push("Responsable client incomplet (nom + email requis)");
-  if (!d.responsableSpc?.nom?.trim()) errors.push("Responsable SPC non renseigné");
+export function evaluateDemande(d: DemandeClient): DemandeEvaluation {
+  const erreurs: string[] = [];
+  const avertissements: string[] = [];
+  const infos: string[] = [];
+
+  // ── Erreurs bloquantes ──
+  if (!d.etablissement?.trim()) erreurs.push("Établissement non renseigné");
+  if (!contactRenseigne(d.demandeur)) erreurs.push("Demandeur incomplet (nom + email requis)");
+  if (!contactRenseigne(d.responsableClient)) erreurs.push("Responsable client incomplet (nom + email requis)");
+  if (!d.responsableSpc?.nom?.trim()) erreurs.push("Responsable SPC non renseigné");
+  if (!emailValide(d.demandeur.email)) erreurs.push("Email du demandeur invalide");
+  if (!emailValide(d.responsableClient.email)) erreurs.push("Email du responsable client invalide");
 
   const salles = d.salles.filter((s) => s.salle?.trim());
-  if (salles.length === 0) errors.push("Aucune salle renseignée");
-  if (!salles.some((s) => s.dateExamen)) errors.push("Aucune date d'examen renseignée");
-
+  if (salles.length === 0) erreurs.push("Aucune salle renseignée");
+  if (!salles.some((s) => s.dateExamen)) erreurs.push("Aucune date d'examen renseignée");
   for (const s of salles) {
     if (s.debutSurveillance && s.finSurveillance && s.debutSurveillance >= s.finSurveillance) {
-      errors.push(`Salle ${s.salle} : horaire de surveillance incohérent`);
+      erreurs.push(`Salle ${s.salle} : horaire de surveillance incohérent`);
     }
-    if (s.etudiants <= 0) errors.push(`Salle ${s.salle} : effectif étudiants manquant`);
-    if (s.surveillants <= 0) errors.push(`Salle ${s.salle} : nombre de surveillants manquant`);
+    if (s.etudiants <= 0) erreurs.push(`Salle ${s.salle} : effectif étudiants manquant`);
+    if (s.surveillants <= 0) erreurs.push(`Salle ${s.salle} : nombre de surveillants manquant`);
   }
+  if (d.pmrPresent && d.pmrNombre <= 0) erreurs.push("PMR signalé mais effectif non renseigné");
+  if (d.tiersTempsPresent && d.tiersTempsNombre <= 0) erreurs.push("Tiers-temps signalé mais effectif non renseigné");
 
-  if (d.pmrPresent && d.pmrNombre <= 0) errors.push("PMR signalé mais effectif non renseigné");
-  if (d.tiersTempsPresent && d.tiersTempsNombre <= 0) errors.push("Tiers-temps signalé mais effectif non renseigné");
+  // ── Avertissements (vérification recommandée) ──
+  if (!d.demandeur.telephone?.trim()) avertissements.push("Téléphone du demandeur absent");
+  if (!d.referenceClient?.trim()) avertissements.push("Référence client absente");
+  if (salles.some((s) => !s.batiment?.trim())) avertissements.push("Bâtiment absent sur au moins une salle");
+  if (d.pmrPresent && !d.pmrDetails?.trim()) avertissements.push("PMR signalé mais détails incomplets");
+  if (!d.observations?.trim()) avertissements.push("Observations non renseignées");
 
-  return errors;
+  // ── Informations (non bloquant) ──
+  if (!d.demandeur.service?.trim()) infos.push("Service du demandeur non précisé");
+  if (!d.campus?.trim()) infos.push("Campus / site non précisé");
+
+  return { erreurs, avertissements, infos };
+}
+
+/** Sous-ensemble bloquant (compat) : liste des erreurs à corriger. */
+export function validateDemande(d: DemandeClient): string[] {
+  return evaluateDemande(d).erreurs;
 }
 
 /**

@@ -8,6 +8,7 @@ import { SectionRule } from "@/components/SectionRule";
 import { DemandeStatutActions } from "@/components/DemandeStatutActions";
 import { DemandeExportButtons } from "@/components/DemandeExportButtons";
 import { DemandeConvertButton } from "@/components/DemandeConvertButton";
+import { DemandeCorrectionButton } from "@/components/DemandeCorrectionButton";
 import { getDemandeClient, getDemandeJournal } from "@/lib/operations/demandes";
 import { STATUT_META } from "@/lib/operations/demandes-constants";
 import { periodeDemande } from "@/lib/operations/demande-export";
@@ -53,6 +54,7 @@ export default async function DemandeDetailPage({ params }: { params: Promise<{ 
           <div className="hidden md:flex items-center justify-between mb-5">
             <Link href="/demandes-client" className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-gray-500 hover:text-gray-700"><ArrowLeft className="w-4 h-4" /> Retour à la liste</Link>
             <div className="flex items-center gap-3">
+              <DemandeCorrectionButton id={demande.id} statut={demande.statut} />
               <DemandeConvertButton id={demande.id} statut={demande.statut} missionId={demande.missionId} />
               <DemandeStatutActions id={demande.id} statut={demande.statut} />
             </div>

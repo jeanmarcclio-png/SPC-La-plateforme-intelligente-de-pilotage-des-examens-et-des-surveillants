@@ -33,8 +33,8 @@ export default async function DemandesClientPage() {
 
   const count = (fn: (d: DemandeClient) => boolean) => demandes.filter(fn).length;
   const kpis = [
-    { label: "Brouillons", value: count((d) => d.statut === "Brouillon"), bar: "bg-gray-400" },
-    { label: "À vérifier", value: count((d) => d.statut === "À vérifier"), bar: "bg-amber-500" },
+    { label: "Brouillons", value: count((d) => d.statut === "Brouillon interne" || d.statut === "Brouillon client"), bar: "bg-gray-400" },
+    { label: "À vérifier", value: count((d) => d.statut === "À vérifier SPC" || d.statut === "Soumise par client" || d.statut === "Importée depuis Excel"), bar: "bg-amber-500" },
     { label: "Validées SPC", value: count((d) => d.statut === "Validée SPC"), bar: "bg-teal-500" },
     { label: "Converties", value: count((d) => d.statut === "Convertie en mission"), bar: "bg-indigo-500" },
   ];
