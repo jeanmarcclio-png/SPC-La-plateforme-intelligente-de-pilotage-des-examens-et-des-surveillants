@@ -2,12 +2,12 @@ export const dynamic = "force-dynamic";
 
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
+import { SectionRule } from "@/components/SectionRule";
 import { Badge } from "@/components/Badge";
 import { getProspects, getClusterScores } from "@/lib/supabase/queries";
 import { ProspectStatutSelect, ProspectNotesInput } from "@/components/ProspectCRM";
 import { ProspectFilteredTable } from "@/components/ProspectFilteredTable";
 import { MobileProspectList } from "@/components/MobileProspectList";
-import { AddProspectButton } from "@/components/AddProspectModal";
 import { ModeDecisionButtons } from "@/components/ModeDecisionButtons";
 import { LancerScriptButton } from "@/components/LancerScriptButton";
 import { ProspectKanban } from "@/components/ProspectKanban";
@@ -132,7 +132,9 @@ export default async function QualificationPage() {
         </div>
 
         {/* ── DESKTOP ── */}
-        <div className="hidden md:block p-5">
+        <div className="hidden md:block p-6">
+        {/* ── Groupe : Décision (le prospect à trancher aujourd'hui) ── */}
+        <SectionRule label="Décision" />
         {/* Top: Selected prospect hero + BANT sub-scores */}
         <div className="grid grid-cols-[1fr_280px] gap-4 mb-4">
           {/* Hero card */}
@@ -240,9 +242,13 @@ export default async function QualificationPage() {
           </div>
         </div>
 
+        {/* ── Groupe : Pipeline ── */}
+        <SectionRule label="Pipeline" className="mt-8" />
         {/* Kanban pipeline view — HubSpot inspired */}
         <ProspectKanban prospects={prospects} />
 
+        {/* ── Groupe : Base prospects ── */}
+        <SectionRule label="Base prospects" className="mt-8" />
         {/* Bottom: prospects table + cluster scores */}
         <div className="grid grid-cols-[1fr_220px] gap-4">
           <div>

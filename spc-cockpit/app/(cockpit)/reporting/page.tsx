@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { FacturationButton } from "@/components/FacturationButton";
+import { SectionRule } from "@/components/SectionRule";
 import { getCampagnes, getProspects, getClusterScores, getSegmentRepartition, getLivrables } from "@/lib/supabase/queries";
 
 export default async function ReportingPage() {
@@ -433,17 +434,6 @@ export default async function ReportingPage() {
         <ConseilBar text={`${tresChaudes} prospects très chaud · score BANT moyen ${scoreMoyen}/10 · ${rdvFixes} RDV fixés. Lancez /analyse à J+30 pour le rapport complet.`} />
       </div>
     </>
-  );
-}
-
-// ─── Section rule (eyebrow + filet, crée les groupes de lecture) ──────────────
-function SectionRule({ label, count, className = "" }: { label: string; count?: string; className?: string }) {
-  return (
-    <div className={`flex items-center gap-3 mb-3 ${className}`}>
-      <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-gray-400">{label}</span>
-      <span className="h-px flex-1 bg-gray-200" aria-hidden />
-      {count && <span className="text-[12px] text-gray-400 flex-shrink-0">{count}</span>}
-    </div>
   );
 }
 
