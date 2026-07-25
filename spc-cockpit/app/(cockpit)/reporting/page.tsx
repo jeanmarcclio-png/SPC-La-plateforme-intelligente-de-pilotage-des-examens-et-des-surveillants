@@ -225,14 +225,17 @@ export default async function ReportingPage() {
         </div>
 
         {/* ── DESKTOP ── */}
-        <div className="hidden md:block p-5">
+        <div className="hidden md:block p-5 md:p-6">
 
-        {/* Prévision Trimestrielle */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
+        {/* ── ANCRE : Prévision fin de trimestre (l'élément qui mène la page) ── */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-gray-800">📈 Prévision fin de trimestre</span>
-              <span className="text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-2 py-0.5">IA Prédictive · Confiance 85%</span>
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-[var(--color-primary)]">Prévision</div>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[17px] font-extrabold text-gray-900 tracking-tight">Objectif fin de trimestre</span>
+                <span className="text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-2 py-0.5">IA prédictive</span>
+              </div>
             </div>
             <span className="text-[11px] text-gray-400">Base : {totalProspects} prospects · {campagnes.length} campagnes</span>
           </div>
@@ -272,8 +275,9 @@ export default async function ReportingPage() {
           </div>
         </div>
 
-        {/* KPIs */}
-        <div className="grid grid-cols-4 gap-3.5 mb-5">
+        {/* ── Groupe : Synthèse ── */}
+        <SectionRule label="Synthèse" />
+        <div className="grid grid-cols-4 gap-3.5 mb-4">
           {[
             { label: "Total prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, bar: "bg-sky-500" },
             { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, bar: "bg-amber-500" },
@@ -289,7 +293,8 @@ export default async function ReportingPage() {
           ))}
         </div>
 
-        {/* Charts row */}
+        {/* ── Groupe : Analyse ── */}
+        <SectionRule label="Analyse" className="mt-8" />
         <div className="grid grid-cols-[1fr_1fr_200px] gap-4 mb-4">
 
           {/* Répartition segments */}
@@ -377,12 +382,9 @@ export default async function ReportingPage() {
 
         </div>
 
-        {/* Livrables progression */}
+        {/* ── Groupe : Livrables ── */}
+        <SectionRule label="Livrables" count={`${livrablesValides}/${livrables.length} validés`} className="mt-8" />
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="text-[13px] font-semibold text-gray-700">Progression des livrables</div>
-            <span className="text-[12px] text-gray-400">{livrablesValides}/{livrables.length} validés</span>
-          </div>
           <div className="grid grid-cols-2 gap-3">
             {livrables.map((l) => {
               const pct = l.statut === "Validé" ? 100 : l.statut === "En cours" ? 50 : l.statut === "À renforcer" ? 70 : 0;
@@ -410,6 +412,17 @@ export default async function ReportingPage() {
         <ConseilBar text={`${tresChaudes} prospects très chaud · score BANT moyen ${scoreMoyen}/10 · ${rdvFixes} RDV fixés. Lancez /analyse à J+30 pour le rapport complet.`} />
       </div>
     </>
+  );
+}
+
+// ─── Section rule (eyebrow + filet, crée les groupes de lecture) ──────────────
+function SectionRule({ label, count, className = "" }: { label: string; count?: string; className?: string }) {
+  return (
+    <div className={`flex items-center gap-3 mb-3 ${className}`}>
+      <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-gray-400">{label}</span>
+      <span className="h-px flex-1 bg-gray-200" aria-hidden />
+      {count && <span className="text-[12px] text-gray-400 flex-shrink-0">{count}</span>}
+    </div>
   );
 }
 
