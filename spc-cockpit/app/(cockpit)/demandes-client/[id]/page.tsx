@@ -7,7 +7,8 @@ import { Topbar } from "@/components/Topbar";
 import { SectionRule } from "@/components/SectionRule";
 import { DemandeStatutActions } from "@/components/DemandeStatutActions";
 import { DemandeExportButtons } from "@/components/DemandeExportButtons";
-import { getDemandeClient } from "@/lib/operations/demandes";
+import { DemandeConvertButton } from "@/components/DemandeConvertButton";
+import { getDemandeClient, getDemandeJournal } from "@/lib/operations/demandes";
 import { STATUT_META } from "@/lib/operations/demandes-constants";
 import { periodeDemande } from "@/lib/operations/demande-export";
 import type { Contact } from "@/lib/operations/types";
@@ -30,6 +31,7 @@ export default async function DemandeDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const demande = await getDemandeClient(Number(id));
   if (!demande) notFound();
+  const journal = await getDemandeJournal(demande.id);
 
   const nbEtud = demande.salles.reduce((s, x) => s + x.etudiants, 0);
 
@@ -50,7 +52,10 @@ export default async function DemandeDetailPage({ params }: { params: Promise<{ 
         <div className="max-w-[1000px] mx-auto p-4 md:p-6 pb-40">
           <div className="hidden md:flex items-center justify-between mb-5">
             <Link href="/demandes-client" className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-gray-500 hover:text-gray-700"><ArrowLeft className="w-4 h-4" /> Retour à la liste</Link>
-            <DemandeStatutActions id={demande.id} statut={demande.statut} />
+            <div className="flex items-center gap-3">
+              <DemandeConvertButton id={demande.id} statut={demande.statut} missionId={demande.missionId} />
+              <DemandeStatutActions id={demande.id} statut={demande.statut} />
+            </div>
           </div>
 
           {/* Bandeau synthèse */}
@@ -125,6 +130,23 @@ export default async function DemandeDetailPage({ params }: { params: Promise<{ 
                 </div>
               )}
               {demande.observations && <p className="text-[13px] text-gray-600 leading-relaxed">{demande.observations}</p>}
+            </>
+          )}
+
+          {journal.length > 0 && (
+            <>
+              <SectionRule label="Historique" count={`${journal.length} action${journal.length > 1 ? "s" : ""}`} className="mt-8" />
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-100">
+                {journal.map((j) => (
+                  <div key={j.id} className="flex items-start gap-3 px-4 py-2.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2 flex-shrink-0" aria-hidden />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12.5px] font-semibold text-gray-800">{j.action}{j.detail && <span className="font-normal text-gray-500"> — {j.detail}</span>}</div>
+                      <div className="text-[11px] text-gray-400">{new Date(j.createdAt).toLocaleString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}{j.utilisateur ? ` · ${j.utilisateur}` : ""}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </>
           )}
 

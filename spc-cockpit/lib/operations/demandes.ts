@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { DemandeClient, DemandeSalle } from "./types";
+import type { DemandeClient, DemandeSalle, DemandeJournalEntry } from "./types";
 
 // ─── Mock (fallback : Supabase absent / table vide, comme le reste du module) ─
 export const mockDemandes: DemandeClient[] = [
@@ -113,6 +113,7 @@ function mapDemande(r: Record<string, unknown>, salles: DemandeSalle[]): Demande
     besoinsSpecifiques: Array.isArray(r.besoins_specifiques) ? (r.besoins_specifiques as string[]) : [],
     observations: (r.observations as string) ?? undefined,
     salles,
+    missionId: (r.mission_id as number) ?? undefined,
     createdAt: (r.created_at as string) ?? undefined,
     updatedAt: (r.updated_at as string) ?? undefined,
   };
@@ -149,4 +150,25 @@ export async function getDemandesClient(): Promise<DemandeClient[]> {
 export async function getDemandeClient(id: number): Promise<DemandeClient | null> {
   const all = await getDemandesClient();
   return all.find((d) => d.id === id) ?? null;
+}
+
+export async function getDemandeJournal(demandeId: number): Promise<DemandeJournalEntry[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("demandes_client_journal")
+      .select("*")
+      .eq("demande_id", demandeId)
+      .order("created_at", { ascending: false });
+    if (error || !data) return [];
+    return data.map((r) => ({
+      id: r.id as number,
+      action: r.action as string,
+      detail: (r.detail as string) ?? undefined,
+      utilisateur: (r.utilisateur as string) ?? undefined,
+      createdAt: r.created_at as string,
+    }));
+  } catch {
+    return [];
+  }
 }

@@ -258,6 +258,16 @@ export interface DemandeClient {
   observations?: string;
   salles: DemandeSalle[];
 
+  missionId?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+/** Entrée d'historique d'une demande (spec §15). */
+export interface DemandeJournalEntry {
+  id: number;
+  action: string;
+  detail?: string;
+  utilisateur?: string;
+  createdAt: string;
 }

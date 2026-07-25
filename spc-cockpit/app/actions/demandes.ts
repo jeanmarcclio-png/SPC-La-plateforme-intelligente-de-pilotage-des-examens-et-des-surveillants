@@ -5,11 +5,20 @@ import { revalidatePath } from "next/cache";
 import { requireCapability } from "@/lib/auth/session";
 import { getActiveOrgId } from "@/lib/auth/org";
 import { getDemandeClient } from "@/lib/operations/demandes";
-import { generateDemandeReference, validateDemande } from "@/lib/operations/demandes-constants";
+import { generateDemandeReference, validateDemande, buildMissionFromDemande } from "@/lib/operations/demandes-constants";
 import type { DemandeSalle } from "@/lib/operations/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-function revalidateDemandes() {
+function revalidateDemandes(id?: number) {
   revalidatePath("/demandes-client");
+  if (id) revalidatePath(`/demandes-client/${id}`);
+}
+
+/** Journalise une action de demande (best-effort : n'échoue jamais l'appelant). */
+async function logDemande(supabase: SupabaseClient, org_id: string | null, demandeId: number, action: string, detail?: string) {
+  try {
+    await supabase.from("demandes_client_journal").insert({ demande_id: demandeId, org_id, action, detail: detail ?? null });
+  } catch { /* le journal ne doit jamais bloquer l'action métier */ }
 }
 
 const str = (fd: FormData, k: string) => (fd.get(k) as string | null)?.trim() || null;
@@ -104,7 +113,8 @@ export async function createDemande(fd: FormData): Promise<{ error?: string; id?
       const { error: sErr } = await supabase.from("demandes_client_salles").insert(rows);
       if (sErr) return { error: `Salles non enregistrées : ${sErr.message}` };
     }
-    revalidateDemandes();
+    await logDemande(supabase, org_id, demandeId, "Création", `${salles.length} salle(s) · statut ${statut}`);
+    revalidateDemandes(demandeId);
     return { id: demandeId };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erreur inconnue" };
@@ -116,13 +126,56 @@ export async function updateDemandeStatut(id: number, statut: string): Promise<{
   if (!auth.ok) return { error: auth.error };
   try {
     const supabase = await createClient();
+    const org_id = await getActiveOrgId();
     const { error } = await supabase
       .from("demandes_client")
       .update({ statut, updated_at: new Date().toISOString() })
       .eq("id", id);
     if (error) return { error: `Changement de statut échoué : ${error.message}` };
-    revalidateDemandes();
+    await logDemande(supabase, org_id, id, "Changement de statut", statut);
+    revalidateDemandes(id);
     return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
+/**
+ * Conversion en mission (spec §13). Disponible uniquement si « Validée SPC ».
+ * Crée la mission (statut « À chiffrer »), relie la demande et la passe en
+ * « Convertie en mission ». Ne duplique aucun calcul financier (moteur central).
+ */
+export async function convertirEnMission(id: number): Promise<{ error?: string; missionId?: number }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
+
+  const demande = await getDemandeClient(id);
+  if (!demande) return { error: "Demande introuvable" };
+  if (demande.statut !== "Validée SPC") return { error: "Seule une demande « Validée SPC » peut être convertie en mission." };
+  if (demande.missionId) return { error: "Cette demande est déjà convertie en mission." };
+
+  try {
+    const supabase = await createClient();
+    const org_id = await getActiveOrgId();
+
+    const { data: mission, error: mErr } = await supabase
+      .from("missions")
+      .insert({ ...buildMissionFromDemande(demande), org_id })
+      .select("id")
+      .single();
+    if (mErr || !mission) return { error: `Création de mission échouée : ${mErr?.message ?? "aucune ligne"}` };
+
+    const missionId = mission.id as number;
+    const { error: uErr } = await supabase
+      .from("demandes_client")
+      .update({ statut: "Convertie en mission", mission_id: missionId, updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (uErr) return { error: `Demande non mise à jour : ${uErr.message}` };
+
+    await logDemande(supabase, org_id, id, "Conversion en mission", `Mission #${missionId} · statut À chiffrer`);
+    revalidateDemandes(id);
+    revalidatePath("/operations/missions");
+    return { missionId };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erreur inconnue" };
   }
