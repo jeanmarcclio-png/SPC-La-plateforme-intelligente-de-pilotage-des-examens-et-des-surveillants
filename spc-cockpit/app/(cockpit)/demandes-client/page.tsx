@@ -61,7 +61,7 @@ export default async function DemandesClientPage() {
             {demandes.length === 0 ? (
               <EmptyState />
             ) : demandes.map((d) => (
-              <div key={d.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <Link key={d.id} href={`/demandes-client/${d.id}`} className="block bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div className="min-w-0">
                     <div className="text-[15px] font-extrabold text-gray-900 truncate">{d.etablissement}</div>
@@ -75,7 +75,7 @@ export default async function DemandesClientPage() {
                   <div className="bg-gray-50 rounded-lg py-2"><div className="text-[13px] font-bold text-gray-700 mt-0.5">{periode(d)}</div><div className="text-[10.5px] text-gray-400">période</div></div>
                 </div>
                 <div className="text-[11.5px] text-gray-500 mt-3">Demandeur : <span className="font-semibold text-gray-700">{nomContact(d.demandeur)}</span> · SPC : {d.responsableSpc.nom ?? "—"}</div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -110,8 +110,8 @@ export default async function DemandesClientPage() {
                   <tbody>
                     {demandes.map((d) => (
                       <tr key={d.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50">
-                        <td className="px-3 py-2.5 text-[12px] font-mono text-gray-500 whitespace-nowrap">{d.reference}</td>
-                        <td className="px-3 py-2.5"><div className="text-[13px] font-semibold text-gray-800">{d.etablissement}</div><div className="text-[11px] text-gray-400">{[d.ville, d.typeEtablissement].filter(Boolean).join(" · ")}</div></td>
+                        <td className="px-3 py-2.5 whitespace-nowrap"><Link href={`/demandes-client/${d.id}`} className="text-[12px] font-mono text-[var(--color-primary)] hover:underline">{d.reference}</Link></td>
+                        <td className="px-3 py-2.5"><Link href={`/demandes-client/${d.id}`} className="text-[13px] font-semibold text-gray-800 hover:text-[var(--color-primary)]">{d.etablissement}</Link><div className="text-[11px] text-gray-400">{[d.ville, d.typeEtablissement].filter(Boolean).join(" · ")}</div></td>
                         <td className="px-3 py-2.5 text-[12.5px] text-gray-600">{nomContact(d.demandeur)}</td>
                         <td className="px-3 py-2.5 text-[12.5px] text-gray-600">{nomContact(d.responsableClient)}</td>
                         <td className="px-3 py-2.5 text-[12.5px] text-gray-600">{d.responsableSpc.nom ?? "—"}</td>
