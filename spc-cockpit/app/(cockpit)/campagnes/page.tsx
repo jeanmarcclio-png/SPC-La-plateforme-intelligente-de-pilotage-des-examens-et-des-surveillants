@@ -401,7 +401,7 @@ function ConformiteGauge({ pct }: { pct: number }) {
 
   return (
     <div className="flex flex-col items-center">
-      <svg viewBox="0 0 100 60" className="w-[130px] h-[78px]">
+      <svg viewBox="0 0 100 60" className="w-[130px] h-[78px]" role="img" aria-label={`Conformité globale : ${pct}%`}>
         <path
           d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
           fill="none"
