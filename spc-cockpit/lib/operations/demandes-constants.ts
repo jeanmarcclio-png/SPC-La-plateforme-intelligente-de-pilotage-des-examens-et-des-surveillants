@@ -135,6 +135,41 @@ export function buildMissionFromDemande(d: DemandeClient) {
   };
 }
 
+// ─── Pièces jointes (spec §7.7, §18) ─────────────────────────────────────────
+
+export const PIECES_MAX_BYTES = 10 * 1024 * 1024; // 10 Mo
+export const PIECES_BUCKET = "demandes-pieces";
+/** Attribut `accept` de l'input fichier + validation d'extension. */
+export const PIECES_ACCEPT = ".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.docx,.csv";
+const PIECES_EXT = new Set(["pdf", "png", "jpg", "jpeg", "webp", "xlsx", "xls", "docx", "csv"]);
+
+/** Nom de fichier sûr : sans chemin ni caractères spéciaux, extension conservée. */
+export function sanitizeFilename(name: string): string {
+  const base = name.split(/[\\/]/).pop() ?? "fichier";
+  return base.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^[-.]+|-+$/g, "").slice(0, 120) || "fichier";
+}
+
+/** Chemin Storage : {org}/{demande}/{timestamp}-{fichier}. */
+export function piecePath(orgId: string, demandeId: number, name: string, now: Date = new Date()): string {
+  return `${orgId}/${demandeId}/${now.getTime()}-${sanitizeFilename(name)}`;
+}
+
+/** Contrôle taille + type d'une pièce. Retourne un message d'erreur ou null. */
+export function validatePieceMeta(file: { name: string; size: number }): string | null {
+  if (file.size <= 0) return "Fichier vide.";
+  if (file.size > PIECES_MAX_BYTES) return `Fichier trop volumineux (max ${Math.round(PIECES_MAX_BYTES / 1024 / 1024)} Mo).`;
+  const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+  if (!PIECES_EXT.has(ext)) return `Format non accepté (.${ext}). Autorisés : ${[...PIECES_EXT].join(", ")}.`;
+  return null;
+}
+
+/** Taille lisible (Ko / Mo). */
+export function formatTaille(bytes: number): string {
+  if (bytes < 1024) return `${bytes} o`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} Ko`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} Mo`;
+}
+
 // ─── Import / copier-coller depuis Excel (spec §9 & §10) ─────────────────────
 
 const TRUE_VALUES = new Set(["oui", "o", "x", "1", "true", "vrai", "yes"]);

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireCapability } from "@/lib/auth/session";
 import { getActiveOrgId } from "@/lib/auth/org";
 import { getDemandeClient } from "@/lib/operations/demandes";
-import { generateDemandeReference, evaluateDemande, buildMissionFromDemande } from "@/lib/operations/demandes-constants";
+import { generateDemandeReference, evaluateDemande, buildMissionFromDemande, piecePath, validatePieceMeta, PIECES_BUCKET } from "@/lib/operations/demandes-constants";
 import type { DemandeSalle } from "@/lib/operations/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -199,6 +199,79 @@ export async function validerDemande(id: number): Promise<{ error?: string; bloc
   const res = await updateDemandeStatut(id, "Validée SPC");
   if (res.error) return res;
   return { avertissements };
+}
+
+// ─── Pièces jointes (Lot B) ──────────────────────────────────────────────────
+
+export async function uploadPiece(fd: FormData): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
+
+  const demandeId = Number(fd.get("demande_id"));
+  const file = fd.get("file");
+  if (!demandeId || !(file instanceof File)) return { error: "Fichier manquant." };
+  const invalid = validatePieceMeta({ name: file.name, size: file.size });
+  if (invalid) return { error: invalid };
+
+  try {
+    const supabase = await createClient();
+    const org_id = await getActiveOrgId();
+    if (!org_id) return { error: "Organisation introuvable." };
+    const chemin = piecePath(org_id, demandeId, file.name);
+
+    const { error: upErr } = await supabase.storage
+      .from(PIECES_BUCKET)
+      .upload(chemin, file, { contentType: file.type || undefined, upsert: false });
+    if (upErr) return { error: `Envoi échoué : ${upErr.message}` };
+
+    const { error: metaErr } = await supabase.from("demandes_client_pieces").insert({
+      demande_id: demandeId, org_id, nom: file.name, chemin, taille: file.size, type_mime: file.type || null,
+    });
+    if (metaErr) {
+      await supabase.storage.from(PIECES_BUCKET).remove([chemin]); // rollback binaire orphelin
+      return { error: `Métadonnées non enregistrées : ${metaErr.message}` };
+    }
+    await logDemande(supabase, org_id, demandeId, "Pièce jointe ajoutée", file.name);
+    revalidateDemandes(demandeId);
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
+export async function deletePiece(id: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
+  try {
+    const supabase = await createClient();
+    const org_id = await getActiveOrgId();
+    const { data: piece } = await supabase.from("demandes_client_pieces").select("chemin, demande_id, nom").eq("id", id).single();
+    if (!piece) return { error: "Pièce introuvable." };
+    await supabase.storage.from(PIECES_BUCKET).remove([piece.chemin as string]);
+    const { error } = await supabase.from("demandes_client_pieces").delete().eq("id", id);
+    if (error) return { error: `Suppression échouée : ${error.message}` };
+    await logDemande(supabase, org_id, piece.demande_id as number, "Pièce jointe supprimée", piece.nom as string);
+    revalidateDemandes(piece.demande_id as number);
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
+/** URL signée à durée courte pour télécharger une pièce (accès contrôlé RLS). */
+export async function getPieceSignedUrl(id: number): Promise<{ error?: string; url?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
+  try {
+    const supabase = await createClient();
+    const { data: piece } = await supabase.from("demandes_client_pieces").select("chemin").eq("id", id).single();
+    if (!piece) return { error: "Pièce introuvable." };
+    const { data, error } = await supabase.storage.from(PIECES_BUCKET).createSignedUrl(piece.chemin as string, 60);
+    if (error || !data) return { error: `Lien indisponible : ${error?.message ?? ""}` };
+    return { url: data.signedUrl };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
 }
 
 /**

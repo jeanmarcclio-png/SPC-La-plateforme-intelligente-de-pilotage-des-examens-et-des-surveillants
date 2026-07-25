@@ -276,3 +276,13 @@ export interface DemandeJournalEntry {
   utilisateur?: string;
   createdAt: string;
 }
+
+/** Pièce jointe d'une demande (métadonnées ; le binaire vit dans Storage). */
+export interface DemandePiece {
+  id: number;
+  nom: string;
+  chemin: string;
+  taille: number;
+  typeMime?: string;
+  createdAt: string;
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateDemande, evaluateDemande, generateDemandeReference, buildMissionFromDemande, parseSallesFromText, normalizeDate } from "../demandes-constants";
+import { validateDemande, evaluateDemande, generateDemandeReference, buildMissionFromDemande, parseSallesFromText, normalizeDate, sanitizeFilename, validatePieceMeta, piecePath, formatTaille, PIECES_MAX_BYTES } from "../demandes-constants";
 import type { DemandeClient } from "../types";
 
 function demandeComplete(): DemandeClient {
@@ -84,6 +84,31 @@ describe("evaluateDemande (3 niveaux)", () => {
     const ev = evaluateDemande(demandeComplete());
     expect(ev.infos).toContain("Campus / site non précisé");
     expect(ev.erreurs).not.toContain("Campus / site non précisé");
+  });
+});
+
+describe("pièces jointes", () => {
+  it("sanitise un nom de fichier (chemin, accents, espaces retirés)", () => {
+    expect(sanitizeFilename("../Plan Salles Été.pdf")).toBe("Plan-Salles-Ete.pdf");
+    expect(sanitizeFilename("C:\\dossier\\a b.png")).toBe("a-b.png");
+  });
+
+  it("construit un chemin org/demande/timestamp-fichier", () => {
+    const p = piecePath("org-1", 42, "plan salles.pdf", new Date("2026-07-25T00:00:00Z"));
+    expect(p).toBe(`org-1/42/${new Date("2026-07-25T00:00:00Z").getTime()}-plan-salles.pdf`);
+  });
+
+  it("valide taille et extension", () => {
+    expect(validatePieceMeta({ name: "x.pdf", size: 1000 })).toBeNull();
+    expect(validatePieceMeta({ name: "x.exe", size: 1000 })).toMatch(/non accepté/i);
+    expect(validatePieceMeta({ name: "x.pdf", size: PIECES_MAX_BYTES + 1 })).toMatch(/volumineux/i);
+    expect(validatePieceMeta({ name: "x.pdf", size: 0 })).toMatch(/vide/i);
+  });
+
+  it("formate la taille", () => {
+    expect(formatTaille(500)).toBe("500 o");
+    expect(formatTaille(2048)).toBe("2 Ko");
+    expect(formatTaille(1572864)).toBe("1.5 Mo");
   });
 });
 
