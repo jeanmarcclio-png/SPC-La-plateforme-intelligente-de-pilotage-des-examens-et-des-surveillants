@@ -11,6 +11,9 @@ const NAVY = "#0d2137";
 
 const field =
   "w-full px-3 py-2 rounded-lg border border-gray-300 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1a6b7e]/25 focus:border-[#1a6b7e]";
+// Input compact pour le tableau des salles : PAS de w-full (largeur fixée par cellule).
+const cell =
+  "px-2 py-1.5 rounded-lg border border-gray-300 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#1a6b7e]/25 focus:border-[#1a6b7e]";
 const label = "block text-[12.5px] font-semibold text-gray-600 mb-1";
 
 type Row = PortailSalle & { _key: string };
@@ -145,21 +148,21 @@ export function PortailDemandeForm({ token, initial, reference, expiresAt }: { t
             <tbody>
               {rows.map((r) => (
                 <tr key={r._key} className="border-b border-gray-100 last:border-0">
-                  <td className="px-2 py-1.5"><input type="date" value={r.date_examen ?? ""} onChange={(e) => updateRow(r._key, { date_examen: e.target.value })} className={`${field} w-[150px] py-1.5`} /></td>
+                  <td className="px-2 py-1.5"><input type="date" value={r.date_examen ?? ""} onChange={(e) => updateRow(r._key, { date_examen: e.target.value })} className={`${cell} w-[150px]`} /></td>
                   <td className="px-2 py-1.5">
-                    <select value={r.creneau} onChange={(e) => updateRow(r._key, { creneau: e.target.value as "matin" | "apres-midi" })} className={`${field} w-[112px] py-1.5`}>
+                    <select value={r.creneau} onChange={(e) => updateRow(r._key, { creneau: e.target.value as "matin" | "apres-midi" })} className={`${cell} w-[118px]`}>
                       <option value="matin">Matin</option>
                       <option value="apres-midi">Après-midi</option>
                     </select>
                   </td>
-                  <td className="px-2 py-1.5"><input value={r.salle} maxLength={8} onChange={(e) => updateRow(r._key, { salle: e.target.value.toUpperCase() })} placeholder="A21" className={`${field} font-mono w-[80px] py-1.5`} /></td>
-                  <td className="px-2 py-1.5"><input value={r.batiment ?? ""} maxLength={6} onChange={(e) => updateRow(r._key, { batiment: e.target.value })} className={`${field} w-[64px] py-1.5`} /></td>
-                  <td className="px-2 py-1.5"><input type="number" min={0} value={r.etudiants} onChange={(e) => updateRow(r._key, { etudiants: Number(e.target.value) })} className={`${field} w-[70px] py-1.5 text-center`} /></td>
-                  <td className="px-2 py-1.5"><input type="number" min={0} value={r.surveillants} onChange={(e) => updateRow(r._key, { surveillants: Number(e.target.value) })} className={`${field} w-[64px] py-1.5 text-center`} /></td>
+                  <td className="px-2 py-1.5"><input value={r.salle} maxLength={8} onChange={(e) => updateRow(r._key, { salle: e.target.value.toUpperCase() })} placeholder="A21" className={`${cell} font-mono w-[88px]`} /></td>
+                  <td className="px-2 py-1.5"><input value={r.batiment ?? ""} maxLength={6} onChange={(e) => updateRow(r._key, { batiment: e.target.value })} className={`${cell} w-[72px]`} /></td>
+                  <td className="px-2 py-1.5"><input type="number" min={0} value={r.etudiants} onChange={(e) => updateRow(r._key, { etudiants: Number(e.target.value) })} className={`${cell} w-[80px] text-center`} /></td>
+                  <td className="px-2 py-1.5"><input type="number" min={0} value={r.surveillants} onChange={(e) => updateRow(r._key, { surveillants: Number(e.target.value) })} className={`${cell} w-[76px] text-center`} /></td>
                   <td className="px-2 py-1.5 text-center"><input type="checkbox" checked={r.pmr} onChange={(e) => updateRow(r._key, { pmr: e.target.checked })} aria-label="PMR" className="w-4 h-4 accent-amber-500" /></td>
                   <td className="px-2 py-1.5 text-center"><input type="checkbox" checked={r.tiers_temps} onChange={(e) => updateRow(r._key, { tiers_temps: e.target.checked })} aria-label="Tiers-temps" className="w-4 h-4 accent-sky-500" /></td>
-                  <td className="px-2 py-1.5"><input type="time" value={r.debut_surveillance ?? ""} onChange={(e) => updateRow(r._key, { debut_surveillance: e.target.value })} className={`${field} font-mono w-[100px] py-1.5`} /></td>
-                  <td className="px-2 py-1.5"><input type="time" value={r.fin_surveillance ?? ""} onChange={(e) => updateRow(r._key, { fin_surveillance: e.target.value })} className={`${field} font-mono w-[100px] py-1.5`} /></td>
+                  <td className="px-2 py-1.5"><input type="time" value={r.debut_surveillance ?? ""} onChange={(e) => updateRow(r._key, { debut_surveillance: e.target.value })} className={`${cell} font-mono w-[104px]`} /></td>
+                  <td className="px-2 py-1.5"><input type="time" value={r.fin_surveillance ?? ""} onChange={(e) => updateRow(r._key, { fin_surveillance: e.target.value })} className={`${cell} font-mono w-[104px]`} /></td>
                   <td className="px-2 py-1.5">
                     <button type="button" onClick={() => removeRow(r._key)} aria-label="Supprimer la ligne" className="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50/50 text-red-500 hover:bg-red-100"><Trash2 className="w-4 h-4" /></button>
                   </td>
