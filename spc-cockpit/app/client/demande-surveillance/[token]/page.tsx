@@ -16,7 +16,7 @@ const NAVY = "#0d2137";
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh bg-[#f0f2f5] py-8 px-4">
+    <div className="h-dvh overflow-y-auto bg-[#f0f2f5] py-8 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center gap-2 mb-4">
           <div className="text-[18px] font-extrabold" style={{ color: NAVY }}>Survéo</div>
