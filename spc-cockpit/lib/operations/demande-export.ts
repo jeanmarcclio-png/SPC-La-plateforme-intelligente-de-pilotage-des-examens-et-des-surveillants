@@ -106,6 +106,76 @@ export function buildDemandeSheets(d: DemandeClient, now: Date = new Date()): Sh
   ];
 }
 
+// ─── Modèle Excel client (spec §10) ──────────────────────────────────────────
+
+/** Base de nom de fichier du modèle vierge à envoyer au client. */
+export const MODELE_FILE_BASE = "SPC_Modele_Demande_Surveillance_Client";
+
+/** Nom des onglets du modèle (repères stables pour le ré-import). */
+export const MODELE_SHEET_INFOS = "Établissement & contacts";
+export const MODELE_SHEET_SALLES = "Salles";
+
+/**
+ * Les onglets du classeur modèle envoyé au client (spec §10.1) :
+ * mode d'emploi, informations générales (Champ | Valeur) et grille de salles
+ * dont l'en-tête reprend exactement l'ordre attendu par `parseSallesFromText`.
+ */
+export function buildModeleSheets(): SheetData[] {
+  const modeEmploi: (string | number)[][] = [
+    ["SPC — Modèle de demande de surveillance"],
+    [""],
+    ["Comment remplir ce fichier"],
+    ["1. Onglet « Établissement & contacts » : complétez la colonne « Valeur »."],
+    ["2. Onglet « Salles » : une ligne par salle et par créneau. Ne modifiez pas la ligne d'en-tête."],
+    ["3. Remplacez la ligne d'exemple par vos salles, puis enregistrez le fichier."],
+    ["4. Renvoyez le fichier à SPC ou importez-le directement dans l'espace SPC."],
+    [""],
+    ["Champs obligatoires"],
+    ["· Établissement"],
+    ["· Demandeur : nom + email"],
+    ["· Au moins une salle avec date, effectif étudiants et nombre de surveillants"],
+    [""],
+    ["Formats attendus"],
+    ["· Dates : JJ/MM/AAAA (ex. 12/01/2026)"],
+    ["· Heures : HH:MM (ex. 08:30)"],
+    ["· PMR / Tiers-temps : « oui » ou laisser vide"],
+    ["· Créneau : « Matin » ou « Après-midi »"],
+    [""],
+    ["Les heures de SURVEILLANCE (≠ heures d'examen) servent au calcul des heures facturables."],
+  ];
+
+  const infos: (string | number)[][] = [
+    ["Champ", "Valeur"],
+    ["Établissement", ""],
+    ["Site / Campus", ""],
+    ["Ville", ""],
+    ["Type d'établissement", ""],
+    ["Référence client", ""],
+    ["Demandeur — Prénom", ""],
+    ["Demandeur — Nom", ""],
+    ["Demandeur — Fonction", ""],
+    ["Demandeur — Email", ""],
+    ["Demandeur — Téléphone", ""],
+    ["Responsable client — Prénom", ""],
+    ["Responsable client — Nom", ""],
+    ["Responsable client — Fonction", ""],
+    ["Responsable client — Email", ""],
+    ["Responsable client — Téléphone", ""],
+    ["Observations générales", ""],
+  ];
+
+  const salles: (string | number)[][] = [
+    ["Date", "Créneau", "Salle", "Bâtiment", "Étudiants", "Surveillants", "PMR", "Tiers-temps", "Début examen", "Fin examen", "Début surveillance", "Fin surveillance", "Observations"],
+    ["12/01/2026", "Matin", "A21", "A", 120, 3, "oui", "oui", "09:00", "11:00", "08:30", "11:30", "Ligne d'exemple — à remplacer"],
+  ];
+
+  return [
+    { name: "Mode d'emploi", rows: modeEmploi },
+    { name: MODELE_SHEET_INFOS, rows: infos },
+    { name: MODELE_SHEET_SALLES, rows: salles },
+  ];
+}
+
 const esc = (s?: string | number) =>
   String(s ?? "—").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 

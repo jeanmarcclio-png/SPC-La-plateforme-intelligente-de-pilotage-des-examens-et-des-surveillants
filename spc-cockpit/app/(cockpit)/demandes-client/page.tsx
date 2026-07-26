@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, FileUp } from "lucide-react";
 import { Topbar } from "@/components/Topbar";
 import { SectionRule } from "@/components/SectionRule";
 import { DemandeStatutActions } from "@/components/DemandeStatutActions";
+import { DemandeModeleButton } from "@/components/DemandeModeleButton";
 import { getDemandesClient } from "@/lib/operations/demandes";
 import { STATUT_META } from "@/lib/operations/demandes-constants";
 import type { DemandeClient } from "@/lib/operations/types";
@@ -28,6 +29,24 @@ function NouvelleButton() {
   );
 }
 
+function ImporterButton() {
+  return (
+    <Link href="/demandes-client/importer" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12.5px] font-semibold text-gray-700 border border-gray-200 hover:border-gray-300 bg-white transition-colors">
+      <FileUp className="w-4 h-4 text-[var(--color-primary)]" /> Importer
+    </Link>
+  );
+}
+
+function HeaderActions() {
+  return (
+    <div className="flex items-center gap-2">
+      <DemandeModeleButton />
+      <ImporterButton />
+      <NouvelleButton />
+    </div>
+  );
+}
+
 export default async function DemandesClientPage() {
   const demandes = await getDemandesClient();
 
@@ -42,7 +61,7 @@ export default async function DemandesClientPage() {
   return (
     <>
       <div className="hidden md:block">
-        <Topbar context="Opérations" title="Demandes clients" badge={`${demandes.length} demande${demandes.length > 1 ? "s" : ""}`} badgeColor="blue" actions={<NouvelleButton />} />
+        <Topbar context="Opérations" title="Demandes clients" badge={`${demandes.length} demande${demandes.length > 1 ? "s" : ""}`} badgeColor="blue" actions={<HeaderActions />} />
       </div>
 
       <main className="flex-1 overflow-y-auto">
@@ -55,6 +74,11 @@ export default async function DemandesClientPage() {
                 <div className="text-[13px] text-white/70 mt-0.5">{demandes.length} demande{demandes.length > 1 ? "s" : ""} · avant mission</div>
               </div>
               <NouvelleButton />
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <Link href="/demandes-client/importer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white bg-white/15 hover:bg-white/25 transition-colors">
+                <FileUp className="w-3.5 h-3.5" /> Importer Excel
+              </Link>
             </div>
           </div>
           <div className="p-4 pb-40 space-y-3">

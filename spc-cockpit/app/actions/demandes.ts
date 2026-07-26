@@ -6,7 +6,7 @@ import { requireCapability } from "@/lib/auth/session";
 import { getActiveOrgId } from "@/lib/auth/org";
 import { getDemandeClient } from "@/lib/operations/demandes";
 import { generateDemandeReference, evaluateDemande, buildMissionFromDemande, piecePath, validatePieceMeta, PIECES_BUCKET } from "@/lib/operations/demandes-constants";
-import type { DemandeSalle } from "@/lib/operations/types";
+import type { Contact, DemandeSalle } from "@/lib/operations/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 function revalidateDemandes(id?: number) {
@@ -114,6 +114,98 @@ export async function createDemande(fd: FormData): Promise<{ error?: string; id?
       if (sErr) return { error: `Salles non enregistrées : ${sErr.message}` };
     }
     await logDemande(supabase, org_id, demandeId, "Création", `${salles.length} salle(s) · statut ${statut}`);
+    revalidateDemandes(demandeId);
+    return { id: demandeId };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
+/** Payload d'un import Excel (spec §10) : infos établissement + salles parsées. */
+export interface ImportDemandePayload {
+  etablissement: string;
+  campus?: string;
+  ville?: string;
+  typeEtablissement?: string;
+  referenceClient?: string;
+  observations?: string;
+  demandeur: Contact;
+  responsableClient: Contact;
+  salles: DemandeSalle[];
+}
+
+function salleToRow(s: DemandeSalle, i: number) {
+  return {
+    date_examen: s.dateExamen || null,
+    creneau: s.creneau ?? "matin",
+    salle: s.salle.trim(),
+    batiment: s.batiment?.trim() || null,
+    etudiants: Number(s.etudiants) || 0,
+    surveillants: Number(s.surveillants) || 1,
+    pmr: Boolean(s.pmr),
+    tiers_temps: Boolean(s.tiersTemps),
+    debut_examen: s.debutExamen || null,
+    fin_examen: s.finExamen || null,
+    debut_surveillance: s.debutSurveillance || null,
+    fin_surveillance: s.finSurveillance || null,
+    observations: s.observations?.trim() || null,
+    ordre: i + 1,
+  };
+}
+
+/**
+ * Création d'une demande depuis un import Excel (spec §10.3). Statut initial
+ * « Importée depuis Excel » ; réutilise la même plomberie d'insert que la
+ * création manuelle. Le contrôle qualité à 3 niveaux reste à faire côté fiche.
+ */
+export async function importerDemande(payload: ImportDemandePayload): Promise<{ error?: string; id?: number }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
+
+  const etablissement = payload.etablissement?.trim();
+  if (!etablissement) return { error: "Le nom de l'établissement est obligatoire" };
+
+  const salles = (payload.salles ?? []).filter((s) => s.salle?.trim()).map(salleToRow);
+  if (salles.length === 0) return { error: "Aucune salle exploitable dans le fichier importé." };
+
+  const c = (x?: Contact) => x ?? {};
+  const dem = c(payload.demandeur);
+  const rc = c(payload.responsableClient);
+  const fields = {
+    etablissement,
+    campus: payload.campus?.trim() || null,
+    ville: payload.ville?.trim() || null,
+    reference_client: payload.referenceClient?.trim() || null,
+    type_etablissement: payload.typeEtablissement?.trim() || null,
+    demandeur_prenom: dem.prenom?.trim() || null,
+    demandeur_nom: dem.nom?.trim() || null,
+    demandeur_fonction: dem.fonction?.trim() || null,
+    demandeur_email: dem.email?.trim() || null,
+    demandeur_telephone: dem.telephone?.trim() || null,
+    resp_client_prenom: rc.prenom?.trim() || null,
+    resp_client_nom: rc.nom?.trim() || null,
+    resp_client_fonction: rc.fonction?.trim() || null,
+    resp_client_email: rc.email?.trim() || null,
+    resp_client_telephone: rc.telephone?.trim() || null,
+    observations: payload.observations?.trim() || null,
+  };
+
+  try {
+    const supabase = await createClient();
+    const org_id = await getActiveOrgId();
+    const { data, error } = await supabase
+      .from("demandes_client")
+      .insert({ ...fields, reference: generateDemandeReference(), statut: "Importée depuis Excel", org_id })
+      .select("id")
+      .single();
+    if (error || !data) return { error: `Import échoué : ${error?.message ?? "aucune ligne"}` };
+
+    const demandeId = data.id as number;
+    const rows = salles.map((s) => ({ ...s, demande_id: demandeId, org_id }));
+    const { error: sErr } = await supabase.from("demandes_client_salles").insert(rows);
+    if (sErr) return { error: `Salles non enregistrées : ${sErr.message}` };
+
+    await logDemande(supabase, org_id, demandeId, "Import Excel", `${salles.length} salle(s) importée(s)`);
     revalidateDemandes(demandeId);
     return { id: demandeId };
   } catch (e) {

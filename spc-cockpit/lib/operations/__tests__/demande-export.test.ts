@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { buildDemandeSheets, buildDemandePrintHtml, demandeFileBase, periodeDemande } from "../demande-export";
+import { buildDemandeSheets, buildDemandePrintHtml, demandeFileBase, periodeDemande, buildModeleSheets, MODELE_SHEET_INFOS, MODELE_SHEET_SALLES } from "../demande-export";
+import { parseSallesFromText, parseModeleInfos } from "../demandes-constants";
 import type { DemandeClient } from "../types";
 
 function demande(): DemandeClient {
@@ -78,6 +79,31 @@ describe("buildDemandePrintHtml", () => {
     const out = buildDemandePrintHtml(d, { nom: "Survéo", couleur: "#0f766e" }, now);
     expect(out).not.toContain("<script>alert(1)</script>");
     expect(out).toContain("&lt;script&gt;");
+  });
+});
+
+describe("buildModeleSheets (modèle client)", () => {
+  const sheets = buildModeleSheets();
+
+  it("expose les onglets mode d'emploi, infos et salles", () => {
+    const names = sheets.map((s) => s.name);
+    expect(names).toContain("Mode d'emploi");
+    expect(names).toContain(MODELE_SHEET_INFOS);
+    expect(names).toContain(MODELE_SHEET_SALLES);
+  });
+
+  it("l'en-tête de l'onglet Salles est ignoré et la ligne d'exemple se parse en une salle valide", () => {
+    const salles = sheets.find((s) => s.name === MODELE_SHEET_SALLES)!;
+    const csv = salles.rows.map((r) => r.join("\t")).join("\n");
+    const { salles: parsed } = parseSallesFromText(csv);
+    expect(parsed).toHaveLength(1); // en-tête ignoré, 1 ligne d'exemple
+    expect(parsed[0]).toMatchObject({ dateExamen: "2026-01-12", salle: "A21", etudiants: 120, surveillants: 3, pmr: true });
+  });
+
+  it("l'onglet infos vierge se parse sans établissement (à remplir par le client)", () => {
+    const infosSheet = sheets.find((s) => s.name === MODELE_SHEET_INFOS)!;
+    const infos = parseModeleInfos(infosSheet.rows);
+    expect(infos.etablissement).toBe("");
   });
 });
 

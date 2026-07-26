@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateDemande, evaluateDemande, generateDemandeReference, buildMissionFromDemande, parseSallesFromText, normalizeDate, sanitizeFilename, validatePieceMeta, piecePath, formatTaille, PIECES_MAX_BYTES } from "../demandes-constants";
+import { validateDemande, evaluateDemande, generateDemandeReference, buildMissionFromDemande, parseSallesFromText, normalizeDate, sanitizeFilename, validatePieceMeta, piecePath, formatTaille, PIECES_MAX_BYTES, parseModeleInfos } from "../demandes-constants";
 import type { DemandeClient } from "../types";
 
 function demandeComplete(): DemandeClient {
@@ -125,6 +125,45 @@ describe("normalizeDate", () => {
     expect(normalizeDate("12/01/2026")).toBe("2026-01-12");
     expect(normalizeDate("5/3/2026")).toBe("2026-03-05");
     expect(normalizeDate("pas une date")).toBe("");
+  });
+});
+
+describe("parseModeleInfos", () => {
+  it("extrait établissement, contacts et infos depuis l'onglet Champ/Valeur", () => {
+    const rows: (string | number)[][] = [
+      ["Champ", "Valeur"],
+      ["Établissement", "EM Lyon"],
+      ["Site / Campus", "Écully"],
+      ["Ville", "Lyon"],
+      ["Type d'établissement", "Business school"],
+      ["Référence client", "EML-2026"],
+      ["Demandeur — Prénom", "Claire"],
+      ["Demandeur — Nom", "Bonnet"],
+      ["Demandeur — Email", "c.bonnet@x.fr"],
+      ["Demandeur — Téléphone", "0478000000"],
+      ["Responsable client — Nom", "Delaunay"],
+      ["Responsable client — Email", "m.delaunay@x.fr"],
+      ["Observations générales", "Session S1"],
+    ];
+    const infos = parseModeleInfos(rows);
+    expect(infos.etablissement).toBe("EM Lyon");
+    expect(infos.campus).toBe("Écully");
+    expect(infos.ville).toBe("Lyon");
+    expect(infos.typeEtablissement).toBe("Business school");
+    expect(infos.referenceClient).toBe("EML-2026");
+    expect(infos.observations).toBe("Session S1");
+    expect(infos.demandeur).toMatchObject({ prenom: "Claire", nom: "Bonnet", email: "c.bonnet@x.fr", telephone: "0478000000" });
+    expect(infos.responsableClient).toMatchObject({ nom: "Delaunay", email: "m.delaunay@x.fr" });
+  });
+
+  it("ignore les libellés inconnus et les valeurs vides, ne confond pas type et établissement", () => {
+    const infos = parseModeleInfos([
+      ["Type d'établissement", "Université"],
+      ["Établissement", ""],
+      ["Champ farfelu", "ignoré"],
+    ]);
+    expect(infos.typeEtablissement).toBe("Université");
+    expect(infos.etablissement).toBe("");
   });
 });
 

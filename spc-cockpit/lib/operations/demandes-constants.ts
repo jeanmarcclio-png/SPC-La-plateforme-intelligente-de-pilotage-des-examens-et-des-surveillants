@@ -1,7 +1,7 @@
 // Helpers purs du module « Demandes client » — importables côté client comme
 // serveur (aucune dépendance Supabase / server-only ici).
 
-import type { DemandeClient, DemandeSalle, StatutDemande } from "./types";
+import type { Contact, DemandeClient, DemandeSalle, StatutDemande } from "./types";
 
 export const STATUTS_DEMANDE: StatutDemande[] = [
   "Brouillon interne",
@@ -186,6 +186,57 @@ export function normalizeDate(raw: string): string {
 
 function normalizeCreneau(raw: string): "matin" | "apres-midi" {
   return /(apr|pm|midi|a-?m)/i.test(raw) && !/matin/i.test(raw) ? "apres-midi" : "matin";
+}
+
+/** Normalise un libellé pour comparaison : minuscules, sans accents ni ponctuation. */
+function normLabel(raw: string): string {
+  return raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+export interface ModeleInfos {
+  etablissement: string;
+  campus?: string;
+  ville?: string;
+  typeEtablissement?: string;
+  referenceClient?: string;
+  observations?: string;
+  demandeur: Contact;
+  responsableClient: Contact;
+}
+
+/** Renseigne un sous-champ de contact selon le libellé (prénom, nom, email…). */
+function assignContactField(c: Contact, label: string, value: string) {
+  if (label.includes("prenom")) c.prenom = value;
+  else if (label.includes("fonction")) c.fonction = value;
+  else if (label.includes("mail")) c.email = value;
+  else if (label.includes("tel")) c.telephone = value;
+  else if (label.includes("service")) c.service = value;
+  else if (label.includes("nom")) c.nom = value;
+}
+
+/**
+ * Extrait les informations générales depuis l'onglet « Établissement & contacts »
+ * du modèle (spec §10.2). Entrée : lignes AoA (Champ | Valeur). Tolérant aux
+ * variantes de libellés et à l'ordre des lignes.
+ */
+export function parseModeleInfos(rows: (string | number)[][]): ModeleInfos {
+  const out: ModeleInfos = { etablissement: "", demandeur: {}, responsableClient: {} };
+  for (const row of rows) {
+    const label = normLabel(String(row[0] ?? ""));
+    const value = String(row[1] ?? "").trim();
+    if (!label || !value) continue;
+    if (label === "champ") continue; // ligne d'en-tête
+
+    if (label.startsWith("demandeur")) { assignContactField(out.demandeur, label, value); continue; }
+    if (label.startsWith("responsable client") || label.startsWith("resp client")) { assignContactField(out.responsableClient, label, value); continue; }
+    if (label.startsWith("type")) { out.typeEtablissement = value; continue; }
+    if (label.includes("etablissement")) { out.etablissement = value; continue; }
+    if (label.includes("campus") || label.includes("site")) { out.campus = value; continue; }
+    if (label.includes("ville")) { out.ville = value; continue; }
+    if (label.includes("reference")) { out.referenceClient = value; continue; }
+    if (label.includes("observation")) { out.observations = value; continue; }
+  }
+  return out;
 }
 
 /**
