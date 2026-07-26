@@ -9,8 +9,9 @@ const NAVY = "#0d2137";
 
 type Row = DemandeSalle & { key: string };
 
+// Pas de w-full : la largeur est fixée par cellule (sinon conflit → champs tronqués).
 const inputCls =
-  "w-full px-2 py-1.5 rounded-lg border border-gray-200 text-[12.5px] focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400";
+  "px-2 py-1.5 rounded-lg border border-gray-200 text-[12.5px] focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400";
 
 function blankRow(key: string, defaults?: Partial<DemandeSalle>): Row {
   return {
@@ -137,8 +138,8 @@ export function DemandeSallesEditor({ initial = [] }: { initial?: DemandeSalle[]
                   </td>
                   <td className="px-2 py-1.5"><input value={r.salle} maxLength={8} onChange={(e) => update(r.key, { salle: e.target.value.toUpperCase() })} placeholder="A21" className={`${inputCls} font-mono w-[72px]`} /></td>
                   <td className="px-2 py-1.5"><input value={r.batiment} maxLength={6} onChange={(e) => update(r.key, { batiment: e.target.value })} placeholder="A" className={`${inputCls} w-[56px]`} /></td>
-                  <td className="px-2 py-1.5"><input type="number" min={0} value={r.etudiants} onChange={(e) => update(r.key, { etudiants: Number(e.target.value) })} className={`${inputCls} w-[62px] text-center`} /></td>
-                  <td className="px-2 py-1.5"><input type="number" min={0} value={r.surveillants} onChange={(e) => update(r.key, { surveillants: Number(e.target.value) })} className={`${inputCls} w-[56px] text-center`} /></td>
+                  <td className="px-2 py-1.5"><input type="number" min={0} value={r.etudiants} onChange={(e) => update(r.key, { etudiants: Number(e.target.value) })} className={`${inputCls} w-[74px] text-center`} /></td>
+                  <td className="px-2 py-1.5"><input type="number" min={0} value={r.surveillants} onChange={(e) => update(r.key, { surveillants: Number(e.target.value) })} className={`${inputCls} w-[68px] text-center`} /></td>
                   <td className="px-2 py-1.5 text-center"><input type="checkbox" checked={r.pmr} onChange={(e) => update(r.key, { pmr: e.target.checked })} aria-label="PMR" className="w-4 h-4 accent-amber-500" /></td>
                   <td className="px-2 py-1.5 text-center"><input type="checkbox" checked={r.tiersTemps} onChange={(e) => update(r.key, { tiersTemps: e.target.checked })} aria-label="Tiers-temps" className="w-4 h-4 accent-sky-500" /></td>
                   <td className="px-2 py-1.5"><input type="time" value={r.debutExamen} onChange={(e) => update(r.key, { debutExamen: e.target.value })} className={`${inputCls} font-mono w-[90px]`} /></td>
