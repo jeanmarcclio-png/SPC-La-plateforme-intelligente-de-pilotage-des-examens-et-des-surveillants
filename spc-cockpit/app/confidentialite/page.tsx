@@ -8,7 +8,7 @@ export const metadata = {
 // Page publique (accessible sans authentification — voir proxy.ts).
 export default function ConfidentialitePage() {
   return (
-    <div className="min-h-dvh bg-[#f0f2f5] py-10 px-4">
+    <div className="h-dvh overflow-y-auto bg-[#f0f2f5] py-10 px-4">
       <article className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm p-6 md:p-10 text-[14px] leading-relaxed text-gray-700">
         <header className="mb-6">
           <div className="text-[12px] font-bold uppercase tracking-[1.5px] text-[#4a90d9]">SAS Henriques de Oliveira</div>
