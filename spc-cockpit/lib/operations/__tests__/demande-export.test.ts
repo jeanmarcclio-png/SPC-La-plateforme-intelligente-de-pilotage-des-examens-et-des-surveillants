@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildDemandeSheets, buildDemandePrintHtml, demandeFileBase, periodeDemande, buildModeleSheets, MODELE_SHEET_INFOS, MODELE_SHEET_SALLES } from "../demande-export";
+import { buildDemandeSheets, buildDemandePrintHtml, demandeFileBase, dossierFileBase, buildDossierReadme, periodeDemande, buildModeleSheets, MODELE_SHEET_INFOS, MODELE_SHEET_SALLES } from "../demande-export";
 import { parseSallesFromText, parseModeleInfos } from "../demandes-constants";
 import type { DemandeClient } from "../types";
 
@@ -104,6 +104,28 @@ describe("buildModeleSheets (modèle client)", () => {
     const infosSheet = sheets.find((s) => s.name === MODELE_SHEET_INFOS)!;
     const infos = parseModeleInfos(infosSheet.rows);
     expect(infos.etablissement).toBe("");
+  });
+});
+
+describe("dossierFileBase / buildDossierReadme (dossier ZIP)", () => {
+  it("nomme le dossier SPC_Dossier_Demande_Client_[Client]_[date]", () => {
+    expect(dossierFileBase(demande(), now)).toBe("SPC_Dossier_Demande_Client_EM-Lyon-Business-School_2026-07-25");
+  });
+
+  it("liste le contenu, les pièces incluses et les pièces manquantes", () => {
+    const txt = buildDossierReadme(demande(), { pieces: ["01-plan.pdf"], manquantes: ["convocation.pdf"], now });
+    expect(txt).toContain("EM Lyon Business School");
+    expect(txt).toContain("DC-2026-0420");
+    expect(txt).toContain(".xlsx");
+    expect(txt).toContain("Fiche_");
+    expect(txt).toContain("01-plan.pdf");
+    expect(txt).toContain("convocation.pdf");
+    expect(txt).toContain("sous réserve de validation SPC");
+  });
+
+  it("indique l'absence de pièce jointe", () => {
+    const txt = buildDossierReadme(demande(), { pieces: [], now });
+    expect(txt).toContain("aucune pièce jointe");
   });
 });
 

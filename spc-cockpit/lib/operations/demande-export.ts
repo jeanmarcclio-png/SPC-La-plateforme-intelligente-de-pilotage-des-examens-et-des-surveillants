@@ -42,11 +42,50 @@ function totaux(d: DemandeClient) {
   };
 }
 
+/** Slug ASCII d'un libell\u00e9 (accents retir\u00e9s, s\u00e9par\u00e9 par des tirets). */
+function slug(s: string, fallback: string): string {
+  return (s || fallback).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "") || fallback;
+}
+
 /** Base de nom de fichier : SPC_Demande_Client_[Client]_[AAAA-MM-JJ]. */
 export function demandeFileBase(d: DemandeClient, now: Date = new Date()): string {
-  const client = (d.etablissement || "demande").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  const iso = now.toISOString().slice(0, 10);
-  return `SPC_Demande_Client_${client}_${iso}`;
+  return `SPC_Demande_Client_${slug(d.etablissement, "demande")}_${now.toISOString().slice(0, 10)}`;
+}
+
+/** Base de nom de fichier du dossier ZIP : SPC_Dossier_Demande_Client_[Client]_[AAAA-MM-JJ]. */
+export function dossierFileBase(d: DemandeClient, now: Date = new Date()): string {
+  return `SPC_Dossier_Demande_Client_${slug(d.etablissement, "demande")}_${now.toISOString().slice(0, 10)}`;
+}
+
+/** Contenu du LISEZMOI.txt inclus dans le dossier ZIP (spec \u00a711.3). */
+export function buildDossierReadme(d: DemandeClient, opts: { pieces: string[]; manquantes?: string[]; now?: Date } = { pieces: [] }): string {
+  const now = opts.now ?? new Date();
+  const dateGen = fmtDate(now.toISOString());
+  const lignes = [
+    "DOSSIER DE DEMANDE CLIENT \u2014 SPC",
+    "",
+    `\u00c9tablissement : ${d.etablissement || "\u2014"}`,
+    `R\u00e9f\u00e9rence : ${d.reference}`,
+    `Statut : ${d.statut}`,
+    `P\u00e9riode : ${periodeDemande(d)}`,
+    `G\u00e9n\u00e9r\u00e9 le : ${dateGen}`,
+    "",
+    "Contenu du dossier :",
+    `\u00b7 ${demandeFileBase(d)}.xlsx \u2014 r\u00e9capitulatif d\u00e9taill\u00e9 (5 onglets)`,
+    `\u00b7 Fiche_${demandeFileBase(d)}.html \u2014 fiche officielle imprimable (Ctrl+P \u2192 PDF)`,
+  ];
+  if (opts.pieces.length) {
+    lignes.push(`\u00b7 pieces/ \u2014 ${opts.pieces.length} pi\u00e8ce(s) jointe(s) :`);
+    for (const p of opts.pieces) lignes.push(`    - ${p}`);
+  } else {
+    lignes.push("\u00b7 pieces/ \u2014 aucune pi\u00e8ce jointe");
+  }
+  if (opts.manquantes?.length) {
+    lignes.push("", "Pi\u00e8ces non incluses (t\u00e9l\u00e9chargement impossible) :");
+    for (const p of opts.manquantes) lignes.push(`    - ${p}`);
+  }
+  lignes.push("", "Document de demande client \u2014 sous r\u00e9serve de validation SPC. Ne constitue pas un devis d\u00e9finitif.");
+  return lignes.join("\n");
 }
 
 /** Les 5 feuilles du classeur Excel (spec §11.1). */

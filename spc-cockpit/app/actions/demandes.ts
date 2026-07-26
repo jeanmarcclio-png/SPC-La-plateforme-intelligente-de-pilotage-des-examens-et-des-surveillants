@@ -367,6 +367,34 @@ export async function getPieceSignedUrl(id: number): Promise<{ error?: string; u
 }
 
 /**
+ * URLs signées de toutes les pièces d'une demande, pour l'assemblage du dossier
+ * ZIP côté client (Lot C). Durée courte (120 s) le temps du téléchargement.
+ */
+export async function getDossierPieces(demandeId: number): Promise<{ error?: string; pieces?: { nom: string; url: string }[] }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("demandes_client_pieces")
+      .select("nom, chemin")
+      .eq("demande_id", demandeId)
+      .order("created_at", { ascending: true });
+    if (error) return { error: `Pièces indisponibles : ${error.message}` };
+    if (!data?.length) return { pieces: [] };
+
+    const pieces: { nom: string; url: string }[] = [];
+    for (const p of data) {
+      const { data: signed } = await supabase.storage.from(PIECES_BUCKET).createSignedUrl(p.chemin as string, 120);
+      if (signed?.signedUrl) pieces.push({ nom: p.nom as string, url: signed.signedUrl });
+    }
+    return { pieces };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
+/**
  * Demande de correction au client (spec §12) : passe la demande en « À corriger »
  * et consigne le commentaire SPC dans l'historique.
  */
