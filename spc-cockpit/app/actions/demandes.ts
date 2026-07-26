@@ -6,8 +6,13 @@ import { requireCapability } from "@/lib/auth/session";
 import { getActiveOrgId } from "@/lib/auth/org";
 import { getDemandeClient } from "@/lib/operations/demandes";
 import { generateDemandeReference, evaluateDemande, buildMissionFromDemande, piecePath, validatePieceMeta, PIECES_BUCKET } from "@/lib/operations/demandes-constants";
+import { generateToken, hashToken } from "@/lib/operations/portail";
 import type { Contact, DemandeSalle } from "@/lib/operations/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+/** Statuts depuis lesquels générer un lien client ne doit PAS régresser le statut. */
+const STATUTS_AVANCES = new Set(["Validée SPC", "Convertie en mission", "Annulée", "Archivée", "Expirée"]);
+const LIEN_DUREE_JOURS = 14;
 
 function revalidateDemandes(id?: number) {
   revalidatePath("/demandes-client");
@@ -361,6 +366,72 @@ export async function getPieceSignedUrl(id: number): Promise<{ error?: string; u
     const { data, error } = await supabase.storage.from(PIECES_BUCKET).createSignedUrl(piece.chemin as string, 60);
     if (error || !data) return { error: `Lien indisponible : ${error?.message ?? ""}` };
     return { url: data.signedUrl };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
+// ─── Portail client public (Lot E) ───────────────────────────────────────────
+
+/**
+ * Génère un lien client sécurisé (spec §14). On ne stocke que le hash du token ;
+ * le token brut est renvoyé UNE fois à l'utilisateur SPC pour partage. Révoque
+ * les liens actifs précédents (un seul lien vivant par demande).
+ */
+export async function genererLienClient(demandeId: number): Promise<{ error?: string; token?: string; expiresAt?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
+
+  try {
+    const supabase = await createClient();
+    const org_id = await getActiveOrgId();
+    const nowIso = new Date().toISOString();
+
+    // Révoque tout lien encore actif (non révoqué, non soumis) de cette demande.
+    await supabase
+      .from("demandes_client_liens")
+      .update({ revoked_at: nowIso })
+      .eq("demande_id", demandeId)
+      .is("revoked_at", null)
+      .is("submitted_at", null);
+
+    const token = generateToken();
+    const expiresAt = new Date(Date.now() + LIEN_DUREE_JOURS * 24 * 3600 * 1000).toISOString();
+    const { error } = await supabase.from("demandes_client_liens").insert({
+      demande_id: demandeId, org_id, token_hash: hashToken(token), expires_at: expiresAt,
+    });
+    if (error) return { error: `Génération du lien échouée : ${error.message}` };
+
+    // Passe en « Lien envoyé client » sans régresser un statut déjà avancé.
+    const demande = await getDemandeClient(demandeId);
+    if (demande && !STATUTS_AVANCES.has(demande.statut)) {
+      await supabase.from("demandes_client").update({ statut: "Lien envoyé client", updated_at: nowIso }).eq("id", demandeId);
+    }
+    await logDemande(supabase, org_id, demandeId, "Lien client généré", `Valide ${LIEN_DUREE_JOURS} jours`);
+    revalidateDemandes(demandeId);
+    return { token, expiresAt };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
+/** Révoque le lien client actif d'une demande (spec §14). */
+export async function revoquerLienClient(demandeId: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
+  try {
+    const supabase = await createClient();
+    const org_id = await getActiveOrgId();
+    const { error } = await supabase
+      .from("demandes_client_liens")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("demande_id", demandeId)
+      .is("revoked_at", null)
+      .is("submitted_at", null);
+    if (error) return { error: `Révocation échouée : ${error.message}` };
+    await logDemande(supabase, org_id, demandeId, "Lien client révoqué");
+    revalidateDemandes(demandeId);
+    return {};
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erreur inconnue" };
   }

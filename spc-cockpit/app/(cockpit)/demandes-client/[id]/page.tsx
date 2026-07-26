@@ -10,7 +10,8 @@ import { DemandeExportButtons } from "@/components/DemandeExportButtons";
 import { DemandeConvertButton } from "@/components/DemandeConvertButton";
 import { DemandeCorrectionButton } from "@/components/DemandeCorrectionButton";
 import { DemandePiecesUploader } from "@/components/DemandePiecesUploader";
-import { getDemandeClient, getDemandeJournal, getDemandePieces } from "@/lib/operations/demandes";
+import { DemandeLienClient } from "@/components/DemandeLienClient";
+import { getDemandeClient, getDemandeJournal, getDemandePieces, getDemandeLien } from "@/lib/operations/demandes";
 import { STATUT_META } from "@/lib/operations/demandes-constants";
 import { periodeDemande } from "@/lib/operations/demande-export";
 import type { Contact } from "@/lib/operations/types";
@@ -33,7 +34,7 @@ export default async function DemandeDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const demande = await getDemandeClient(Number(id));
   if (!demande) notFound();
-  const [journal, pieces] = await Promise.all([getDemandeJournal(demande.id), getDemandePieces(demande.id)]);
+  const [journal, pieces, lien] = await Promise.all([getDemandeJournal(demande.id), getDemandePieces(demande.id), getDemandeLien(demande.id)]);
 
   const nbEtud = demande.salles.reduce((s, x) => s + x.etudiants, 0);
 
@@ -135,6 +136,10 @@ export default async function DemandeDetailPage({ params }: { params: Promise<{ 
               {demande.observations && <p className="text-[13px] text-gray-600 leading-relaxed">{demande.observations}</p>}
             </>
           )}
+
+          {/* Lien client public */}
+          <SectionRule label="Lien client" className="mt-8" />
+          <DemandeLienClient demandeId={demande.id} lien={lien} />
 
           {/* Pièces jointes */}
           <SectionRule label="Pièces jointes" count={pieces.length ? `${pieces.length} document${pieces.length > 1 ? "s" : ""}` : undefined} className="mt-8" />

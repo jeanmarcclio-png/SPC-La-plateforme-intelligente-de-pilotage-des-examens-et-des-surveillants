@@ -174,6 +174,43 @@ export async function getDemandePieces(demandeId: number): Promise<DemandePiece[
   }
 }
 
+export type LienStatut = "actif" | "expiré" | "révoqué" | "soumis" | "aucun";
+export interface DemandeLienEtat {
+  statut: LienStatut;
+  expiresAt?: string;
+  createdAt?: string;
+  submittedAt?: string;
+  viewedAt?: string;
+}
+
+/** État du dernier lien client d'une demande (portail public, Lot E). */
+export async function getDemandeLien(demandeId: number): Promise<DemandeLienEtat> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("demandes_client_liens")
+      .select("expires_at, revoked_at, submitted_at, viewed_at, created_at")
+      .eq("demande_id", demandeId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!data) return { statut: "aucun" };
+    let statut: LienStatut = "actif";
+    if (data.submitted_at) statut = "soumis";
+    else if (data.revoked_at) statut = "révoqué";
+    else if (new Date(data.expires_at as string).getTime() < Date.now()) statut = "expiré";
+    return {
+      statut,
+      expiresAt: (data.expires_at as string) ?? undefined,
+      createdAt: (data.created_at as string) ?? undefined,
+      submittedAt: (data.submitted_at as string) ?? undefined,
+      viewedAt: (data.viewed_at as string) ?? undefined,
+    };
+  } catch {
+    return { statut: "aucun" };
+  }
+}
+
 export async function getDemandeJournal(demandeId: number): Promise<DemandeJournalEntry[]> {
   try {
     const supabase = await createClient();
