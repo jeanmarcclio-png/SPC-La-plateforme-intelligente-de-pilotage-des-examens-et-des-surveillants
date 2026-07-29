@@ -649,7 +649,7 @@ export function PlanificationBoard({
             );
           })()}
 
-          {/* Prédiction de sous-effectif (§21) */}
+          {/* Couverture surveillants (§21 · C3) — indicateur actionnable */}
           {couverture && (() => {
             const map = {
               "complet": { pill: "bg-emerald-50 text-emerald-700 ring-emerald-600/15", bar: "#059669", label: "Effectif complet" },
@@ -657,26 +657,59 @@ export function PlanificationBoard({
               "sous-effectif": { pill: "bg-rose-50 text-rose-700 ring-rose-600/15", bar: "#e11d48", label: "Sous-effectif" },
             }[couverture.niveau];
             const pct = Math.min(100, Math.round(couverture.tauxCouverture * 100));
+            const manque = couverture.manque;
+            const complet = manque === 0;
             return (
               <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
-                <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div>
                     <h2 className="text-[14px] font-bold text-gray-900">Couverture surveillants</h2>
-                    <p className="text-[12px] text-gray-400">Prédiction de sous-effectif — anticiper les renforts avant le jour J</p>
+                    <p className="text-[12px] text-gray-400">
+                      <span className="font-semibold text-gray-600">{couverture.affectes}</span> sur {couverture.requis} postes pourvus · anticiper les renforts avant le jour J
+                    </p>
                   </div>
                   <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${map.pill}`}>
                     <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{map.label} · {pct} %
                   </span>
                 </div>
-                <div className="mt-3 h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: map.bar }} />
+
+                {/* Barre + chiffre manquant en hero */}
+                <div className="mt-3.5 flex items-center gap-4">
+                  <div className="flex-1">
+                    <div className="h-2.5 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: map.bar }} />
+                    </div>
+                  </div>
+                  <div className="text-right leading-none shrink-0">
+                    <div className="text-[30px] font-extrabold tabular-nums" style={{ color: complet ? "#047857" : "#b91c1c" }}>{manque}</div>
+                    <div className="text-[11px] text-gray-400 mt-1">manquant{manque > 1 ? "s" : ""}</div>
+                  </div>
                 </div>
-                <div className="mt-2 text-[12.5px] text-slate-600">
-                  <span className="font-bold text-gray-900">{couverture.affectes}</span> affecté{couverture.affectes > 1 ? "s" : ""} / {couverture.requis} requis
-                  {couverture.manque > 0 && (
-                    <span className="font-semibold text-rose-600"> — {couverture.manque} surveillant{couverture.manque > 1 ? "s" : ""} à trouver</span>
-                  )}
-                </div>
+
+                {/* Actions / état complet */}
+                {complet ? (
+                  <div className="mt-4 inline-flex items-center gap-1.5 text-[12.5px] font-semibold px-3 py-1.5 rounded-lg" style={{ background: "#d1fae5", color: "#047857" }}>
+                    ✅ Couverture complète
+                  </div>
+                ) : (
+                  <div className="mt-4 flex items-center gap-2 flex-wrap">
+                    <a
+                      href="#session-table"
+                      aria-label="Ajouter un surveillant à la session"
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white text-[13px] font-bold transition-all hover:brightness-110 active:scale-[.98]"
+                      style={{ background: "var(--color-primary)", boxShadow: "0 8px 20px -6px rgba(15,118,110,.5)" }}
+                    >
+                      <Plus className="w-4 h-4" strokeWidth={2.5} aria-hidden /> Ajouter un surveillant
+                    </a>
+                    <a
+                      href="/operations/surveillants"
+                      aria-label="Voir les surveillants candidats disponibles"
+                      className="inline-flex items-center px-3.5 py-2.5 rounded-xl text-[13px] font-semibold text-gray-600 border border-gray-300 bg-white transition-colors hover:bg-gray-50"
+                    >
+                      Voir les candidats
+                    </a>
+                  </div>
+                )}
               </div>
             );
           })()}
