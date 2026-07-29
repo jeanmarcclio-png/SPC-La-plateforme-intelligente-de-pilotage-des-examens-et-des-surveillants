@@ -206,20 +206,20 @@ export function SurveillantsTable({ surveillants }: { surveillants: Surveillant[
     <>
       {/* Toolbar */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
-        <div className="relative flex-1 min-w-[190px]">
-          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+        <div className="relative flex-1 min-w-[220px]">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher un surveillant…"
-            className="w-full pl-8 pr-3 py-2 text-[12.5px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400"
+            className="w-full pl-10 pr-3 py-2.5 text-[13.5px] text-gray-800 placeholder:text-gray-500 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400"
           />
         </div>
-        <select value={role} onChange={(e) => setRole(e.target.value)} className="text-[12px] bg-white border border-gray-200 rounded-lg px-2.5 py-2 text-gray-600 focus:outline-none">
+        <select value={role} onChange={(e) => setRole(e.target.value)} className="text-[12.5px] bg-white border border-gray-300 rounded-lg px-2.5 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400">
           <option value="">Tous rôles</option>
           {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
         </select>
-        <select value={statut} onChange={(e) => setStatut(e.target.value)} className="text-[12px] bg-white border border-gray-200 rounded-lg px-2.5 py-2 text-gray-600 focus:outline-none">
+        <select value={statut} onChange={(e) => setStatut(e.target.value)} className="text-[12.5px] bg-white border border-gray-300 rounded-lg px-2.5 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400">
           <option value="">Tous statuts</option>
           {STATUTS.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
@@ -230,10 +230,10 @@ export function SurveillantsTable({ surveillants }: { surveillants: Surveillant[
         )}
         <button
           onClick={() => setDialog({ mode: "create" })}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-white text-[12.5px] font-semibold transition-opacity hover:opacity-90"
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-white text-[13px] font-semibold shadow-md ring-1 ring-black/5 transition-all hover:brightness-110 hover:shadow-lg active:scale-[.98]"
           style={{ background: ACCENT }}
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-4 h-4" />
           Ajouter un surveillant
         </button>
       </div>
