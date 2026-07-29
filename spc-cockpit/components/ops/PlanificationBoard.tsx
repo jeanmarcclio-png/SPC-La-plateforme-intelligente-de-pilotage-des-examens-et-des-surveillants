@@ -780,7 +780,7 @@ export function PlanificationBoard({
               <table className="w-full border-collapse min-w-[1040px]">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50">
-                    {["Surveillant", "Rôle", "Salle", "● Matin", "● Après-midi", "Heures", ""].map((h) => (
+                    {["Surveillant", "Rôle · Salle", "● Matin", "● Après-midi", "Heures", "Statut", ""].map((h) => (
                       <th key={h} className="text-left px-5 py-3 text-[10.5px] font-bold text-slate-500 uppercase tracking-[.8px]">{h}</th>
                     ))}
                   </tr>
@@ -799,6 +799,18 @@ export function PlanificationBoard({
                     const h = rowHours(r);
                     const idx = rows.indexOf(a);
                     const highlight = highlightId === a.id;
+                    // C4 — statut de ligne + couleur des heures selon les seuils métier.
+                    const overlap = hasOverlap(r.matin) || hasOverlap(r.apm);
+                    const invalide = r.matin.some((x) => slotHours(x) === 0) || r.apm.some((x) => slotHours(x) === 0);
+                    const vide = r.matin.length === 0 && r.apm.length === 0;
+                    const statutRow = overlap || invalide ? "conflit" : h > 8 ? "surcharge" : vide ? "vide" : "conforme";
+                    const statutMap = {
+                      conforme: { e: "✅", t: "Conforme", c: "text-emerald-600" },
+                      surcharge: { e: "⚠️", t: "Surcharge", c: "text-amber-600" },
+                      conflit: { e: "🚨", t: "Conflit", c: "text-red-600" },
+                      vide: { e: "○", t: "À planifier", c: "text-slate-400" },
+                    }[statutRow];
+                    const hColor = h > 8 ? "#dc2626" : h >= 6 ? "#d97706" : "#0f172a";
                     return (
                       <tr
                         key={a.id}
@@ -813,14 +825,17 @@ export function PlanificationBoard({
                             <div className="text-[13px] font-semibold text-gray-800">{s?.nom ?? `Surveillant #${a.surveillantId}`}</div>
                           </div>
                         </td>
-                        <td className="px-5 py-3"><RoleBadge role={a.roleMission ?? s?.role ?? ""} /></td>
-                        <td className="px-5 py-3">
-                          <input
-                            value={r.salle}
-                            onChange={(e) => setRow(a, { ...r, salle: e.target.value })}
-                            placeholder="Salle…"
-                            className={`w-[86px] px-2.5 py-1.5 rounded-lg border text-[12.5px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/25 ${r.salle.trim() ? "border-gray-200" : "border-amber-300 bg-amber-50/40"}`}
-                          />
+                        <td className="px-5 py-3 align-top">
+                          <div className="flex flex-col gap-1.5 items-start">
+                            <RoleBadge role={a.roleMission ?? s?.role ?? ""} />
+                            <input
+                              value={r.salle}
+                              onChange={(e) => setRow(a, { ...r, salle: e.target.value })}
+                              placeholder="Salle…"
+                              aria-label="Salle"
+                              className={`w-[92px] px-2.5 py-1.5 rounded-lg border text-[12.5px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/25 ${r.salle.trim() ? "border-gray-200" : "border-amber-300 bg-amber-50/40"}`}
+                            />
+                          </div>
                         </td>
                         <td className="px-5 py-3 align-top">
                           <SlotsEditor slots={r.matin} onChange={(slots) => setRow(a, { ...r, matin: slots })} def={DEF_MATIN} tint={TEAL} />
@@ -828,8 +843,13 @@ export function PlanificationBoard({
                         <td className="px-5 py-3 align-top">
                           <SlotsEditor slots={r.apm} onChange={(slots) => setRow(a, { ...r, apm: slots })} def={DEF_APM} tint={ACCENT} />
                         </td>
-                        <td className="px-5 py-3 text-[13.5px] font-extrabold text-gray-900 whitespace-nowrap">
+                        <td className="px-5 py-3 text-[13.5px] font-extrabold whitespace-nowrap" style={{ color: h > 0 ? hColor : undefined }}>
                           {h > 0 ? `${h.toFixed(1)}h` : <span className="text-gray-300 font-normal">—</span>}
+                        </td>
+                        <td className="px-5 py-3">
+                          <span className={`inline-flex items-center gap-1.5 text-[12px] font-bold whitespace-nowrap ${statutMap.c}`}>
+                            <span aria-hidden>{statutMap.e}</span>{statutMap.t}
+                          </span>
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex items-center justify-end gap-1">
@@ -850,11 +870,11 @@ export function PlanificationBoard({
                 {rows.length > 0 && (
                   <tfoot>
                     <tr className="bg-gray-50/70 border-t border-gray-100">
-                      <td colSpan={5} className="px-5 py-3 text-right text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">
+                      <td colSpan={4} className="px-5 py-3 text-right text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">
                         Total heures planifiées dans la session
                       </td>
                       <td className="px-5 py-3 text-[15px] font-extrabold text-gray-900">{totalHeures.toFixed(1)}h</td>
-                      <td />
+                      <td colSpan={2} />
                     </tr>
                   </tfoot>
                 )}
