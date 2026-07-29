@@ -205,35 +205,35 @@ export function SurveillantsTable({ surveillants }: { surveillants: Surveillant[
   return (
     <>
       {/* Toolbar */}
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
-        <div className="relative flex-1 min-w-[220px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+      <div className="flex items-center gap-2.5 mb-4 flex-wrap">
+        <div className="relative flex-1 min-w-full sm:min-w-[260px]">
+          <Search className="w-[18px] h-[18px] absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher un surveillant…"
-            className="w-full pl-10 pr-3 py-2.5 text-[13.5px] text-gray-800 placeholder:text-gray-500 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400"
+            className="w-full pl-11 pr-3 py-3 text-[15px] text-gray-900 placeholder:text-gray-500 bg-gray-50 border border-gray-300 rounded-xl transition-colors focus:outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500"
           />
         </div>
-        <select value={role} onChange={(e) => setRole(e.target.value)} className="text-[12.5px] bg-white border border-gray-300 rounded-lg px-2.5 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400">
+        <select value={role} onChange={(e) => setRole(e.target.value)} className="text-[13px] bg-white border border-gray-300 rounded-xl px-3 py-3 text-gray-700 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500">
           <option value="">Tous rôles</option>
           {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
         </select>
-        <select value={statut} onChange={(e) => setStatut(e.target.value)} className="text-[12.5px] bg-white border border-gray-300 rounded-lg px-2.5 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400">
+        <select value={statut} onChange={(e) => setStatut(e.target.value)} className="text-[13px] bg-white border border-gray-300 rounded-xl px-3 py-3 text-gray-700 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500">
           <option value="">Tous statuts</option>
           {STATUTS.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
         {hasFilters && (
-          <button onClick={() => { setSearch(""); setStatut(""); setRole(""); }} className="text-[11.5px] text-gray-400 hover:text-red-500 px-2 py-2 rounded-lg hover:bg-red-50 transition-colors">
+          <button onClick={() => { setSearch(""); setStatut(""); setRole(""); }} className="text-[12px] text-gray-500 hover:text-red-500 px-2.5 py-3 rounded-xl hover:bg-red-50 transition-colors">
             Effacer ✕
           </button>
         )}
         <button
           onClick={() => setDialog({ mode: "create" })}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-white text-[13px] font-semibold shadow-md ring-1 ring-black/5 transition-all hover:brightness-110 hover:shadow-lg active:scale-[.98]"
-          style={{ background: ACCENT }}
+          className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl text-white text-[15px] font-bold transition-all hover:brightness-110 active:scale-[.98]"
+          style={{ background: ACCENT, boxShadow: "0 8px 20px -6px rgba(37,99,235,.55)" }}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-[18px] h-[18px]" strokeWidth={2.5} />
           Ajouter un surveillant
         </button>
       </div>
