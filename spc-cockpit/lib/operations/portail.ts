@@ -18,6 +18,7 @@ export interface PortailLoad {
   reference?: string;
   statut?: string;
   expiresAt?: string;
+  correction?: string;
   form?: PortailPayload;
 }
 
@@ -79,6 +80,7 @@ export async function getPortailByToken(token: string): Promise<PortailLoad> {
       reference: (demande.reference as string) ?? undefined,
       statut: (demande.statut as string) ?? undefined,
       expiresAt: (res.expires_at as string) ?? undefined,
+      correction: (res.correction as string) ?? undefined,
       form: mapForm(demande, salles),
     };
   } catch {

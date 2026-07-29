@@ -42,6 +42,9 @@ export const STATUT_NON_VALIDABLE: StatutDemande[] = ["Validée SPC", "Convertie
 /** Statuts verrouillés : la fiche ne peut plus être éditée côté SPC. */
 export const STATUTS_VERROUILLES: StatutDemande[] = ["Convertie en mission", "Annulée", "Archivée", "Expirée"];
 
+/** Taux horaire de facturation par défaut (€/h) si aucun réglage org (m4). */
+export const TAUX_HORAIRE_DEFAUT = 30;
+
 /** Suggestions de besoins particuliers (spec §8.3). */
 export const BESOINS_SUGGESTIONS = [
   "Placement particulier", "Salle isolée", "Matériel spécifique", "Accès bâtiment",

@@ -2,6 +2,30 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { requireCapability } from "@/lib/auth/session";
+import { getActiveOrgId } from "@/lib/auth/org";
+
+/** Taux horaire de facturation par défaut de l'org (utilisé pour pré-chiffrer les devis). */
+export async function setTauxHoraireFacturation(valeur: number): Promise<{ error?: string }> {
+  const auth = await requireCapability("finance");
+  if (!auth.ok) return { error: auth.error };
+  if (!(valeur > 0)) return { error: "Le taux doit être un montant positif." };
+  try {
+    const supabase = await createClient();
+    const org_id = await getActiveOrgId();
+    if (!org_id) return { error: "Organisation introuvable." };
+    const { error } = await supabase.from("org_parametres").upsert(
+      { org_id, cle: "taux_horaire_facturation", valeur: String(valeur), updated_at: new Date().toISOString() },
+      { onConflict: "org_id,cle" }
+    );
+    if (error) return { error: `Enregistrement échoué : ${error.message}` };
+    revalidatePath("/parametres");
+    revalidatePath("/demandes-client");
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
 
 export async function updateDisplayName(formData: FormData) {
   const supabase = await createClient();

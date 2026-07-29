@@ -152,9 +152,13 @@ export default async function DemandeDetailPage({ params }: { params: Promise<{ 
             </>
           )}
 
-          {/* Lien client public */}
-          <SectionRule label="Lien client" className="mt-8" />
-          <DemandeLienClient demandeId={demande.id} lien={lien} />
+          {/* Lien client public — masqué sur les demandes verrouillées (M1) */}
+          {editable && (
+            <>
+              <SectionRule label="Lien client" className="mt-8" />
+              <DemandeLienClient demandeId={demande.id} lien={lien} />
+            </>
+          )}
 
           {/* Pièces jointes */}
           <SectionRule label="Pièces jointes" count={pieces.length ? `${pieces.length} document${pieces.length > 1 ? "s" : ""}` : undefined} className="mt-8" />

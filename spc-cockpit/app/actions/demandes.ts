@@ -8,14 +8,13 @@ import { getDemandeClient } from "@/lib/operations/demandes";
 import { generateDemandeReference, evaluateDemande, buildMissionFromDemande, piecePath, validatePieceMeta, PIECES_BUCKET, STATUTS_VERROUILLES } from "@/lib/operations/demandes-constants";
 import { generateToken, hashToken } from "@/lib/operations/portail";
 import { calculateRoomBillableHours, ttcFromHT } from "@/lib/operations/engine";
+import { getTauxHoraireFacturation } from "@/lib/operations/org-parametres";
 import type { Contact, DemandeSalle } from "@/lib/operations/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /** Statuts depuis lesquels générer un lien client ne doit PAS régresser le statut. */
 const STATUTS_AVANCES = new Set(["Validée SPC", "Convertie en mission", "Annulée", "Archivée", "Expirée"]);
 const LIEN_DUREE_JOURS = 14;
-/** Taux horaire de facturation par défaut (€/h) — pré-remplit le devis, éditable par SPC. */
-const TAUX_HORAIRE_DEVIS_DEFAUT = 30;
 
 function revalidateDemandes(id?: number) {
   revalidatePath("/demandes-client");
@@ -480,7 +479,8 @@ export async function genererDevisDepuisDemande(id: number): Promise<{ error?: s
         notes: null,
       }), 0) * 100,
     ) / 100;
-    const montantHT = Math.round(heuresFacturables * TAUX_HORAIRE_DEVIS_DEFAUT * 100) / 100;
+    const taux = await getTauxHoraireFacturation();
+    const montantHT = Math.round(heuresFacturables * taux * 100) / 100;
 
     const { data: devis, error } = await supabase.from("devis").insert({
       reference,
@@ -537,12 +537,12 @@ export async function genererDevisDepuisDemande(id: number): Promise<{ error?: s
         designation: `Surveillance d'examens — ${periode} (${salles.length} salle${salles.length > 1 ? "s" : ""})`,
         quantite: heuresFacturables,
         unite: "h",
-        prix_unitaire: TAUX_HORAIRE_DEVIS_DEFAUT,
+        prix_unitaire: taux,
         ordre: 1,
       });
     }
 
-    await logDemande(supabase, org_id, id, "Devis généré", `${reference} · ${heuresFacturables} h × ${TAUX_HORAIRE_DEVIS_DEFAUT} €`);
+    await logDemande(supabase, org_id, id, "Devis généré", `${reference} · ${heuresFacturables} h × ${taux} €`);
     revalidateDemandes(id);
     revalidatePath("/operations/devis");
     return { devisId };
@@ -561,6 +561,12 @@ export async function genererDevisDepuisDemande(id: number): Promise<{ error?: s
 export async function genererLienClient(demandeId: number): Promise<{ error?: string; token?: string; expiresAt?: string }> {
   const auth = await requireCapability("plan");
   if (!auth.ok) return { error: auth.error };
+
+  // M1 : jamais de lien client sur une demande déjà transformée/figée.
+  const demandeCible = await getDemandeClient(demandeId);
+  if (demandeCible && STATUTS_VERROUILLES.includes(demandeCible.statut)) {
+    return { error: `Une demande « ${demandeCible.statut} » ne peut plus recevoir de lien client.` };
+  }
 
   try {
     const supabase = await createClient();
@@ -664,6 +670,25 @@ export async function demanderCorrection(id: number, commentaire: string): Promi
       .eq("id", id);
     if (error) return { error: `Demande de correction échouée : ${error.message}` };
     await logDemande(supabase, org_id, id, "Demande de correction", msg);
+
+    // m2 : réactive le dernier lien client (déjà soumis) pour que le client
+    // puisse corriger via le même lien. On prolonge l'échéance et on lève la
+    // révocation/soumission sur ce lien uniquement.
+    const { data: dernierLien } = await supabase
+      .from("demandes_client_liens")
+      .select("id")
+      .eq("demande_id", id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (dernierLien?.id) {
+      const nouvelleEcheance = new Date(Date.now() + LIEN_DUREE_JOURS * 24 * 3600 * 1000).toISOString();
+      await supabase
+        .from("demandes_client_liens")
+        .update({ submitted_at: null, revoked_at: null, expires_at: nouvelleEcheance })
+        .eq("id", dernierLien.id);
+    }
+
     revalidateDemandes(id);
     return {};
   } catch (e) {

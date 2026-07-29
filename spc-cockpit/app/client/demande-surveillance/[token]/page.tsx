@@ -60,7 +60,7 @@ export default async function PortailPage({ params }: { params: Promise<{ token:
         <h1 className="text-[21px] font-extrabold" style={{ color: NAVY }}>Complétez votre demande</h1>
         <p className="text-[13.5px] text-gray-500 mt-1">Vérifiez et complétez les informations ci-dessous, puis transmettez-les à SPC. Les champs marqués <span className="text-red-500">*</span> sont obligatoires.</p>
       </header>
-      <PortailDemandeForm token={token} initial={res.form} reference={res.reference} expiresAt={res.expiresAt} />
+      <PortailDemandeForm token={token} initial={res.form} reference={res.reference} expiresAt={res.expiresAt} correction={res.correction} />
     </Shell>
   );
 }

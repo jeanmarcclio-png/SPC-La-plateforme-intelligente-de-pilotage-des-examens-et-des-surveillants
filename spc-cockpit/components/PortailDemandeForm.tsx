@@ -28,7 +28,7 @@ function Section({ titre, sous, children }: { titre: string; sous?: string; chil
   );
 }
 
-export function PortailDemandeForm({ token, initial, reference, expiresAt }: { token: string; initial: PortailPayload; reference?: string; expiresAt?: string }) {
+export function PortailDemandeForm({ token, initial, reference, expiresAt, correction }: { token: string; initial: PortailPayload; reference?: string; expiresAt?: string; correction?: string }) {
   const seq = useRef(0);
   const key = () => `s-${seq.current++}`;
   const [p, setP] = useState<PortailPayload>(initial);
@@ -92,8 +92,15 @@ export function PortailDemandeForm({ token, initial, reference, expiresAt }: { t
 
   return (
     <div>
+      {correction && (
+        <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+          <div className="flex items-center gap-2 text-[13px] font-bold text-amber-800"><AlertTriangle className="w-4 h-4" /> SPC vous demande de compléter votre demande</div>
+          <p className="mt-1 text-[12.5px] text-amber-700 whitespace-pre-line">{correction}</p>
+          <p className="mt-1 text-[11.5px] text-amber-600">Corrigez les informations ci-dessous puis transmettez à nouveau.</p>
+        </div>
+      )}
       {expiresAt && (
-        <p className="text-[12px] text-gray-400">Lien valable jusqu&apos;au {new Date(expiresAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}.</p>
+        <p className="text-[12px] text-gray-400 mt-2">Lien valable jusqu&apos;au {new Date(expiresAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}.</p>
       )}
 
       {errors.length > 0 && (
