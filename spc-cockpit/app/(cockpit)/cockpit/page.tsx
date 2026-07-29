@@ -33,10 +33,10 @@ export default async function CockpitPage() {
   const boostedObjectif = Math.min(baseObjectif + 29, 96);
 
   const kpis = [
-    { label: "Prospects total",  value: total,      suffix: "",    color: "#1a202c", sub: "établissements ciblés", delta: null },
-    { label: pipelineCA > 0 ? "Pipeline CA" : "Contactés", value: pipelineCA > 0 ? Math.round(pipelineCA) : contactes, suffix: pipelineCA > 0 ? "k€" : "", color: pipelineCA > 0 ? "#6b46c1" : "#4a90d9", sub: pipelineCA > 0 ? "CA estimé total" : `${total > 0 ? Math.round((contactes / total) * 100) : 0}% du pipeline`, delta: pipelineCA > 0 ? `${contactes} contactés` : null },
-    { label: "RDV fixés",        value: rdvFixes,   suffix: "",    color: "#38a169", sub: "en discussion avancée", delta: rdvFixes > 0 ? `${Math.round((rdvFixes / total) * 100)}% du pipeline` : null },
-    { label: "Convertis",        value: convertis,  suffix: "",    color: "var(--color-primary)", sub: "clients signés", delta: convertis > 0 ? "↑ Signature confirmée" : null },
+    { label: "Prospects total",  value: total,      suffix: "",    bar: "bg-sky-500",     sub: "établissements ciblés", delta: null },
+    { label: pipelineCA > 0 ? "Pipeline CA" : "Contactés", value: pipelineCA > 0 ? Math.round(pipelineCA) : contactes, suffix: pipelineCA > 0 ? "k€" : "", bar: "bg-emerald-500", sub: pipelineCA > 0 ? "CA estimé total" : `${total > 0 ? Math.round((contactes / total) * 100) : 0}% du pipeline`, delta: pipelineCA > 0 ? `${contactes} contactés` : null },
+    { label: "RDV fixés",        value: rdvFixes,   suffix: "",    bar: "bg-amber-500",   sub: "en discussion avancée", delta: rdvFixes > 0 ? `${Math.round((rdvFixes / total) * 100)}% du pipeline` : null },
+    { label: "Convertis",        value: convertis,  suffix: "",    bar: "bg-teal-500",    sub: "clients signés", delta: convertis > 0 ? "↑ Signature confirmée" : null },
   ];
 
   return (
@@ -49,9 +49,9 @@ export default async function CockpitPage() {
 
         {/* ── MOBILE header ── */}
         <div className="md:hidden">
-          <div className="px-4 pt-5 pb-4" style={{ background: "#0d1e2e" }}>
+          <div className="px-4 pt-5 pb-4" style={{ background: "var(--color-primary)" }}>
             <div className="text-[22px] font-extrabold text-white">Cockpit Dirigeant</div>
-            <div className="text-[13px] text-white/60 mt-0.5">Vue exécutive · IA</div>
+            <div className="text-[13px] text-white/70 mt-0.5">Vue exécutive · IA</div>
           </div>
         </div>
 
@@ -65,10 +65,11 @@ export default async function CockpitPage() {
             {kpis.map((kpi, i) => (
               <Card
                 key={i}
-                className="rounded-2xl p-4 text-center animate-fade-up"
+                className="relative overflow-hidden rounded-2xl p-4 pt-[18px] text-center animate-fade-up"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
-                <div className="text-[28px] font-extrabold" style={{ color: kpi.color }}>
+                <span aria-hidden className={`absolute top-0 left-0 right-0 h-[3px] ${kpi.bar}`} />
+                <div className="text-[28px] font-extrabold text-gray-900">
                   <CountUp value={kpi.value} suffix={kpi.suffix} />
                 </div>
                 <div className="text-[12px] font-semibold text-gray-700 mt-0.5">{kpi.label}</div>

@@ -33,10 +33,7 @@ export function ProspectKanban({ prospects }: { prospects: Prospect[] }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-[13px] font-semibold text-gray-800">Vue Pipeline</span>
-          <span className="text-[11px] font-semibold bg-blue-50 text-blue-600 border border-blue-200 rounded-full px-2 py-0.5">Kanban</span>
-        </div>
+        <span className="text-[11px] font-semibold bg-blue-50 text-blue-600 border border-blue-200 rounded-full px-2 py-0.5">Kanban</span>
         <span className="text-[11px] text-gray-400">{prospects.length} prospects au total</span>
       </div>
 

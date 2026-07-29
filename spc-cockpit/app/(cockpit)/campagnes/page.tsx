@@ -5,6 +5,7 @@ import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { Badge } from "@/components/Badge";
 import { getCampagnes, getLivrables } from "@/lib/supabase/queries";
+import { SectionRule } from "@/components/SectionRule";
 import { CampagneStatutSelect, AddCampagneButton } from "@/components/CampagneActions";
 import { computeCampagneHealth } from "@/lib/ai/engine";
 import { Check, Clock } from "lucide-react";
@@ -156,13 +157,15 @@ export default async function CampagnesPage() {
         </div>
 
         {/* ── DESKTOP ── */}
-        <div className="hidden md:block p-5">
-        {/* Campaign cards */}
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[14px] font-semibold text-gray-900">{campagnes.length} campagne{campagnes.length > 1 ? "s" : ""}</span>
+        <div className="hidden md:block p-6">
+        {/* ── Groupe : Campagnes (portefeuille) ── */}
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-gray-400">Campagnes</span>
+          <span className="text-[12px] text-gray-400 flex-shrink-0">{campagnes.length} au total</span>
+          <span className="h-px flex-1 bg-gray-200" aria-hidden />
           <AddCampagneButton />
         </div>
-        <div className="grid grid-cols-3 gap-3.5 mb-5">
+        <div className="grid grid-cols-3 gap-4 mb-5">
           {campagnes.map((c) => (
             <div
               key={c.id}
@@ -211,6 +214,8 @@ export default async function CampagnesPage() {
           ))}
         </div>
 
+        {/* ── Groupe : Campagne active (pilotage du portefeuille en cours) ── */}
+        <SectionRule label="Campagne active" className="mt-8" />
         {/* Phase timeline */}
         <PhaseTimeline validated={validated} total={total} />
 
@@ -396,7 +401,7 @@ function ConformiteGauge({ pct }: { pct: number }) {
 
   return (
     <div className="flex flex-col items-center">
-      <svg viewBox="0 0 100 60" className="w-[130px] h-[78px]">
+      <svg viewBox="0 0 100 60" className="w-[130px] h-[78px]" role="img" aria-label={`Conformité globale : ${pct}%`}>
         <path
           d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
           fill="none"

@@ -118,12 +118,13 @@ export default async function DashboardPage() {
             <InsightsBannerMobile insights={insights} />
 
             {/* Pipeline banner */}
-            <Link href="/qualification" className="block rounded-2xl p-4" style={{ background: "var(--color-primary)" }}>
-              <div className="text-[12px] font-bold text-white/60 uppercase tracking-widest mb-1">Pipeline total</div>
-              <div className="text-[32px] font-extrabold text-white leading-none">
+            <Link href="/qualification" className="relative block bg-white rounded-2xl p-4 pl-5 overflow-hidden border border-gray-100 shadow-sm active:opacity-70">
+              <span aria-hidden className="absolute top-0 left-0 bottom-0 w-[4px]" style={{ background: "var(--color-primary)" }} />
+              <div className="text-[12px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--color-primary)" }}>Pipeline total</div>
+              <div className="text-[32px] font-extrabold text-gray-900 leading-none">
                 {pipelineTotal > 0 ? `${Math.round(pipelineTotal)}k €` : `${total} prospects`}
               </div>
-              <div className="text-[13px] text-white/70 mt-1">{total} prospects · voir tout →</div>
+              <div className="text-[13px] text-gray-400 mt-1">{total} prospects · voir tout →</div>
             </Link>
 
             {/* KPI 2x2 */}
@@ -132,7 +133,7 @@ export default async function DashboardPage() {
                 { label: "Prospects",     value: total,       bar: "bg-sky-500",     sub: `${aRelancer} à contacter`,                                          href: "/qualification" },
                 { label: "Priorité haute", value: tresChaudes, bar: "bg-amber-500",   sub: `${prospects.filter(p => p.statut === "En cours").length} en cours`, href: "/qualification" },
                 { label: "RDV fixés",     value: rdvFixes,    bar: "bg-emerald-500", sub: `${prospects.filter(p => p.statut === "Converti").length} convertis`, href: "/qualification" },
-                { label: "À relancer",    value: aRelancer,   bar: "bg-teal-500",    sub: "voir l'agenda →",                                                    href: "/qualification" },
+                { label: "À relancer",    value: aRelancer,   bar: "bg-indigo-500",  sub: "voir l'agenda →",                                                    href: "/qualification" },
               ].map((k) => (
                 <Link key={k.label} href={k.href} className="relative bg-white rounded-2xl p-4 pt-[18px] overflow-hidden border border-gray-100 shadow-sm active:opacity-70">
                   <span aria-hidden className={`absolute top-0 left-0 right-0 h-[3px] ${k.bar}`} />

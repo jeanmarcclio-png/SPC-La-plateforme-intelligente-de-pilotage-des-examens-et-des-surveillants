@@ -9,14 +9,17 @@ import { TeamSection } from "@/components/TeamSection";
 import { getNotificationPrefs, getTeamMembers } from "@/app/actions/parametres";
 import { PushNotificationToggle } from "@/components/PushNotificationBanner";
 import { SectorSection } from "@/components/SectorSection";
+import { FacturationSection } from "@/components/FacturationSection";
+import { getTauxHoraireFacturation } from "@/lib/operations/org-parametres";
 
 export default async function ParametresPage() {
   const supabase = await createClient();
-  const [{ data: { user } }, campagnes, notifPrefs, teamMembers] = await Promise.all([
+  const [{ data: { user } }, campagnes, notifPrefs, teamMembers, tauxFacturation] = await Promise.all([
     supabase.auth.getUser(),
     getCampagnes(),
     getNotificationPrefs(),
     getTeamMembers(),
+    getTauxHoraireFacturation(),
   ]);
 
   const email = user?.email ?? "—";
@@ -74,6 +77,12 @@ export default async function ParametresPage() {
               <div className="mt-3 pt-3 border-t border-gray-100">
                 <PushNotificationToggle />
               </div>
+            </div>
+
+            {/* Facturation */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div className="text-[13px] font-bold text-gray-800 mb-3">Facturation</div>
+              <FacturationSection taux={tauxFacturation} />
             </div>
 
             {/* Intégrations */}
@@ -150,6 +159,12 @@ export default async function ParametresPage() {
                 <div className="text-[12.5px] text-gray-400">Aucune campagne active</div>
               )}
             </div>
+          </div>
+
+          {/* Facturation */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <div className="text-[13px] font-semibold text-gray-800 mb-4">Facturation</div>
+            <FacturationSection taux={tauxFacturation} />
           </div>
 
           {/* Équipe */}

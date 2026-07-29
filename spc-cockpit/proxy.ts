@@ -34,6 +34,7 @@ export default async function proxy(req: NextRequest) {
   const isPublic =
     isLoginPage ||
     pathname.startsWith("/auth") ||
+    pathname.startsWith("/client") || // portail client public (accès par token, hors session)
     pathname === "/offline" ||
     pathname === "/confidentialite";
 

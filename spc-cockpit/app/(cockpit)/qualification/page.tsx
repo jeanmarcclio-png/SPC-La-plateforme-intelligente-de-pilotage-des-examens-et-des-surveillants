@@ -2,12 +2,12 @@ export const dynamic = "force-dynamic";
 
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
+import { SectionRule } from "@/components/SectionRule";
 import { Badge } from "@/components/Badge";
 import { getProspects, getClusterScores } from "@/lib/supabase/queries";
 import { ProspectStatutSelect, ProspectNotesInput } from "@/components/ProspectCRM";
 import { ProspectFilteredTable } from "@/components/ProspectFilteredTable";
 import { MobileProspectList } from "@/components/MobileProspectList";
-import { AddProspectButton } from "@/components/AddProspectModal";
 import { ModeDecisionButtons } from "@/components/ModeDecisionButtons";
 import { LancerScriptButton } from "@/components/LancerScriptButton";
 import { ProspectKanban } from "@/components/ProspectKanban";
@@ -56,7 +56,7 @@ export default async function QualificationPage() {
               {/* BANT score ring */}
               <div className="flex items-center gap-4 mb-3">
                 <div className="relative w-16 h-16 flex-shrink-0">
-                  <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90">
+                  <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90" aria-hidden>
                     <circle cx="18" cy="18" r="15.9" fill="none" stroke="#edf2f7" strokeWidth="3.5" />
                     <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--color-primary)" strokeWidth="3.5"
                       strokeDasharray={`${(emLyon.scoreBANT / 10) * 100} 100`} strokeLinecap="round" />
@@ -132,7 +132,9 @@ export default async function QualificationPage() {
         </div>
 
         {/* ── DESKTOP ── */}
-        <div className="hidden md:block p-5">
+        <div className="hidden md:block p-6">
+        {/* ── Groupe : Décision (le prospect à trancher aujourd'hui) ── */}
+        <SectionRule label="Décision" />
         {/* Top: Selected prospect hero + BANT sub-scores */}
         <div className="grid grid-cols-[1fr_280px] gap-4 mb-4">
           {/* Hero card */}
@@ -240,9 +242,13 @@ export default async function QualificationPage() {
           </div>
         </div>
 
+        {/* ── Groupe : Pipeline ── */}
+        <SectionRule label="Pipeline" className="mt-8" />
         {/* Kanban pipeline view — HubSpot inspired */}
         <ProspectKanban prospects={prospects} />
 
+        {/* ── Groupe : Base prospects ── */}
+        <SectionRule label="Base prospects" className="mt-8" />
         {/* Bottom: prospects table + cluster scores */}
         <div className="grid grid-cols-[1fr_220px] gap-4">
           <div>
@@ -294,7 +300,7 @@ function BANTGauge({ score }: { score: number }) {
   const dash = (score / 10) * circumference;
 
   return (
-    <svg viewBox="0 0 140 82" className="w-[180px] h-[105px]">
+    <svg viewBox="0 0 140 82" className="w-[180px] h-[105px]" role="img" aria-label={`Score BANT : ${score} sur 10`}>
       <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="#edf2f7" strokeWidth="16" strokeLinecap="round" />
       <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="var(--color-primary)" strokeWidth="16" strokeLinecap="round" strokeDasharray={`${dash} ${circumference}`} />
       <text x={cx} y={cy - 12} textAnchor="middle" style={{ fontSize: 26, fontWeight: 800, fill: "#1a202c" }}>{score}</text>

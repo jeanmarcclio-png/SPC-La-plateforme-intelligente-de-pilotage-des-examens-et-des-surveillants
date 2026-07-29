@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { Topbar } from "@/components/Topbar";
 import { ConseilBar } from "@/components/ConseilBar";
 import { FacturationButton } from "@/components/FacturationButton";
+import { SectionRule } from "@/components/SectionRule";
 import { getCampagnes, getProspects, getClusterScores, getSegmentRepartition, getLivrables } from "@/lib/supabase/queries";
 
 export default async function ReportingPage() {
@@ -117,16 +118,38 @@ export default async function ReportingPage() {
             </div>
           </div>
           <div className="p-4 pb-40 space-y-3">
+            {/* Prévision — ancre mobile (miroir du desktop) */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[var(--color-primary)]">Prévision</span>
+                <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-1.5 py-0.5">IA prédictive</span>
+              </div>
+              <div className="text-[15px] font-extrabold text-gray-900 tracking-tight mb-3">Objectif fin de trimestre</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="border border-gray-200 rounded-xl p-3 bg-gray-50">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1.5 font-medium">Trajectoire</div>
+                  <div className="text-[26px] font-extrabold text-gray-600 leading-none">{forecastConversions}</div>
+                  <div className="text-[10.5px] text-gray-400 mt-1">conversions estimées</div>
+                </div>
+                <div className="border border-[var(--color-primary)]/25 rounded-xl p-3 bg-teal-50/60">
+                  <div className="text-[10px] text-[var(--color-primary)] uppercase tracking-wider mb-1.5 font-bold">Avec accélération</div>
+                  <div className="text-[26px] font-extrabold text-[var(--color-primary)] leading-none">{forecastConversionsBoosted}</div>
+                  <div className="text-[10.5px] text-[var(--color-primary)]/80 mt-1 font-medium">+{gainPct}% vs trajectoire</div>
+                </div>
+              </div>
+            </div>
+
             {/* 2×2 KPIs */}
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, color: "text-gray-900" },
-                { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, color: "text-orange-500" },
-                { label: "Score BANT", value: `${scoreMoyen}/10`, sub: "moyenne", color: "text-[var(--color-primary)]" },
-                { label: "RDV + Convertis", value: rdvFixes + convertis, sub: `taux ${tauxConversion}%`, color: "text-green-600" },
+                { label: "Prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, bar: "bg-sky-500" },
+                { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, bar: "bg-amber-500" },
+                { label: "Score BANT", value: `${scoreMoyen}/10`, sub: "moyenne", bar: "bg-teal-500" },
+                { label: "RDV + Convertis", value: rdvFixes + convertis, sub: `taux ${tauxConversion}%`, bar: "bg-emerald-500" },
               ].map((kpi, i) => (
-                <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-                  <div className={`text-[26px] font-extrabold leading-none ${kpi.color}`}>{kpi.value}</div>
+                <div key={i} className="relative overflow-hidden bg-white rounded-2xl p-4 pt-[18px] border border-gray-100 shadow-sm">
+                  <span aria-hidden className={`absolute top-0 left-0 right-0 h-[3px] ${kpi.bar}`} />
+                  <div className="text-[26px] font-extrabold leading-none text-gray-900">{kpi.value}</div>
                   <div className="text-[12px] font-semibold text-gray-700 mt-1.5">{kpi.label}</div>
                   <div className="text-[12px] text-gray-400 mt-0.5">{kpi.sub}</div>
                 </div>
@@ -224,14 +247,17 @@ export default async function ReportingPage() {
         </div>
 
         {/* ── DESKTOP ── */}
-        <div className="hidden md:block p-5">
+        <div className="hidden md:block p-6">
 
-        {/* Prévision Trimestrielle */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
+        {/* ── ANCRE : Prévision fin de trimestre (l'élément qui mène la page) ── */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-gray-800">📈 Prévision fin de trimestre</span>
-              <span className="text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-2 py-0.5">IA Prédictive · Confiance 85%</span>
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-[var(--color-primary)]">Prévision</div>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[17px] font-extrabold text-gray-900 tracking-tight">Objectif fin de trimestre</span>
+                <span className="text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-2 py-0.5">IA prédictive</span>
+              </div>
             </div>
             <span className="text-[11px] text-gray-400">Base : {totalProspects} prospects · {campagnes.length} campagnes</span>
           </div>
@@ -271,23 +297,26 @@ export default async function ReportingPage() {
           </div>
         </div>
 
-        {/* KPIs */}
-        <div className="grid grid-cols-4 gap-3.5 mb-5">
+        {/* ── Groupe : Synthèse ── */}
+        <SectionRule label="Synthèse" className="mt-8" />
+        <div className="grid grid-cols-4 gap-4 mb-4">
           {[
-            { label: "Total prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, color: "text-gray-900" },
-            { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, color: "text-orange-500" },
-            { label: "Score BANT moyen", value: scoreMoyen, sub: "Sur 10 pts", color: "text-[var(--color-primary)]" },
-            { label: "RDV fixés", value: rdvFixes + convertis, sub: `dont ${convertis} converti${convertis !== 1 ? "s" : ""}`, color: "text-green-600" },
+            { label: "Total prospects", value: totalProspects, sub: `${campagnes.length} campagnes`, bar: "bg-sky-500" },
+            { label: "Très chaud", value: tresChaudes, sub: `${Math.round((tresChaudes / (totalProspects || 1)) * 100)}% du pipeline`, bar: "bg-amber-500" },
+            { label: "Score BANT moyen", value: scoreMoyen, sub: "Sur 10 pts", bar: "bg-teal-500" },
+            { label: "RDV fixés", value: rdvFixes + convertis, sub: `dont ${convertis} converti${convertis !== 1 ? "s" : ""}`, bar: "bg-emerald-500" },
           ].map((kpi, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-              <div className={`text-[28px] font-extrabold leading-none ${kpi.color}`}>{kpi.value}</div>
+            <div key={i} className="relative overflow-hidden bg-white rounded-xl border border-gray-200 shadow-sm p-4 pt-[18px]">
+              <span aria-hidden className={`absolute top-0 left-0 right-0 h-[3px] ${kpi.bar}`} />
+              <div className="text-[28px] font-extrabold leading-none text-gray-900">{kpi.value}</div>
               <div className="text-[12.5px] text-gray-600 mt-1.5 font-medium">{kpi.label}</div>
               <div className="text-[11px] text-gray-400 mt-0.5">{kpi.sub}</div>
             </div>
           ))}
         </div>
 
-        {/* Charts row */}
+        {/* ── Groupe : Analyse ── */}
+        <SectionRule label="Analyse" className="mt-8" />
         <div className="grid grid-cols-[1fr_1fr_200px] gap-4 mb-4">
 
           {/* Répartition segments */}
@@ -375,12 +404,9 @@ export default async function ReportingPage() {
 
         </div>
 
-        {/* Livrables progression */}
+        {/* ── Groupe : Livrables ── */}
+        <SectionRule label="Livrables" count={`${livrablesValides}/${livrables.length} validés`} className="mt-8" />
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="text-[13px] font-semibold text-gray-700">Progression des livrables</div>
-            <span className="text-[12px] text-gray-400">{livrablesValides}/{livrables.length} validés</span>
-          </div>
           <div className="grid grid-cols-2 gap-3">
             {livrables.map((l) => {
               const pct = l.statut === "Validé" ? 100 : l.statut === "En cours" ? 50 : l.statut === "À renforcer" ? 70 : 0;
@@ -417,7 +443,12 @@ function DonutChart({ data, total }: { data: { nom: string; count: number; color
   const circumference = 2 * Math.PI * r;
 
   return (
-    <svg viewBox="0 0 108 108" className="w-[108px] h-[108px] flex-shrink-0">
+    <svg
+      viewBox="0 0 108 108"
+      className="w-[108px] h-[108px] flex-shrink-0"
+      role="img"
+      aria-label={`Répartition par segment sur ${total} prospects : ${data.map((s) => `${s.nom} ${s.count}`).join(", ")}`}
+    >
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="#edf2f7" strokeWidth={strokeW} />
       {data.map((s, i) => {
         const offset = data.slice(0, i).reduce((sum, x) => sum + x.count, 0);
@@ -448,7 +479,11 @@ function DonutChart({ data, total }: { data: { nom: string; count: number; color
 function FunnelChart({ steps }: { steps: { label: string; count: number; color: string }[] }) {
   const maxCount = Math.max(...steps.map((s) => s.count), 1);
   return (
-    <div className="space-y-2">
+    <div
+      className="space-y-2"
+      role="img"
+      aria-label={`Entonnoir de conversion : ${steps.map((s) => `${s.label} ${s.count}`).join(", ")}`}
+    >
       {steps.map((s, i) => {
         const pct = (s.count / maxCount) * 100;
         const dropPct = i > 0 && steps[i - 1].count > 0
@@ -488,7 +523,11 @@ function FunnelChart({ steps }: { steps: { label: string; count: number; color: 
 function ScoreHistogram({ buckets, maxCount }: { buckets: { label: string; count: number }[]; maxCount: number }) {
   const colors = ["#a0aec0", "#4a90d9", "#f6ad55", "#38a169", "var(--color-primary)"];
   return (
-    <div className="flex items-end gap-2 h-[100px]">
+    <div
+      className="flex items-end gap-2 h-[100px]"
+      role="img"
+      aria-label={`Distribution du score BANT : ${buckets.map((b) => `${b.label} points, ${b.count}`).join(", ")}`}
+    >
       {buckets.map((b, i) => {
         const heightPct = maxCount > 0 ? (b.count / maxCount) * 100 : 0;
         return (
