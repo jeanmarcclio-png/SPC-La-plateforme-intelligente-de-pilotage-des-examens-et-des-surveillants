@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import { Topbar } from "@/components/Topbar";
 import { SectionRule } from "@/components/SectionRule";
 import { DemandeStatutActions } from "@/components/DemandeStatutActions";
@@ -12,7 +12,7 @@ import { DemandeCorrectionButton } from "@/components/DemandeCorrectionButton";
 import { DemandePiecesUploader } from "@/components/DemandePiecesUploader";
 import { DemandeLienClient } from "@/components/DemandeLienClient";
 import { getDemandeClient, getDemandeJournal, getDemandePieces, getDemandeLien } from "@/lib/operations/demandes";
-import { STATUT_META } from "@/lib/operations/demandes-constants";
+import { STATUT_META, STATUTS_VERROUILLES } from "@/lib/operations/demandes-constants";
 import { periodeDemande } from "@/lib/operations/demande-export";
 import type { Contact } from "@/lib/operations/types";
 
@@ -37,6 +37,7 @@ export default async function DemandeDetailPage({ params }: { params: Promise<{ 
   const [journal, pieces, lien] = await Promise.all([getDemandeJournal(demande.id), getDemandePieces(demande.id), getDemandeLien(demande.id)]);
 
   const nbEtud = demande.salles.reduce((s, x) => s + x.etudiants, 0);
+  const editable = !STATUTS_VERROUILLES.includes(demande.statut);
 
   return (
     <>
@@ -49,13 +50,25 @@ export default async function DemandeDetailPage({ params }: { params: Promise<{ 
           <Link href="/demandes-client" className="inline-flex items-center gap-1 text-[12px] text-white/70 mb-1"><ArrowLeft className="w-3.5 h-3.5" /> Demandes</Link>
           <div className="text-[19px] font-extrabold text-white">{demande.etablissement}</div>
           <div className="text-[12px] text-white/70 font-mono">{demande.reference}</div>
-          <div className="mt-3"><DemandeExportButtons demande={demande} /></div>
+          <div className="mt-3 flex items-center gap-2">
+            <DemandeExportButtons demande={demande} />
+            {editable && (
+              <Link href={`/demandes-client/${demande.id}/modifier`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white bg-white/15 hover:bg-white/25 transition-colors">
+                <Pencil className="w-3.5 h-3.5" /> Modifier
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="max-w-[1000px] mx-auto p-4 md:p-6 pb-40">
           <div className="hidden md:flex items-center justify-between mb-5">
             <Link href="/demandes-client" className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-gray-500 hover:text-gray-700"><ArrowLeft className="w-4 h-4" /> Retour à la liste</Link>
             <div className="flex items-center gap-3">
+              {editable && (
+                <Link href={`/demandes-client/${demande.id}/modifier`} className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-gray-700 border border-gray-200 hover:border-gray-300 bg-white px-3 py-2 rounded-lg transition-colors">
+                  <Pencil className="w-3.5 h-3.5" /> Modifier
+                </Link>
+              )}
               <DemandeCorrectionButton id={demande.id} statut={demande.statut} />
               <DemandeConvertButton id={demande.id} statut={demande.statut} missionId={demande.missionId} />
               <DemandeStatutActions id={demande.id} statut={demande.statut} />

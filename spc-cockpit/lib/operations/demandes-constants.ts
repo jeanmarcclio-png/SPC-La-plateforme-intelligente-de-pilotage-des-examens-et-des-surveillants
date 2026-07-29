@@ -39,6 +39,9 @@ export const STATUT_META: Record<StatutDemande, { pill: string; dot: string }> =
 /** Statuts depuis lesquels une validation SPC est encore possible. */
 export const STATUT_NON_VALIDABLE: StatutDemande[] = ["Validée SPC", "Convertie en mission", "Annulée", "Archivée", "Expirée"];
 
+/** Statuts verrouillés : la fiche ne peut plus être éditée côté SPC. */
+export const STATUTS_VERROUILLES: StatutDemande[] = ["Convertie en mission", "Annulée", "Archivée", "Expirée"];
+
 /** Suggestions de besoins particuliers (spec §8.3). */
 export const BESOINS_SUGGESTIONS = [
   "Placement particulier", "Salle isolée", "Matériel spécifique", "Accès bâtiment",

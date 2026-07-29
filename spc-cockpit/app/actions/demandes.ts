@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireCapability } from "@/lib/auth/session";
 import { getActiveOrgId } from "@/lib/auth/org";
 import { getDemandeClient } from "@/lib/operations/demandes";
-import { generateDemandeReference, evaluateDemande, buildMissionFromDemande, piecePath, validatePieceMeta, PIECES_BUCKET } from "@/lib/operations/demandes-constants";
+import { generateDemandeReference, evaluateDemande, buildMissionFromDemande, piecePath, validatePieceMeta, PIECES_BUCKET, STATUTS_VERROUILLES } from "@/lib/operations/demandes-constants";
 import { generateToken, hashToken } from "@/lib/operations/portail";
 import type { Contact, DemandeSalle } from "@/lib/operations/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -213,6 +213,51 @@ export async function importerDemande(payload: ImportDemandePayload): Promise<{ 
     await logDemande(supabase, org_id, demandeId, "Import Excel", `${salles.length} salle(s) importée(s)`);
     revalidateDemandes(demandeId);
     return { id: demandeId };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
+/**
+ * Modification d'une fiche existante côté SPC. Met à jour les champs, remplace
+ * intégralement les salles, journalise. Bloquée sur les statuts verrouillés
+ * (convertie / annulée / archivée / expirée). Ne touche ni référence ni statut.
+ */
+export async function updateDemande(id: number, fd: FormData): Promise<{ error?: string; id?: number }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
+
+  const fields = parseDemande(fd);
+  if (!fields.etablissement) return { error: "Le nom de l'établissement est obligatoire" };
+
+  const demande = await getDemandeClient(id);
+  if (!demande) return { error: "Demande introuvable" };
+  if (STATUTS_VERROUILLES.includes(demande.statut)) {
+    return { error: `Une demande « ${demande.statut} » ne peut plus être modifiée.` };
+  }
+
+  const salles = parseSalles(fd);
+  try {
+    const supabase = await createClient();
+    const org_id = await getActiveOrgId();
+
+    const { error } = await supabase
+      .from("demandes_client")
+      .update({ ...fields, updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) return { error: `Mise à jour échouée : ${error.message}` };
+
+    // Remplace intégralement les salles.
+    await supabase.from("demandes_client_salles").delete().eq("demande_id", id);
+    if (salles.length > 0) {
+      const rows = salles.map((s) => ({ ...s, demande_id: id, org_id }));
+      const { error: sErr } = await supabase.from("demandes_client_salles").insert(rows);
+      if (sErr) return { error: `Salles non enregistrées : ${sErr.message}` };
+    }
+
+    await logDemande(supabase, org_id, id, "Modification de la fiche", `${salles.length} salle(s)`);
+    revalidateDemandes(id);
+    return { id };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erreur inconnue" };
   }
