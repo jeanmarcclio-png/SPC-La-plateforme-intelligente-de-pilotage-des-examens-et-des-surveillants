@@ -947,16 +947,19 @@ export function PlanificationBoard({
                   const s = survById.get(a.surveillantId);
                   const r = stateOf(a);
                   const idx = rows.indexOf(a);
+                  const hj = rowHours(r);
+                  const surcharge = hj > 8;
                   return (
-                    <div key={a.id} className="flex items-center gap-3 flex-wrap max-[720px]:gap-1.5">
-                      <div className="flex items-center gap-2.5 w-[220px] max-[720px]:w-full flex-shrink-0">
+                    <div key={a.id} className={`flex items-center gap-3 flex-wrap max-[720px]:gap-1.5 rounded-lg transition-colors ${surcharge ? "bg-rose-50/70 ring-1 ring-inset ring-rose-200" : ""}`}>
+                      <div className="flex items-center gap-2.5 w-[220px] max-[720px]:w-full flex-shrink-0 py-1 pl-1">
                         <span className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0" style={{ background: AVATAR_COLORS[idx % AVATAR_COLORS.length] }}>
                           {initials(s?.nom ?? "??")}
                         </span>
                         <span className="text-[12.5px] font-semibold text-gray-800 truncate">{s?.nom ?? `#${a.surveillantId}`}</span>
-                        <span className="text-[11.5px] font-bold text-gray-500 ml-auto">{rowHours(r).toFixed(1)}h</span>
+                        {surcharge && <span className="text-[9.5px] font-bold text-rose-600 bg-rose-100 rounded px-1 py-0.5 whitespace-nowrap" title="Plus de 8 h planifiées">⚠️ Surcharge</span>}
+                        <span className={`text-[11.5px] font-bold ml-auto ${surcharge ? "text-rose-600" : "text-gray-500"}`}>{hj.toFixed(1)}h</span>
                       </div>
-                      <div className="relative flex-1 min-w-[280px] h-7 rounded-lg bg-slate-100/70 overflow-hidden">
+                      <div className={`relative flex-1 min-w-[280px] h-7 rounded-lg overflow-hidden ${surcharge ? "bg-rose-100/50" : "bg-slate-100/70"}`}>
                         {r.matin.map((s, i) => <SlotBar key={`m${i}`} slot={s} color={TEAL} label="Matin" />)}
                         {r.apm.map((s, i) => <SlotBar key={`a${i}`} slot={s} color={ACCENT} label="Après-midi" />)}
                       </div>
