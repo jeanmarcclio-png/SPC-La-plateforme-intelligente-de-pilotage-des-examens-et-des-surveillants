@@ -174,6 +174,24 @@ export async function getDemandePieces(demandeId: number): Promise<DemandePiece[
   }
 }
 
+/** Devis rattaché à la mission d'une demande convertie (§15), ou null. */
+export async function getDemandeDevisId(missionId?: number): Promise<number | null> {
+  if (!missionId) return null;
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("devis")
+      .select("id")
+      .eq("mission_id", missionId)
+      .order("id", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return (data?.id as number) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export type LienStatut = "actif" | "expiré" | "révoqué" | "soumis" | "aucun";
 export interface DemandeLienEtat {
   statut: LienStatut;

@@ -8,10 +8,11 @@ import { SectionRule } from "@/components/SectionRule";
 import { DemandeStatutActions } from "@/components/DemandeStatutActions";
 import { DemandeExportButtons } from "@/components/DemandeExportButtons";
 import { DemandeConvertButton } from "@/components/DemandeConvertButton";
+import { DemandeDevisButton } from "@/components/DemandeDevisButton";
 import { DemandeCorrectionButton } from "@/components/DemandeCorrectionButton";
 import { DemandePiecesUploader } from "@/components/DemandePiecesUploader";
 import { DemandeLienClient } from "@/components/DemandeLienClient";
-import { getDemandeClient, getDemandeJournal, getDemandePieces, getDemandeLien } from "@/lib/operations/demandes";
+import { getDemandeClient, getDemandeJournal, getDemandePieces, getDemandeLien, getDemandeDevisId } from "@/lib/operations/demandes";
 import { STATUT_META, STATUTS_VERROUILLES } from "@/lib/operations/demandes-constants";
 import { periodeDemande } from "@/lib/operations/demande-export";
 import type { Contact } from "@/lib/operations/types";
@@ -34,7 +35,7 @@ export default async function DemandeDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const demande = await getDemandeClient(Number(id));
   if (!demande) notFound();
-  const [journal, pieces, lien] = await Promise.all([getDemandeJournal(demande.id), getDemandePieces(demande.id), getDemandeLien(demande.id)]);
+  const [journal, pieces, lien, devisId] = await Promise.all([getDemandeJournal(demande.id), getDemandePieces(demande.id), getDemandeLien(demande.id), getDemandeDevisId(demande.missionId)]);
 
   const nbEtud = demande.salles.reduce((s, x) => s + x.etudiants, 0);
   const editable = !STATUTS_VERROUILLES.includes(demande.statut);
@@ -71,6 +72,7 @@ export default async function DemandeDetailPage({ params }: { params: Promise<{ 
               )}
               <DemandeCorrectionButton id={demande.id} statut={demande.statut} />
               <DemandeConvertButton id={demande.id} statut={demande.statut} missionId={demande.missionId} />
+              {demande.statut === "Convertie en mission" && <DemandeDevisButton demandeId={demande.id} devisId={devisId} />}
               <DemandeStatutActions id={demande.id} statut={demande.statut} />
             </div>
           </div>

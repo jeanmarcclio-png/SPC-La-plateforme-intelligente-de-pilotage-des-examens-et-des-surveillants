@@ -416,6 +416,103 @@ export async function getPieceSignedUrl(id: number): Promise<{ error?: string; u
   }
 }
 
+// ─── Devis après conversion (§15) ─────────────────────────────────────────────
+
+/** Prochaine référence devis du jour : SPC-AAAAMMJJ-NNN. */
+async function nextDevisReference(supabase: SupabaseClient, now: Date = new Date()): Promise<string> {
+  const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
+  const prefix = `SPC-${ymd}-`;
+  const { data } = await supabase.from("devis").select("reference").like("reference", `${prefix}%`);
+  const max = (data ?? []).reduce((acc: number, r: { reference: string }) => {
+    const n = Number(String(r.reference).slice(prefix.length)) || 0;
+    return Math.max(acc, n);
+  }, 0);
+  return `${prefix}${String(max + 1).padStart(3, "0")}`;
+}
+
+/**
+ * Génère un devis Brouillon pré-rempli depuis une demande convertie en mission
+ * (spec §15). Transfère le détail des salles (créneaux/horaires de surveillance)
+ * vers `devis_salles`, relie le devis à la mission déjà créée (pas de doublon),
+ * et laisse le montant à finaliser par SPC dans l'éditeur de devis. Anti-doublon :
+ * si un devis est déjà lié à la mission, on le renvoie.
+ */
+export async function genererDevisDepuisDemande(id: number): Promise<{ error?: string; devisId?: number }> {
+  const auth = await requireCapability("plan");
+  if (!auth.ok) return { error: auth.error };
+
+  const demande = await getDemandeClient(id);
+  if (!demande) return { error: "Demande introuvable" };
+  if (demande.statut !== "Convertie en mission" || !demande.missionId) {
+    return { error: "Le devis se génère depuis une demande convertie en mission." };
+  }
+
+  try {
+    const supabase = await createClient();
+    const org_id = await getActiveOrgId();
+
+    // Anti-doublon : un devis déjà rattaché à cette mission ?
+    const { data: existing } = await supabase
+      .from("devis").select("id").eq("mission_id", demande.missionId).order("id", { ascending: false }).limit(1).maybeSingle();
+    if (existing?.id) return { devisId: existing.id as number };
+
+    const salles = demande.salles.filter((s) => s.salle?.trim());
+    const dates = salles.map((s) => s.dateExamen).filter(Boolean).sort() as string[];
+    const contact = [demande.demandeur.prenom, demande.demandeur.nom].filter(Boolean).join(" ").trim() || null;
+    const reference = await nextDevisReference(supabase);
+
+    const { data: devis, error } = await supabase.from("devis").insert({
+      reference,
+      client: demande.etablissement,
+      session: null,
+      statut: "Brouillon",
+      montant_ht: 0,
+      montant_ttc: 0,
+      nb_surveillants: salles.reduce((n, s) => n + (s.surveillants || 0), 0),
+      contact,
+      email: demande.demandeur.email ?? null,
+      ville: demande.ville ?? null,
+      type_epreuve: "Examen écrit",
+      date_debut: dates[0] ?? null,
+      date_fin: dates[dates.length - 1] ?? null,
+      coefficient: 1,
+      frais_deplacement: 0,
+      frais_coordination: 0,
+      remise: 0,
+      mission_id: demande.missionId,
+      org_id,
+    }).select("id").single();
+    if (error || !devis) return { error: `Création du devis échouée : ${error?.message ?? "aucune ligne"}` };
+
+    const devisId = devis.id as number;
+    if (salles.length > 0) {
+      const rows = salles.map((s, i) => ({
+        devis_id: devisId,
+        org_id,
+        session: s.creneau === "apres-midi" ? "apres-midi" : "matin",
+        salle: s.salle.trim().slice(0, 6),
+        etudiants: s.etudiants || 0,
+        surveillants: s.surveillants || 0,
+        pmr: Boolean(s.pmr),
+        tiers_temps: Boolean(s.tiersTemps),
+        debut: s.debutSurveillance || null,
+        fin: s.finSurveillance || null,
+        observations: s.observations || null,
+        ordre: i + 1,
+      }));
+      const { error: sErr } = await supabase.from("devis_salles").insert(rows);
+      if (sErr) return { error: `Salles du devis non enregistrées : ${sErr.message}` };
+    }
+
+    await logDemande(supabase, org_id, id, "Devis généré", `${reference} · à chiffrer`);
+    revalidateDemandes(id);
+    revalidatePath("/operations/devis");
+    return { devisId };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
 // ─── Portail client public (Lot E) ───────────────────────────────────────────
 
 /**
