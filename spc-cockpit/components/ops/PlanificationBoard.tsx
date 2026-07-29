@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useTransition } from "react";
 import type { Mission, Surveillant, Affectation, JournalEntry, StatutMission } from "@/lib/operations/types";
+import { SallesACouvrirPanel } from "@/components/ops/SallesACouvrirPanel";
+import type { SalleACouvrir } from "@/lib/operations/planning-salles";
 import { updateAffectation, addAffectation, deleteAffectation, type AffectationFields } from "@/app/actions/affectations";
 import { validerSession, updateMission, deleteMission } from "@/app/actions/missions";
 import { SurveillantPicker } from "@/components/ops/SurveillantPicker";
@@ -197,11 +199,13 @@ export function PlanificationBoard({
   surveillants,
   affectations,
   journal = [],
+  sallesParMission = {},
 }: {
   missions: Mission[];
   surveillants: Surveillant[];
   affectations: Affectation[];
   journal?: JournalEntry[];
+  sallesParMission?: Record<number, SalleACouvrir[]>;
 }) {
   const planifiables = useMemo(
     () => missions.filter((m) => estPlanifiable(m.statut)).concat(missions.filter((m) => m.statut === "Terminée")),
@@ -211,6 +215,7 @@ export function PlanificationBoard({
   const mission = missions.find((m) => m.id === missionId) ?? null;
 
   const rows = useMemo(() => affectations.filter((a) => a.missionId === missionId), [affectations, missionId]);
+  const sallesMission = (missionId != null ? sallesParMission[missionId] : undefined) ?? [];
   const [edits, setEdits] = useState<Record<number, RowState>>({});
   const [pending, startTransition] = useTransition();
   const [query, setQuery] = useState("");
@@ -514,6 +519,9 @@ export function PlanificationBoard({
 
       {mission && (
         <>
+          {/* Salles à couvrir — reprend le détail validé du devis (§16) */}
+          <SallesACouvrirPanel salles={sallesMission} affectations={rows} />
+
           {/* Score de santé de session — synthèse IA (§21) */}
           {sante && (() => {
             const col = sante.niveau === "prête" ? "#059669" : sante.niveau === "à consolider" ? "#d97706" : "#e11d48";
