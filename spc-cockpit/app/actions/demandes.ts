@@ -7,12 +7,15 @@ import { getActiveOrgId } from "@/lib/auth/org";
 import { getDemandeClient } from "@/lib/operations/demandes";
 import { generateDemandeReference, evaluateDemande, buildMissionFromDemande, piecePath, validatePieceMeta, PIECES_BUCKET, STATUTS_VERROUILLES } from "@/lib/operations/demandes-constants";
 import { generateToken, hashToken } from "@/lib/operations/portail";
+import { calculateRoomBillableHours, ttcFromHT } from "@/lib/operations/engine";
 import type { Contact, DemandeSalle } from "@/lib/operations/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /** Statuts depuis lesquels générer un lien client ne doit PAS régresser le statut. */
 const STATUTS_AVANCES = new Set(["Validée SPC", "Convertie en mission", "Annulée", "Archivée", "Expirée"]);
 const LIEN_DUREE_JOURS = 14;
+/** Taux horaire de facturation par défaut (€/h) — pré-remplit le devis, éditable par SPC. */
+const TAUX_HORAIRE_DEVIS_DEFAUT = 30;
 
 function revalidateDemandes(id?: number) {
   revalidatePath("/demandes-client");
@@ -461,13 +464,31 @@ export async function genererDevisDepuisDemande(id: number): Promise<{ error?: s
     const contact = [demande.demandeur.prenom, demande.demandeur.nom].filter(Boolean).join(" ").trim() || null;
     const reference = await nextDevisReference(supabase);
 
+    // Heures facturables via le moteur central (durée surveillance × surveillants),
+    // pré-chiffrées au taux par défaut. SPC ajuste ensuite taux / coefficient / frais.
+    const heuresFacturables = Math.round(
+      salles.reduce((sum, s) => sum + calculateRoomBillableHours({
+        id: String(s.id ?? ""),
+        period: s.creneau === "apres-midi" ? "afternoon" : "morning",
+        roomCode: s.salle,
+        startTime: s.debutSurveillance ?? null,
+        endTime: s.finSurveillance ?? null,
+        requiredSupervisors: s.surveillants || 0,
+        students: s.etudiants || 0,
+        isPMR: Boolean(s.pmr),
+        hasExtraTime: Boolean(s.tiersTemps),
+        notes: null,
+      }), 0) * 100,
+    ) / 100;
+    const montantHT = Math.round(heuresFacturables * TAUX_HORAIRE_DEVIS_DEFAUT * 100) / 100;
+
     const { data: devis, error } = await supabase.from("devis").insert({
       reference,
       client: demande.etablissement,
       session: null,
       statut: "Brouillon",
-      montant_ht: 0,
-      montant_ttc: 0,
+      montant_ht: montantHT,
+      montant_ttc: ttcFromHT(montantHT),
       nb_surveillants: salles.reduce((n, s) => n + (s.surveillants || 0), 0),
       contact,
       email: demande.demandeur.email ?? null,
@@ -504,7 +525,24 @@ export async function genererDevisDepuisDemande(id: number): Promise<{ error?: s
       if (sErr) return { error: `Salles du devis non enregistrées : ${sErr.message}` };
     }
 
-    await logDemande(supabase, org_id, id, "Devis généré", `${reference} · à chiffrer`);
+    // Ligne de devis chiffrée : heures facturables × taux (base du montant, éditable).
+    if (heuresFacturables > 0) {
+      const periode = dates.length === 0
+        ? "période à planifier"
+        : dates[0] === dates[dates.length - 1]
+          ? new Date(dates[0]).toLocaleDateString("fr-FR")
+          : `${new Date(dates[0]).toLocaleDateString("fr-FR")} au ${new Date(dates[dates.length - 1]).toLocaleDateString("fr-FR")}`;
+      await supabase.from("devis_lignes").insert({
+        devis_id: devisId,
+        designation: `Surveillance d'examens — ${periode} (${salles.length} salle${salles.length > 1 ? "s" : ""})`,
+        quantite: heuresFacturables,
+        unite: "h",
+        prix_unitaire: TAUX_HORAIRE_DEVIS_DEFAUT,
+        ordre: 1,
+      });
+    }
+
+    await logDemande(supabase, org_id, id, "Devis généré", `${reference} · ${heuresFacturables} h × ${TAUX_HORAIRE_DEVIS_DEFAUT} €`);
     revalidateDemandes(id);
     revalidatePath("/operations/devis");
     return { devisId };
