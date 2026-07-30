@@ -1,9 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { getSurveillants, getAffectations } from "@/lib/operations/queries";
+import { getSurveillants, getAffectations, getMissions } from "@/lib/operations/queries";
 import { getInvitationStatuses } from "@/lib/supabase/portail";
 import { SurveillantsTable } from "@/components/ops/SurveillantsTable";
 import { SurveillantsImportExport } from "@/components/ops/SurveillantsImportExport";
+import { AvailabilityHeatmap } from "@/components/ops/AvailabilityHeatmap";
 import { InvitationsPanel } from "@/components/ops/InvitationsPanel";
 import { Kpi } from "@/components/ops/Kpi";
 import { Users, UserCheck, Clock, Star, AlertTriangle, Shield, UsersRound } from "lucide-react";
@@ -24,8 +25,8 @@ function PilotageCard({ tag, titre, detail, icon }: { tag: string; titre: string
 }
 
 export default async function SurveillantsPage() {
-  const [surveillants, affectations, invitations] = await Promise.all([
-    getSurveillants(), getAffectations(), getInvitationStatuses(),
+  const [surveillants, affectations, invitations, missions] = await Promise.all([
+    getSurveillants(), getAffectations(), getInvitationStatuses(), getMissions(),
   ]);
 
   // Salles où chaque surveillant est déjà affecté (cross-check à l'import).
@@ -102,6 +103,9 @@ export default async function SurveillantsPage() {
           />
         </div>
       </div>
+
+      {/* Heatmap charge & disponibilité (E2) */}
+      <AvailabilityHeatmap surveillants={surveillants} affectations={affectations} missions={missions} />
 
       <SurveillantsTable surveillants={surveillants} />
     </div>
