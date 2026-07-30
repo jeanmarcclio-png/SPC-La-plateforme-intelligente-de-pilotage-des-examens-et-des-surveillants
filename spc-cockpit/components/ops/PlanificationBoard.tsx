@@ -840,13 +840,12 @@ export function PlanificationBoard({
                     </span>
                   )}
                 </div>
-                {/* CTA direct sous l'alerte. */}
+                {/* CTA direct sous l'alerte — mène au copilote / tableau où se fait l'ajout.
+                    Le bouton « Ajouter un surveillant » canonique reste dans la barre du
+                    tableau (toujours disponible) : on évite ainsi le doublon d'action. */}
                 {!complet && (
                   <div className="mt-4 flex items-center gap-2.5 flex-wrap">
-                    {nonAffectes.length > 0
-                      ? <SurveillantPicker surveillants={nonAffectes} onSelect={add} disabled={pending} />
-                      : <ButtonLink href="/operations/surveillants" variant="accent" size="sm"><Plus className="w-3.5 h-3.5" aria-hidden />Ajouter un surveillant</ButtonLink>}
-                    <Button variant="secondary" size="sm" onClick={scrollToCandidats}>
+                    <Button variant="accent" size="sm" onClick={scrollToCandidats}>
                       <UserSearch className="w-3.5 h-3.5" aria-hidden />Voir les candidats
                     </Button>
                   </div>
