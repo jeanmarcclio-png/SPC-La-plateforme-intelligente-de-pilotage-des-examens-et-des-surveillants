@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, Fragment } from "react";
 import type { Mission, Surveillant, Affectation, JournalEntry, StatutMission } from "@/lib/operations/types";
+import type { RefusRow } from "@/lib/supabase/portail";
 import { updateAffectation, addAffectation, deleteAffectation, type AffectationFields } from "@/app/actions/affectations";
 import { validerSession, updateMission, deleteMission } from "@/app/actions/missions";
 import { SurveillantPicker } from "@/components/ops/SurveillantPicker";
@@ -11,14 +12,17 @@ import { showToast } from "@/components/Toast";
 import { dateFR, euro } from "@/lib/operations/format";
 import { analyseRentabilite } from "@/lib/operations/rentabilite";
 import { analyseCouverture } from "@/lib/operations/couverture";
+import { couvertureParCreneau } from "@/lib/operations/couverture-creneaux";
 import { scoreSanteSession } from "@/lib/operations/sante-session";
+import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
 import { toCSV } from "@/lib/operations/csv";
 import { parseTimeToMinutes, detectSupervisorConflicts, type SupervisorAssignmentInput } from "@/lib/operations/engine";
 import { statutOptions, estPlanifiable } from "@/lib/operations/mission-status";
 import { suggererSurveillants } from "@/lib/operations/suggestions";
 import {
-  AlertTriangle, Trash2, Check, ShieldCheck, Calendar, CalendarDays, CalendarCheck,
+  AlertTriangle, Trash2, Check, ShieldCheck, ShieldAlert, Calendar, CalendarDays, CalendarCheck,
   Download, Pencil, Plus, Send, Users, Clock, Search, ArrowRight, Sparkles,
+  Zap, Info, ChevronDown, MapPin, CheckCircle2, UserSearch,
 } from "lucide-react";
 
 const ACCENT = "#2563eb";
@@ -38,6 +42,15 @@ type RowState = { salle: string; matin: Slot[]; apm: Slot[] };
 const MAX_CRENEAUX = 3;
 const DEF_MATIN: Slot = { debut: "08:00", fin: "13:00" };
 const DEF_APM: Slot = { debut: "13:30", fin: "18:00" };
+
+// Taxonomie unique de gravité (C1) — partagée par le Centre d'alertes et les
+// statuts de ligne. Fond teinté + anneau + point : lisible sans la couleur seule.
+type Severite = "blocant" | "warning" | "info";
+const SEV_META: Record<Severite, { label: string; bar: string; chip: string; Icon: typeof Info }> = {
+  blocant: { label: "Bloquant", bar: "#e11d48", chip: "bg-rose-50 text-rose-700 ring-rose-600/15", Icon: ShieldAlert },
+  warning: { label: "À surveiller", bar: "#d97706", chip: "bg-amber-50 text-amber-700 ring-amber-600/15", Icon: Zap },
+  info: { label: "Information", bar: "#0284c7", chip: "bg-sky-50 text-sky-700 ring-sky-600/15", Icon: Info },
+};
 
 function toRowState(a: Affectation): RowState {
   const matin = a.matinCreneaux?.length
@@ -101,6 +114,44 @@ function RoleBadge({ role }: { role: string }) {
     <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ring-1 ring-inset whitespace-nowrap ${tone}`}>
       <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
       {role || "—"}
+    </span>
+  );
+}
+
+/** Badges d'horaires condensés (C4) : matin teal, après-midi bleu — la couleur
+ *  porte l'information demi-journée, plus besoin de deux colonnes séparées. */
+function PlanningBadges({ r }: { r: RowState }) {
+  if (r.matin.length === 0 && r.apm.length === 0) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-amber-600">
+        <AlertTriangle className="w-3.5 h-3.5" aria-hidden />Aucun créneau
+      </span>
+    );
+  }
+  const badge = (s: Slot, color: string, key: string) => (
+    <span key={key} className="inline-flex items-center rounded-md px-2 py-1 text-[11.5px] font-bold font-mono tabular-nums text-white whitespace-nowrap" style={{ background: color }}>
+      {s.debut}→{s.fin}
+    </span>
+  );
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {r.matin.map((s, i) => badge(s, TEAL, `m${i}`))}
+      {r.apm.map((s, i) => badge(s, ACCENT, `a${i}`))}
+    </div>
+  );
+}
+
+/** Statut visuel d'une ligne (C4) : Conforme / Surcharge / À corriger. */
+function StatutLigne({ kind }: { kind: "conforme" | "surcharge" | "alerte" }) {
+  const map = {
+    conforme: { chip: "bg-emerald-50 text-emerald-700 ring-emerald-600/15", label: "Conforme", Icon: CheckCircle2 },
+    surcharge: { chip: "bg-amber-50 text-amber-700 ring-amber-600/15", label: "Surcharge", Icon: Zap },
+    alerte: { chip: "bg-rose-50 text-rose-700 ring-rose-600/15", label: "À corriger", Icon: AlertTriangle },
+  }[kind];
+  const { Icon } = map;
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ring-1 ring-inset whitespace-nowrap ${map.chip}`}>
+      <Icon className="w-3.5 h-3.5" aria-hidden />{map.label}
     </span>
   );
 }
@@ -197,11 +248,13 @@ export function PlanificationBoard({
   surveillants,
   affectations,
   journal = [],
+  refus = [],
 }: {
   missions: Mission[];
   surveillants: Surveillant[];
   affectations: Affectation[];
   journal?: JournalEntry[];
+  refus?: RefusRow[];
 }) {
   const planifiables = useMemo(
     () => missions.filter((m) => estPlanifiable(m.statut)).concat(missions.filter((m) => m.statut === "Terminée")),
@@ -216,6 +269,7 @@ export function PlanificationBoard({
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<QuickFilter>("all");
   const [highlightId, setHighlightId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null); // ligne dépliée (C4)
 
   const survById = useMemo(() => new Map(surveillants.map((s) => [s.id, s])), [surveillants]);
   const nonAffectes = surveillants.filter((s) => !rows.some((r) => r.surveillantId === s.id));
@@ -230,6 +284,9 @@ export function PlanificationBoard({
   }
   function setRow(a: Affectation, next: RowState) {
     setEdits((prev) => ({ ...prev, [a.id]: next }));
+  }
+  function surcharge(a: Affectation): boolean {
+    return (survById.get(a.surveillantId)?.heures ?? 0) >= SEUIL_SURCHARGE_H;
   }
 
   function save(a: Affectation) {
@@ -287,17 +344,19 @@ export function PlanificationBoard({
   // Prédiction de sous-effectif (§21) : surveillants requis vs affectés.
   const couverture = mission ? analyseCouverture({ requis: mission.nbSurveillants, affectes: affectes.length }) : null;
 
-  type Alerte = { affId: number; text: string };
+  // Alerte planning : porte sa gravité (C1) et son type (pour reclassement).
+  type AlerteKind = "sans-creneau" | "sans-salle" | "horaire-invalide" | "chevauchement" | "conflit";
+  type Alerte = { affId: number; text: string; severite: Severite; kind: AlerteKind };
   const alertes: Alerte[] = [];
   for (const a of rows) {
     const r = stateOf(a);
     const nom = survById.get(a.surveillantId)?.nom ?? `#${a.surveillantId}`;
-    if (r.matin.length === 0 && r.apm.length === 0) alertes.push({ affId: a.id, text: `${nom} : aucun créneau assigné (ni matin ni après-midi)` });
-    else if (!r.salle.trim()) alertes.push({ affId: a.id, text: `${nom} : aucune salle affectée` });
-    if (r.matin.some((s) => slotHours(s) === 0)) alertes.push({ affId: a.id, text: `${nom} : horaire matin invalide (fin ≤ début)` });
-    if (r.apm.some((s) => slotHours(s) === 0)) alertes.push({ affId: a.id, text: `${nom} : horaire après-midi invalide (fin ≤ début)` });
-    if (hasOverlap(r.matin)) alertes.push({ affId: a.id, text: `${nom} : créneaux du matin qui se chevauchent` });
-    if (hasOverlap(r.apm)) alertes.push({ affId: a.id, text: `${nom} : créneaux de l'après-midi qui se chevauchent` });
+    if (r.matin.length === 0 && r.apm.length === 0) alertes.push({ affId: a.id, severite: "warning", kind: "sans-creneau", text: `${nom} : aucun créneau assigné (ni matin ni après-midi)` });
+    else if (!r.salle.trim()) alertes.push({ affId: a.id, severite: "warning", kind: "sans-salle", text: `${nom} : aucune salle affectée` });
+    if (r.matin.some((s) => slotHours(s) === 0)) alertes.push({ affId: a.id, severite: "blocant", kind: "horaire-invalide", text: `${nom} : horaire matin invalide (fin ≤ début)` });
+    if (r.apm.some((s) => slotHours(s) === 0)) alertes.push({ affId: a.id, severite: "blocant", kind: "horaire-invalide", text: `${nom} : horaire après-midi invalide (fin ≤ début)` });
+    if (hasOverlap(r.matin)) alertes.push({ affId: a.id, severite: "blocant", kind: "chevauchement", text: `${nom} : créneaux du matin qui se chevauchent` });
+    if (hasOverlap(r.apm)) alertes.push({ affId: a.id, severite: "blocant", kind: "chevauchement", text: `${nom} : créneaux de l'après-midi qui se chevauchent` });
   }
 
   // Conflits inter-missions : même surveillant, même date, créneaux chevauchants
@@ -319,9 +378,40 @@ export function PlanificationBoard({
     const affId = affBySurvInMission.get(c.supervisorId);
     if (affId == null) continue;
     const nom = survById.get(Number(c.supervisorId))?.nom ?? `#${c.supervisorId}`;
-    alertes.push({ affId, text: `${nom} : double affectation le même jour (${c.startTime}–${c.endTime})` });
+    alertes.push({ affId, severite: "blocant", kind: "conflit", text: `${nom} : double affectation le même jour (${c.startTime}–${c.endTime})` });
   }
   const alertAffIds = new Set(alertes.map((a) => a.affId));
+
+  // ---- Centre d'alertes unifié (C1) : taxonomie Bloquant / À surveiller / Information ----
+  type CentreItem = { severite: Severite; text: string; affId?: number };
+  const centre: CentreItem[] = [];
+  // Bloquant — refus surveillants (consolidés depuis l'ancien bandeau « À traiter »)
+  for (const rf of refus) {
+    centre.push({
+      affId: affBySurvInMission.get(String(rf.surveillantId)),
+      severite: "blocant",
+      text: `${rf.surveillantNom} a refusé son affectation${rf.missionRef ? ` · ${rf.missionRef}` : ""}${rf.motif ? ` — « ${rf.motif} »` : ""}`,
+    });
+  }
+  // Planning : chaque alerte porte déjà sa gravité.
+  for (const a of alertes) centre.push({ severite: a.severite, text: a.text, affId: a.affId });
+  // À surveiller — sous-effectif (C3) et surcharges de la session.
+  if (couverture && couverture.manque > 0) {
+    centre.push({ severite: "warning", text: `Sous-effectif : ${couverture.manque} poste${couverture.manque > 1 ? "s" : ""} à pourvoir` });
+  }
+  for (const a of rows.filter((x) => surcharge(x))) {
+    const s = survById.get(a.surveillantId);
+    centre.push({ affId: a.id, severite: "warning", text: `${s?.nom ?? `#${a.surveillantId}`} en surcharge — ${s?.heures ?? 0}h planifiées (seuil ${SEUIL_SURCHARGE_H}h)` });
+  }
+  // Information — mobilisables non affectés (non bloquant, purement indicatif).
+  if (nonAffectes.length > 0) {
+    centre.push({ severite: "info", text: `${nonAffectes.length} surveillant${nonAffectes.length > 1 ? "s" : ""} mobilisable${nonAffectes.length > 1 ? "s" : ""} non affecté${nonAffectes.length > 1 ? "s" : ""} dans l'annuaire` });
+  }
+  const centreBySev: Record<Severite, CentreItem[]> = {
+    blocant: centre.filter((c) => c.severite === "blocant"),
+    warning: centre.filter((c) => c.severite === "warning"),
+    info: centre.filter((c) => c.severite === "info"),
+  };
 
   // Score de santé de session (§21) : synthèse couverture + rentabilité + alertes.
   const sante = mission && couverture && rentabilite
@@ -361,8 +451,18 @@ export function PlanificationBoard({
     }
   });
 
+  // Couverture par tranche horaire (C2) — présence réelle + trous critiques.
+  const couvCreneaux = mission
+    ? couvertureParCreneau({
+        presences: affectes.map((a) => { const r = stateOf(a); return { id: a.surveillantId, slots: [...r.matin, ...r.apm] }; }),
+        requis: mission.nbSurveillants,
+        dayStart: DAY_START, dayEnd: DAY_END,
+      })
+    : null;
+
   function corriger(affId: number) {
     setHighlightId(affId);
+    setExpandedId(affId); // déplie directement l'éditeur inline (C4)
     if (typeof document !== "undefined") {
       document.getElementById(`aff-${affId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
@@ -392,6 +492,11 @@ export function PlanificationBoard({
   function scrollToTable() {
     document.getElementById("session-table")?.scrollIntoView({ behavior: "smooth", block: "start" });
     showToast("Modifie les affectations directement dans le tableau (salle, créneaux, heures).");
+  }
+
+  function scrollToCandidats() {
+    const el = document.getElementById("copilote") ?? document.getElementById("session-table");
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function changeStatut(next: StatutMission) {
@@ -497,7 +602,7 @@ export function PlanificationBoard({
           return (
             <button
               key={m.id}
-              onClick={() => { setMissionId(m.id); setEdits({}); setFilter("all"); setQuery(""); }}
+              onClick={() => { setMissionId(m.id); setEdits({}); setFilter("all"); setQuery(""); setExpandedId(null); }}
               aria-pressed={active}
               className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[12.5px] font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 ${
                 active ? "text-white border-transparent shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
@@ -550,6 +655,73 @@ export function PlanificationBoard({
             );
           })()}
 
+          {/* Centre d'alertes unifié (C1) — une seule taxonomie de gravité,
+              refus + planning + sous-effectif + surcharges consolidés. */}
+          {(() => {
+            const total = centre.length;
+            if (total === 0) {
+              return (
+                <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm px-5 py-4 flex items-center gap-2.5">
+                  <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600" aria-hidden />
+                  <span className="text-[13px] font-semibold text-emerald-700">Aucune alerte — session sous contrôle.</span>
+                </div>
+              );
+            }
+            const order: Severite[] = ["blocant", "warning", "info"];
+            const cta: Record<Severite, { label: string; onClick: () => void }> = {
+              blocant: { label: "Remplacer", onClick: scrollToTable },
+              warning: { label: "Recruter", onClick: scrollToCandidats },
+              info: { label: "Voir tout", onClick: scrollToTable },
+            };
+            return (
+              <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
+                <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <h2 className="text-[14px] font-bold text-gray-900">Centre d&apos;alertes</h2>
+                    <p className="text-[12px] text-gray-400">Priorités classées par gravité — traiter le bloquant avant de valider</p>
+                  </div>
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">{total} alerte{total > 1 ? "s" : ""}</span>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {order.filter((sev) => centreBySev[sev].length > 0).map((sev) => {
+                    const items = centreBySev[sev];
+                    const meta = SEV_META[sev];
+                    const { Icon } = meta;
+                    return (
+                      <div key={sev} className="p-4 flex gap-3.5" style={{ boxShadow: `inset 3px 0 0 ${meta.bar}` }}>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[.4px] px-2.5 py-1 rounded-full ring-1 ring-inset ${meta.chip}`}>
+                              <Icon className="w-3.5 h-3.5" aria-hidden />{meta.label} · {items.length}
+                            </span>
+                            <button onClick={cta[sev].onClick} className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#7c5cff] hover:text-[#5b3ecc] transition-colors">
+                              {cta[sev].label} <ArrowRight className="w-3 h-3" aria-hidden />
+                            </button>
+                          </div>
+                          <ul className="space-y-1.5">
+                            {items.slice(0, 4).map((it, i) => (
+                              <li key={i} className="flex items-center justify-between gap-3 text-[12.5px] text-slate-600">
+                                <span className="min-w-0 truncate">{it.text}</span>
+                                {it.affId != null && alertAffIds.has(it.affId) && (
+                                  <button onClick={() => corriger(it.affId!)} className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 hover:text-slate-700 transition-colors flex-shrink-0">
+                                    Corriger <ArrowRight className="w-3 h-3" aria-hidden />
+                                  </button>
+                                )}
+                              </li>
+                            ))}
+                            {items.length > 4 && (
+                              <li className="text-[11.5px] text-gray-400">+ {items.length - 4} de plus</li>
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Résumé de session — carte claire, tuiles colorées (direction vibrante) */}
           <div className="rounded-2xl mb-5 bg-white border border-gray-200/80 shadow-sm">
             <div className="p-5">
@@ -587,24 +759,6 @@ export function PlanificationBoard({
                   </div>
                 ))}
               </div>
-              {alertes.length > 0 && (
-                <div className="mt-4 space-y-1.5">
-                  {alertes.slice(0, 5).map((a, i) => (
-                    <div key={i} className="flex items-center justify-between gap-3 text-[12px] text-slate-600">
-                      <span className="flex items-center gap-2 min-w-0">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                        <span className="truncate">{a.text}</span>
-                      </span>
-                      <button onClick={() => corriger(a.affId)} className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#7c5cff] hover:text-[#5b3ecc] transition-colors flex-shrink-0">
-                        Corriger <ArrowRight className="w-3 h-3" aria-hidden />
-                      </button>
-                    </div>
-                  ))}
-                  {alertes.length > 5 && (
-                    <div className="text-[11.5px] text-[#7c5cff]">+ {alertes.length - 5} alerte(s) supplémentaire(s)</div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
 
@@ -641,39 +795,67 @@ export function PlanificationBoard({
             );
           })()}
 
-          {/* Prédiction de sous-effectif (§21) */}
+          {/* Couverture surveillants — reformulée (C3) : le manque en premier,
+              barre = couverture réelle, CTA d'action directement sous l'alerte. */}
           {couverture && (() => {
             const map = {
-              "complet": { pill: "bg-emerald-50 text-emerald-700 ring-emerald-600/15", bar: "#059669", label: "Effectif complet" },
-              "tendu": { pill: "bg-amber-50 text-amber-700 ring-amber-600/15", bar: "#d97706", label: "Effectif tendu" },
-              "sous-effectif": { pill: "bg-rose-50 text-rose-700 ring-rose-600/15", bar: "#e11d48", label: "Sous-effectif" },
+              "complet": { pill: "bg-emerald-50 text-emerald-700 ring-emerald-600/15", bar: "#059669", label: "Effectif complet", big: "text-emerald-700" },
+              "tendu": { pill: "bg-amber-50 text-amber-700 ring-amber-600/15", bar: "#d97706", label: "Effectif tendu", big: "text-amber-700" },
+              "sous-effectif": { pill: "bg-rose-50 text-rose-700 ring-rose-600/15", bar: "#e11d48", label: "Sous-effectif", big: "text-rose-600" },
             }[couverture.niveau];
             const pct = Math.min(100, Math.round(couverture.tauxCouverture * 100));
+            const complet = couverture.manque === 0;
             return (
               <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
-                <div className="flex items-center justify-between gap-3 flex-wrap">
-                  <div>
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div className="min-w-0">
                     <h2 className="text-[14px] font-bold text-gray-900">Couverture surveillants</h2>
-                    <p className="text-[12px] text-gray-400">Prédiction de sous-effectif — anticiper les renforts avant le jour J</p>
+                    <p className="text-[12.5px] text-slate-600 mt-0.5">
+                      <span className="font-bold text-gray-900">{couverture.affectes}</span> sur {couverture.requis} poste{couverture.requis > 1 ? "s" : ""} pourvu{couverture.affectes > 1 ? "s" : ""}
+                    </p>
                   </div>
-                  <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${map.pill}`}>
-                    <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{map.label} · {pct} %
-                  </span>
+                  {/* Le nombre manquant mène (plus actionnable qu'un %). */}
+                  <div className="text-right flex-shrink-0">
+                    {complet ? (
+                      <div className="inline-flex items-center gap-1.5 text-[13px] font-bold text-emerald-700"><CheckCircle2 className="w-5 h-5" aria-hidden />Effectif complet</div>
+                    ) : (
+                      <>
+                        <div className={`text-[34px] font-extrabold leading-none ${map.big}`}>{couverture.manque}</div>
+                        <div className="text-[11px] font-bold uppercase tracking-[.6px] text-gray-400 mt-1">manquant{couverture.manque > 1 ? "s" : ""}</div>
+                      </>
+                    )}
+                  </div>
                 </div>
+                {/* La barre reflète la couverture réelle, pas le manque. */}
                 <div className="mt-3 h-2.5 rounded-full bg-slate-100 overflow-hidden">
                   <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: map.bar }} />
                 </div>
-                <div className="mt-2 text-[12.5px] text-slate-600">
-                  <span className="font-bold text-gray-900">{couverture.affectes}</span> affecté{couverture.affectes > 1 ? "s" : ""} / {couverture.requis} requis
-                  {couverture.manque > 0 && (
-                    <span className="font-semibold text-rose-600"> — {couverture.manque} surveillant{couverture.manque > 1 ? "s" : ""} à trouver</span>
+                <div className="mt-2 flex items-center justify-between gap-2 flex-wrap">
+                  <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${map.pill}`}>
+                    <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{map.label} · {pct} % de couverture
+                  </span>
+                  {!complet && (
+                    <span className="inline-flex items-center gap-1 text-[11.5px] font-bold text-rose-600">
+                      <AlertTriangle className="w-3.5 h-3.5" aria-hidden />Action requise
+                    </span>
                   )}
                 </div>
+                {/* CTA direct sous l'alerte. */}
+                {!complet && (
+                  <div className="mt-4 flex items-center gap-2.5 flex-wrap">
+                    {nonAffectes.length > 0
+                      ? <SurveillantPicker surveillants={nonAffectes} onSelect={add} disabled={pending} />
+                      : <ButtonLink href="/operations/surveillants" variant="accent" size="sm"><Plus className="w-3.5 h-3.5" aria-hidden />Ajouter un surveillant</ButtonLink>}
+                    <Button variant="secondary" size="sm" onClick={scrollToCandidats}>
+                      <UserSearch className="w-3.5 h-3.5" aria-hidden />Voir les candidats
+                    </Button>
+                  </div>
+                )}
               </div>
             );
           })()}
 
-          {/* Tableau d'affectation */}
+          {/* Tableau d'affectation — vue condensée avec éditeur déplié au clic (C4) */}
           <div id="session-table" className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
             <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-start justify-between flex-wrap gap-3">
               <div>
@@ -681,10 +863,10 @@ export function PlanificationBoard({
                   {mission.client} — {mission.session ?? "Session"}
                   <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{mission.statut}</span>
                   {alertes.length > 0 && (
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/15">{alertes.length} alerte{alertes.length > 1 ? "s" : ""}</span>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/15">{alertes.length} à corriger</span>
                   )}
                 </h2>
-                <p className="text-[12px] text-gray-400 mt-0.5">{dateFR(mission.dateMission)}</p>
+                <p className="text-[12px] text-gray-400 mt-0.5">{dateFR(mission.dateMission)} · cliquer une ligne pour éditer les horaires</p>
               </div>
               <div className="flex items-center gap-1.5 flex-wrap justify-end">
                 <select
@@ -736,20 +918,20 @@ export function PlanificationBoard({
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[1040px]">
+              <table className="w-full border-collapse min-w-[860px]">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50">
-                    {["Surveillant", "Rôle", "Salle", "● Matin", "● Après-midi", "Heures", ""].map((h) => (
+                    {["Surveillant", "Rôle · Salle", "Planning", "Heures", "Statut", ""].map((h) => (
                       <th key={h} className="text-left px-5 py-3 text-[10.5px] font-bold text-slate-500 uppercase tracking-[.8px]">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {rows.length === 0 && (
-                    <tr><td colSpan={7} className="text-center py-10 text-[13px] text-gray-400">Aucun surveillant affecté à cette session.</td></tr>
+                    <tr><td colSpan={6} className="text-center py-10 text-[13px] text-gray-400">Aucun surveillant affecté à cette session.</td></tr>
                   )}
                   {rows.length > 0 && visibleRows.length === 0 && (
-                    <tr><td colSpan={7} className="text-center py-10 text-[13px] text-gray-400">Aucun surveillant ne correspond à la recherche / au filtre.</td></tr>
+                    <tr><td colSpan={6} className="text-center py-10 text-[13px] text-gray-400">Aucun surveillant ne correspond à la recherche / au filtre.</td></tr>
                   )}
                   {visibleRows.map((a) => {
                     const s = survById.get(a.surveillantId);
@@ -758,62 +940,117 @@ export function PlanificationBoard({
                     const h = rowHours(r);
                     const idx = rows.indexOf(a);
                     const highlight = highlightId === a.id;
+                    const expanded = expandedId === a.id;
+                    const enAlerte = alertAffIds.has(a.id);
+                    const enSurcharge = surcharge(a);
+                    const statutKind = enAlerte ? "alerte" : enSurcharge ? "surcharge" : "conforme";
+                    // Teinte de ligne (C2/C4) : alerte > surcharge > dirty > hover.
+                    const rowTint = highlight
+                      ? "bg-amber-50 ring-2 ring-inset ring-amber-300"
+                      : enAlerte ? "bg-rose-50/50 hover:bg-rose-50"
+                      : enSurcharge ? "bg-amber-50/40 hover:bg-amber-50"
+                      : dirty ? "bg-blue-50/40" : "hover:bg-blue-50/20";
+                    const toggle = () => setExpandedId((cur) => (cur === a.id ? null : a.id));
                     return (
-                      <tr
-                        key={a.id}
-                        id={`aff-${a.id}`}
-                        className={`border-b border-gray-50 last:border-0 transition-colors ${highlight ? "bg-amber-50 ring-2 ring-inset ring-amber-300" : dirty ? "bg-blue-50/40" : "hover:bg-blue-50/20"}`}
-                      >
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-3">
-                            <span className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0" style={{ background: AVATAR_COLORS[idx % AVATAR_COLORS.length] }}>
-                              {initials(s?.nom ?? "??")}
-                            </span>
-                            <div className="text-[13px] font-semibold text-gray-800">{s?.nom ?? `Surveillant #${a.surveillantId}`}</div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-3"><RoleBadge role={a.roleMission ?? s?.role ?? ""} /></td>
-                        <td className="px-5 py-3">
-                          <input
-                            value={r.salle}
-                            onChange={(e) => setRow(a, { ...r, salle: e.target.value })}
-                            placeholder="Salle…"
-                            className={`w-[86px] px-2.5 py-1.5 rounded-lg border text-[12.5px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/25 ${r.salle.trim() ? "border-gray-200" : "border-amber-300 bg-amber-50/40"}`}
-                          />
-                        </td>
-                        <td className="px-5 py-3 align-top">
-                          <SlotsEditor slots={r.matin} onChange={(slots) => setRow(a, { ...r, matin: slots })} def={DEF_MATIN} tint={TEAL} />
-                        </td>
-                        <td className="px-5 py-3 align-top">
-                          <SlotsEditor slots={r.apm} onChange={(slots) => setRow(a, { ...r, apm: slots })} def={DEF_APM} tint={ACCENT} />
-                        </td>
-                        <td className="px-5 py-3 text-[13.5px] font-extrabold text-gray-900 whitespace-nowrap">
-                          {h > 0 ? `${h.toFixed(1)}h` : <span className="text-gray-300 font-normal">—</span>}
-                        </td>
-                        <td className="px-5 py-3">
-                          <div className="flex items-center justify-end gap-1">
-                            {dirty && (
-                              <button onClick={() => save(a)} disabled={pending} title="Enregistrer les modifications" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-white text-[11.5px] font-bold disabled:opacity-40" style={{ background: ACCENT }}>
-                                <Check className="w-3.5 h-3.5" />Enregistrer
+                      <Fragment key={a.id}>
+                        {/* Clic sur la ligne = déplier (confort souris). Le contrat
+                            clavier/AT passe par le bouton chevron dédié ci-dessous. */}
+                        <tr
+                          id={`aff-${a.id}`}
+                          onClick={toggle}
+                          className={`border-b border-gray-50 last:border-0 transition-colors cursor-pointer ${rowTint}`}
+                        >
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-3">
+                              <span className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0" style={{ background: AVATAR_COLORS[idx % AVATAR_COLORS.length] }}>
+                                {initials(s?.nom ?? "??")}
+                              </span>
+                              <div className="min-w-0">
+                                <div className="text-[13px] font-semibold text-gray-800">{s?.nom ?? `Surveillant #${a.surveillantId}`}</div>
+                                {enSurcharge && (
+                                  <div className="inline-flex items-center gap-1 text-[10.5px] font-bold text-amber-600 mt-0.5">
+                                    <Zap className="w-3 h-3" aria-hidden />{s?.heures ?? 0}h planifiées
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3">
+                            <div className="flex flex-col gap-1.5">
+                              <RoleBadge role={a.roleMission ?? s?.role ?? ""} />
+                              {r.salle.trim() ? (
+                                <span className="inline-flex items-center gap-1 text-[12px] font-medium text-slate-600"><MapPin className="w-3.5 h-3.5 text-slate-400" aria-hidden />{r.salle}</span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[11.5px] font-semibold text-amber-600"><MapPin className="w-3.5 h-3.5" aria-hidden />Salle à définir</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-5 py-3"><PlanningBadges r={r} /></td>
+                          <td className={`px-5 py-3 text-[13.5px] font-extrabold whitespace-nowrap ${enAlerte || enSurcharge ? "text-rose-600" : "text-gray-900"}`}>
+                            {h > 0 ? `${h.toFixed(1)}h` : <span className="text-gray-300 font-normal">—</span>}
+                          </td>
+                          <td className="px-5 py-3"><StatutLigne kind={statutKind} /></td>
+                          <td className="px-5 py-3">
+                            <div className="flex items-center justify-end gap-1">
+                              {dirty && (
+                                <button onClick={(e) => { e.stopPropagation(); save(a); }} disabled={pending} title="Enregistrer les modifications" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-white text-[11.5px] font-bold disabled:opacity-40" style={{ background: ACCENT }}>
+                                  <Check className="w-3.5 h-3.5" />Enregistrer
+                                </button>
+                              )}
+                              <button onClick={(e) => { e.stopPropagation(); toggle(); }} title={expanded ? "Replier" : "Modifier les horaires"} aria-label={expanded ? "Replier l'éditeur d'horaires" : "Déplier l'éditeur d'horaires"} aria-expanded={expanded} className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                                <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
                               </button>
-                            )}
-                            <button onClick={() => remove(a)} disabled={pending} title="Retirer de la session" className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40">
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
+                              <button onClick={(e) => { e.stopPropagation(); remove(a); }} disabled={pending} title="Retirer de la session" className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        {expanded && (
+                          <tr className="bg-slate-50/70 border-b border-gray-100">
+                            <td colSpan={6} className="px-5 py-4">
+                              <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
+                                <div>
+                                  <div className="text-[10.5px] font-bold uppercase tracking-[.8px] text-slate-500 mb-1.5">Salle</div>
+                                  <input
+                                    value={r.salle}
+                                    onChange={(e) => setRow(a, { ...r, salle: e.target.value })}
+                                    placeholder="Salle…"
+                                    className={`w-[110px] px-2.5 py-1.5 rounded-lg border text-[12.5px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/25 ${r.salle.trim() ? "border-gray-200" : "border-amber-300 bg-amber-50/40"}`}
+                                  />
+                                </div>
+                                <div>
+                                  <div className="text-[10.5px] font-bold uppercase tracking-[.8px] mb-1.5 flex items-center gap-1.5" style={{ color: TEAL }}><span className="w-2 h-2 rounded-full" style={{ background: TEAL }} />Matin</div>
+                                  <SlotsEditor slots={r.matin} onChange={(slots) => setRow(a, { ...r, matin: slots })} def={DEF_MATIN} tint={TEAL} />
+                                </div>
+                                <div>
+                                  <div className="text-[10.5px] font-bold uppercase tracking-[.8px] mb-1.5 flex items-center gap-1.5" style={{ color: ACCENT }}><span className="w-2 h-2 rounded-full" style={{ background: ACCENT }} />Après-midi</div>
+                                  <SlotsEditor slots={r.apm} onChange={(slots) => setRow(a, { ...r, apm: slots })} def={DEF_APM} tint={ACCENT} />
+                                </div>
+                                <div className="ml-auto flex items-center gap-2 self-end">
+                                  <span className="text-[12px] font-semibold text-slate-500">{h.toFixed(1)}h au total</span>
+                                  {dirty && (
+                                    <button onClick={() => save(a)} disabled={pending} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-white text-[12px] font-bold disabled:opacity-40" style={{ background: ACCENT }}>
+                                      <Check className="w-3.5 h-3.5" />Enregistrer
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
                     );
                   })}
                 </tbody>
                 {rows.length > 0 && (
                   <tfoot>
                     <tr className="bg-gray-50/70 border-t border-gray-100">
-                      <td colSpan={5} className="px-5 py-3 text-right text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">
+                      <td colSpan={3} className="px-5 py-3 text-right text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">
                         Total heures planifiées dans la session
                       </td>
                       <td className="px-5 py-3 text-[15px] font-extrabold text-gray-900">{totalHeures.toFixed(1)}h</td>
-                      <td />
+                      <td colSpan={2} />
                     </tr>
                   </tfoot>
                 )}
@@ -823,7 +1060,7 @@ export function PlanificationBoard({
 
           {/* Copilote d'affectation — suggestions explicables (§21) */}
           {validable && suggestions.length > 0 && (
-            <div className="mt-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
+            <div id="copilote" className="mt-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
               <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-center gap-2.5">
                 <span aria-hidden className="w-8 h-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center"><Sparkles className="w-4 h-4" /></span>
                 <div>
@@ -860,7 +1097,8 @@ export function PlanificationBoard({
             </div>
           )}
 
-          {/* Présence par créneau (timeline) */}
+          {/* Présence par créneau (timeline) — surcharges en rouge + panneau de
+              couverture horaire avec trous critiques (C2). */}
           {affectes.length > 0 && (
             <div className="mt-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
               <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
@@ -873,35 +1111,70 @@ export function PlanificationBoard({
                   <span className="inline-flex items-center gap-1.5 text-gray-600"><span className="w-3 h-3 rounded" style={{ background: ACCENT }} />Après-midi</span>
                 </div>
               </div>
-              <div className="p-5 space-y-2.5">
-                {/* Graduation horaire */}
-                <div className="flex items-center gap-3 pl-[220px] max-[720px]:pl-0">
-                  <div className="relative flex-1 h-4 text-[10px] text-gray-400 font-mono">
-                    {[8, 10, 12, 14, 16, 18].map((hh) => (
-                      <span key={hh} className="absolute -translate-x-1/2" style={{ left: `${((hh * 60 - DAY_START) / DAY_SPAN) * 100}%` }}>{String(hh).padStart(2, "0")}:00</span>
-                    ))}
-                  </div>
-                </div>
-                {(visibleRows.filter((a) => { const r = stateOf(a); return r.matin.length > 0 || r.apm.length > 0; })).map((a) => {
-                  const s = survById.get(a.surveillantId);
-                  const r = stateOf(a);
-                  const idx = rows.indexOf(a);
-                  return (
-                    <div key={a.id} className="flex items-center gap-3 flex-wrap max-[720px]:gap-1.5">
-                      <div className="flex items-center gap-2.5 w-[220px] max-[720px]:w-full flex-shrink-0">
-                        <span className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0" style={{ background: AVATAR_COLORS[idx % AVATAR_COLORS.length] }}>
-                          {initials(s?.nom ?? "??")}
-                        </span>
-                        <span className="text-[12.5px] font-semibold text-gray-800 truncate">{s?.nom ?? `#${a.surveillantId}`}</span>
-                        <span className="text-[11.5px] font-bold text-gray-500 ml-auto">{rowHours(r).toFixed(1)}h</span>
-                      </div>
-                      <div className="relative flex-1 min-w-[280px] h-7 rounded-lg bg-slate-100/70 overflow-hidden">
-                        {r.matin.map((s, i) => <SlotBar key={`m${i}`} slot={s} color={TEAL} label="Matin" />)}
-                        {r.apm.map((s, i) => <SlotBar key={`a${i}`} slot={s} color={ACCENT} label="Après-midi" />)}
-                      </div>
+              <div className="flex flex-col lg:flex-row">
+                <div className="flex-1 p-5 space-y-2.5 min-w-0">
+                  {/* Graduation horaire */}
+                  <div className="flex items-center gap-3 pl-[220px] max-[720px]:pl-0">
+                    <div className="relative flex-1 h-4 text-[10px] text-gray-400 font-mono">
+                      {[8, 10, 12, 14, 16, 18].map((hh) => (
+                        <span key={hh} className="absolute -translate-x-1/2" style={{ left: `${((hh * 60 - DAY_START) / DAY_SPAN) * 100}%` }}>{String(hh).padStart(2, "0")}:00</span>
+                      ))}
                     </div>
-                  );
-                })}
+                  </div>
+                  {(visibleRows.filter((a) => { const r = stateOf(a); return r.matin.length > 0 || r.apm.length > 0; })).map((a) => {
+                    const s = survById.get(a.surveillantId);
+                    const r = stateOf(a);
+                    const idx = rows.indexOf(a);
+                    const enAlerte = alertAffIds.has(a.id);
+                    const enSurcharge = surcharge(a);
+                    return (
+                      <div key={a.id} className={`flex items-center gap-3 flex-wrap max-[720px]:gap-1.5 rounded-lg -mx-2 px-2 py-1 ${enAlerte ? "bg-rose-50/60" : enSurcharge ? "bg-amber-50/50" : ""}`}>
+                        <div className="flex items-center gap-2.5 w-[220px] max-[720px]:w-full flex-shrink-0">
+                          <span className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0" style={{ background: AVATAR_COLORS[idx % AVATAR_COLORS.length] }}>
+                            {initials(s?.nom ?? "??")}
+                          </span>
+                          <span className="text-[12.5px] font-semibold text-gray-800 truncate">{s?.nom ?? `#${a.surveillantId}`}</span>
+                          {enSurcharge && (
+                            <span className="inline-flex items-center gap-0.5 text-[9.5px] font-bold uppercase text-amber-600 bg-amber-100 rounded px-1 py-0.5" title={`Surcharge — seuil ${SEUIL_SURCHARGE_H}h`}>
+                              <Zap className="w-2.5 h-2.5" aria-hidden />Surcharge
+                            </span>
+                          )}
+                          <span className={`text-[11.5px] font-bold ml-auto ${enAlerte || enSurcharge ? "text-rose-600" : "text-gray-500"}`}>{rowHours(r).toFixed(1)}h</span>
+                        </div>
+                        <div className="relative flex-1 min-w-[280px] h-7 rounded-lg bg-slate-100/70 overflow-hidden">
+                          {r.matin.map((s, i) => <SlotBar key={`m${i}`} slot={s} color={TEAL} label="Matin" />)}
+                          {r.apm.map((s, i) => <SlotBar key={`a${i}`} slot={s} color={ACCENT} label="Après-midi" />)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Mini-panneau de couverture par tranche (C2) */}
+                {couvCreneaux && (
+                  <div className="border-t lg:border-t-0 lg:border-l border-gray-100 p-4 w-full lg:w-[240px] flex-shrink-0 bg-slate-50/40">
+                    <div className="text-[10.5px] font-bold uppercase tracking-[.8px] text-slate-500 mb-2.5">Couverture</div>
+                    <ul className="space-y-1.5">
+                      {couvCreneaux.creneaux.filter((c) => c.actif).map((c) => {
+                        const tone = c.niveau === "complet" ? { txt: "text-emerald-700", dot: "#059669" }
+                          : c.niveau === "partiel" ? { txt: "text-amber-700", dot: "#d97706" }
+                          : { txt: "text-rose-600", dot: "#e11d48" };
+                        return (
+                          <li key={c.label} className="flex items-center justify-between gap-2 text-[12px]">
+                            <span className="font-mono tabular-nums text-slate-500">{c.label}</span>
+                            <span className={`inline-flex items-center gap-1.5 font-bold ${tone.txt}`}>
+                              {c.presents}/{c.requis}
+                              {c.niveau === "complet" ? <CheckCircle2 className="w-3.5 h-3.5" aria-hidden /> : <AlertTriangle className="w-3.5 h-3.5" aria-hidden />}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <div className={`mt-3 pt-3 border-t border-gray-200/70 flex items-center justify-between text-[11.5px] font-bold ${couvCreneaux.trousCritiques > 0 ? "text-rose-600" : "text-emerald-700"}`}>
+                      <span>Trous critiques</span>
+                      <span className="text-[15px]">{couvCreneaux.trousCritiques}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
