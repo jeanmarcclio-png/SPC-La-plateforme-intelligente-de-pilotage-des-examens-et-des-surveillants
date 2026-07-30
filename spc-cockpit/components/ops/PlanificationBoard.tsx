@@ -574,20 +574,40 @@ export function PlanificationBoard({
 
   return (
     <>
-      {/* Barre d'actions (haut de page) */}
-      <div className="flex items-center justify-end gap-2 mb-4 flex-wrap">
-        <Button variant="secondary" size="sm" onClick={exportSession} disabled={!mission}>
-          <Download className="w-3.5 h-3.5" aria-hidden />Exporter
-        </Button>
+      {/* Barre d'actions — hiérarchie claire (m1) : « Valider » domine (CTA final),
+          « Modifier / Exporter » secondaires, « Nouvelle session » = navigation subordonnée
+          poussée à droite. Le bouton Valider bloqué explique pourquoi (badge + toast au clic). */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        {validable && (() => {
+          const dirtyCount = rows.filter((a) => isDirty(a)).length;
+          const canValidate = rows.length > 0 && dirtyCount === 0 && alertes.length === 0;
+          const reason = rows.length === 0 ? "aucun surveillant affecté"
+            : dirtyCount > 0 ? `${dirtyCount} modification${dirtyCount > 1 ? "s" : ""} non enregistrée${dirtyCount > 1 ? "s" : ""}`
+            : alertes.length > 0 ? `${alertes.length} alerte${alertes.length > 1 ? "s" : ""} à corriger`
+            : "";
+          const badge = alertes.length > 0 ? alertes.length : dirtyCount > 0 ? dirtyCount : rows.length === 0 ? 1 : 0;
+          return (
+            <button
+              onClick={valider}
+              disabled={pending}
+              title={canValidate ? "Verrouiller le planning pour le terrain" : `Impossible de valider — ${reason}`}
+              className={`relative inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[13px] font-bold text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:opacity-60 ${canValidate ? "bg-emerald-600 hover:bg-emerald-700" : "bg-emerald-300 hover:bg-emerald-400 cursor-help"}`}
+            >
+              <ShieldCheck className="w-4 h-4" aria-hidden />Valider la session
+              {!canValidate && badge > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-bold ring-2 ring-white">{badge}</span>
+              )}
+            </button>
+          );
+        })()}
         <Button variant="secondary" size="sm" onClick={scrollToTable} disabled={!mission}>
           <Pencil className="w-3.5 h-3.5" aria-hidden />Modifier
         </Button>
-        {validable && (
-          <Button variant="accent" size="sm" onClick={valider} disabled={pending} className="!bg-emerald-600 hover:!bg-emerald-700 focus-visible:!ring-emerald-400">
-            <ShieldCheck className="w-3.5 h-3.5" aria-hidden />Valider
-          </Button>
-        )}
-        <ButtonLink href="/operations/missions" variant="primary" size="sm">
+        <Button variant="secondary" size="sm" onClick={exportSession} disabled={!mission}>
+          <Download className="w-3.5 h-3.5" aria-hidden />Exporter
+        </Button>
+        <div className="flex-1" />
+        <ButtonLink href="/operations/missions" variant="ghost" size="sm" className="!text-slate-400 hover:!text-slate-700">
           <Plus className="w-3.5 h-3.5" aria-hidden />Nouvelle session
         </ButtonLink>
       </div>
@@ -604,26 +624,43 @@ export function PlanificationBoard({
         <Kpi variant="vivid" label="Heures accumulées" value={`${Math.round(heuresAccumulees)}h`} sub="planifiées toutes sessions" accent="amber" icon={<Clock className="w-4 h-4" />} />
       </div>
 
-      {/* Sélecteur de sessions (pastilles date) */}
-      <div className="flex items-center gap-2 mb-5 flex-wrap">
-        {planifiables.map((m) => {
-          const active = m.id === missionId;
-          return (
-            <button
-              key={m.id}
-              onClick={() => { setMissionId(m.id); setEdits({}); setFilter("all"); setQuery(""); setExpandedId(null); }}
-              aria-pressed={active}
-              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[12.5px] font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 ${
-                active ? "text-white border-transparent shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
-              }`}
-              style={active ? { background: "#0d9488" } : {}}
-            >
-              <Calendar className={`w-3.5 h-3.5 ${active ? "text-white/80" : "text-gray-400"}`} aria-hidden />
-              <span>{dateFR(m.dateMission)}</span>
-              <span className={active ? "text-white/60" : "text-gray-400"}>· {m.client}</span>
-            </button>
-          );
-        })}
+      {/* Sélecteur de sessions — pastilles différenciées par statut (m3) :
+          active (visualisée), future, passée (date dépassée), terminée. */}
+      <div className="flex items-center gap-2 mb-5 overflow-x-auto snap-x pb-1 -mx-1 px-1">
+        {(() => {
+          const todayISO = new Date().toISOString().slice(0, 10);
+          return planifiables.map((m) => {
+            const active = m.id === missionId;
+            const terminee = m.statut === "Terminée" || m.statut === "Facturée" || m.statut === "Archivée";
+            const passee = !terminee && m.dateMission != null && m.dateMission < todayISO;
+            const base = active
+              ? "text-white border-transparent shadow-[0_2px_8px_rgba(15,118,110,0.3)]"
+              : terminee
+                ? "bg-slate-50 text-gray-400 border-gray-200 opacity-70 hover:opacity-100"
+                : passee
+                  ? "bg-white text-gray-400 border-gray-200 opacity-70 hover:opacity-100"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-gray-300";
+            return (
+              <button
+                key={m.id}
+                onClick={() => { setMissionId(m.id); setEdits({}); setFilter("all"); setQuery(""); setExpandedId(null); }}
+                aria-pressed={active}
+                className={`snap-start inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[12.5px] font-semibold border transition-all flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 ${base}`}
+                style={active ? { background: "#0d9488" } : {}}
+              >
+                <Calendar className={`w-3.5 h-3.5 ${active ? "text-white/80" : "text-gray-400"}`} aria-hidden />
+                <span className={passee ? "line-through" : ""}>{dateFR(m.dateMission)}</span>
+                <span className={active ? "text-white/60" : "text-gray-400"}>· {m.client}</span>
+                {active && (
+                  <span className="text-[9px] font-bold uppercase tracking-wide bg-white/20 text-white px-1.5 py-0.5 rounded-full">Active</span>
+                )}
+                {terminee && !active && (
+                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wide bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full"><Check className="w-2.5 h-2.5" aria-hidden />Terminée</span>
+                )}
+              </button>
+            );
+          });
+        })()}
       </div>
 
       {mission && (
@@ -1253,44 +1290,77 @@ export function PlanificationBoard({
             </div>
           )}
 
-          {/* Journal de session — append-only (Master Prompt §15.6) */}
-          {journalMission.length > 0 && (
-            <div className="mt-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-              <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100">
-                <h2 className="text-[14px] font-bold text-gray-900">Journal de session</h2>
-                <p className="text-[12px] text-gray-400">Historique immuable des modifications — utilisateur, date, ancienne et nouvelle valeur</p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse min-w-[720px]">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-100">
-                      {["Date", "Utilisateur", "Objet", "Ancienne valeur", "Nouvelle valeur"].map((h) => (
-                        <th key={h} className="text-left px-5 py-2.5 text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {journalMission.slice(0, 12).map((j) => (
-                      <tr key={j.id} className="border-b border-gray-50 last:border-0">
-                        <td className="px-5 py-2.5 text-[12px] text-gray-500 whitespace-nowrap">
-                          {new Date(j.createdAt).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" })}
-                        </td>
-                        <td className="px-5 py-2.5 text-[12px] text-gray-600 whitespace-nowrap">{j.utilisateur}</td>
-                        <td className="px-5 py-2.5 text-[12.5px] font-semibold text-gray-800">{j.objet}</td>
-                        <td className="px-5 py-2.5 text-[12px] text-gray-500">{j.ancienne ?? <span className="text-gray-300">—</span>}</td>
-                        <td className="px-5 py-2.5 text-[12px] font-medium text-gray-700">{j.nouvelle ?? <span className="text-gray-300">—</span>}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {journalMission.length > 12 && (
-                <div className="px-5 py-2.5 text-[11.5px] text-gray-400 border-t border-gray-100">
-                  {journalMission.length - 12} entrée(s) plus ancienne(s) non affichée(s)
+          {/* Journal d'audit — timeline verticale avec diff visuel (E3).
+              Type déduit des valeurs : ajout (nouvelle seule), suppression (ancienne seule),
+              modification (les deux). Données réelles, append-only (Master Prompt §15.6). */}
+          {journalMission.length > 0 && (() => {
+            const empty = (v: string | null) => v == null || v === "" || v === "—";
+            const typeOf = (j: JournalEntry): "ajout" | "suppression" | "modification" =>
+              empty(j.ancienne) && !empty(j.nouvelle) ? "ajout" : !empty(j.ancienne) && empty(j.nouvelle) ? "suppression" : "modification";
+            const META = {
+              ajout: { dot: "#059669", chip: "bg-emerald-50 text-emerald-700 ring-emerald-600/15", Icon: Plus, verbe: "a ajouté" },
+              suppression: { dot: "#e11d48", chip: "bg-rose-50 text-rose-700 ring-rose-600/15", Icon: Trash2, verbe: "a retiré" },
+              modification: { dot: "#0284c7", chip: "bg-sky-50 text-sky-700 ring-sky-600/15", Icon: Pencil, verbe: "a modifié" },
+            } as const;
+            function exportJournal() {
+              const header = ["Date", "Utilisateur", "Type", "Objet", "Ancienne valeur", "Nouvelle valeur"];
+              const lines = journalMission.map((j) => [
+                new Date(j.createdAt).toLocaleString("fr-FR"),
+                j.utilisateur, typeOf(j), j.objet, j.ancienne ?? "", j.nouvelle ?? "",
+              ]);
+              downloadCSV(`SPC_journal_${mission?.client ?? ""}_${mission?.dateMission ?? ""}.csv`, toCSV([header, ...lines]));
+              showToast(`Historique exporté (${journalMission.length} entrée(s)).`);
+            }
+            const shown = journalMission.slice(0, 12);
+            return (
+              <div className="mt-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
+                <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <h2 className="text-[14px] font-bold text-gray-900">Journal d&apos;audit</h2>
+                    <p className="text-[12px] text-gray-400">Historique immuable — qui a fait quoi, quand, et la valeur avant/après</p>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={exportJournal}>
+                    <Download className="w-3.5 h-3.5" aria-hidden />Exporter l&apos;historique
+                  </Button>
                 </div>
-              )}
-            </div>
-          )}
+                <ol className="p-5 pl-6">
+                  {shown.map((j, i) => {
+                    const t = typeOf(j);
+                    const meta = META[t];
+                    const { Icon } = meta;
+                    const last = i === shown.length - 1;
+                    return (
+                      <li key={j.id} className="relative pl-7 pb-5 last:pb-0">
+                        {!last && <span aria-hidden className="absolute left-[9px] top-5 bottom-0 w-px bg-gray-200" />}
+                        <span aria-hidden className="absolute left-0 top-1 w-[18px] h-[18px] rounded-full ring-4 ring-white flex items-center justify-center" style={{ background: meta.dot }}>
+                          <Icon className="w-2.5 h-2.5 text-white" />
+                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[.4px] px-2 py-0.5 rounded-full ring-1 ring-inset ${meta.chip}`}>{t}</span>
+                          <span className="text-[11.5px] text-gray-400">{new Date(j.createdAt).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
+                        </div>
+                        <div className="text-[12.5px] text-slate-700 mt-1">
+                          <span className="font-semibold text-gray-900">{j.utilisateur}</span> {meta.verbe} <span className="font-semibold">{j.objet}</span>
+                        </div>
+                        {(!empty(j.ancienne) || !empty(j.nouvelle)) && (
+                          <div className="mt-1.5 flex items-center gap-2 flex-wrap text-[11.5px] font-mono">
+                            {!empty(j.ancienne) && <span className="line-through rounded px-1.5 py-0.5 bg-rose-50 text-rose-700">{j.ancienne}</span>}
+                            {!empty(j.ancienne) && !empty(j.nouvelle) && <ArrowRight className="w-3.5 h-3.5 text-gray-300" aria-hidden />}
+                            {!empty(j.nouvelle) && <span className="rounded px-1.5 py-0.5 bg-emerald-50 text-emerald-700">{j.nouvelle}</span>}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ol>
+                {journalMission.length > 12 && (
+                  <div className="px-5 py-2.5 text-[11.5px] text-gray-400 border-t border-gray-100">
+                    {journalMission.length - 12} entrée(s) plus ancienne(s) — exporter pour l&apos;historique complet
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </>
       )}
     </>
