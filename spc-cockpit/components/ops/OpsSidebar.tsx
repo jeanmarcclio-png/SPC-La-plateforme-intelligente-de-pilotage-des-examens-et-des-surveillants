@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Gauge, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert, Menu, ChevronLeft } from "lucide-react";
+import { LayoutDashboard, Gauge, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert, Menu, ChevronLeft, Radio } from "lucide-react";
 import { isNavActive } from "@/lib/operations/nav";
 
 type NavGroup = "pilotage" | "commercial" | "suivi";
@@ -14,6 +14,7 @@ export const NAV: { href: string; label: string; icon: React.ReactNode; group: N
   { href: "/operations/missions",       label: "Missions",          icon: <Briefcase className="w-4 h-4" />,      group: "pilotage" },
   { href: "/operations/surveillants",   label: "Surveillants",      icon: <Users className="w-4 h-4" />,          group: "pilotage" },
   { href: "/operations/planification",  label: "Planification",     icon: <CalendarClock className="w-4 h-4" />,  group: "pilotage" },
+  { href: "/operations/terrain",        label: "Mode terrain",      icon: <Radio className="w-4 h-4" />,          group: "pilotage" },
   { href: "/operations/salles",         label: "Salles",            icon: <DoorOpen className="w-4 h-4" />,        group: "pilotage" },
   { href: "/operations/pmr",            label: "PMR & Tiers-temps", icon: <Accessibility className="w-4 h-4" />,   group: "pilotage" },
   { href: "/operations/devis",          label: "Devis",             icon: <FileText className="w-4 h-4" />,        group: "commercial" },
