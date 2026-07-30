@@ -430,16 +430,19 @@ export function PlanificationBoard({
   const heuresAccumulees = affectations.reduce((s, a) => s + rowHours(toRowState(a)), 0);
 
   // ---- Recherche + filtres (n'affectent que l'affichage tableau/timeline) ----
-  const visibleRows = rows.filter((a) => {
+  function matchesQuery(a: Affectation): boolean {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
     const r = stateOf(a);
     const s = survById.get(a.surveillantId);
     const role = (a.roleMission ?? s?.role ?? "").toLowerCase();
-    const q = query.trim().toLowerCase();
-    if (q) {
-      const hay = `${s?.nom ?? ""} ${role} ${r.salle}`.toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
-    switch (filter) {
+    return `${s?.nom ?? ""} ${role} ${r.salle}`.toLowerCase().includes(q);
+  }
+  function matchesFilter(a: Affectation, key: QuickFilter): boolean {
+    const r = stateOf(a);
+    const s = survById.get(a.surveillantId);
+    const role = (a.roleMission ?? s?.role ?? "").toLowerCase();
+    switch (key) {
       case "no-room": return !r.salle.trim();
       case "matin": return r.matin.length > 0;
       case "apm": return r.apm.length > 0;
@@ -449,7 +452,13 @@ export function PlanificationBoard({
       case "alertes": return alertAffIds.has(a.id);
       default: return true;
     }
-  });
+  }
+  const visibleRows = rows.filter((a) => matchesQuery(a) && matchesFilter(a, filter));
+  // Compteurs par filtre (M3) : nombre de lignes concernées, à recherche donnée.
+  const queriedRows = rows.filter(matchesQuery);
+  const filterCounts = Object.fromEntries(
+    FILTERS.map((f) => [f.key, queriedRows.filter((a) => matchesFilter(a, f.key)).length])
+  ) as Record<QuickFilter, number>;
 
   // Couverture par tranche horaire (C2) — présence réelle + trous critiques.
   const couvCreneaux = mission
@@ -619,38 +628,76 @@ export function PlanificationBoard({
 
       {mission && (
         <>
-          {/* Score de santé de session — synthèse IA (§21) */}
-          {sante && (() => {
+          {/* Score de santé de session — décomposé en checklist d'actions (M2) :
+              chaque axe montre l'écart au plein score et l'action pour le combler. */}
+          {sante && couverture && (() => {
             const col = sante.niveau === "prête" ? "#059669" : sante.niveau === "à consolider" ? "#d97706" : "#e11d48";
             const pill = sante.niveau === "prête" ? "bg-emerald-50 text-emerald-700 ring-emerald-600/15" : sante.niveau === "à consolider" ? "bg-amber-50 text-amber-700 ring-amber-600/15" : "bg-rose-50 text-rose-700 ring-rose-600/15";
             const R = 34, CIRC = 2 * Math.PI * R, off = CIRC * (1 - sante.score / 100);
+            const margeTxt = rentabilite ? (rentabilite.niveau === "saine" ? "Marge saine" : rentabilite.niveau === "surveiller" ? "Marge à surveiller" : "Marge critique") : "";
+            type Metric = { id: string; label: string; cur: number; target: number; done: boolean; detail?: string; cta?: { label: string; onClick: () => void } };
+            const metrics: Metric[] = [
+              {
+                id: "couverture", label: "Couverture surveillants", cur: sante.detail.couverture, target: 40, done: couverture.manque === 0,
+                detail: couverture.manque > 0 ? `${couverture.manque} surveillant${couverture.manque > 1 ? "s" : ""} à trouver` : undefined,
+                cta: couverture.manque > 0 ? { label: "Recruter", onClick: scrollToCandidats } : undefined,
+              },
+              {
+                id: "alertes", label: "Alertes de planning résolues", cur: sante.detail.alertes, target: 35, done: alertes.length === 0,
+                detail: alertes.length > 0 ? `${alertes.length} alerte${alertes.length > 1 ? "s" : ""} à corriger` : undefined,
+                cta: alertes.length > 0 ? { label: "Corriger", onClick: scrollToTable } : undefined,
+              },
+              {
+                id: "marge", label: "Rentabilité", cur: sante.detail.marge, target: 25, done: sante.detail.marge >= 25,
+                detail: rentabilite && rentabilite.niveau !== "saine" ? margeTxt : undefined,
+              },
+            ];
+            const restant = metrics.filter((m) => !m.done).length;
             return (
-              <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5 flex items-center gap-5 flex-wrap">
-                <div className="relative w-[92px] h-[92px] flex-shrink-0">
-                  <svg width="92" height="92" viewBox="0 0 92 92" className="-rotate-90">
-                    <circle cx="46" cy="46" r={R} fill="none" stroke="#eef0f2" strokeWidth="8" />
-                    <circle cx="46" cy="46" r={R} fill="none" stroke={col} strokeWidth="8" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={off} />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-[22px] font-extrabold text-gray-900 leading-none">{sante.score}</span>
-                    <span className="text-[9px] font-bold text-gray-400">/ 100</span>
+              <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
+                <div className="p-5 flex items-center gap-5 flex-wrap border-b border-gray-100">
+                  <div className="relative w-[92px] h-[92px] flex-shrink-0">
+                    <svg width="92" height="92" viewBox="0 0 92 92" className="-rotate-90">
+                      <circle cx="46" cy="46" r={R} fill="none" stroke="#eef0f2" strokeWidth="8" />
+                      <circle cx="46" cy="46" r={R} fill="none" stroke={col} strokeWidth="8" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={off} />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-[22px] font-extrabold text-gray-900 leading-none">{sante.score}</span>
+                      <span className="text-[9px] font-bold text-gray-400">/ 100</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-[220px]">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="text-[15px] font-extrabold text-gray-900">Santé de la session</h2>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-600/15"><Sparkles className="w-3 h-3" aria-hidden />IA</span>
+                      <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${pill}`}><span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{sante.niveau}</span>
+                    </div>
+                    <div className="text-[12px] text-gray-500 mt-1">
+                      {restant === 0 ? "Tous les axes sont au vert — session prête à valider." : `${restant} action${restant > 1 ? "s" : ""} requise${restant > 1 ? "s" : ""} pour atteindre 100.`}
+                    </div>
                   </div>
                 </div>
-                <div className="flex-1 min-w-[240px]">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-[15px] font-extrabold text-gray-900">Santé de la session</h2>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-600/15"><Sparkles className="w-3 h-3" aria-hidden />IA</span>
-                    <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${pill}`}><span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{sante.niveau}</span>
-                  </div>
-                  <div className="text-[11.5px] text-gray-400 mt-0.5 mb-2">Synthèse couverture · alertes · rentabilité — {sante.detail.couverture}/40 · {sante.detail.alertes}/35 · {sante.detail.marge}/25</div>
-                  <ul className="space-y-1">
-                    {sante.recommandations.map((r, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[12.5px] text-slate-600">
-                        <ArrowRight className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: col }} aria-hidden />{r}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <ul>
+                  {metrics.map((m) => (
+                    <li key={m.id} className="px-5 py-3 flex items-center gap-3 border-b border-gray-50 last:border-0">
+                      <span aria-hidden className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold ${m.done ? "bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-600/15" : "bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-600/20"}`}>
+                        {m.done ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-3.5 h-3.5" />}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`text-[13px] font-semibold ${m.done ? "text-slate-400 line-through" : "text-gray-800"}`}>{m.label}</span>
+                          <span className="text-[11px] font-bold tabular-nums text-slate-400">{m.cur}/{m.target}</span>
+                        </div>
+                        {m.detail && <div className="text-[11.5px] font-semibold text-rose-600 mt-0.5">{m.detail}</div>}
+                      </div>
+                      {m.cta && (
+                        <button onClick={m.cta.onClick} className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#7c5cff] hover:text-[#5b3ecc] transition-colors flex-shrink-0">
+                          {m.cta.label} <ArrowRight className="w-3 h-3" aria-hidden />
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               </div>
             );
           })()}
@@ -762,11 +809,19 @@ export function PlanificationBoard({
             </div>
           </div>
 
-          {/* Rentabilité de la session (§21) */}
+          {/* Rentabilité de la session (§21) — waterfall visuel (M4) :
+              CA − Coût = Marge → Taux, la couleur porte la nature de chaque terme. */}
           {rentabilite && (() => {
             const n = rentabilite.niveau;
             const tone = n === "saine" ? "bg-emerald-50 text-emerald-700 ring-emerald-600/15" : n === "surveiller" ? "bg-amber-50 text-amber-700 ring-amber-600/15" : "bg-rose-50 text-rose-700 ring-rose-600/15";
             const label = n === "saine" ? "Marge saine" : n === "surveiller" ? "Marge à surveiller" : "Marge critique";
+            const pct = Math.round(rentabilite.tauxMarge * 100);
+            const steps = [
+              { key: "ca", label: "CA HT", value: euro(rentabilite.caHT), card: "bg-emerald-50 border-emerald-100", val: "text-emerald-700", op: null as string | null, title: "Chiffre d'affaires hors taxes de la session" },
+              { key: "cout", label: "Coût surveillants", value: euro(rentabilite.coutHT), card: "bg-rose-50 border-rose-100", val: "text-rose-700", op: "−", title: `Coût estimé des surveillants (${rentabilite.heuresTotal.toFixed(1)}h planifiées)` },
+              { key: "marge", label: "Marge HT", value: euro(rentabilite.margeHT), card: "bg-sky-50 border-sky-100", val: rentabilite.margeHT >= 0 ? "text-sky-700" : "text-rose-600", op: "=", title: `${euro(rentabilite.caHT)} − ${euro(rentabilite.coutHT)} = ${euro(rentabilite.margeHT)} de marge` },
+              { key: "taux", label: "Taux de marge", value: `${pct} %`, card: "bg-amber-50 border-amber-100", val: n === "saine" ? "text-amber-700" : n === "surveiller" ? "text-amber-700" : "text-rose-600", op: "→", title: "Seuil considéré sain : 30 %" },
+            ];
             return (
               <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
                 <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
@@ -775,20 +830,25 @@ export function PlanificationBoard({
                     <p className="text-[12px] text-gray-400">CA HT − coût estimé des surveillants ({rentabilite.heuresTotal.toFixed(1)}h planifiées)</p>
                   </div>
                   <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${tone}`}>
-                    <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{label} · {Math.round(rentabilite.tauxMarge * 100)} %
+                    <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{label} · {pct} %
                   </span>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100">
-                  {[
-                    { label: "CA HT", value: euro(rentabilite.caHT), accent: "text-gray-900" },
-                    { label: "Coût surveillants", value: euro(rentabilite.coutHT), accent: "text-slate-600" },
-                    { label: "Marge HT", value: euro(rentabilite.margeHT), accent: rentabilite.margeHT >= 0 ? "text-emerald-700" : "text-rose-600" },
-                    { label: "Taux de marge", value: `${Math.round(rentabilite.tauxMarge * 100)} %`, accent: n === "saine" ? "text-emerald-700" : n === "surveiller" ? "text-amber-700" : "text-rose-600" },
-                  ].map((m) => (
-                    <div key={m.label} className="px-5 py-3.5">
-                      <div className="text-[10.5px] font-bold uppercase tracking-[.8px] text-gray-400">{m.label}</div>
-                      <div className={`text-[17px] font-extrabold mt-0.5 ${m.accent}`}>{m.value}</div>
-                    </div>
+                <div className="p-5 flex items-stretch gap-2 overflow-x-auto md:grid md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] md:items-center md:overflow-visible">
+                  {steps.map((s, i) => (
+                    <Fragment key={s.key}>
+                      {s.op && (
+                        <div aria-hidden className="flex items-center justify-center px-1 text-[18px] font-extrabold text-slate-300 self-center flex-shrink-0">{s.op}</div>
+                      )}
+                      <div title={s.title} className={`flex-1 min-w-[130px] rounded-xl border px-4 py-3 text-center ${s.card}`}>
+                        <div className="text-[10px] font-bold uppercase tracking-[.8px] text-slate-500">{s.label}</div>
+                        <div className={`text-[19px] font-extrabold mt-1 tabular-nums ${s.val}`}>{s.value}</div>
+                        {i === 3 && (
+                          <span className={`mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ring-1 ring-inset ${tone}`}>
+                            <span aria-hidden className="w-1 h-1 rounded-full bg-current opacity-80" />{label}
+                          </span>
+                        )}
+                      </div>
+                    </Fragment>
                   ))}
                 </div>
               </div>
@@ -897,19 +957,34 @@ export function PlanificationBoard({
                   className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-[12.5px] focus:outline-none focus:ring-2 focus:ring-blue-500/25"
                 />
               </div>
+              {/* M3 — pills avec compteurs dynamiques ; « Alertes » toujours en évidence. */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 {FILTERS.map((f) => {
                   const active = filter === f.key;
+                  const count = filterCounts[f.key];
+                  const isAlertes = f.key === "alertes";
+                  const danger = isAlertes && count > 0;
+                  const base = active
+                    ? danger
+                      ? "bg-rose-600 border-rose-600 text-white"
+                      : "bg-indigo-600 border-indigo-600 text-white"
+                    : danger
+                      ? "bg-rose-50 border-rose-300 text-rose-700 hover:border-rose-400"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300";
+                  const badge = active
+                    ? "bg-white/20 text-white"
+                    : danger
+                      ? "bg-rose-100 text-rose-700"
+                      : "bg-slate-100 text-slate-500";
                   return (
                     <button
                       key={f.key}
                       onClick={() => setFilter(f.key)}
                       aria-pressed={active}
-                      className={`px-2.5 py-1.5 rounded-lg text-[11.5px] font-semibold border transition-colors ${
-                        active ? "bg-indigo-600 border-indigo-600 text-white" : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
-                      }`}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11.5px] font-semibold border transition-colors ${base} ${danger && !active ? "motion-safe:animate-pulse" : ""}`}
                     >
                       {f.label}
+                      <span className={`min-w-[16px] text-center text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-full tabular-nums ${badge}`}>{count}</span>
                     </button>
                   );
                 })}

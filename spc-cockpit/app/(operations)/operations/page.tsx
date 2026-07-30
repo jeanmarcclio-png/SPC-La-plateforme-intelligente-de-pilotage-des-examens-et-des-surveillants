@@ -27,26 +27,30 @@ interface Priorite {
 }
 
 const SEV_ORDER: Record<Severite, number> = { critique: 0, attention: 1, suivre: 2 };
-const SEV_STYLE: Record<Severite, { badge: string; label: string; border: string }> = {
-  critique:  { badge: "bg-red-500 text-white",      label: "Critique",  border: "border-l-red-500" },
-  attention: { badge: "bg-amber-400 text-amber-950", label: "Attention", border: "border-l-amber-400" },
-  suivre:    { badge: "bg-blue-100 text-blue-700",   label: "À suivre",  border: "border-l-blue-300" },
+const SEV_STYLE: Record<Severite, { badge: string; label: string; border: string; bg: string; iconWrap: string }> = {
+  critique:  { badge: "bg-rose-500 text-white",     label: "Critique",  border: "border-l-rose-500",  bg: "bg-rose-50/60",  iconWrap: "bg-rose-100 text-rose-600" },
+  attention: { badge: "bg-amber-400 text-amber-950", label: "Attention", border: "border-l-amber-400", bg: "bg-amber-50/50", iconWrap: "bg-amber-100 text-amber-700" },
+  suivre:    { badge: "bg-sky-100 text-sky-700",     label: "À suivre",  border: "border-l-sky-300",   bg: "bg-sky-50/40",   iconWrap: "bg-sky-100 text-sky-700" },
 };
 
-function PrioriteCard({ p }: { p: Priorite }) {
+// Ligne de priorité — liste verticale hiérarchisée (M5) : la gravité porte la
+// bordure gauche + la teinte, l'action reste à droite, atteignable d'un coup d'œil.
+function PrioriteRow({ p }: { p: Priorite }) {
   const s = SEV_STYLE[p.severite];
   return (
-    <div className={`flex-1 min-w-[240px] border-l-[3px] ${s.border} px-5 py-4 flex flex-col`}>
-      <div className="flex items-center justify-between mb-2.5">
-        <span aria-hidden className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500">{p.icon}</span>
-        <span className={`text-[10px] font-bold uppercase tracking-wide rounded px-1.5 py-0.5 ${s.badge}`}>{s.label}</span>
+    <div className={`flex items-center gap-3.5 px-5 py-3.5 border-l-[4px] ${s.border} ${s.bg}`}>
+      <span aria-hidden className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${s.iconWrap}`}>{p.icon}</span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`text-[10px] font-bold uppercase tracking-wide rounded px-1.5 py-0.5 ${s.badge}`}>{s.label}</span>
+          <span className="text-[10.5px] font-bold uppercase tracking-[1px] text-gray-400">{p.tag}</span>
+        </div>
+        <div className="text-[13.5px] font-bold text-gray-900 mt-1 truncate">{p.titre}</div>
+        <div className="text-[12px] text-gray-500 mt-0.5 truncate">{p.detail}</div>
       </div>
-      <div className="text-[10.5px] font-bold uppercase tracking-[1px] text-gray-400">{p.tag}</div>
-      <div className="text-[13.5px] font-bold text-gray-900 mt-0.5">{p.titre}</div>
-      <div className="text-[12px] text-gray-500 mt-0.5 flex-1">{p.detail}</div>
       <Link
         href={p.href}
-        className="inline-flex items-center gap-1 text-[12.5px] font-bold text-indigo-600 hover:text-indigo-700 mt-3 focus-visible:outline-2 focus-visible:outline-blue-500"
+        className="inline-flex items-center gap-1 text-[12.5px] font-bold text-indigo-600 hover:text-indigo-700 flex-shrink-0 focus-visible:outline-2 focus-visible:outline-blue-500"
       >
         {p.action} <ArrowRight className="w-3.5 h-3.5" aria-hidden />
       </Link>
@@ -123,7 +127,8 @@ export default async function OperationsPage() {
   }
 
   priorites.sort((a, b) => SEV_ORDER[a.severite] - SEV_ORDER[b.severite]);
-  const prioritesAffichees = priorites.slice(0, 4);
+  const prioritesAffichees = priorites.slice(0, 5);
+  const prioritesRestantes = priorites.length - prioritesAffichees.length;
 
   const tendance = tendanceCA(missions);
   const maxMois = Math.max(...tendance.map((t) => t.total), 1);
@@ -156,16 +161,21 @@ export default async function OperationsPage() {
         <Kpi variant="vivid" accent="emerald" label="CA confirmé HT" value={euro(confirmes.reduce((s, d) => s + d.montantHT, 0))} sub={`${confirmes.length} devis accepté${confirmes.length > 1 ? "s" : ""} ou facturé${confirmes.length > 1 ? "s" : ""}`} icon={<FileCheck2 className="w-4 h-4" />} href="/operations/devis" />
       </div>
 
-      {/* Priorités du jour */}
+      {/* Priorités du jour — liste verticale triée par gravité (M5) */}
       {prioritesAffichees.length > 0 && (
         <section aria-label="Priorités du jour" className="bg-white rounded-2xl border border-gray-200/80 shadow-sm mb-6 overflow-hidden">
-          <div className="px-5 pt-4.5 pb-1">
+          <div className="px-5 pt-4.5 pb-3 border-b border-gray-100">
             <h2 className="text-[14px] font-bold text-gray-900">Priorités du jour</h2>
             <p className="text-[12px] text-gray-400">Actions à traiter en premier pour sécuriser les examens et le chiffre d&apos;affaires</p>
           </div>
-          <div className="flex flex-wrap divide-x divide-gray-100">
-            {prioritesAffichees.map((p, i) => <PrioriteCard key={i} p={p} />)}
-          </div>
+          <ul role="list" className="divide-y divide-gray-100">
+            {prioritesAffichees.map((p, i) => <li key={i} role="listitem"><PrioriteRow p={p} /></li>)}
+          </ul>
+          {prioritesRestantes > 0 && (
+            <div className="px-5 py-2.5 text-[11.5px] font-semibold text-gray-400 border-t border-gray-100">
+              + {prioritesRestantes} autre{prioritesRestantes > 1 ? "s" : ""} priorité{prioritesRestantes > 1 ? "s" : ""} à traiter
+            </div>
+          )}
         </section>
       )}
 
