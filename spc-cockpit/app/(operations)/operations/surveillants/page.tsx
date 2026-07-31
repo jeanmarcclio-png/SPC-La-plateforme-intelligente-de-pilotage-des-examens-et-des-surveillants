@@ -1,34 +1,91 @@
 export const dynamic = "force-dynamic";
 
-import { getSurveillants, getAffectations } from "@/lib/operations/queries";
+import { getSurveillants, getAffectations, getMissions } from "@/lib/operations/queries";
 import { getInvitationStatuses } from "@/lib/supabase/portail";
-import { SurveillantsTable } from "@/components/ops/SurveillantsTable";
+import { SurveillantsWorkspace, type MissionInfo } from "@/components/ops/surveillants/Workspace";
 import { SurveillantsImportExport } from "@/components/ops/SurveillantsImportExport";
 import { InvitationsPanel } from "@/components/ops/InvitationsPanel";
-import { Kpi } from "@/components/ops/Kpi";
-import { Users, UserCheck, Clock, Star, AlertTriangle, Shield, UsersRound } from "lucide-react";
+import { OPS_CONTENT_CLASS } from "@/components/ops/shell";
 import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
-import { PageHeader } from "@/components/ops/shell";
+import { computeMissionKpis, heuresAffectation, aUnCreneau } from "@/lib/operations/disponibilites";
+import { dateFR } from "@/lib/operations/format";
+import type { Affectation } from "@/lib/operations/types";
+import type { SurvRow, CreneauLigne, PortailStatut } from "@/components/ops/surveillants/types";
 
-function PilotageCard({ tag, titre, detail, icon }: { tag: string; titre: string; detail: string; icon: React.ReactNode }) {
-  return (
-    <div className="flex-1 min-w-[220px] px-5 py-4">
-      <div className="flex items-center justify-between mb-3">
-        <span className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500">{icon}</span>
-        <span className="text-[10.5px] font-bold uppercase tracking-[1px] text-gray-400">{tag}</span>
-      </div>
-      <div className="text-[13.5px] font-bold text-gray-900">{titre}</div>
-      <div className="text-[12px] text-gray-500 mt-0.5">{detail}</div>
-    </div>
-  );
+// Créneaux détaillés d'une affectation (onglet Planning du profil).
+function creneauxDe(a: Affectation, missionRef?: string): CreneauLigne[] {
+  const out: CreneauLigne[] = [];
+  const matin = a.matinCreneaux?.length ? a.matinCreneaux : a.matin ? [{ debut: a.matinDebut, fin: a.matinFin }] : [];
+  const apm = a.apmCreneaux?.length ? a.apmCreneaux : a.apm ? [{ debut: a.apmDebut, fin: a.apmFin }] : [];
+  for (const c of matin) out.push({ periode: "matin", debut: c.debut, fin: c.fin, salle: a.salle, missionRef });
+  for (const c of apm) out.push({ periode: "apm", debut: c.debut, fin: c.fin, salle: a.salle, missionRef });
+  return out;
 }
 
 export default async function SurveillantsPage() {
-  const [surveillants, affectations, invitations] = await Promise.all([
-    getSurveillants(), getAffectations(), getInvitationStatuses(),
+  const [surveillants, affectations, missions, invitations] = await Promise.all([
+    getSurveillants(),
+    getAffectations(),
+    getMissions(),
+    getInvitationStatuses(),
   ]);
 
-  // Salles où chaque surveillant est déjà affecté (cross-check à l'import).
+  // Mission active : même priorité que le shell (En cours → Validée → Planifiée).
+  const active =
+    missions.find((m) => m.statut === "En cours") ??
+    missions.find((m) => m.statut === "Validée") ??
+    missions.find((m) => m.statut === "Planifiée") ??
+    missions[0] ?? null;
+
+  const missionAffectations = active ? affectations.filter((a) => a.missionId === active.id) : [];
+
+  // Index utiles.
+  const portailById = new Map<number, PortailStatut>(invitations.map((i) => [i.id, i.statut]));
+  const heuresById = new Map<number, number>();
+  const creneauxById = new Map<number, CreneauLigne[]>();
+  const affecteIds = new Set<number>();
+  for (const a of missionAffectations) {
+    heuresById.set(a.surveillantId, (heuresById.get(a.surveillantId) ?? 0) + heuresAffectation(a));
+    const prev = creneauxById.get(a.surveillantId) ?? [];
+    creneauxById.set(a.surveillantId, [...prev, ...creneauxDe(a, active?.reference)]);
+    if (aUnCreneau(a)) affecteIds.add(a.surveillantId);
+  }
+
+  // Lignes enrichies.
+  const rows: SurvRow[] = surveillants.map((s) => ({
+    ...s,
+    portail: portailById.get(s.id) ?? "non_invite",
+    missionClient: affecteIds.has(s.id) && active ? active.client : null,
+    heuresPlanifiees: Math.round(heuresById.get(s.id) ?? 0),
+    creneaux: creneauxById.get(s.id) ?? [],
+  }));
+
+  // KPIs de la mission active.
+  const kpis = computeMissionKpis({
+    missionRequis: active?.nbSurveillants ?? 0,
+    affectations: missionAffectations,
+    surveillants,
+    seuilSurcharge: SEUIL_SURCHARGE_H,
+  });
+
+  const mission: MissionInfo | null = active
+    ? {
+        client: active.client,
+        dateLabel: dateFR(active.dateMission),
+        session: active.session,
+        reference: active.reference,
+        nbSalles: active.nbSalles,
+        jourISO: active.dateMission,
+      }
+    : null;
+
+  // Mois par défaut du calendrier : celui de la mission active, sinon le mois courant.
+  const ref = active?.dateMission ? new Date(active.dateMission + "T00:00:00") : new Date();
+  const defaultAnnee = ref.getFullYear();
+  const defaultMois = ref.getMonth();
+  const aujourdhuiISO = new Date().toISOString().slice(0, 10);
+
+  // Salles déjà affectées (cross-check à l'import).
   const sallesBySurvId = new Map<number, Set<string>>();
   for (const a of affectations) {
     if (!a.salle) continue;
@@ -39,71 +96,28 @@ export default async function SurveillantsPage() {
   const assignments = surveillants
     .map((s) => ({ nom: s.nom, salles: [...(sallesBySurvId.get(s.id) ?? [])] }))
     .filter((a) => a.salles.length > 0);
-  const dispo = surveillants.filter((s) => s.statut === "Disponible" || s.statut === "Planifié");
-  const heuresMoy = surveillants.length
-    ? Math.round(surveillants.reduce((s, x) => s + x.heures, 0) / surveillants.length)
-    : 0;
-  const noteMoy = surveillants.length
-    ? surveillants.reduce((s, x) => s + x.note, 0) / surveillants.length
-    : 0;
-
-  const surcharges = surveillants.filter((s) => s.heures >= SEUIL_SURCHARGE_H);
-  const coordinateurs = surveillants.filter((s) => s.role.toLowerCase().includes("coordinat"));
-  const pmr = surveillants.filter((s) => s.role.toLowerCase().includes("pmr") && (s.statut === "Disponible" || s.statut === "Planifié"));
-  const noyau = [...dispo].sort((a, b) => b.note - a.note).slice(0, 3);
 
   return (
-    <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
-      <PageHeader page="Surveillants" subtitle="Annuaire, rôles et disponibilités de l&apos;équipe" />
+    <div className={OPS_CONTENT_CLASS}>
+      <SurveillantsWorkspace
+        rows={rows}
+        affectations={missionAffectations}
+        kpis={kpis}
+        mission={mission}
+        defaultAnnee={defaultAnnee}
+        defaultMois={defaultMois}
+        aujourdhuiISO={aujourdhuiISO}
+      />
+
+      {/* Import / Export Excel-CSV (après les alertes) */}
+      <div id="import-export">
+        <SurveillantsImportExport surveillants={surveillants} assignments={assignments} />
+      </div>
 
       {/* Accès portail surveillant — invitations */}
-      <InvitationsPanel rows={invitations} />
-
-      {/* Import / Export CSV */}
-      <SurveillantsImportExport surveillants={surveillants} assignments={assignments} />
-
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-        <Kpi variant="vivid" accent="teal" label="Total" value={String(surveillants.length)} sub="surveillants" icon={<Users className="w-4 h-4" />} />
-        <Kpi variant="vivid" accent="emerald" label="Disponibles" value={String(dispo.length)} sub="mobilisables ce mois" icon={<UserCheck className="w-4 h-4" />} />
-        <Kpi variant="vivid" accent="amber" label="Heures moy." value={`${heuresMoy}h`} sub="par surveillant" icon={<Clock className="w-4 h-4" />} />
-        <Kpi variant="vivid" accent="indigo" label="Note moy." value={`${noteMoy.toFixed(1)} / 5`} sub="satisfaction" icon={<Star className="w-4 h-4" />} />
+      <div id="invitations-panel">
+        <InvitationsPanel rows={invitations} />
       </div>
-
-      {/* Pilotage de l'équipe */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm mb-5 overflow-hidden">
-        <div className="px-5 pt-4.5 pb-1 flex items-baseline justify-between">
-          <div>
-            <h2 className="text-[14px] font-bold text-gray-900">Pilotage de l&apos;équipe</h2>
-            <p className="text-[12px] text-gray-400">Points de vigilance pour affecter les bons profils aux prochaines missions</p>
-          </div>
-          <span className="text-[10.5px] font-bold uppercase tracking-wide border border-gray-200 text-gray-500 rounded-full px-2.5 py-1">
-            {surveillants.length - dispo.length} indisponible{surveillants.length - dispo.length > 1 ? "s" : ""}
-          </span>
-        </div>
-        <div className="flex flex-wrap divide-x divide-gray-100">
-          <PilotageCard
-            tag="Risque fatigue"
-            titre="Charge à équilibrer"
-            detail={surcharges.length ? `${surcharges.map((s) => s.nom).join(", ")} ≥ ${SEUIL_SURCHARGE_H}h planifiées` : "Aucune surcharge détectée"}
-            icon={<AlertTriangle className="w-4 h-4" />}
-          />
-          <PilotageCard
-            tag="Rôles clés"
-            titre="Couverture spécialisée"
-            detail={`${coordinateurs.length} coordinateur${coordinateurs.length > 1 ? "s" : ""} · ${pmr.length} PMR disponible${pmr.length > 1 ? "s" : ""}`}
-            icon={<Shield className="w-4 h-4" />}
-          />
-          <PilotageCard
-            tag={`${dispo.length}/${surveillants.length} disponibles`}
-            titre="Noyau mobilisable"
-            detail={noyau.map((s) => s.nom.split(" ")[0]).join(", ") || "—"}
-            icon={<UsersRound className="w-4 h-4" />}
-          />
-        </div>
-      </div>
-
-      <SurveillantsTable surveillants={surveillants} />
     </div>
   );
 }

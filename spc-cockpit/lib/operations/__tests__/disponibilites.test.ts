@@ -1,0 +1,184 @@
+import { describe, it, expect } from "vitest";
+import {
+  dureeCreneauHeures,
+  heuresAffectation,
+  aUnCreneau,
+  computeMissionKpis,
+  buildGrilleDispo,
+  besoinsParJour,
+  couvertureMoyenne,
+} from "../disponibilites";
+import type { Affectation, Surveillant } from "../types";
+
+function surv(partial: Partial<Surveillant> & { id: number }): Surveillant {
+  return {
+    nom: `Surv ${partial.id}`,
+    role: "Surveillant salle",
+    statut: "Disponible",
+    nbExamens: 0,
+    heures: 0,
+    note: 4.5,
+    tauxHoraire: 18,
+    ...partial,
+  };
+}
+
+function aff(partial: Partial<Affectation> & { id: number; surveillantId: number }): Affectation {
+  return {
+    missionId: 5,
+    roleMission: "Surveillant salle",
+    statut: "Confirmé",
+    matin: false,
+    apm: false,
+    presence: "En attente",
+    ...partial,
+  };
+}
+
+describe("durée & heures d'affectation", () => {
+  it("calcule la durée d'un créneau (cas de référence 08:30→11:30 = 3h)", () => {
+    expect(dureeCreneauHeures("08:30", "11:30")).toBe(3);
+  });
+
+  it("retourne 0 pour un créneau invalide ou négatif", () => {
+    expect(dureeCreneauHeures("14:00", "13:00")).toBe(0);
+    expect(dureeCreneauHeures("08:00", undefined)).toBe(0);
+    expect(dureeCreneauHeures("bla", "10:00")).toBe(0);
+  });
+
+  it("somme matin + après-midi d'une affectation", () => {
+    const a = aff({ id: 1, surveillantId: 1, matin: true, matinDebut: "08:00", matinFin: "13:00", apm: true, apmDebut: "13:30", apmFin: "18:00" });
+    expect(heuresAffectation(a)).toBe(9.5);
+  });
+
+  it("utilise les créneaux multiples si présents (table enfant §29)", () => {
+    const a = aff({
+      id: 1,
+      surveillantId: 1,
+      matin: true,
+      matinCreneaux: [{ debut: "08:00", fin: "10:00" }, { debut: "10:30", fin: "12:00" }],
+    });
+    expect(heuresAffectation(a)).toBe(3.5);
+  });
+
+  it("détecte une affectation avec au moins un créneau", () => {
+    expect(aUnCreneau(aff({ id: 1, surveillantId: 1, matin: true }))).toBe(true);
+    expect(aUnCreneau(aff({ id: 2, surveillantId: 2 }))).toBe(false);
+  });
+});
+
+describe("computeMissionKpis", () => {
+  const surveillants = [
+    surv({ id: 1, heures: 108 }), // surcharge
+    surv({ id: 2, heures: 61 }),
+    surv({ id: 3, heures: 22 }),
+  ];
+  const affectations = [
+    aff({ id: 1, surveillantId: 1, matin: true, matinDebut: "08:00", matinFin: "12:00" }), // 4h
+    aff({ id: 2, surveillantId: 2, apm: true, apmDebut: "14:00", apmFin: "18:00" }), // 4h
+    aff({ id: 3, surveillantId: 3 }), // pas de créneau → non affecté
+  ];
+
+  it("compte les affectés, le manque et la couverture", () => {
+    const k = computeMissionKpis({ missionRequis: 4, affectations, surveillants, seuilSurcharge: 100 });
+    expect(k.affectes).toBe(2);
+    expect(k.requis).toBe(4);
+    expect(k.postesRestants).toBe(2);
+    expect(k.couverturePct).toBe(50);
+    expect(k.heuresPlanifiees).toBe(8);
+    expect(k.nbCreneaux).toBe(2);
+  });
+
+  it("le besoin ne descend jamais sous le nombre d'affectés", () => {
+    const k = computeMissionKpis({ missionRequis: 1, affectations, surveillants, seuilSurcharge: 100 });
+    expect(k.requis).toBe(2);
+    expect(k.postesRestants).toBe(0);
+    expect(k.couverturePct).toBe(100);
+  });
+
+  it("remonte le risque de fatigue (≥ seuil)", () => {
+    const k = computeMissionKpis({ missionRequis: 4, affectations, surveillants, seuilSurcharge: 100 });
+    expect(k.risqueFatigue).toBe(1);
+    expect(k.fatigueNoms).toEqual(["Surv 1"]);
+  });
+});
+
+describe("buildGrilleDispo", () => {
+  const surveillants = [
+    surv({ id: 1, statut: "Disponible" }),
+    surv({ id: 2, statut: "Indisponible" }),
+    surv({ id: 3, statut: "Annulé" }),
+  ];
+
+  it("produit une ligne par surveillant et une colonne par jour du mois", () => {
+    const g = buildGrilleDispo({ surveillants, affectations: [], annee: 2026, mois: 6 }); // juillet = 31 jours
+    expect(g.lignes).toHaveLength(3);
+    expect(g.jours).toHaveLength(31);
+    expect(g.lignes[0].cells).toHaveLength(31);
+  });
+
+  it("marque les week-ends non ouvrés", () => {
+    // 2026-07-04 est un samedi, 2026-07-05 un dimanche.
+    const g = buildGrilleDispo({ surveillants, affectations: [], annee: 2026, mois: 6 });
+    const sam = g.jours.find((j) => j.jour === 4)!;
+    const dim = g.jours.find((j) => j.jour === 5)!;
+    expect(sam.weekend).toBe(true);
+    expect(dim.weekend).toBe(true);
+    expect(g.lignes[0].cells[3].type).toBe("non-ouvre");
+  });
+
+  it("un surveillant annulé est indisponible tous les jours ouvrés", () => {
+    const g = buildGrilleDispo({ surveillants, affectations: [], annee: 2026, mois: 6 });
+    const ligneAnnule = g.lignes[2];
+    const ouvres = ligneAnnule.cells.filter((c) => !c.weekend);
+    expect(ouvres.every((c) => c.type === "indispo")).toBe(true);
+  });
+
+  it("est déterministe (même entrée → même sortie)", () => {
+    const a = buildGrilleDispo({ surveillants, affectations: [], annee: 2026, mois: 6 });
+    const b = buildGrilleDispo({ surveillants, affectations: [], annee: 2026, mois: 6 });
+    expect(JSON.stringify(a.lignes)).toBe(JSON.stringify(b.lignes));
+  });
+
+  it("écrase le jour de mission avec les heures réelles de l'affectation", () => {
+    const affectations = [
+      aff({ id: 1, surveillantId: 1, matin: true, matinDebut: "08:00", matinFin: "14:00" }), // 6h
+    ];
+    const g = buildGrilleDispo({
+      surveillants,
+      affectations,
+      annee: 2026,
+      mois: 6,
+      missionJourISO: "2026-07-08",
+    });
+    const cell = g.lignes[0].cells.find((c) => c.jour === 8)!;
+    expect(cell.type).toBe("affecte");
+    expect(cell.heures).toBe(6);
+  });
+});
+
+describe("besoinsParJour & couvertureMoyenne", () => {
+  const surveillants = [surv({ id: 1, statut: "Planifié" }), surv({ id: 2, statut: "Disponible" })];
+  const g = buildGrilleDispo({ surveillants, affectations: [], annee: 2026, mois: 6 });
+
+  it("agrège planifiés/confirmés/heures par jour", () => {
+    const jours = besoinsParJour(g);
+    expect(jours).toHaveLength(31);
+    // Les week-ends n'ont aucune charge.
+    const weekend = jours.find((j) => j.weekend)!;
+    expect(weekend.planifies).toBe(0);
+    expect(weekend.heures).toBe(0);
+  });
+
+  it("confirmés ≤ planifiés chaque jour", () => {
+    for (const j of besoinsParJour(g)) {
+      expect(j.confirmes).toBeLessThanOrEqual(j.planifies);
+    }
+  });
+
+  it("retourne une couverture moyenne entre 0 et 100", () => {
+    const cov = couvertureMoyenne(besoinsParJour(g));
+    expect(cov).toBeGreaterThanOrEqual(0);
+    expect(cov).toBeLessThanOrEqual(100);
+  });
+});
