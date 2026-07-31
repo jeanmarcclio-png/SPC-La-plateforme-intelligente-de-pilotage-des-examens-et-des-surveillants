@@ -2,29 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Gauge, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, Gauge, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert, Plus, FilePlus2 } from "lucide-react";
 import { isNavActive } from "@/lib/operations/nav";
 
 export const NAV = [
-  { href: "/operations",                label: "Dashboard",        icon: <LayoutDashboard className="w-4 h-4" /> },
-  { href: "/operations/cockpit",        label: "Cockpit",          icon: <Gauge className="w-4 h-4" /> },
-  { href: "/operations/missions",       label: "Missions",         icon: <Briefcase className="w-4 h-4" /> },
-  { href: "/operations/surveillants",   label: "Surveillants",     icon: <Users className="w-4 h-4" /> },
-  { href: "/operations/planification",  label: "Planification",    icon: <CalendarClock className="w-4 h-4" /> },
-  { href: "/operations/salles",         label: "Salles",           icon: <DoorOpen className="w-4 h-4" /> },
-  { href: "/operations/pmr",            label: "PMR & Tiers-temps", icon: <Accessibility className="w-4 h-4" /> },
-  { href: "/operations/devis",          label: "Devis",            icon: <FileText className="w-4 h-4" /> },
-  { href: "/operations/facturation",    label: "Facturation",      icon: <Euro className="w-4 h-4" /> },
-  { href: "/operations/presence",       label: "Présence",         icon: <ClipboardCheck className="w-4 h-4" /> },
-  { href: "/operations/incidents",      label: "Incidents",        icon: <AlertTriangle className="w-4 h-4" /> },
-  { href: "/operations/rapports",       label: "Rapports",         icon: <BarChart3 className="w-4 h-4" /> },
-  { href: "/operations/risques",        label: "Risques IA",       icon: <ShieldAlert className="w-4 h-4" /> },
+  { href: "/operations",                label: "Dashboard",           icon: <LayoutDashboard className="w-4 h-4" /> },
+  { href: "/operations/cockpit",        label: "Cockpit opérationnel", icon: <Gauge className="w-4 h-4" /> },
+  { href: "/operations/missions",       label: "Missions",            icon: <Briefcase className="w-4 h-4" /> },
+  { href: "/operations/surveillants",   label: "Surveillants",        icon: <Users className="w-4 h-4" /> },
+  { href: "/operations/planification",  label: "Planification",       icon: <CalendarClock className="w-4 h-4" /> },
+  { href: "/operations/salles",         label: "Salles",              icon: <DoorOpen className="w-4 h-4" /> },
+  { href: "/operations/pmr",            label: "PMR & Tiers-temps",   icon: <Accessibility className="w-4 h-4" /> },
+  { href: "/operations/devis",          label: "Devis",               icon: <FileText className="w-4 h-4" /> },
+  { href: "/operations/facturation",    label: "Facturation",         icon: <Euro className="w-4 h-4" /> },
+  { href: "/operations/presence",       label: "Présence",            icon: <ClipboardCheck className="w-4 h-4" /> },
+  { href: "/operations/incidents",      label: "Incidents",           icon: <AlertTriangle className="w-4 h-4" /> },
+  { href: "/operations/rapports",       label: "Rapports",            icon: <BarChart3 className="w-4 h-4" /> },
+  { href: "/operations/risques",        label: "Risques IA",          icon: <ShieldAlert className="w-4 h-4" /> },
 ];
 
-export interface ActiveMissionInfo {
-  client: string;
-  dateLabel: string;
-}
+const RACCOURCIS = [
+  { href: "/operations/missions",       label: "Nouvelle mission",    icon: <Plus className="w-4 h-4" /> },
+  { href: "/operations/planification",  label: "Planifier une équipe", icon: <Users className="w-4 h-4" /> },
+  { href: "/operations/salles",         label: "Gérer les salles",    icon: <DoorOpen className="w-4 h-4" /> },
+  { href: "/operations/devis",          label: "Créer un devis",      icon: <FilePlus2 className="w-4 h-4" /> },
+];
 
 function LogoBlock() {
   return (
@@ -43,40 +45,22 @@ function LogoBlock() {
   );
 }
 
-export function OpsSidebar({ activeMission }: { activeMission?: ActiveMissionInfo | null }) {
+export function OpsSidebar({ openIncidents = 0 }: { openIncidents?: number }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex print:!hidden w-[236px] flex-shrink-0 flex-col" style={{ background: "linear-gradient(180deg, #0F2942 0%, #0A1F33 100%)" }}>
+    <aside className="hidden md:flex print:!hidden w-[224px] flex-shrink-0 flex-col" style={{ background: "linear-gradient(180deg, #0F2942 0%, #0A1F33 100%)" }}>
       {/* Logo */}
       <div className="px-4 pt-5 pb-4">
         <LogoBlock />
       </div>
-
-      {/* Mission active */}
-      {activeMission && (
-        <Link
-          href="/operations/planification"
-          className="mx-3 mb-4 rounded-2xl bg-white/[0.05] ring-1 ring-inset ring-white/10 px-3.5 py-3 flex items-center justify-between gap-2 hover:bg-white/[0.09] hover:ring-white/20 transition-colors shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-        >
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
-              <span className="text-[10px] font-bold uppercase tracking-[1.2px] text-[#93a7bd]">Mission active</span>
-            </div>
-            <div className="text-[12.5px] font-bold text-white mt-1 truncate">
-              {activeMission.client} — {activeMission.dateLabel}
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-[#8fa3b8] flex-shrink-0" />
-        </Link>
-      )}
 
       {/* Nav */}
       <div className="px-4 text-[10px] font-bold uppercase tracking-[1.5px] text-[#5f7a94] mb-1.5">Navigation</div>
       <nav className="flex-1 overflow-y-auto px-3 space-y-0.5">
         {NAV.map((item) => {
           const active = isNavActive(pathname, item.href);
+          const showBadge = item.href === "/operations/incidents" && openIncidents > 0;
           return (
             <Link
               key={item.href}
@@ -89,10 +73,29 @@ export function OpsSidebar({ activeMission }: { activeMission?: ActiveMissionInf
               }`}
             >
               <span className="flex items-center gap-2.5">{item.icon}{item.label}</span>
-              {active && <ChevronRight className="w-3.5 h-3.5 text-[#0d2137]/40" />}
+              {showBadge ? (
+                <span aria-label={`${openIncidents} incident(s) ouvert(s)`} className="min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {openIncidents > 9 ? "9+" : openIncidents}
+                </span>
+              ) : (
+                active && <ChevronRight className="w-3.5 h-3.5 text-[#0d2137]/40" />
+              )}
             </Link>
           );
         })}
+
+        {/* Raccourcis */}
+        <div className="px-1 pt-4 pb-1.5 text-[10px] font-bold uppercase tracking-[1.5px] text-[#5f7a94]">Raccourcis</div>
+        {RACCOURCIS.map((item) => (
+          <Link
+            key={`rac-${item.label}`}
+            href={item.href}
+            className="flex items-center gap-2.5 rounded-xl px-3 py-[9px] text-[12.5px] text-[#8fa3b8] hover:bg-white/[0.06] hover:text-[#d6e2ee] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          >
+            <span className="text-[#5f7a94]">{item.icon}</span>
+            {item.label}
+          </Link>
+        ))}
       </nav>
 
       {/* Retour cockpit commercial */}
