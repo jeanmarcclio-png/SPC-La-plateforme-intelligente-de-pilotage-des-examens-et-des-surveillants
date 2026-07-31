@@ -1,0 +1,48 @@
+import { describe, it, expect } from "vitest";
+import { buildCockpitView, DEMO_COCKPIT } from "../cockpit";
+import type { Affectation, Mission, Salle, Surveillant } from "../types";
+
+const mission: Mission = {
+  id: 1, reference: "EX-2026-041", client: "ICP Paris", dateMission: "2026-07-08",
+  type: "Examen", nbSalles: 4, nbSurveillants: 4, montantHT: 1000, statut: "En cours",
+};
+const surveillants: Surveillant[] = [
+  { id: 10, nom: "Marie Laroche", role: "Coordinatrice", statut: "Disponible", nbExamens: 3, heures: 20, note: 4.5, tauxHoraire: 30 },
+  { id: 11, nom: "Karim Haddad", role: "Surveillant salle", statut: "Disponible", nbExamens: 2, heures: 15, note: 4, tauxHoraire: 30 },
+];
+const salles: Salle[] = [
+  { id: 1, nom: "A21", capacite: 30, etudiants: 25, nbSurveillants: 1, pmr: false, tiersTemps: false },
+];
+const affectations: Affectation[] = [
+  { id: 1, missionId: 1, surveillantId: 10, statut: "Confirmée", salle: "A21", matin: true, matinDebut: "08:30", matinFin: "14:30", apm: false, presence: "Présent" },
+  { id: 2, missionId: 1, surveillantId: 11, statut: "Confirmée", salle: "A22", matin: true, matinDebut: "08:30", matinFin: "13:30", apm: false, presence: "Absent" },
+];
+
+describe("buildCockpitView", () => {
+  it("retombe sur le jeu de démonstration sans mission active", () => {
+    const v = buildCockpitView({ missions: [], affectations: [], surveillants: [], salles: [] });
+    expect(v.demo).toBe(true);
+    expect(v).toBe(DEMO_COCKPIT);
+  });
+
+  it("dérive couverture, sessions et statuts depuis les données réelles", () => {
+    const v = buildCockpitView({ missions: [mission], affectations, surveillants, salles });
+    expect(v.demo).toBe(false);
+    // 2 surveillants affectés sur 4 requis → 50 %
+    expect(v.kpis.couverturePct).toBe(50);
+    expect(v.kpis.postesCouverts).toBe(2);
+    expect(v.kpis.postesTotal).toBe(4);
+    // 1 présent sur 2 → 50 %
+    expect(v.kpis.confirmationsPct).toBe(50);
+    // Karim est « Absent » → statut En retard
+    const karim = v.sessions.find((s) => s.nom === "Karim Haddad");
+    expect(karim?.statut).toBe("En retard");
+    // Marie est coordinatrice, présente → conforme
+    const marie = v.sessions.find((s) => s.nom === "Marie Laroche");
+    expect(marie?.coord).toBe(true);
+    expect(marie?.statut).toBe("Conforme");
+    // score borné 0–10
+    expect(v.kpis.scoreIA).toBeGreaterThanOrEqual(0);
+    expect(v.kpis.scoreIA).toBeLessThanOrEqual(10);
+  });
+});
