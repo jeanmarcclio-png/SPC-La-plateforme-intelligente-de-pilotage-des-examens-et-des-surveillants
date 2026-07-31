@@ -35,7 +35,10 @@ const HACHURE: React.CSSProperties = {
 function cellText(c: CelluleDispo): string {
   if (c.type === "non-ouvre") return "";
   if (c.type === "indispo") return "✕";
-  return c.heures > 0 ? `${c.heures}h` : "";
+  if (c.heures > 0) return `${c.heures}h`;
+  if (c.type === "demi") return "½";
+  if (c.type === "libre") return "·"; // disponible, rien de planifié
+  return "";
 }
 
 function typeLabel(type: TypeCellule): string {
@@ -76,7 +79,7 @@ export function DispoCalendar({
           <h2 className="text-[15px] font-bold text-slate-900">
             Disponibilités — {MOIS_FR[grille.mois]} {grille.annee}
           </h2>
-          <p className="text-[12px] text-slate-400">Charge planifiée par jour et par surveillant</p>
+          <p className="text-[12px] text-slate-400">Disponibilité déclarée et affectations réelles par jour</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-0.5">

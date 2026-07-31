@@ -129,47 +129,42 @@ export interface GrilleDispo {
   lignes: LigneDispo[];
 }
 
-// Hash 32 bits déterministe → réel dans [0,1). Sert de graine stable de
-// projection : aucun aléa, aucun Date.now(), reproductible en test.
-function hash01(a: number, b: number): number {
-  let h = (Math.imul(a ^ 0x9e3779b9, 2654435761) ^ Math.imul(b + 1, 40503)) >>> 0;
-  h ^= h >>> 15;
-  h = Math.imul(h, 2246822507) >>> 0;
-  h ^= h >>> 13;
-  return (h >>> 0) / 4294967296;
+// Interprète un champ de disponibilité texte libre (« Oui », « Non »,
+// « 08:00–13:00 », «  »). Retourne true = dispo · false = indispo · null = inconnu.
+function dispoValeur(txt?: string): boolean | null {
+  if (txt == null || txt.trim() === "") return null;
+  return /\b(non|indispo|indisponible|absent|no|aucune?)\b/i.test(txt) ? false : true;
 }
 
-function celluleProjetee(s: Surveillant, jour: number): { type: TypeCellule; heures: number } {
-  if (s.statut === "Annulé") return { type: "indispo", heures: 0 };
-  const r = hash01(s.id, jour);
-  if (s.statut === "Indisponible") {
-    return r < 0.75 ? { type: "indispo", heures: 0 } : { type: "libre", heures: 0 };
-  }
-  // Disponible / Planifié : majorité de journées pleines, quelques demi-journées,
-  // rares indisponibilités.
-  if (r < 0.1) return { type: "indispo", heures: 0 };
-  if (r < 0.28) return { type: "demi", heures: 4 };
-  const full = hash01(s.id, jour + 100);
-  const heures = full < 0.6 ? 7 : 8;
-  // « Planifié » = déjà engagé sur des sessions → affecté (bleu) ; « Disponible »
-  // = capacité libre (vert).
-  return { type: s.statut === "Planifié" ? "affecte" : "libre", heures };
+// Cellule « de base » d'un jour ouvré ordinaire (sans affectation réelle) :
+// dérivée UNIQUEMENT du statut et des disponibilités déclarées. Aucune heure
+// inventée — la charge chiffrée ne provient que des affectations réelles.
+function celluleBase(s: Surveillant): TypeCellule {
+  if (s.statut === "Annulé" || s.statut === "Indisponible") return "indispo";
+  const demi = [dispoValeur(s.dispoMatin), dispoValeur(s.dispoApm)];
+  const off = demi.filter((v) => v === false).length;
+  if (off === 2) return "indispo"; // matin ET après-midi indisponibles
+  if (off === 1) return "demi"; // une seule demi-journée indisponible
+  return "libre"; // disponible (ou disponibilité non renseignée)
 }
 
 /**
- * Construit la grille mensuelle. Les affectations réelles tombant le jour de la
- * mission (missionJourISO) écrasent la projection : bleu « affecté » + heures
- * réelles calculées depuis les créneaux.
+ * Construit la grille mensuelle à partir des DONNÉES RÉELLES :
+ *  - les affectations (toutes missions) tombant dans le mois peignent le jour
+ *    correspondant en « affecté » (bleu) avec les heures réelles des créneaux ;
+ *  - les autres jours ouvrés reflètent la disponibilité déclarée (statut +
+ *    dispoMatin/dispoApm) sans charge chiffrée inventée.
+ * `missionDates` mappe missionId → date ISO (yyyy-mm-dd) de la mission.
  */
 export function buildGrilleDispo(opts: {
   surveillants: Surveillant[];
   affectations: Affectation[];
+  missionDates?: Record<number, string | undefined>;
   annee: number;
   mois: number; // 0..11
-  missionJourISO?: string;
   aujourdhuiISO?: string;
 }): GrilleDispo {
-  const { surveillants, affectations, annee, mois } = opts;
+  const { surveillants, affectations, missionDates = {}, annee, mois } = opts;
   const nbJours = new Date(annee, mois + 1, 0).getDate();
 
   const today = opts.aujourdhuiISO ? parseJour(opts.aujourdhuiISO, annee, mois) : null;
@@ -179,32 +174,31 @@ export function buildGrilleDispo(opts: {
     return { jour, dow, weekend: dow === 0 || dow === 6, aujourdhui: today === jour };
   });
 
-  // Heures réelles par surveillant le jour de la mission (override).
-  const missionJour = opts.missionJourISO ? parseJour(opts.missionJourISO, annee, mois) : null;
-  const heuresReellesJourMission = new Map<number, number>();
-  if (missionJour != null) {
-    for (const a of affectations) {
-      if (!aUnCreneau(a)) continue;
-      heuresReellesJourMission.set(
-        a.surveillantId,
-        (heuresReellesJourMission.get(a.surveillantId) ?? 0) + heuresAffectation(a),
-      );
-    }
+  // Heures réelles par (surveillant, jour) issues des affectations du mois.
+  // Clé « surveillantId:jour » → heures cumulées.
+  const heuresParSurvJour = new Map<string, number>();
+  for (const a of affectations) {
+    if (!aUnCreneau(a)) continue;
+    const jour = parseJour(missionDates[a.missionId] ?? "", annee, mois);
+    if (jour == null) continue;
+    const key = `${a.surveillantId}:${jour}`;
+    heuresParSurvJour.set(key, (heuresParSurvJour.get(key) ?? 0) + heuresAffectation(a));
   }
 
   const lignes: LigneDispo[] = surveillants.map((s) => {
+    const base = celluleBase(s);
     let total = 0;
     const cells: CelluleDispo[] = jours.map((j) => {
       if (j.weekend) return { jour: j.jour, weekend: true, type: "non-ouvre" as const, heures: 0, aujourdhui: j.aujourdhui };
+      const heuresReelles = heuresParSurvJour.get(`${s.id}:${j.jour}`);
       let type: TypeCellule;
       let heures: number;
-      if (missionJour === j.jour && heuresReellesJourMission.has(s.id)) {
+      if (heuresReelles != null && heuresReelles > 0) {
         type = "affecte";
-        heures = Math.round(heuresReellesJourMission.get(s.id)!);
+        heures = Math.round(heuresReelles);
       } else {
-        const p = celluleProjetee(s, j.jour);
-        type = p.type;
-        heures = p.heures;
+        type = base;
+        heures = 0;
       }
       total += heures;
       return { jour: j.jour, weekend: false, type, heures, aujourdhui: j.aujourdhui };
@@ -227,37 +221,37 @@ function parseJour(iso: string, annee: number, mois: number): number | null {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Agrégat « présence planifiée par jour » (graphe latéral)
+// Agrégat « disponibilité par jour » (graphe latéral)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface JourBesoin {
   jour: number;
   weekend: boolean;
-  planifies: number; // surveillants avec une charge > 0
-  confirmes: number; // surveillants « affecté » (bleu)
-  heures: number; // Σ heures planifiées du jour
+  disponibles: number; // surveillants mobilisables ce jour (libre + demi + affecté)
+  affectes: number; // surveillants réellement affectés (bleu)
+  heures: number; // Σ heures réelles du jour
 }
 
 export function besoinsParJour(grille: GrilleDispo): JourBesoin[] {
   return grille.jours.map((j, idx) => {
-    let planifies = 0;
-    let confirmes = 0;
+    let disponibles = 0;
+    let affectes = 0;
     let heures = 0;
     for (const ligne of grille.lignes) {
       const c = ligne.cells[idx];
       if (!c) continue;
-      if (c.heures > 0) planifies += 1;
-      if (c.type === "affecte") confirmes += 1;
+      if (c.type === "libre" || c.type === "demi" || c.type === "affecte") disponibles += 1;
+      if (c.type === "affecte") affectes += 1;
       heures += c.heures;
     }
-    return { jour: j.jour, weekend: j.weekend, planifies, confirmes, heures };
+    return { jour: j.jour, weekend: j.weekend, disponibles, affectes, heures };
   });
 }
 
-/** Couverture moyenne (confirmés / planifiés) sur les jours ouvrés, en %. */
+/** Couverture moyenne (affectés / disponibles) sur les jours ouvrés, en %. */
 export function couvertureMoyenne(jours: JourBesoin[]): number {
-  const ouvres = jours.filter((j) => !j.weekend && j.planifies > 0);
+  const ouvres = jours.filter((j) => !j.weekend && j.disponibles > 0);
   if (!ouvres.length) return 0;
-  const somme = ouvres.reduce((n, j) => n + j.confirmes / j.planifies, 0);
+  const somme = ouvres.reduce((n, j) => n + j.affectes / j.disponibles, 0);
   return Math.round((somme / ouvres.length) * 100);
 }

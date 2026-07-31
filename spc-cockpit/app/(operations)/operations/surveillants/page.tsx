@@ -85,6 +85,10 @@ export default async function SurveillantsPage() {
   const defaultMois = ref.getMonth();
   const aujourdhuiISO = new Date().toISOString().slice(0, 10);
 
+  // Dates de toutes les missions → placement réel des affectations dans le calendrier.
+  const missionDates: Record<number, string | undefined> = {};
+  for (const m of missions) missionDates[m.id] = m.dateMission;
+
   // Salles déjà affectées (cross-check à l'import).
   const sallesBySurvId = new Map<number, Set<string>>();
   for (const a of affectations) {
@@ -101,7 +105,8 @@ export default async function SurveillantsPage() {
     <div className={OPS_CONTENT_CLASS}>
       <SurveillantsWorkspace
         rows={rows}
-        affectations={missionAffectations}
+        affectations={affectations}
+        missionDates={missionDates}
         kpis={kpis}
         mission={mission}
         defaultAnnee={defaultAnnee}

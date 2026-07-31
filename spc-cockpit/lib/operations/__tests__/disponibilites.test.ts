@@ -127,11 +127,31 @@ describe("buildGrilleDispo", () => {
     expect(g.lignes[0].cells[3].type).toBe("non-ouvre");
   });
 
-  it("un surveillant annulé est indisponible tous les jours ouvrés", () => {
+  it("un surveillant annulé ou indisponible est indisponible tous les jours ouvrés", () => {
     const g = buildGrilleDispo({ surveillants, affectations: [], annee: 2026, mois: 6 });
-    const ligneAnnule = g.lignes[2];
-    const ouvres = ligneAnnule.cells.filter((c) => !c.weekend);
-    expect(ouvres.every((c) => c.type === "indispo")).toBe(true);
+    for (const idx of [1, 2]) { // id2 Indisponible, id3 Annulé
+      const ouvres = g.lignes[idx].cells.filter((c) => !c.weekend);
+      expect(ouvres.every((c) => c.type === "indispo")).toBe(true);
+    }
+  });
+
+  it("dérive la disponibilité déclarée : une demi-journée « Non » → demi", () => {
+    const survs = [surv({ id: 1, statut: "Disponible", dispoMatin: "08:00–13:00", dispoApm: "Non" })];
+    const g = buildGrilleDispo({ surveillants: survs, affectations: [], annee: 2026, mois: 6 });
+    const ouvre = g.lignes[0].cells.find((c) => !c.weekend)!;
+    expect(ouvre.type).toBe("demi");
+  });
+
+  it("les deux demi-journées « Non » → indisponible", () => {
+    const survs = [surv({ id: 1, statut: "Disponible", dispoMatin: "Non", dispoApm: "Non" })];
+    const g = buildGrilleDispo({ surveillants: survs, affectations: [], annee: 2026, mois: 6 });
+    const ouvre = g.lignes[0].cells.find((c) => !c.weekend)!;
+    expect(ouvre.type).toBe("indispo");
+  });
+
+  it("n'invente aucune heure hors des affectations réelles", () => {
+    const g = buildGrilleDispo({ surveillants, affectations: [], annee: 2026, mois: 6 });
+    expect(g.lignes.every((l) => l.totalHeures === 0)).toBe(true);
   });
 
   it("est déterministe (même entrée → même sortie)", () => {
@@ -140,20 +160,24 @@ describe("buildGrilleDispo", () => {
     expect(JSON.stringify(a.lignes)).toBe(JSON.stringify(b.lignes));
   });
 
-  it("écrase le jour de mission avec les heures réelles de l'affectation", () => {
+  it("peint le jour de mission avec les heures réelles de l'affectation", () => {
     const affectations = [
-      aff({ id: 1, surveillantId: 1, matin: true, matinDebut: "08:00", matinFin: "14:00" }), // 6h
+      aff({ id: 1, surveillantId: 1, missionId: 5, matin: true, matinDebut: "08:00", matinFin: "14:00" }), // 6h
     ];
     const g = buildGrilleDispo({
       surveillants,
       affectations,
+      missionDates: { 5: "2026-07-08" },
       annee: 2026,
       mois: 6,
-      missionJourISO: "2026-07-08",
     });
     const cell = g.lignes[0].cells.find((c) => c.jour === 8)!;
     expect(cell.type).toBe("affecte");
     expect(cell.heures).toBe(6);
+    // Un jour ordinaire sans affectation reste « libre » (0 h).
+    const autre = g.lignes[0].cells.find((c) => c.jour === 7)!;
+    expect(autre.type).toBe("libre");
+    expect(autre.heures).toBe(0);
   });
 });
 
@@ -161,18 +185,18 @@ describe("besoinsParJour & couvertureMoyenne", () => {
   const surveillants = [surv({ id: 1, statut: "Planifié" }), surv({ id: 2, statut: "Disponible" })];
   const g = buildGrilleDispo({ surveillants, affectations: [], annee: 2026, mois: 6 });
 
-  it("agrège planifiés/confirmés/heures par jour", () => {
+  it("agrège disponibles/affectés/heures par jour", () => {
     const jours = besoinsParJour(g);
     expect(jours).toHaveLength(31);
-    // Les week-ends n'ont aucune charge.
+    // Les week-ends n'ont aucune disponibilité.
     const weekend = jours.find((j) => j.weekend)!;
-    expect(weekend.planifies).toBe(0);
+    expect(weekend.disponibles).toBe(0);
     expect(weekend.heures).toBe(0);
   });
 
-  it("confirmés ≤ planifiés chaque jour", () => {
+  it("affectés ≤ disponibles chaque jour", () => {
     for (const j of besoinsParJour(g)) {
-      expect(j.confirmes).toBeLessThanOrEqual(j.planifies);
+      expect(j.affectes).toBeLessThanOrEqual(j.disponibles);
     }
   });
 

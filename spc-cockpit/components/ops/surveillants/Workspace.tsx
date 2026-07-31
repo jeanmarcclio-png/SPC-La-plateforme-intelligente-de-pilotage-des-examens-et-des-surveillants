@@ -85,6 +85,7 @@ function AlertCard({
 export function SurveillantsWorkspace({
   rows,
   affectations,
+  missionDates,
   kpis,
   mission,
   defaultAnnee,
@@ -93,6 +94,7 @@ export function SurveillantsWorkspace({
 }: {
   rows: SurvRow[];
   affectations: Affectation[];
+  missionDates: Record<number, string | undefined>;
   kpis: MissionKpis;
   mission: MissionInfo | null;
   defaultAnnee: number;
@@ -131,8 +133,8 @@ export function SurveillantsWorkspace({
   }, [rows, search, role, statut, tri]);
 
   const grille = useMemo(
-    () => buildGrilleDispo({ surveillants: filtered, affectations, annee, mois, missionJourISO: mission?.jourISO, aujourdhuiISO }),
-    [filtered, affectations, annee, mois, mission?.jourISO, aujourdhuiISO],
+    () => buildGrilleDispo({ surveillants: filtered, affectations, missionDates, annee, mois, aujourdhuiISO }),
+    [filtered, affectations, missionDates, annee, mois, aujourdhuiISO],
   );
   const jours = useMemo(() => besoinsParJour(grille), [grille]);
   const covMoy = useMemo(() => couvertureMoyenne(jours), [jours]);
