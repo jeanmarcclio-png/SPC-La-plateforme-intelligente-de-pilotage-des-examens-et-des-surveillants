@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Gauge, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, Gauge, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert, Inbox } from "lucide-react";
 import { isNavActive } from "@/lib/operations/nav";
 
 export const NAV = [
   { href: "/operations",                label: "Dashboard",        icon: <LayoutDashboard className="w-4 h-4" /> },
   { href: "/operations/cockpit",        label: "Cockpit",          icon: <Gauge className="w-4 h-4" /> },
+  { href: "/operations/demandes-client", label: "Demandes clients", icon: <Inbox className="w-4 h-4" /> },
   { href: "/operations/missions",       label: "Missions",         icon: <Briefcase className="w-4 h-4" /> },
   { href: "/operations/surveillants",   label: "Surveillants",     icon: <Users className="w-4 h-4" /> },
   { href: "/operations/planification",  label: "Planification",    icon: <CalendarClock className="w-4 h-4" /> },
