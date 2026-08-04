@@ -5,7 +5,6 @@ import type { Mission, Surveillant, Affectation, JournalEntry, StatutMission } f
 import { updateAffectation, addAffectation, deleteAffectation, type AffectationFields } from "@/app/actions/affectations";
 import { validerSession, updateMission, deleteMission } from "@/app/actions/missions";
 import { SurveillantPicker } from "@/components/ops/SurveillantPicker";
-import { Kpi } from "@/components/ops/Kpi";
 import { Button, ButtonLink } from "@/components/ops/Button";
 import { showToast } from "@/components/Toast";
 import { dateFR, euro } from "@/lib/operations/format";
@@ -17,8 +16,9 @@ import { parseTimeToMinutes, detectSupervisorConflicts, type SupervisorAssignmen
 import { statutOptions, estPlanifiable } from "@/lib/operations/mission-status";
 import { suggererSurveillants } from "@/lib/operations/suggestions";
 import {
-  AlertTriangle, Trash2, Check, ShieldCheck, Calendar, CalendarDays, CalendarCheck,
+  Trash2, Check, ShieldCheck, Calendar, CalendarDays, CalendarCheck,
   Download, Pencil, Plus, Send, Users, Clock, Search, ArrowRight, Sparkles,
+  List, Map as MapIcon, CalendarRange, MoreVertical, TrendingUp, Bell, Building2, Layers,
 } from "lucide-react";
 
 const ACCENT = "#2563eb";
@@ -192,6 +192,34 @@ const FILTERS: { key: QuickFilter; label: string }[] = [
   { key: "alertes", label: "Alertes" },
 ];
 
+// Surface de travail de la vue Planning opérationnel (§7.2). La vue Commandement
+// (en-tête + cartes + bandeau financier) reste toujours affichée au-dessus.
+type WorkspaceView = "liste" | "planning" | "gantt" | "carte";
+const VIEWS: { key: WorkspaceView; label: string; icon: React.ReactNode }[] = [
+  { key: "liste", label: "Liste", icon: <List className="w-3.5 h-3.5" aria-hidden /> },
+  { key: "planning", label: "Planning", icon: <CalendarDays className="w-3.5 h-3.5" aria-hidden /> },
+  { key: "gantt", label: "Gantt", icon: <CalendarRange className="w-3.5 h-3.5" aria-hidden /> },
+  { key: "carte", label: "Carte", icon: <MapIcon className="w-3.5 h-3.5" aria-hidden /> },
+];
+
+// Heures en français : « 66,25 h » (virgule décimale, jusqu'à 2 décimales).
+function heuresFR(h: number): string {
+  return `${h.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} h`;
+}
+
+/** Carte de commandement (bloc synthèse §6.2). */
+function CmdCard({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-4 flex flex-col">
+      <div className="flex items-center gap-2 mb-2">
+        <span aria-hidden className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center">{icon}</span>
+        <h2 className="text-[13px] font-bold text-gray-900">{title}</h2>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 export function PlanificationBoard({
   missions,
   surveillants,
@@ -216,6 +244,9 @@ export function PlanificationBoard({
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<QuickFilter>("all");
   const [highlightId, setHighlightId] = useState<number | null>(null);
+  const [view, setView] = useState<WorkspaceView>("liste");
+  const [journalOpen, setJournalOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const survById = useMemo(() => new Map(surveillants.map((s) => [s.id, s])), [surveillants]);
   const nonAffectes = surveillants.filter((s) => !rows.some((r) => r.surveillantId === s.id));
@@ -275,6 +306,7 @@ export function PlanificationBoard({
   const salles = new Set(rows.map((a) => stateOf(a).salle.trim()).filter(Boolean));
   const affectes = rows.filter((a) => { const r = stateOf(a); return r.matin.length > 0 || r.apm.length > 0; });
   const totalHeures = rows.reduce((s, a) => s + rowHours(stateOf(a)), 0);
+  const creneauxCount = rows.reduce((n, a) => { const r = stateOf(a); return n + r.matin.length + r.apm.length; }, 0);
 
   // Rentabilité de la session (§21) : CA vs coût estimé des surveillants.
   const rentabilite = mission
@@ -333,11 +365,6 @@ export function PlanificationBoard({
         nbAlertes: alertes.length,
       })
     : null;
-
-  // ---- Statistiques d'en-tête (toutes sessions) ----
-  const sessionsCreees = missions.length;
-  const sessionsTerminees = missions.filter((m) => m.statut === "Terminée").length;
-  const heuresAccumulees = affectations.reduce((s, a) => s + rowHours(toRowState(a)), 0);
 
   // ---- Recherche + filtres (n'affectent que l'affichage tableau/timeline) ----
   const visibleRows = rows.filter((a) => {
@@ -460,37 +487,153 @@ export function PlanificationBoard({
 
   return (
     <>
-      {/* Barre d'actions (haut de page) */}
-      <div className="flex items-center justify-end gap-2 mb-4 flex-wrap">
-        <Button variant="secondary" size="sm" onClick={exportSession} disabled={!mission}>
-          <Download className="w-3.5 h-3.5" aria-hidden />Exporter
-        </Button>
-        <Button variant="secondary" size="sm" onClick={scrollToTable} disabled={!mission}>
-          <Pencil className="w-3.5 h-3.5" aria-hidden />Modifier
-        </Button>
-        {validable && (
-          <Button variant="accent" size="sm" onClick={valider} disabled={pending} className="!bg-emerald-600 hover:!bg-emerald-700 focus-visible:!ring-emerald-400">
-            <ShieldCheck className="w-3.5 h-3.5" aria-hidden />Valider
-          </Button>
-        )}
-        <ButtonLink href="/operations/missions" variant="primary" size="sm">
-          <Plus className="w-3.5 h-3.5" aria-hidden />Nouvelle session
-        </ButtonLink>
-      </div>
+      {/* ── Vue Commandement — en-tête de mission (§6.1) ── */}
+      {mission && (() => {
+        const statutTone = mission.statut === "En cours"
+          ? "bg-emerald-50 text-emerald-700 ring-emerald-600/15"
+          : mission.statut === "Validée"
+            ? "bg-indigo-50 text-indigo-700 ring-indigo-600/15"
+            : "bg-sky-50 text-sky-700 ring-sky-600/15";
+        return (
+          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5 md:p-6 mb-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div className="min-w-0">
+                <div className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#1a6b7e]">Session principale</div>
+                <div className="flex items-center gap-2.5 mt-1 flex-wrap">
+                  <h1 className="text-[24px] md:text-[27px] font-extrabold text-gray-900 tracking-tight">{mission.client} — {dateFR(mission.dateMission)}</h1>
+                  <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${statutTone}`}><span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{mission.statut}</span>
+                </div>
+                <div className="flex items-center gap-3.5 mt-2 text-[12.5px] text-gray-500 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-gray-400" aria-hidden />{dateFR(mission.dateMission)}</span>
+                  <span className="inline-flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-gray-400" aria-hidden />{mission.client}</span>
+                  <span className="inline-flex items-center gap-1.5"><Layers className="w-3.5 h-3.5 text-gray-400" aria-hidden />{salles.size} salles</span>
+                  <span className="inline-flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-gray-400" aria-hidden />{creneauxCount} créneaux</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                {nonAffectes.length > 0 && <SurveillantPicker surveillants={nonAffectes} onSelect={add} disabled={pending} />}
+                <Button variant="secondary" onClick={convocations}><Send className="w-4 h-4" aria-hidden />Convocations</Button>
+                <Button variant="secondary" onClick={confirmerJ48}><CalendarCheck className="w-4 h-4" aria-hidden />Confirmer J-48</Button>
+                {validable && (
+                  <Button variant="accent" onClick={valider} disabled={pending} className="!bg-emerald-600 hover:!bg-emerald-700 focus-visible:!ring-emerald-400"><ShieldCheck className="w-4 h-4" aria-hidden />Valider la session</Button>
+                )}
+                <div className="relative">
+                  <button onClick={() => setMenuOpen((v) => !v)} aria-label="Plus d'actions" className="w-10 h-10 inline-flex items-center justify-center rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50"><MoreVertical className="w-4 h-4" aria-hidden /></button>
+                  {menuOpen && (
+                    <>
+                      <div className="fixed inset-0 z-20" onClick={() => setMenuOpen(false)} aria-hidden />
+                      <div className="absolute right-0 top-12 z-30 w-56 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden py-1">
+                        <button onClick={() => { setMenuOpen(false); exportSession(); }} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-[12.5px] text-gray-700 hover:bg-gray-50"><Download className="w-4 h-4 text-gray-400" aria-hidden />Exporter le planning</button>
+                        <button onClick={() => { setMenuOpen(false); scrollToTable(); }} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-[12.5px] text-gray-700 hover:bg-gray-50"><Pencil className="w-4 h-4 text-gray-400" aria-hidden />Modifier les affectations</button>
+                        <ButtonLink href="/operations/missions" variant="ghost" size="sm" className="!w-full !justify-start !px-3.5 !rounded-none !py-2.5"><Plus className="w-4 h-4 text-gray-400" aria-hidden />Nouvelle session</ButtonLink>
+                        <button onClick={() => { setMenuOpen(false); supprimer(); }} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-[12.5px] text-rose-600 hover:bg-rose-50"><Trash2 className="w-4 h-4" aria-hidden />Supprimer la session</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
-      {/* Cartes statistiques */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-        {/* Palette distribuée (indigo · bleu · vert sémantique · teal marque) :
-            la couleur est répartie, jamais concentrée sur une seule teinte. */}
-        <Kpi variant="vivid" label="Total surveillants" value={String(surveillants.length)} sub="dans l'annuaire" accent="indigo" icon={<Users className="w-4 h-4" />} />
-        <Kpi variant="vivid" label="Sessions créées" value={String(sessionsCreees)} sub="au total" accent="cyan" icon={<CalendarDays className="w-4 h-4" />} />
-        {/* Vert sémantique : sessions clôturées = achevées. */}
-        <Kpi variant="vivid" label="Sessions terminées" value={String(sessionsTerminees)} sub="sessions clôturées" accent="emerald" icon={<CalendarCheck className="w-4 h-4" />} />
-        {/* Ambre : les heures (temps) — teinte chaude, sort du registre vert/teal. */}
-        <Kpi variant="vivid" label="Heures accumulées" value={`${Math.round(heuresAccumulees)}h`} sub="planifiées toutes sessions" accent="amber" icon={<Clock className="w-4 h-4" />} />
-      </div>
+      {/* ── 5 cartes de commandement (§6.2) ── */}
+      {mission && sante && couverture && rentabilite && (() => {
+        const covPct = Math.min(100, Math.round(couverture.tauxCouverture * 100));
+        const santeCol = sante.niveau === "prête" ? "#059669" : sante.niveau === "à consolider" ? "#d97706" : "#e11d48";
+        const santePill = sante.niveau === "prête" ? "bg-emerald-50 text-emerald-700" : sante.niveau === "à consolider" ? "bg-amber-50 text-amber-700" : "bg-rose-50 text-rose-700";
+        const margeTone = rentabilite.niveau === "saine" ? "bg-emerald-50 text-emerald-700" : rentabilite.niveau === "surveiller" ? "bg-amber-50 text-amber-700" : "bg-rose-50 text-rose-700";
+        const margeLabel = rentabilite.niveau === "saine" ? "Marge saine" : rentabilite.niveau === "surveiller" ? "Marge à surveiller" : "Marge critique";
+        const RR = 26, CIRC = 2 * Math.PI * RR, off = CIRC * (1 - sante.score / 100);
+        const moy = affectes.length ? totalHeures / affectes.length : 0;
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3.5 mb-4">
+            {/* Carte 1 — Santé */}
+            <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-4 flex flex-col">
+              <div className="flex items-center gap-3">
+                <div className="relative w-[62px] h-[62px] flex-shrink-0">
+                  <svg width="62" height="62" viewBox="0 0 62 62" className="-rotate-90"><circle cx="31" cy="31" r={RR} fill="none" stroke="#eef0f2" strokeWidth="6" /><circle cx="31" cy="31" r={RR} fill="none" stroke={santeCol} strokeWidth="6" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={off} /></svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-[16px] font-extrabold text-gray-900 leading-none">{sante.score}</span><span className="text-[8px] font-bold text-gray-400">/ 100</span></div>
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-[13px] font-bold text-gray-900">Santé de la session</h2>
+                  <span className={`inline-flex mt-1 items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full ${santePill}`}>{sante.niveau}</span>
+                </div>
+              </div>
+              <ul className="mt-2.5 space-y-1 flex-1">
+                {sante.recommandations.slice(0, 2).map((r, i) => (
+                  <li key={i} className="flex items-start gap-1.5 text-[11.5px] text-slate-600"><ArrowRight className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: santeCol }} aria-hidden />{r}</li>
+                ))}
+              </ul>
+              <button onClick={() => setView("liste")} className="mt-2 text-[11.5px] font-semibold text-gray-500 hover:text-gray-800 text-left">Voir le détail</button>
+            </div>
 
-      {/* Sélecteur de sessions (pastilles date) */}
+            {/* Carte 2 — Couverture */}
+            <CmdCard title="Couverture surveillants" icon={<Users className="w-4 h-4" />}>
+              <div className="text-[26px] font-extrabold leading-none text-gray-900">{couverture.affectes} <span className="text-[15px] text-gray-400 font-bold">/ {couverture.requis} requis</span></div>
+              {couverture.manque > 0 && <div className="text-[11.5px] text-rose-600 font-semibold mt-1">{couverture.manque} surveillants à trouver</div>}
+              <div className="mt-2 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: `${covPct}%`, background: couverture.manque > 0 ? "#e11d48" : "#059669" }} /></div>
+              <div className="text-[11.5px] text-gray-500 mt-1">{covPct} % de couverture</div>
+              <button onClick={() => setView("liste")} className="mt-2 text-[11.5px] font-semibold text-gray-500 hover:text-gray-800 text-left">Voir la couverture</button>
+            </CmdCard>
+
+            {/* Carte 3 — Marge estimée */}
+            <CmdCard title="Marge estimée" icon={<TrendingUp className="w-4 h-4" />}>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[26px] font-extrabold leading-none text-emerald-600">{Math.round(rentabilite.tauxMarge * 100)} %</span>
+                <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${margeTone}`}>{margeLabel}</span>
+              </div>
+              <div className="text-[12px] text-gray-500 mt-1.5">Marge HT <span className="font-bold text-gray-800">{euro(rentabilite.margeHT)}</span></div>
+              <div className="text-[11.5px] text-gray-400">Sur CA HT de {euro(rentabilite.caHT)}</div>
+              <button onClick={() => setView("liste")} className="mt-2 text-[11.5px] font-semibold text-gray-500 hover:text-gray-800 text-left">Voir l&apos;analyse</button>
+            </CmdCard>
+
+            {/* Carte 4 — Heures planifiées */}
+            <CmdCard title="Heures planifiées" icon={<Clock className="w-4 h-4" />}>
+              <div className="text-[26px] font-extrabold leading-none text-gray-900">{heuresFR(totalHeures)}</div>
+              <div className="text-[11.5px] text-gray-400 mt-1">Planifiées sur la session</div>
+              <div className="text-[12px] text-gray-500 mt-1.5">Moyenne / surveillant <span className="font-bold text-gray-800">{heuresFR(moy)}</span></div>
+              <button onClick={() => setView("gantt")} className="mt-2 text-[11.5px] font-semibold text-gray-500 hover:text-gray-800 text-left">Voir le planning</button>
+            </CmdCard>
+
+            {/* Carte 5 — Refus / alertes */}
+            <CmdCard title="Refus / alertes" icon={<Bell className="w-4 h-4" />}>
+              <div className="text-[26px] font-extrabold leading-none text-gray-900">{alertes.length}</div>
+              <div className="text-[11.5px] text-gray-400 mt-1">alerte{alertes.length > 1 ? "s" : ""} active{alertes.length > 1 ? "s" : ""}</div>
+              <ul className="mt-1.5 space-y-0.5 flex-1">
+                {alertes.slice(0, 2).map((a, i) => (
+                  <li key={i}><button onClick={() => { setView("liste"); corriger(a.affId); }} title={a.text} className="text-[11px] text-slate-500 hover:text-rose-600 truncate text-left w-full">• {a.text}</button></li>
+                ))}
+                {alertes.length === 0 && <li className="text-[11px] text-emerald-600">Aucune alerte — session saine</li>}
+              </ul>
+              <button onClick={() => { setFilter("alertes"); setView("liste"); }} className="mt-2 text-[11.5px] font-semibold text-gray-500 hover:text-gray-800 text-left">Voir les alertes</button>
+            </CmdCard>
+          </div>
+        );
+      })()}
+
+      {/* ── Bandeau financier — Rentabilité de la session (§6.3) ── */}
+      {mission && rentabilite && (
+        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm mb-5 overflow-hidden">
+          <div className="px-5 pt-4 pb-2">
+            <h2 className="text-[13px] font-bold text-gray-900">Rentabilité de la session</h2>
+            <p className="text-[11.5px] text-gray-400">Marge HT = CA HT − coût surveillants · Taux = marge ÷ CA — calculés automatiquement</p>
+          </div>
+          <div className="flex items-stretch divide-x divide-gray-100 flex-wrap">
+            {[
+              { label: "CA HT", value: euro(rentabilite.caHT), accent: "text-gray-900" },
+              { label: "Coût surveillants", value: euro(rentabilite.coutHT), accent: "text-slate-600" },
+              { label: "Marge HT", value: euro(rentabilite.margeHT), accent: rentabilite.margeHT >= 0 ? "text-emerald-700" : "text-rose-600" },
+              { label: "Taux de marge", value: `${Math.round(rentabilite.tauxMarge * 100)} %`, accent: "text-emerald-700" },
+            ].map((m) => (
+              <div key={m.label} className="flex-1 min-w-[150px] px-5 py-3.5"><div className="text-[10.5px] font-bold uppercase tracking-[.8px] text-gray-400">{m.label}</div><div className={`text-[19px] font-extrabold mt-0.5 ${m.accent}`}>{m.value}</div></div>
+            ))}
+            <div className="flex items-center px-4"><button onClick={() => setView("liste")} className="text-[12px] font-semibold text-[#2563eb] hover:underline whitespace-nowrap">Voir le détail financier</button></div>
+          </div>
+        </div>
+      )}
+
+      {/* Onglets de session (§6.4) */}
       <div className="flex items-center gap-2 mb-5 flex-wrap">
         {planifiables.map((m) => {
           const active = m.id === missionId;
@@ -514,164 +657,18 @@ export function PlanificationBoard({
 
       {mission && (
         <>
-          {/* Score de santé de session — synthèse IA (§21) */}
-          {sante && (() => {
-            const col = sante.niveau === "prête" ? "#059669" : sante.niveau === "à consolider" ? "#d97706" : "#e11d48";
-            const pill = sante.niveau === "prête" ? "bg-emerald-50 text-emerald-700 ring-emerald-600/15" : sante.niveau === "à consolider" ? "bg-amber-50 text-amber-700 ring-amber-600/15" : "bg-rose-50 text-rose-700 ring-rose-600/15";
-            const R = 34, CIRC = 2 * Math.PI * R, off = CIRC * (1 - sante.score / 100);
-            return (
-              <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5 flex items-center gap-5 flex-wrap">
-                <div className="relative w-[92px] h-[92px] flex-shrink-0">
-                  <svg width="92" height="92" viewBox="0 0 92 92" className="-rotate-90">
-                    <circle cx="46" cy="46" r={R} fill="none" stroke="#eef0f2" strokeWidth="8" />
-                    <circle cx="46" cy="46" r={R} fill="none" stroke={col} strokeWidth="8" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={off} />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-[22px] font-extrabold text-gray-900 leading-none">{sante.score}</span>
-                    <span className="text-[9px] font-bold text-gray-400">/ 100</span>
-                  </div>
-                </div>
-                <div className="flex-1 min-w-[240px]">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-[15px] font-extrabold text-gray-900">Santé de la session</h2>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-600/15"><Sparkles className="w-3 h-3" aria-hidden />IA</span>
-                    <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${pill}`}><span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{sante.niveau}</span>
-                  </div>
-                  <div className="text-[11.5px] text-gray-400 mt-0.5 mb-2">Synthèse couverture · alertes · rentabilité — {sante.detail.couverture}/40 · {sante.detail.alertes}/35 · {sante.detail.marge}/25</div>
-                  <ul className="space-y-1">
-                    {sante.recommandations.map((r, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[12.5px] text-slate-600">
-                        <ArrowRight className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: col }} aria-hidden />{r}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Résumé de session — carte claire, tuiles colorées (direction vibrante) */}
-          <div className="rounded-2xl mb-5 bg-white border border-gray-200/80 shadow-sm">
-            <div className="p-5">
-              <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-                <div>
-                  <div className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#1a6b7e]">Résumé de session</div>
-                  <div className="text-[16px] font-extrabold mt-0.5 text-gray-900">{mission.client} — {dateFR(mission.dateMission)}</div>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">{mission.statut}</span>
-                  {validable && (
-                    <button onClick={valider} disabled={pending} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 text-white text-[12.5px] font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50">
-                      <ShieldCheck className="w-4 h-4" aria-hidden />Valider la session
-                    </button>
-                  )}
-                  {mission.statut === "Validée" && (
-                    <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-emerald-700">
-                      <ShieldCheck className="w-4 h-4" aria-hidden />Session validée
-                    </span>
-                  )}
-                </div>
-              </div>
-              {/* Tuiles à fond coloré, palette distribuée (indigo · bleu · teal · vert) —
-                  couleur = vie, mais chiffre en encre pour la hiérarchie premium. */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                {[
-                  { label: "Surveillants", value: String(rows.length), bg: "bg-indigo-50 border-indigo-100", lab: "text-indigo-600" },
-                  { label: "Salles", value: String(salles.size), bg: "bg-sky-50 border-sky-100", lab: "text-sky-600" },
-                  { label: "Affectés", value: String(affectes.length), bg: "bg-teal-50 border-teal-100", lab: "text-teal-700" },
-                  { label: "Heures tot.", value: `${totalHeures.toFixed(1)}h`, bg: "bg-amber-50 border-amber-100", lab: "text-amber-600" },
-                ].map((k) => (
-                  <div key={k.label} className={`rounded-xl px-4 py-3 text-center border ${k.bg}`}>
-                    <div className={`text-[10px] font-bold uppercase tracking-[1px] ${k.lab}`}>{k.label}</div>
-                    <div className="text-[20px] font-extrabold mt-0.5 text-slate-900">{k.value}</div>
-                  </div>
-                ))}
-              </div>
-              {alertes.length > 0 && (
-                <div className="mt-4 space-y-1.5">
-                  {alertes.slice(0, 5).map((a, i) => (
-                    <div key={i} className="flex items-center justify-between gap-3 text-[12px] text-slate-600">
-                      <span className="flex items-center gap-2 min-w-0">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                        <span className="truncate">{a.text}</span>
-                      </span>
-                      <button onClick={() => corriger(a.affId)} className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#7c5cff] hover:text-[#5b3ecc] transition-colors flex-shrink-0">
-                        Corriger <ArrowRight className="w-3 h-3" aria-hidden />
-                      </button>
-                    </div>
-                  ))}
-                  {alertes.length > 5 && (
-                    <div className="text-[11.5px] text-[#7c5cff]">+ {alertes.length - 5} alerte(s) supplémentaire(s)</div>
-                  )}
-                </div>
-              )}
+          {/* ── Vue Planning opérationnel — espace de travail (§7) ── */}
+          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+            <div>
+              <h2 className="text-[16px] font-extrabold text-gray-900">Affectations &amp; créneaux</h2>
+              <p className="text-[12px] text-gray-400">Charges, disponibilités et conflits en temps réel</p>
+            </div>
+            <div className="inline-flex items-center rounded-xl border border-gray-200 bg-white p-0.5">
+              {VIEWS.map((v) => (
+                <button key={v.key} onClick={() => setView(v.key)} aria-pressed={view === v.key} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors ${view === v.key ? "bg-indigo-600 text-white" : "text-gray-600 hover:bg-gray-50"}`}>{v.icon}{v.label}</button>
+              ))}
             </div>
           </div>
-
-          {/* Rentabilité de la session (§21) */}
-          {rentabilite && (() => {
-            const n = rentabilite.niveau;
-            const tone = n === "saine" ? "bg-emerald-50 text-emerald-700 ring-emerald-600/15" : n === "surveiller" ? "bg-amber-50 text-amber-700 ring-amber-600/15" : "bg-rose-50 text-rose-700 ring-rose-600/15";
-            const label = n === "saine" ? "Marge saine" : n === "surveiller" ? "Marge à surveiller" : "Marge critique";
-            return (
-              <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-                <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
-                  <div>
-                    <h2 className="text-[14px] font-bold text-gray-900">Rentabilité de la session</h2>
-                    <p className="text-[12px] text-gray-400">CA HT − coût estimé des surveillants ({rentabilite.heuresTotal.toFixed(1)}h planifiées)</p>
-                  </div>
-                  <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${tone}`}>
-                    <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{label} · {Math.round(rentabilite.tauxMarge * 100)} %
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100">
-                  {[
-                    { label: "CA HT", value: euro(rentabilite.caHT), accent: "text-gray-900" },
-                    { label: "Coût surveillants", value: euro(rentabilite.coutHT), accent: "text-slate-600" },
-                    { label: "Marge HT", value: euro(rentabilite.margeHT), accent: rentabilite.margeHT >= 0 ? "text-emerald-700" : "text-rose-600" },
-                    { label: "Taux de marge", value: `${Math.round(rentabilite.tauxMarge * 100)} %`, accent: n === "saine" ? "text-emerald-700" : n === "surveiller" ? "text-amber-700" : "text-rose-600" },
-                  ].map((m) => (
-                    <div key={m.label} className="px-5 py-3.5">
-                      <div className="text-[10.5px] font-bold uppercase tracking-[.8px] text-gray-400">{m.label}</div>
-                      <div className={`text-[17px] font-extrabold mt-0.5 ${m.accent}`}>{m.value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Prédiction de sous-effectif (§21) */}
-          {couverture && (() => {
-            const map = {
-              "complet": { pill: "bg-emerald-50 text-emerald-700 ring-emerald-600/15", bar: "#059669", label: "Effectif complet" },
-              "tendu": { pill: "bg-amber-50 text-amber-700 ring-amber-600/15", bar: "#d97706", label: "Effectif tendu" },
-              "sous-effectif": { pill: "bg-rose-50 text-rose-700 ring-rose-600/15", bar: "#e11d48", label: "Sous-effectif" },
-            }[couverture.niveau];
-            const pct = Math.min(100, Math.round(couverture.tauxCouverture * 100));
-            return (
-              <div className="mb-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
-                <div className="flex items-center justify-between gap-3 flex-wrap">
-                  <div>
-                    <h2 className="text-[14px] font-bold text-gray-900">Couverture surveillants</h2>
-                    <p className="text-[12px] text-gray-400">Prédiction de sous-effectif — anticiper les renforts avant le jour J</p>
-                  </div>
-                  <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ring-1 ring-inset ${map.pill}`}>
-                    <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />{map.label} · {pct} %
-                  </span>
-                </div>
-                <div className="mt-3 h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: map.bar }} />
-                </div>
-                <div className="mt-2 text-[12.5px] text-slate-600">
-                  <span className="font-bold text-gray-900">{couverture.affectes}</span> affecté{couverture.affectes > 1 ? "s" : ""} / {couverture.requis} requis
-                  {couverture.manque > 0 && (
-                    <span className="font-semibold text-rose-600"> — {couverture.manque} surveillant{couverture.manque > 1 ? "s" : ""} à trouver</span>
-                  )}
-                </div>
-              </div>
-            );
-          })()}
 
           {/* Tableau d'affectation */}
           <div id="session-table" className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
@@ -687,6 +684,7 @@ export function PlanificationBoard({
                 <p className="text-[12px] text-gray-400 mt-0.5">{dateFR(mission.dateMission)}</p>
               </div>
               <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                <label className="text-[11px] font-semibold text-gray-400 mr-0.5">Statut</label>
                 <select
                   value={mission.statut}
                   onChange={(e) => changeStatut(e.target.value as StatutMission)}
@@ -698,10 +696,6 @@ export function PlanificationBoard({
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
-                {nonAffectes.length > 0 && <SurveillantPicker surveillants={nonAffectes} onSelect={add} disabled={pending} />}
-                <Button variant="secondary" size="sm" onClick={convocations}><Send className="w-3.5 h-3.5" aria-hidden />Convocations</Button>
-                <Button variant="secondary" size="sm" onClick={confirmerJ48}><CalendarCheck className="w-3.5 h-3.5" aria-hidden />Confirmer J-48</Button>
-                <Button variant="danger" size="sm" onClick={supprimer} disabled={pending}><Trash2 className="w-3.5 h-3.5" aria-hidden />Supprimer</Button>
               </div>
             </div>
 
@@ -735,6 +729,13 @@ export function PlanificationBoard({
               </div>
             </div>
 
+            {view === "carte" && (
+              <div className="p-12 text-center text-[13px] text-gray-400 flex flex-col items-center gap-2"><MapIcon className="w-8 h-8 text-gray-300" aria-hidden />Vue carte des salles — bientôt disponible.</div>
+            )}
+            {view === "gantt" && (
+              <div className="px-5 py-6 text-center text-[12.5px] text-gray-400">Chronologie détaillée affichée ci-dessous.</div>
+            )}
+            {(view === "liste" || view === "planning") && (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse min-w-[1040px]">
                 <thead>
@@ -819,6 +820,7 @@ export function PlanificationBoard({
                 )}
               </table>
             </div>
+            )}
           </div>
 
           {/* Copilote d'affectation — suggestions explicables (§21) */}
@@ -860,8 +862,8 @@ export function PlanificationBoard({
             </div>
           )}
 
-          {/* Présence par créneau (timeline) */}
-          {affectes.length > 0 && (
+          {/* Présence par créneau — chronologie (vues Gantt / Planning) */}
+          {(view === "gantt" || view === "planning") && affectes.length > 0 && (
             <div className="mt-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
               <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
                 <div>
@@ -906,14 +908,19 @@ export function PlanificationBoard({
             </div>
           )}
 
-          {/* Journal de session — append-only (Master Prompt §15.6) */}
+          {/* Journal de session — append-only (Master Prompt §15.6), replié par défaut */}
           {journalMission.length > 0 && (
             <div className="mt-5 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-              <div className="px-5 pt-4.5 pb-3.5 border-b border-gray-100">
-                <h2 className="text-[14px] font-bold text-gray-900">Journal de session</h2>
-                <p className="text-[12px] text-gray-400">Historique immuable des modifications — utilisateur, date, ancienne et nouvelle valeur</p>
-              </div>
-              <div className="overflow-x-auto">
+              <button onClick={() => setJournalOpen((v) => !v)} aria-expanded={journalOpen} className="w-full px-5 pt-4.5 pb-3.5 flex items-center justify-between gap-3 text-left hover:bg-slate-50/60 transition-colors">
+                <div>
+                  <h2 className="text-[14px] font-bold text-gray-900">Journal de session</h2>
+                  <p className="text-[12px] text-gray-400">Historique immuable des modifications — {journalMission.length} entrée{journalMission.length > 1 ? "s" : ""}</p>
+                </div>
+                <span className={`text-gray-400 transition-transform ${journalOpen ? "rotate-180" : ""}`}><ArrowRight className="w-4 h-4 rotate-90" aria-hidden /></span>
+              </button>
+              {journalOpen && (
+              <>
+              <div className="overflow-x-auto border-t border-gray-100">
                 <table className="w-full border-collapse min-w-[720px]">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-100">
@@ -941,6 +948,8 @@ export function PlanificationBoard({
                 <div className="px-5 py-2.5 text-[11.5px] text-gray-400 border-t border-gray-100">
                   {journalMission.length - 12} entrée(s) plus ancienne(s) non affichée(s)
                 </div>
+              )}
+              </>
               )}
             </div>
           )}
