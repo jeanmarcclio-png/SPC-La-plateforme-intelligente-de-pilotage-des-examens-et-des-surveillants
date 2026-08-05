@@ -5,7 +5,7 @@ import { test, expect } from "@playwright/test";
 // clés (actions libellées, aide à la décision IA, filtres, cycle de vie mission).
 
 const PAGES: { path: string; expect: string }[] = [
-  { path: "/operations", expect: "Cockpit" },
+  { path: "/operations", expect: "Tableau de bord" },
   { path: "/operations/cockpit", expect: "Cockpit opérationnel" },
   { path: "/operations/surveillants", expect: "Import Excel / CSV" },
   { path: "/operations/missions", expect: "Missions" },
