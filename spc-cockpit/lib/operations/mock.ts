@@ -10,22 +10,21 @@ import type {
 //  · historique mensuel en progression pour l'évolution du CA ;
 //  · une surcharge et un incident critique ouverts pour les alertes.
 export const mockSurveillants: Surveillant[] = [
-  { id: 1, nom: "Marie Lecomte",      prenom: "Marie",      zone: "Paris 15e",  dispoMatin: "08:00–13:00", dispoApm: "13:30–18:00", role: "Coordinatrice",      statut: "Planifié",     qualifications: "Coordination · Tiers-temps", nbExamens: 12, heures: 94,  note: 4.9, tauxHoraire: 22 },
+  { id: 1, nom: "Marie Lecomte",      prenom: "Marie",      zone: "Paris 15e",  dispoMatin: "08:00–14:00", dispoApm: "Non",         role: "Coordinatrice",      statut: "Planifié",     qualifications: "Coordination · Tiers-temps", nbExamens: 12, heures: 94,  note: 4.9, tauxHoraire: 22 },
   { id: 2, nom: "Jean-Pierre Moreau", prenom: "Jean-Pierre", zone: "Saclay",    dispoMatin: "Oui",         dispoApm: "Oui",         role: "Surveillant volant", statut: "Planifié",     qualifications: "Renforts",                    nbExamens: 8,  heures: 61,  note: 4.7, tauxHoraire: 18 },
-  { id: 3, nom: "Fatima Benali",      role: "Surveillant salle",  statut: "Planifié",     qualifications: "Amphithéâtres",               nbExamens: 15, heures: 108, note: 4.8, tauxHoraire: 18 },
-  { id: 4, nom: "Thomas Girard",      role: "Surveillant PMR",    statut: "Planifié",     qualifications: "PMR · Tiers-temps",           nbExamens: 6,  heures: 47,  note: 4.6, tauxHoraire: 19 },
-  { id: 5, nom: "Sophie Dubois",      role: "Coordinatrice",      statut: "Planifié",     qualifications: "Coordination",                nbExamens: 10, heures: 78,  note: 5.0, tauxHoraire: 22 },
-  { id: 6, nom: "Karim Haddad",       role: "Surveillant salle",  statut: "Planifié",     qualifications: "Salles multiples",            nbExamens: 9,  heures: 66,  note: 4.5, tauxHoraire: 18 },
-  { id: 7, nom: "Léa Fontaine",       role: "Surveillant volant", statut: "Disponible",   qualifications: "Renforts · Concours",         nbExamens: 5,  heures: 38,  note: 4.8, tauxHoraire: 18 },
-  { id: 8, nom: "Marc Petit",         role: "Surveillant salle",  statut: "Disponible",   qualifications: "",                            nbExamens: 7,  heures: 52,  note: 4.3, tauxHoraire: 18 },
-  { id: 9, nom: "Faouzia Ben Sassi",  prenom: "Faouzia", zone: "Paris 13e", role: "Surveillant salle",  statut: "Planifié", qualifications: "Amphithéâtres",     nbExamens: 4, heures: 42, note: 4.6, tauxHoraire: 18 },
-  { id: 10, nom: "Miguel Auguste",    prenom: "Miguel",  zone: "Saclay",    role: "Surveillant volant", statut: "Disponible", qualifications: "Renforts · Concours", nbExamens: 3, heures: 15, note: 4.4, tauxHoraire: 18 },
-  { id: 11, nom: "Nadia El Amrani",   prenom: "Nadia",   zone: "Paris 5e",  role: "Surveillant salle",  statut: "Planifié",   qualifications: "Tiers-temps",        nbExamens: 11, heures: 84, note: 4.7, tauxHoraire: 18 },
-  { id: 12, nom: "Paul Rivière",      prenom: "Paul",    zone: "Paris 12e", role: "Surveillant volant", statut: "Planifié",   qualifications: "Renforts",           nbExamens: 8,  heures: 72, note: 4.6, tauxHoraire: 18 },
-  { id: 13, nom: "Chloé Marchand",    prenom: "Chloé",   zone: "Saclay",    role: "Surveillant salle",  statut: "Planifié",   qualifications: "Amphithéâtres",      nbExamens: 6,  heures: 55, note: 4.8, tauxHoraire: 18 },
-  { id: 14, nom: "Ahmed Zerrouki",    prenom: "Ahmed",   zone: "Paris 13e", role: "Surveillant PMR",    statut: "Planifié",   qualifications: "PMR · Tiers-temps",  nbExamens: 5,  heures: 49, note: 4.5, tauxHoraire: 19 },
-  { id: 15, nom: "Émilie Roux",       prenom: "Émilie",  zone: "Paris 15e", role: "Surveillant salle",  statut: "Disponible", qualifications: "Salles multiples",   nbExamens: 4,  heures: 28, note: 4.4, tauxHoraire: 18 },
-  { id: 16, nom: "David Nguyen",      prenom: "David",   zone: "Saclay",    role: "Surveillant volant", statut: "Disponible", qualifications: "Renforts · Concours", nbExamens: 2, heures: 18, note: 4.6, tauxHoraire: 18 },
+  { id: 3, nom: "Fatima Benali",      prenom: "Fatima",  zone: "Paris 12e", role: "Surveillant salle",  statut: "Planifié",     qualifications: "Amphithéâtres",               nbExamens: 15, heures: 108, note: 4.8, tauxHoraire: 18 },
+  { id: 4, nom: "Thomas Girard",      prenom: "Thomas",  zone: "Saclay",    role: "Surveillant PMR",    statut: "Planifié",     qualifications: "PMR · Tiers-temps",           nbExamens: 6,  heures: 47,  note: 4.6, tauxHoraire: 19 },
+  { id: 5, nom: "Sophie Dubois",      prenom: "Sophie",  zone: "Paris 7e",  role: "Coordinatrice",      statut: "Planifié",     qualifications: "Coordination",                nbExamens: 10, heures: 78,  note: 5.0, tauxHoraire: 22 },
+  { id: 6, nom: "Karim Haddad",       prenom: "Karim",   zone: "Paris 5e",  role: "Surveillant salle",  statut: "Planifié",     qualifications: "Salles multiples",            nbExamens: 9,  heures: 66,  note: 4.5, tauxHoraire: 18 },
+  { id: 7, nom: "Léa Fontaine",       prenom: "Léa",     zone: "Saclay",    role: "Surveillant volant", statut: "Planifié",     qualifications: "Renforts · Concours",         nbExamens: 5,  heures: 38,  note: 4.8, tauxHoraire: 18 },
+  { id: 8, nom: "Marc Petit",         prenom: "Marc",    zone: "Paris 18e", role: "Surveillant salle",  statut: "Planifié",     qualifications: "Amphithéâtres",               nbExamens: 7,  heures: 52,  note: 4.3, tauxHoraire: 18 },
+  { id: 9, nom: "Stanley Clio",       prenom: "Stanley", zone: "Paris 13e", role: "Surveillant salle",  statut: "Planifié",     qualifications: "Salles multiples · Concours",  nbExamens: 4,  heures: 41, note: 4.6, tauxHoraire: 18 },
+  { id: 10, nom: "Jean-Marc Clio",    prenom: "Jean-Marc", zone: "Saclay",  role: "Surveillant salle",  statut: "Planifié",     qualifications: "Coordination · Tiers-temps",   nbExamens: 11, heures: 88, note: 4.9, tauxHoraire: 18 },
+  { id: 11, nom: "Nadia Cherif",      prenom: "Nadia",   zone: "Paris 11e", dispoMatin: "Oui", dispoApm: "Oui", role: "Surveillant salle",  statut: "Disponible", qualifications: "Amphithéâtres",      nbExamens: 6, heures: 44, note: 4.7, tauxHoraire: 18 },
+  { id: 12, nom: "Bruno Lefèvre",     prenom: "Bruno",   zone: "Paris 15e", dispoMatin: "Oui", dispoApm: "Non", role: "Surveillant volant", statut: "Disponible", qualifications: "Renforts",          nbExamens: 3, heures: 21, note: 4.4, tauxHoraire: 18 },
+  { id: 13, nom: "Amina Traoré",      prenom: "Amina",   zone: "Saclay",    dispoMatin: "Oui", dispoApm: "Oui", role: "Surveillant salle",  statut: "Disponible", qualifications: "Salles multiples",  nbExamens: 5, heures: 33, note: 4.6, tauxHoraire: 18 },
+  { id: 14, nom: "Paul Giraud",       prenom: "Paul",    zone: "Paris 14e", dispoMatin: "Non", dispoApm: "Oui", role: "Surveillant PMR",    statut: "Disponible", qualifications: "PMR · Tiers-temps", nbExamens: 4, heures: 28, note: 4.5, tauxHoraire: 19 },
+  { id: 15, nom: "Chloé Martin",      prenom: "Chloé",   zone: "Paris 9e",  dispoMatin: "Oui", dispoApm: "Oui", role: "Coordinatrice",      statut: "Disponible", qualifications: "Coordination",      nbExamens: 8, heures: 57, note: 4.8, tauxHoraire: 22 },
 ];
 
 export const mockMissions: Mission[] = [
@@ -49,26 +48,21 @@ export const mockMissions: Mission[] = [
   { id: 1,  reference: "EX-2026-035", client: "HEC Paris",            session: "Partiels S1",        dateMission: "2026-02-16", type: "Examen écrit", nbSalles: 8,  nbSurveillants: 18, montantHT: 7200,   statut: "Terminée" },
 ];
 
-// Affectations de la mission active EX-2026-041 (ICP Paris · id 6).
-// 14 postes requis → 10 pourvus (créneau défini), 4 manquants (sans créneau) ;
-// 3 des postes pourvus sont sans salle → 3 conflits de planning.
+// Affectations de la mission active EX-2026-041 (ICP Paris · id 6) — jeu de
+// référence : total exact 66,25 h sur 10 surveillants, couverture 10/14 (≈ 71 %).
+// Créneaux multi-slots pour les surveillants enchaînant plusieurs examens
+// (moteur = somme non chevauchante).
 export const mockAffectations: Affectation[] = [
-  { id: 1,  missionId: 6, surveillantId: 1,  roleMission: "Coordinatrice",      statut: "Confirmé", presence: "Présent",    salle: "A21", matin: true,  matinDebut: "08:00", matinFin: "14:00", apm: false },
-  { id: 2,  missionId: 6, surveillantId: 2,  roleMission: "Surveillant volant", statut: "Confirmé", presence: "Présent",    salle: "B11", matin: true,  matinDebut: "08:00", matinFin: "13:00", apm: true,  apmDebut: "13:30", apmFin: "18:00" },
-  { id: 3,  missionId: 6, surveillantId: 4,  roleMission: "Surveillant PMR",    statut: "Confirmé", presence: "Présent",    salle: "E31", matin: true,  matinDebut: "08:30", matinFin: "13:00", apm: true,  apmDebut: "13:30", apmFin: "18:30" },
-  { id: 4,  missionId: 6, surveillantId: 5,  roleMission: "Coordinatrice",      statut: "Confirmé", presence: "Présent",    salle: "AMP", matin: false, apm: true,  apmDebut: "13:00", apmFin: "19:00" },
-  { id: 5,  missionId: 6, surveillantId: 6,  roleMission: "Surveillant salle",  statut: "Confirmé", presence: "Présent",    salle: "A22", matin: true,  matinDebut: "08:30", matinFin: "13:30", apm: false },
-  { id: 6,  missionId: 6, surveillantId: 9,  roleMission: "Surveillant salle",  statut: "Confirmé", presence: "Présent",    salle: "A23", matin: true,  matinDebut: "08:30", matinFin: "12:30", apm: false },
-  { id: 7,  missionId: 6, surveillantId: 11, roleMission: "Surveillant salle",  statut: "Confirmé", presence: "En attente", salle: "B12", matin: true,  matinDebut: "08:30", matinFin: "12:30", apm: true,  apmDebut: "13:30", apmFin: "16:15" },
-  // Postes pourvus mais SANS salle → conflits de planning (3)
-  { id: 8,  missionId: 6, surveillantId: 12, roleMission: "Surveillant volant", statut: "Proposé",  presence: "En attente", salle: undefined, matin: true,  matinDebut: "08:00", matinFin: "13:00", apm: false },
-  { id: 9,  missionId: 6, surveillantId: 13, roleMission: "Surveillant salle",  statut: "Proposé",  presence: "En attente", salle: undefined, matin: false, apm: true,  apmDebut: "13:30", apmFin: "17:05" },
-  { id: 10, missionId: 6, surveillantId: 14, roleMission: "Surveillant PMR",    statut: "Proposé",  presence: "En attente", salle: undefined, matin: true,  matinDebut: "08:30", matinFin: "13:00", apm: false },
-  // Postes manquants → aucun créneau (4)
-  { id: 11, missionId: 6, surveillantId: 3,  roleMission: "Surveillant salle",  statut: "Proposé",  presence: "En attente", salle: undefined, matin: false, apm: false },
-  { id: 12, missionId: 6, surveillantId: 7,  roleMission: "Surveillant volant", statut: "Proposé",  presence: "En attente", salle: undefined, matin: false, apm: false },
-  { id: 13, missionId: 6, surveillantId: 8,  roleMission: "Surveillant salle",  statut: "Proposé",  presence: "En attente", salle: undefined, matin: false, apm: false },
-  { id: 14, missionId: 6, surveillantId: 10, roleMission: "Surveillant volant", statut: "Proposé",  presence: "En attente", salle: undefined, matin: false, apm: false },
+  { id: 1, missionId: 6, surveillantId: 1, roleMission: "Coordinatrice",      statut: "Confirmé", presence: "Présent", salle: "A21", matin: true,  matinDebut: "08:00", matinFin: "14:00", apm: false }, // 6.00
+  { id: 2, missionId: 6, surveillantId: 2, roleMission: "Surveillant volant", statut: "Confirmé", presence: "Présent", salle: undefined, matin: true, matinDebut: "08:00", matinFin: "12:15", apm: true, apmDebut: "14:15", apmFin: "17:00" }, // 7.00 — volant, salle à confirmer
+  { id: 3, missionId: 6, surveillantId: 3, roleMission: "Surveillant salle",  statut: "Confirmé", presence: "Présent", salle: "C14", matin: true, matinDebut: "09:15", matinFin: "12:00", apm: false }, // 2.75
+  { id: 4, missionId: 6, surveillantId: 4, roleMission: "Surveillant PMR",    statut: "Confirmé", presence: "Présent", salle: "E31", matin: true, matinDebut: "08:30", matinFin: "13:00", apm: true, apmDebut: "13:30", apmFin: "18:30" }, // 9.50
+  { id: 5, missionId: 6, surveillantId: 5, roleMission: "Coordinatrice",      statut: "Confirmé", presence: "Présent", salle: "AMP", matin: false, apm: true, apmDebut: "13:00", apmFin: "19:00" }, // 6.00
+  { id: 6, missionId: 6, surveillantId: 6, roleMission: "Surveillant salle",  statut: "Confirmé", presence: "Présent", salle: "A22", matin: true, matinDebut: "08:30", matinFin: "13:30", apm: false }, // 5.00
+  { id: 7, missionId: 6, surveillantId: 7, roleMission: "Surveillant volant", statut: "Confirmé", presence: "Présent", salle: undefined, matin: true, matinDebut: "10:00", matinFin: "13:00", apm: false }, // 3.00 — volant, salle à confirmer
+  { id: 8, missionId: 6, surveillantId: 8, roleMission: "Surveillant salle",  statut: "Confirmé", presence: "Présent", salle: "F11", matin: true, matinDebut: "08:00", matinFin: "13:00", apm: true, apmDebut: "13:15", apmFin: "17:30" }, // 9.25
+  { id: 9, missionId: 6, surveillantId: 9, roleMission: "Surveillant salle",  statut: "Confirmé", presence: "Présent", salle: "F12", matin: true, matinDebut: "08:00", matinFin: "09:45", matinCreneaux: [{ debut: "08:00", fin: "09:45" }, { debut: "10:00", fin: "13:00" }], apm: true, apmDebut: "13:30", apmFin: "18:00" }, // 9.25
+  { id: 10, missionId: 6, surveillantId: 10, roleMission: "Coordinateur",     statut: "Confirmé", presence: "Présent", salle: "E32", matin: true, matinDebut: "08:00", matinFin: "13:00", apm: true, apmDebut: "14:30", apmFin: "18:00" }, // 8.50
 ];
 
 // Devis — CA confirmé (Accepté) = 5 200 + 7 344,40 = 12 544,40 € HT /

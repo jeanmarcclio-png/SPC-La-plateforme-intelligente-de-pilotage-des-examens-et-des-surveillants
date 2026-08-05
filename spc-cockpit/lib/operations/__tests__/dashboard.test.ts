@@ -94,8 +94,8 @@ describe("dashboard — risques", () => {
   it("4 tuiles : postes, J-48, conflits, incidents", () => {
     expect(risks.map((r) => r.key)).toEqual(["postes", "j48", "conflits", "incidents"]);
   });
-  it("3 conflits de planning (postes pourvus sans salle)", () => {
-    expect(risks.find((r) => r.key === "conflits")?.valeur).toBe(3);
+  it("2 conflits de planning (postes pourvus sans salle — volants à confirmer)", () => {
+    expect(risks.find((r) => r.key === "conflits")?.valeur).toBe(2);
   });
   it("1 incident ouvert", () => {
     expect(risks.find((r) => r.key === "incidents")?.valeur).toBe(1);

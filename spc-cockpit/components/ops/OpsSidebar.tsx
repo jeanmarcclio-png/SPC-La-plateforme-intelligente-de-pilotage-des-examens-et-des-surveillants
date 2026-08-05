@@ -2,24 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Gauge, Activity, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert, Plus, FilePlus2 } from "lucide-react";
+import { LayoutDashboard, Gauge, Activity, Inbox, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert, Plus, FilePlus2 } from "lucide-react";
 import { isNavActive } from "@/lib/operations/nav";
 
 export const NAV = [
-  { href: "/operations",                label: "Dashboard",           icon: <LayoutDashboard className="w-4 h-4" /> },
-  { href: "/operations/cockpit",        label: "Cockpit opérationnel", icon: <Gauge className="w-4 h-4" /> },
-  { href: "/operations/supervision",    label: "Supervision live",    icon: <Activity className="w-4 h-4" /> },
-  { href: "/operations/missions",       label: "Missions",            icon: <Briefcase className="w-4 h-4" /> },
-  { href: "/operations/surveillants",   label: "Surveillants",        icon: <Users className="w-4 h-4" /> },
-  { href: "/operations/planification",  label: "Planification",       icon: <CalendarClock className="w-4 h-4" /> },
-  { href: "/operations/salles",         label: "Salles",              icon: <DoorOpen className="w-4 h-4" /> },
-  { href: "/operations/pmr",            label: "PMR & Tiers-temps",   icon: <Accessibility className="w-4 h-4" /> },
-  { href: "/operations/devis",          label: "Devis",               icon: <FileText className="w-4 h-4" /> },
-  { href: "/operations/facturation",    label: "Facturation",         icon: <Euro className="w-4 h-4" /> },
-  { href: "/operations/presence",       label: "Présence",            icon: <ClipboardCheck className="w-4 h-4" /> },
-  { href: "/operations/incidents",      label: "Incidents",           icon: <AlertTriangle className="w-4 h-4" /> },
-  { href: "/operations/rapports",       label: "Rapports",            icon: <BarChart3 className="w-4 h-4" /> },
-  { href: "/operations/risques",        label: "Risques IA",          icon: <ShieldAlert className="w-4 h-4" /> },
+  { href: "/operations",                 label: "Dashboard",            icon: <LayoutDashboard className="w-4 h-4" /> },
+  { href: "/operations/cockpit",         label: "Cockpit opérationnel", icon: <Gauge className="w-4 h-4" /> },
+  { href: "/operations/supervision",     label: "Supervision live",     icon: <Activity className="w-4 h-4" /> },
+  { href: "/operations/demandes-client", label: "Demandes clients",     icon: <Inbox className="w-4 h-4" /> },
+  { href: "/operations/missions",        label: "Missions",             icon: <Briefcase className="w-4 h-4" /> },
+  { href: "/operations/surveillants",    label: "Surveillants",         icon: <Users className="w-4 h-4" /> },
+  { href: "/operations/planification",   label: "Planification",        icon: <CalendarClock className="w-4 h-4" /> },
+  { href: "/operations/salles",          label: "Salles",               icon: <DoorOpen className="w-4 h-4" /> },
+  { href: "/operations/pmr",             label: "PMR & Tiers-temps",    icon: <Accessibility className="w-4 h-4" /> },
+  { href: "/operations/devis",           label: "Devis",                icon: <FileText className="w-4 h-4" /> },
+  { href: "/operations/facturation",     label: "Facturation",          icon: <Euro className="w-4 h-4" /> },
+  { href: "/operations/presence",        label: "Présence",             icon: <ClipboardCheck className="w-4 h-4" /> },
+  { href: "/operations/incidents",       label: "Incidents",            icon: <AlertTriangle className="w-4 h-4" /> },
+  { href: "/operations/rapports",        label: "Rapports",             icon: <BarChart3 className="w-4 h-4" /> },
+  { href: "/operations/risques",         label: "Risques IA",           icon: <ShieldAlert className="w-4 h-4" /> },
 ];
 
 const RACCOURCIS = [
