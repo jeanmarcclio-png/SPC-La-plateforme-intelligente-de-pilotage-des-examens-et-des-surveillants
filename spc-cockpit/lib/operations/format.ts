@@ -19,3 +19,29 @@ export function dateFR(iso?: string) {
   if (isNaN(d.getTime())) return iso;
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
+
+/** Date courte française : "08 juil. 2026" (jour sur 2 chiffres, mois abrégé). */
+export function dateCourteFR(iso?: string) {
+  if (!iso) return "—";
+  const d = new Date(iso + "T00:00:00");
+  if (isNaN(d.getTime())) return iso;
+  return d
+    .toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })
+    .replace(/\.$/, ".");
+}
+
+/** Heures au format français : 18 → "18,0 h" ; 14.5 → "14,5 h". */
+export function heuresFR(h: number) {
+  return h.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " h";
+}
+
+/** Pourcentage entier avec espace insécable : 0.71 → "71 %" (fraction 0–1). */
+export function pctFR(fraction: number) {
+  return Math.round(fraction * 100) + " %";
+}
+
+/** Variation signée en points de %, pour les deltas : 18.2 → "+18,2 %". */
+export function deltaPct(value: number) {
+  const sign = value > 0 ? "+" : "";
+  return sign + value.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " %";
+}
