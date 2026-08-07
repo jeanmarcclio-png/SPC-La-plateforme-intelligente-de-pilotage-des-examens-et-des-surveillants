@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, Fragment } from "react";
 import type { Mission, Surveillant, Affectation, JournalEntry, StatutMission } from "@/lib/operations/types";
 import { SallesACouvrirPanel } from "@/components/ops/SallesACouvrirPanel";
+import { CoveragePanel, type CoverageSlot } from "@/components/ops/CoveragePanel";
 import type { SalleACouvrir } from "@/lib/operations/planning-salles";
 import { updateAffectation, addAffectation, deleteAffectation, type AffectationFields } from "@/app/actions/affectations";
 import { validerSession, updateMission, deleteMission } from "@/app/actions/missions";
@@ -148,6 +149,22 @@ function SlotsEditor({ slots, onChange, def, tint }: { slots: Slot[]; onChange: 
   );
 }
 
+/** Badges horaires fusionnés (C4) : matin teal, après-midi indigo, en lecture. */
+function PlanningBadges({ matin, apm }: { matin: Slot[]; apm: Slot[] }) {
+  if (matin.length === 0 && apm.length === 0) return <span className="text-slate-400">—</span>;
+  const badge = (s: Slot, bg: string, key: string) => (
+    <span key={key} className="inline-flex items-center text-[11.5px] font-semibold text-white rounded-md px-2 py-1 whitespace-nowrap" style={{ background: bg }}>
+      {s.debut}→{s.fin}
+    </span>
+  );
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {matin.map((s, i) => badge(s, TEAL, `m${i}`))}
+      {apm.map((s, i) => badge(s, ACCENT, `a${i}`))}
+    </div>
+  );
+}
+
 /** Barre d'un créneau sur la timeline (matin teal, après-midi bleu vif). */
 function SlotBar({ slot, color, label }: { slot: Slot; color: string; label: string }) {
   let start: number, end: number;
@@ -221,6 +238,7 @@ export function PlanificationBoard({
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<QuickFilter>("all");
   const [highlightId, setHighlightId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null); // C4 — ligne dépliée pour l'édition
 
   const survById = useMemo(() => new Map(surveillants.map((s) => [s.id, s])), [surveillants]);
   const nonAffectes = surveillants.filter((s) => !rows.some((r) => r.surveillantId === s.id));
@@ -291,6 +309,25 @@ export function PlanificationBoard({
 
   // Prédiction de sous-effectif (§21) : surveillants requis vs affectés.
   const couverture = mission ? analyseCouverture({ requis: mission.nbSurveillants, affectes: affectes.length }) : null;
+
+  // C2 — couverture par tranche de 2h : requis (salles du devis) vs affectés (créneaux en cours).
+  const coverageSlots: CoverageSlot[] = sallesMission.length > 0
+    ? ([[8, 10], [10, 12], [12, 14], [14, 16], [16, 18]] as const).map(([h1, h2]) => {
+        const ws = h1 * 60, we = h2 * 60;
+        const overlaps = (deb: string | null | undefined, fin: string | null | undefined) => {
+          if (!deb || !fin) return false;
+          try { const d = parseTimeToMinutes(deb), f = parseTimeToMinutes(fin); return d < we && f > ws && f > d; } catch { return false; }
+        };
+        let requis = 0;
+        for (const s of sallesMission) if (overlaps(s.debut, s.fin)) requis += s.surveillants || 0;
+        let affectesSlot = 0;
+        for (const a of rows) {
+          const r = stateOf(a);
+          if ([...r.matin, ...r.apm].some((sl) => overlaps(sl.debut, sl.fin))) affectesSlot++;
+        }
+        return { label: `${String(h1).padStart(2, "0")}-${String(h2).padStart(2, "0")}`, requis, affectes: affectesSlot };
+      })
+    : [];
 
   type Alerte = { affId: number; text: string };
   const alertes: Alerte[] = [];
@@ -697,7 +734,7 @@ export function PlanificationBoard({
                       href="#session-table"
                       aria-label="Ajouter un surveillant à la session"
                       className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white text-[13px] font-bold transition-all hover:brightness-110 active:scale-[.98]"
-                      style={{ background: "var(--color-primary)", boxShadow: "0 8px 20px -6px rgba(15,118,110,.5)" }}
+                      style={{ background: "#4f46e5", boxShadow: "0 8px 20px -6px rgba(79,70,229,.5)" }}
                     >
                       <Plus className="w-4 h-4" strokeWidth={2.5} aria-hidden /> Ajouter un surveillant
                     </a>
@@ -777,20 +814,20 @@ export function PlanificationBoard({
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[1040px]">
+              <table className="w-full border-collapse min-w-[820px]">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50">
-                    {["Surveillant", "Rôle · Salle", "● Matin", "● Après-midi", "Heures", "Statut", ""].map((h) => (
+                    {["Surveillant", "Rôle · Salle", "Planning", "Heures", "Statut", ""].map((h) => (
                       <th key={h} className="text-left px-5 py-3 text-[10.5px] font-bold text-slate-500 uppercase tracking-[.8px]">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {rows.length === 0 && (
-                    <tr><td colSpan={7} className="text-center py-10 text-[13px] text-gray-400">Aucun surveillant affecté à cette session.</td></tr>
+                    <tr><td colSpan={6} className="text-center py-10 text-[13px] text-gray-400">Aucun surveillant affecté à cette session.</td></tr>
                   )}
                   {rows.length > 0 && visibleRows.length === 0 && (
-                    <tr><td colSpan={7} className="text-center py-10 text-[13px] text-gray-400">Aucun surveillant ne correspond à la recherche / au filtre.</td></tr>
+                    <tr><td colSpan={6} className="text-center py-10 text-[13px] text-gray-400">Aucun surveillant ne correspond à la recherche / au filtre.</td></tr>
                   )}
                   {visibleRows.map((a) => {
                     const s = survById.get(a.surveillantId);
@@ -799,6 +836,7 @@ export function PlanificationBoard({
                     const h = rowHours(r);
                     const idx = rows.indexOf(a);
                     const highlight = highlightId === a.id;
+                    const expanded = expandedId === a.id;
                     // C4 — statut de ligne + couleur des heures selon les seuils métier.
                     const overlap = hasOverlap(r.matin) || hasOverlap(r.apm);
                     const invalide = r.matin.some((x) => slotHours(x) === 0) || r.apm.some((x) => slotHours(x) === 0);
@@ -812,10 +850,11 @@ export function PlanificationBoard({
                     }[statutRow];
                     const hColor = h > 8 ? "#dc2626" : h >= 6 ? "#d97706" : "#0f172a";
                     return (
+                      <Fragment key={a.id}>
                       <tr
-                        key={a.id}
                         id={`aff-${a.id}`}
-                        className={`border-b border-gray-50 last:border-0 transition-colors ${highlight ? "bg-amber-50 ring-2 ring-inset ring-amber-300" : dirty ? "bg-blue-50/40" : "hover:bg-blue-50/20"}`}
+                        onClick={() => setExpandedId(expanded ? null : a.id)}
+                        className={`border-b border-gray-50 last:border-0 transition-colors cursor-pointer ${highlight ? "bg-amber-50 ring-2 ring-inset ring-amber-300" : expanded ? "bg-indigo-50/50" : dirty ? "bg-blue-50/40" : "hover:bg-blue-50/20"}`}
                       >
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-3">
@@ -825,23 +864,16 @@ export function PlanificationBoard({
                             <div className="text-[13px] font-semibold text-gray-800">{s?.nom ?? `Surveillant #${a.surveillantId}`}</div>
                           </div>
                         </td>
-                        <td className="px-5 py-3 align-top">
-                          <div className="flex flex-col gap-1.5 items-start">
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <RoleBadge role={a.roleMission ?? s?.role ?? ""} />
-                            <input
-                              value={r.salle}
-                              onChange={(e) => setRow(a, { ...r, salle: e.target.value })}
-                              placeholder="Salle…"
-                              aria-label="Salle"
-                              className={`w-[92px] px-2.5 py-1.5 rounded-lg border text-[12.5px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/25 ${r.salle.trim() ? "border-gray-200" : "border-amber-300 bg-amber-50/40"}`}
-                            />
+                            {r.salle.trim()
+                              ? <span className="text-[12px] font-mono text-gray-600 whitespace-nowrap">📍 {r.salle}</span>
+                              : <span className="text-[11px] text-amber-600">salle ?</span>}
                           </div>
                         </td>
-                        <td className="px-5 py-3 align-top">
-                          <SlotsEditor slots={r.matin} onChange={(slots) => setRow(a, { ...r, matin: slots })} def={DEF_MATIN} tint={TEAL} />
-                        </td>
-                        <td className="px-5 py-3 align-top">
-                          <SlotsEditor slots={r.apm} onChange={(slots) => setRow(a, { ...r, apm: slots })} def={DEF_APM} tint={ACCENT} />
+                        <td className="px-5 py-3">
+                          <PlanningBadges matin={r.matin} apm={r.apm} />
                         </td>
                         <td className="px-5 py-3 text-[13.5px] font-extrabold whitespace-nowrap" style={{ color: h > 0 ? hColor : undefined }}>
                           {h > 0 ? `${h.toFixed(1)}h` : <span className="text-gray-300 font-normal">—</span>}
@@ -851,8 +883,9 @@ export function PlanificationBoard({
                             <span aria-hidden>{statutMap.e}</span>{statutMap.t}
                           </span>
                         </td>
-                        <td className="px-5 py-3">
+                        <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1">
+                            <span className="text-[11px] font-semibold text-indigo-500 mr-1 select-none">{expanded ? "Fermer ▲" : "Éditer ▾"}</span>
                             {dirty && (
                               <button onClick={() => save(a)} disabled={pending} title="Enregistrer les modifications" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-white text-[11.5px] font-bold disabled:opacity-40" style={{ background: ACCENT }}>
                                 <Check className="w-3.5 h-3.5" />Enregistrer
@@ -864,13 +897,48 @@ export function PlanificationBoard({
                           </div>
                         </td>
                       </tr>
+                      {expanded && (
+                        <tr className="bg-indigo-50/30 border-b border-gray-100">
+                          <td colSpan={6} className="px-5 py-4">
+                            <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
+                              <div>
+                                <div className="text-[10.5px] font-bold text-gray-400 uppercase tracking-[.6px] mb-1.5">Salle</div>
+                                <input
+                                  value={r.salle}
+                                  onChange={(e) => setRow(a, { ...r, salle: e.target.value })}
+                                  placeholder="Salle…"
+                                  aria-label="Salle"
+                                  className={`w-[110px] px-2.5 py-1.5 rounded-lg border text-[12.5px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/25 ${r.salle.trim() ? "border-gray-200" : "border-amber-300 bg-amber-50/40"}`}
+                                />
+                              </div>
+                              <div>
+                                <div className="text-[10.5px] font-bold uppercase tracking-[.6px] mb-1.5" style={{ color: TEAL }}>● Matin</div>
+                                <SlotsEditor slots={r.matin} onChange={(slots) => setRow(a, { ...r, matin: slots })} def={DEF_MATIN} tint={TEAL} />
+                              </div>
+                              <div>
+                                <div className="text-[10.5px] font-bold uppercase tracking-[.6px] mb-1.5" style={{ color: ACCENT }}>● Après-midi</div>
+                                <SlotsEditor slots={r.apm} onChange={(slots) => setRow(a, { ...r, apm: slots })} def={DEF_APM} tint={ACCENT} />
+                              </div>
+                              <div className="ml-auto flex items-center gap-2 self-end">
+                                {dirty && (
+                                  <button onClick={() => save(a)} disabled={pending} className="flex items-center gap-1 px-3 py-2 rounded-lg text-white text-[12px] font-bold disabled:opacity-40" style={{ background: ACCENT }}>
+                                    <Check className="w-3.5 h-3.5" />Enregistrer
+                                  </button>
+                                )}
+                                <button onClick={() => setExpandedId(null)} className="px-3 py-2 rounded-lg text-[12px] font-semibold text-gray-600 border border-gray-300 hover:bg-gray-50">Fermer</button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      </Fragment>
                     );
                   })}
                 </tbody>
                 {rows.length > 0 && (
                   <tfoot>
                     <tr className="bg-gray-50/70 border-t border-gray-100">
-                      <td colSpan={4} className="px-5 py-3 text-right text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">
+                      <td colSpan={3} className="px-5 py-3 text-right text-[10.5px] font-bold text-gray-400 uppercase tracking-[.8px]">
                         Total heures planifiées dans la session
                       </td>
                       <td className="px-5 py-3 text-[15px] font-extrabold text-gray-900">{totalHeures.toFixed(1)}h</td>
@@ -934,7 +1002,8 @@ export function PlanificationBoard({
                   <span className="inline-flex items-center gap-1.5 text-gray-600"><span className="w-3 h-3 rounded" style={{ background: ACCENT }} />Après-midi</span>
                 </div>
               </div>
-              <div className="p-5 space-y-2.5">
+              <div className="p-5 flex flex-col lg:flex-row gap-5">
+                <div className="flex-1 min-w-0 space-y-2.5">
                 {/* Graduation horaire */}
                 <div className="flex items-center gap-3 pl-[220px] max-[720px]:pl-0">
                   <div className="relative flex-1 h-4 text-[10px] text-gray-400 font-mono">
@@ -966,6 +1035,8 @@ export function PlanificationBoard({
                     </div>
                   );
                 })}
+                </div>
+                <CoveragePanel slots={coverageSlots} />
               </div>
             </div>
           )}
