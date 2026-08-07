@@ -126,6 +126,10 @@ export async function getDevisList(): Promise<Devis[]> {
       fraisDeplacement: Number(r.frais_deplacement ?? 0),
       fraisCoordination: Number(r.frais_coordination ?? 0),
       remise: Number(r.remise ?? 0),
+      createdAt: r.created_at ?? undefined,
+      // Colonnes de la migration 31 — absentes tant qu'elle n'est pas exécutée.
+      statutChangeAt: r.statut_change_at ?? undefined,
+      prioritaire: r.prioritaire ?? false,
     }));
   } catch {
     return mockDevis;

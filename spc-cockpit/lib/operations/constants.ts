@@ -33,3 +33,18 @@ export const STATUTS_PIPELINE = ["Brouillon", "Envoyé"] as const;
 
 // Statuts de devis représentant du chiffre d'affaires confirmé.
 export const STATUTS_CA_CONFIRME = ["Accepté", "Facturé"] as const;
+
+// ---------------------------------------------------------------------------
+// Devis — règles de suivi commercial (cockpit /operations/devis).
+// ---------------------------------------------------------------------------
+
+// Durée de validité d'un devis, en jours, à compter de son envoi. Valeur reprise
+// des conditions imprimées sur le document : « Devis valable 30 jours ».
+export const VALIDITE_DEVIS_J = 30;
+
+// Délai sans réponse au-delà duquel un devis envoyé bascule en « En attente »
+// dans le pipeline et devient éligible à une relance.
+export const DELAI_RELANCE_DEVIS_J = 7;
+
+// Fenêtre d'alerte avant l'expiration de la validité d'un devis envoyé.
+export const SEUIL_EXPIRATION_DEVIS_J = 7;

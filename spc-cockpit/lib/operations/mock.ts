@@ -68,12 +68,16 @@ export const mockAffectations: Affectation[] = [
 // Devis — CA confirmé (Accepté) = 5 200 + 7 344,40 = 12 544,40 € HT /
 // 6 240 + 8 813,28 = 15 053,28 € TTC. Ids 1 (Sciences Po) et 4 (ICP Reims)
 // stables : l'équipe chiffrée (mockDevisEquipe) s'y rattache.
+// Références, sessions et dates alignées sur le jeu semé en base
+// (supabase/migrations/01 et 06) : le repli de démonstration montre exactement
+// ce que montre une base réelle. `createdAt` / `statutChangeAt` alimentent le
+// suivi commercial (relances, expiration de validité, dernière action).
 export const mockDevis: Devis[] = [
-  { id: 5, reference: "SPC-20260729-001", client: "ICN",          session: "Concours DC 2026",              statut: "Brouillon", montantHT: 650,    montantTTC: 780,     nbSurveillants: 3,  coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
-  { id: 4, reference: "SPC-20260728-001", client: "ICP Reims",    session: "Rattrapages juin 2026 — 74 créneaux · 262,3 h", statut: "Accepté", montantHT: 7344.4, montantTTC: 8813.28, nbSurveillants: 6, contact: "Mathilde Régnier — Pôle Scolarité", email: "scolarite.reims@icp.fr", ville: "Reims", typeEpreuve: "Rattrapage", dateDebut: "2026-06-15", dateFin: "2026-06-26", coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
-  { id: 1, reference: "SPC-20260727-001", client: "Sciences Po",  session: "Concours écrit 2026",           statut: "Accepté",   montantHT: 5200,   montantTTC: 6240,    nbSurveillants: 18, coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
-  { id: 3, reference: "SPC-20260726-001", client: "Dauphine PSL", session: "Oral admission 2026",           statut: "Envoyé",    montantHT: 2600,   montantTTC: 3120,    nbSurveillants: 5,  coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
-  { id: 2, reference: "SPC-20260724-001", client: "ICP Paris",    session: "Session principale — juil. 2026", statut: "Brouillon", montantHT: 4042,   montantTTC: 4850.4,  nbSurveillants: 14, coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0 },
+  { id: 5, reference: "SPC-20260729-001", client: "ICN",          session: "Concours DC 2026",              statut: "Brouillon", montantHT: 650,    montantTTC: 780,     nbSurveillants: 3,  dateDebut: "2026-09-07", coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0, createdAt: "2026-06-29T09:10:00Z", prioritaire: true },
+  { id: 4, reference: "SPC-20260605-001", client: "ICP Reims",    session: "Rattrapages juin 2026 — 74 créneaux · 262,3 h", statut: "Accepté", montantHT: 7344.4, montantTTC: 8813.28, nbSurveillants: 6, contact: "Mathilde Régnier — Pôle Scolarité", email: "scolarite.reims@icp.fr", ville: "Reims", typeEpreuve: "Rattrapage", dateDebut: "2026-06-15", dateFin: "2026-06-26", coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0, createdAt: "2026-06-05T08:30:00Z", statutChangeAt: "2026-06-20T14:05:00Z" },
+  { id: 1, reference: "SPC-20260514-001", client: "Sciences Po",  session: "Concours écrit 2026",           statut: "Accepté",   montantHT: 5200,   montantTTC: 6240,    nbSurveillants: 18, dateDebut: "2026-05-23", coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0, createdAt: "2026-05-14T10:00:00Z", statutChangeAt: "2026-05-25T09:40:00Z" },
+  { id: 3, reference: "SPC-20260528-001", client: "Dauphine PSL", session: "Rattrapages juin 2026",         statut: "Envoyé",    montantHT: 2600,   montantTTC: 3120,    nbSurveillants: 8,  email: "scolarite@dauphine.psl.eu", dateDebut: "2026-06-10", dateFin: "2026-06-12", coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0, createdAt: "2026-05-28T11:20:00Z", statutChangeAt: "2026-05-28T16:45:00Z" },
+  { id: 2, reference: "SPC-20260524-001", client: "ICP Paris",    session: "Session principale — mai 2026", statut: "Brouillon", montantHT: 4042,   montantTTC: 4850.4,  nbSurveillants: 14, dateDebut: "2026-07-08", coefficient: 1, fraisDeplacement: 0, fraisCoordination: 0, remise: 0, createdAt: "2026-05-24T15:15:00Z" },
 ];
 
 export const mockSalles: Salle[] = [
@@ -91,9 +95,11 @@ export const mockAmenagements: Amenagement[] = [
   { id: 4, amenagement: "PMR — Malvoyant",          salle: "E31", tiersTemps: false, surveillant: "Thomas Girard" },
 ];
 
+// Factures rattachées à leur devis (comme en base, cf. migration 08) : le
+// cockpit commercial s'appuie sur ce lien pour savoir ce qui reste à facturer.
 export const mockFactures: Facture[] = [
-  { id: 1, reference: "FA-2026-001", client: "Sciences Po",  session: "Concours écrit 2026",   statut: "Payée",    montantHT: 5200, montantTTC: 6240, emission: "2026-05-24", echeance: "2026-06-23" },
-  { id: 2, reference: "FA-2026-002", client: "ICP Reims",    session: "Rattrapages juin 2026", statut: "Facturée", montantHT: 7344.4, montantTTC: 8813.28, emission: "2026-07-03", echeance: "2026-08-02" },
+  { id: 1, reference: "FA-2026-001", client: "Sciences Po",  session: "Concours écrit 2026",   statut: "Payée",    montantHT: 5200, montantTTC: 6240, emission: "2026-05-24", echeance: "2026-06-23", devisId: 1 },
+  { id: 2, reference: "FA-2026-002", client: "ICP Reims",    session: "Rattrapages juin 2026", statut: "Facturée", montantHT: 7344.4, montantTTC: 8813.28, emission: "2026-07-03", echeance: "2026-08-02", devisId: 4 },
 ];
 
 export const mockDevisLignes: DevisLigne[] = [

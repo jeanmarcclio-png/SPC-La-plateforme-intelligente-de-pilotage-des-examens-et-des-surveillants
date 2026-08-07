@@ -127,6 +127,15 @@ export interface Devis {
   fraisDeplacement: number;
   fraisCoordination: number;
   remise: number;
+  createdAt?: string; // ISO complet — date de création (colonne created_at)
+  /**
+   * Horodatage du dernier changement de statut (colonne statut_change_at,
+   * maintenue par trigger — cf. migration 31). Absent tant que la migration
+   * n'est pas appliquée : le suivi retombe alors sur `createdAt`.
+   */
+  statutChangeAt?: string;
+  /** Devis épinglé manuellement par l'équipe commerciale (colonne prioritaire). */
+  prioritaire?: boolean;
 }
 
 export interface DevisEquipe {

@@ -243,6 +243,31 @@ export async function duplicateDevis(id: number): Promise<{ error?: string; newI
   }
 }
 
+/**
+ * Épingle (ou dépingle) un devis dans le cockpit commercial. La colonne
+ * `prioritaire` arrive avec la migration 31 : tant qu'elle n'est pas exécutée,
+ * l'action le dit explicitement au lieu d'échouer silencieusement.
+ */
+export async function toggleDevisPriorite(id: number, prioritaire: boolean): Promise<{ error?: string }> {
+  const auth = await requireCapability("finance");
+  if (!auth.ok) return { error: auth.error };
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.from("devis").update({ prioritaire }).eq("id", id);
+    if (error) {
+      return {
+        error: /column .*prioritaire/i.test(error.message)
+          ? "Priorité non enregistrée : exécuter la migration 31 (suivi commercial des devis)."
+          : `Mise à jour échouée : ${error.message}`,
+      };
+    }
+    revalidateOps();
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erreur inconnue" };
+  }
+}
+
 export async function deleteDevis(id: number): Promise<{ error?: string }> {
   const auth = await requireCapability("finance");
   if (!auth.ok) return { error: auth.error };
