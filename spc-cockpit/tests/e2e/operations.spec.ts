@@ -10,6 +10,8 @@ const PAGES: { path: string; expect: string }[] = [
   { path: "/operations/surveillants", expect: "Import Excel / CSV" },
   { path: "/operations/missions", expect: "Missions" },
   { path: "/operations/planification", expect: "Santé de la session" },
+  { path: "/operations/planification/planning", expect: "Affectations & planning" },
+  { path: "/operations/planification/copilote", expect: "Copilote IA & contrôle" },
   { path: "/operations/devis", expect: "Devis" },
   { path: "/operations/salles", expect: "Salles" },
   { path: "/operations/facturation", expect: "Facturation" },
@@ -40,22 +42,46 @@ test.describe("Surveillants — actions libellées", () => {
   });
 });
 
-test.describe("Planification — aide à la décision (§21)", () => {
-  test("santé, couverture, rentabilité et copilote sont affichés", async ({ page }) => {
+test.describe("Planification — parcours Piloter → Planifier → Optimiser", () => {
+  test("la synthèse porte les indicateurs de commandement", async ({ page }) => {
     await page.goto("/operations/planification", { waitUntil: "networkidle" });
     await expect(page.getByText("Santé de la session")).toBeVisible();
     await expect(page.getByText("Couverture surveillants")).toBeVisible();
-    await expect(page.getByText("Rentabilité de la session")).toBeVisible();
-    await expect(page.getByText("Copilote d'affectation").first()).toBeVisible();
+    await expect(page.getByText("Marge estimée")).toBeVisible();
+    await expect(page.getByText("Heures planifiées").first()).toBeVisible();
+    await expect(page.getByText("Copilote d'affectation")).toBeVisible();
   });
 
-  test("le filtre « Sans salle » restreint la liste aux surveillants sans salle", async ({ page }) => {
+  test("la session suit la navigation entre les trois étapes", async ({ page }) => {
     await page.goto("/operations/planification", { waitUntil: "networkidle" });
-    const rowsAll = await page.locator("#session-table tbody tr").count();
-    await page.getByRole("button", { name: "Sans salle" }).click();
-    const rowsFiltered = await page.locator("#session-table tbody tr").count();
-    expect(rowsFiltered).toBeLessThan(rowsAll);
-    expect(rowsFiltered).toBeGreaterThan(0);
+    // Portée au parcours : la sidebar porte un raccourci « Planifier une équipe ».
+    const parcours = page.getByRole("navigation", { name: "Parcours de planification" });
+    await parcours.getByRole("link", { name: /Planifier/ }).click();
+    await expect(page).toHaveURL(/\/planification\/planning\?session=\d+/);
+    await parcours.getByRole("link", { name: /Optimiser/ }).click();
+    await expect(page).toHaveURL(/\/planification\/copilote\?session=\d+/);
+  });
+
+  test("le filtre « Sans salle » restreint la liste des affectations", async ({ page }) => {
+    await page.goto("/operations/planification/planning", { waitUntil: "networkidle" });
+    const toutes = await page.locator("table tbody tr").count();
+    await page.getByRole("button", { name: /^Sans salle/ }).click();
+    const filtrees = await page.locator("table tbody tr").count();
+    expect(filtrees).toBeLessThan(toutes);
+  });
+
+  test("le total des heures est calculé en minutes exactes", async ({ page }) => {
+    await page.goto("/operations/planification/planning", { waitUntil: "networkidle" });
+    await expect(page.getByText("Total heures planifiées")).toBeVisible();
+    await expect(page.getByText("66,25 h").first()).toBeVisible();
+  });
+
+  test("le copilote expose contrôle et aperçu sans répéter les cartes de synthèse", async ({ page }) => {
+    await page.goto("/operations/planification/copilote", { waitUntil: "networkidle" });
+    await expect(page.getByText("Sous-effectifs détectés")).toBeVisible();
+    await expect(page.getByText("Rééquilibrage de charge")).toBeVisible();
+    await expect(page.getByText("Aperçu de la session")).toBeVisible();
+    await expect(page.getByText("Santé de la session")).toHaveCount(0);
   });
 });
 

@@ -1,23 +1,44 @@
 export const dynamic = "force-dynamic";
 
-import { getMissions, getSurveillants, getAffectations, getJournal } from "@/lib/operations/queries";
-import { getRefusEnAttente } from "@/lib/supabase/portail";
-import { PlanificationBoard } from "@/components/ops/PlanificationBoard";
+import { chargerContexteSession } from "@/lib/operations/planification-chargement";
+import { OPS_CONTENT_CLASS, PageHeader } from "@/components/ops/shell";
+import { CommandCenter } from "@/components/ops/planification/CommandCenter";
 import { RefusPanel } from "@/components/ops/RefusPanel";
 import { RealtimeRefresh } from "@/components/RealtimeRefresh";
-import { PageHeader } from "@/components/ops/shell";
+import { getRefusEnAttente } from "@/lib/supabase/portail";
+import { Gauge } from "lucide-react";
 
-export default async function PlanificationPage() {
-  const [missions, surveillants, affectations, journal, refus] = await Promise.all([
-    getMissions(), getSurveillants(), getAffectations(), getJournal(), getRefusEnAttente(),
+// PAGE 1 — PILOTER. Synthèse exécutive de la session courante.
+// Les chiffres proviennent de construireVueSession : la Page 2 et la Page 3
+// lisent exactement le même calcul.
+
+export default async function PlanificationPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session?: string }>;
+}) {
+  const { session } = await searchParams;
+  const [{ vue, sessions, disponibles }, refus] = await Promise.all([
+    chargerContexteSession(session),
+    getRefusEnAttente(),
   ]);
 
   return (
-    <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
+    <div className={OPS_CONTENT_CLASS}>
       <RealtimeRefresh tables={["affectations", "disponibilites"]} />
-      <PageHeader page="Planification" subtitle="Sessions d&apos;examens · affectation des salles et créneaux, suivi des heures" />
+      <PageHeader
+        page="Planification"
+        icon={<Gauge className="w-[18px] h-[18px]" />}
+        subtitle="Piloter la session : couverture, marge, heures et points de blocage"
+      />
       <RefusPanel refus={refus} />
-      <PlanificationBoard missions={missions} surveillants={surveillants} affectations={affectations} journal={journal} />
+      {vue ? (
+        <CommandCenter vue={vue} sessions={sessions} disponibles={disponibles} />
+      ) : (
+        <p className="bg-white rounded-2xl border border-[#E6EAF0] p-8 text-center text-[13px] text-[#667085]">
+          Aucune session à planifier. Créez une mission pour démarrer le pilotage.
+        </p>
+      )}
     </div>
   );
 }
