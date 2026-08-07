@@ -1,30 +1,59 @@
 export const dynamic = "force-dynamic";
 
-import { getMissions } from "@/lib/operations/queries";
-import { MissionsTable } from "@/components/ops/MissionsTable";
-import { Kpi } from "@/components/ops/Kpi";
-import { euro } from "@/lib/operations/format";
-import { Briefcase, Activity, CheckCircle2, Euro } from "lucide-react";
-import { PageHeader } from "@/components/ops/shell";
+import {
+  getMissions, getAffectations, getDevisList, getDevisSalles, getIncidents,
+} from "@/lib/operations/queries";
+import { construireVueMissions } from "@/lib/operations/missions-dashboard";
+import { OPS_CONTENT_CLASS, PageHeader } from "@/components/ops/shell";
+import { MissionsKpiGrid } from "@/components/ops/missions/MissionsKpiGrid";
+import { ActiveMissionCard, AucuneMissionActive } from "@/components/ops/missions/ActiveMissionCard";
+import { UpcomingMissionsCard } from "@/components/ops/missions/UpcomingMissionsCard";
+import { MissionAlertsCard } from "@/components/ops/missions/MissionAlertsCard";
+import { RevenueDistributionCard } from "@/components/ops/missions/RevenueDistributionCard";
+import { MissionsTable } from "@/components/ops/missions/MissionsTable";
+import { NouvelleMissionBouton } from "@/components/ops/missions/NouvelleMissionBouton";
+import { CalendarCheck2 } from "lucide-react";
+
+// Centre de pilotage des missions.
+// La page ne calcule rien : elle charge les données du tenant puis délègue
+// l'intégralité des chiffres à construireVueMissions (source unique), ce qui
+// garantit la cohérence entre KPI, bandeau actif, alertes et tableau.
 
 export default async function MissionsPage() {
-  const missions = await getMissions();
-  const enCours = missions.filter((m) => m.statut === "En cours" || m.statut === "Planifiée").length;
-  const terminees = missions.filter((m) => m.statut === "Terminée").length;
-  const caTotal = missions.filter((m) => m.statut !== "Annulée").reduce((s, m) => s + m.montantHT, 0);
+  const [missions, affectations, devis, devisSalles, incidents] = await Promise.all([
+    getMissions(),
+    getAffectations(),
+    getDevisList(),
+    getDevisSalles(),
+    getIncidents(),
+  ]);
+
+  const vue = construireVueMissions({ missions, affectations, devis, devisSalles, incidents });
 
   return (
-    <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
-      <PageHeader page="Missions" subtitle="Suivi des sessions d&apos;examens et de la mission active" />
+    <div className={OPS_CONTENT_CLASS}>
+      <PageHeader
+        page="Missions"
+        icon={<CalendarCheck2 className="w-[18px] h-[18px]" />}
+        subtitle="Suivi des sessions d&apos;examens et de la mission active"
+        actions={<NouvelleMissionBouton />}
+      />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-        <Kpi variant="vivid" accent="indigo" label="Total missions" value={String(missions.length)} sub="toutes périodes" icon={<Briefcase className="w-4 h-4" />} />
-        <Kpi variant="vivid" accent="cyan" label="En cours" value={String(enCours)} sub="planifiées ou actives" icon={<Activity className="w-4 h-4" />} />
-        <Kpi variant="vivid" accent="emerald" label="Terminées" value={String(terminees)} sub="sessions clôturées" icon={<CheckCircle2 className="w-4 h-4" />} />
-        <Kpi variant="vivid" accent="teal" label="CA total" value={euro(caTotal)} sub="montants HT cumulés" icon={<Euro className="w-4 h-4" />} />
+      <MissionsKpiGrid stats={vue.stats} serie={vue.serie} />
+
+      {vue.active ? (
+        <ActiveMissionCard vue={vue.active} />
+      ) : (
+        <AucuneMissionActive prochaine={vue.prochaines[0] ?? null} />
+      )}
+
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3.5 mb-5 items-start">
+        <UpcomingMissionsCard missions={missions} todayISO={vue.todayISO} />
+        <MissionAlertsCard alertes={vue.alertes} />
+        <RevenueDistributionCard ca={vue.ca} />
       </div>
 
-      <MissionsTable missions={missions} />
+      <MissionsTable lignes={vue.lignes} missionActiveId={vue.active?.mission.id ?? null} />
     </div>
   );
 }

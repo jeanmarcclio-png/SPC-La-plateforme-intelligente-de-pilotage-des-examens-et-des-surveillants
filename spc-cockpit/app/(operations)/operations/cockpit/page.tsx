@@ -6,6 +6,7 @@ import { CockpitSubtitle, RefreshButton } from "@/components/ops/CockpitRefresh"
 import { dateFR } from "@/lib/operations/format";
 import { SEUIL_SURCHARGE_H } from "@/lib/operations/constants";
 import { joursAvant, prioriteAlerte, trierParPriorite, type NiveauAlerte } from "@/lib/operations/alertes";
+import { selectionnerMissionActive } from "@/lib/operations/missions-dashboard";
 import { Activity, DoorOpen, CalendarClock, AlertTriangle, CheckCircle2, MapPin, Zap, Users, Landmark, UserCheck } from "lucide-react";
 import { PageHeader } from "@/components/ops/shell";
 import { Kpi } from "@/components/ops/Kpi";
@@ -51,7 +52,8 @@ export default async function CockpitOpsPage() {
   ]);
   const survById = new Map(surveillants.map((s) => [s.id, s]));
 
-  const active = missions.find((m) => m.statut === "En cours") ?? missions.find((m) => m.statut === "Validée") ?? missions.find((m) => m.statut === "Planifiée");
+  // Sélection partagée avec le shell et la page Missions (source unique).
+  const active = selectionnerMissionActive(missions);
   const enCours = missions.filter((m) => m.statut === "En cours").length;
   const rows = active ? affectations.filter((a) => a.missionId === active.id) : [];
 

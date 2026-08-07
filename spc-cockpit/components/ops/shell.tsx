@@ -13,17 +13,27 @@ export function PageHeader({
   title,
   subtitle,
   actions,
+  icon,
 }: {
   page: string;
   title?: string;
   subtitle?: React.ReactNode;
   actions?: React.ReactNode;
+  /** Pastille d'icône optionnelle affichée devant le titre (aucune page existante n'en dépend). */
+  icon?: React.ReactNode;
 }) {
   return (
     <div className="mb-6 flex items-end justify-between gap-3 flex-wrap">
       <div>
         <OpsBreadcrumb page={page} />
-        <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight">{title ?? page}</h1>
+        <h1 className="text-[22px] md:text-[26px] font-extrabold text-gray-900 tracking-tight flex items-center gap-2.5">
+          {icon && (
+            <span aria-hidden className="w-8 h-8 rounded-xl bg-[#ECEBFF] text-[#4F46F5] flex items-center justify-center flex-shrink-0">
+              {icon}
+            </span>
+          )}
+          {title ?? page}
+        </h1>
         {typeof subtitle === "string" ? (
           <p className="text-[13px] text-gray-400 mt-0.5">{subtitle}</p>
         ) : (
