@@ -5,21 +5,41 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, Gauge, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert } from "lucide-react";
 import { isNavActive } from "@/lib/operations/nav";
 
-export const NAV = [
-  { href: "/operations",                label: "Dashboard",        icon: <LayoutDashboard className="w-4 h-4" /> },
-  { href: "/operations/cockpit",        label: "Cockpit",          icon: <Gauge className="w-4 h-4" /> },
-  { href: "/operations/missions",       label: "Missions",         icon: <Briefcase className="w-4 h-4" /> },
-  { href: "/operations/surveillants",   label: "Surveillants",     icon: <Users className="w-4 h-4" /> },
-  { href: "/operations/planification",  label: "Planification",    icon: <CalendarClock className="w-4 h-4" /> },
-  { href: "/operations/salles",         label: "Salles",           icon: <DoorOpen className="w-4 h-4" /> },
-  { href: "/operations/pmr",            label: "PMR & Tiers-temps", icon: <Accessibility className="w-4 h-4" /> },
-  { href: "/operations/devis",          label: "Devis",            icon: <FileText className="w-4 h-4" /> },
-  { href: "/operations/facturation",    label: "Facturation",      icon: <Euro className="w-4 h-4" /> },
-  { href: "/operations/presence",       label: "Présence",         icon: <ClipboardCheck className="w-4 h-4" /> },
-  { href: "/operations/incidents",      label: "Incidents",        icon: <AlertTriangle className="w-4 h-4" /> },
-  { href: "/operations/rapports",       label: "Rapports",         icon: <BarChart3 className="w-4 h-4" /> },
-  { href: "/operations/risques",        label: "Risques IA",       icon: <ShieldAlert className="w-4 h-4" /> },
+// Navigation groupée en trois familles métier (pilotage / commercial /
+// suivi & qualité). `NAV` reste la liste à plat : c'est le contrat utilisé par
+// la recherche de la topbar et les tests de navigation.
+export const NAV_SECTIONS = [
+  {
+    titre: "Pilotage",
+    items: [
+      { href: "/operations",               label: "Dashboard",         icon: <LayoutDashboard className="w-4 h-4" /> },
+      { href: "/operations/cockpit",       label: "Cockpit",           icon: <Gauge className="w-4 h-4" /> },
+      { href: "/operations/missions",      label: "Missions",          icon: <Briefcase className="w-4 h-4" /> },
+      { href: "/operations/surveillants",  label: "Surveillants",      icon: <Users className="w-4 h-4" /> },
+      { href: "/operations/planification", label: "Planification",     icon: <CalendarClock className="w-4 h-4" /> },
+      { href: "/operations/salles",        label: "Salles",            icon: <DoorOpen className="w-4 h-4" /> },
+      { href: "/operations/pmr",           label: "PMR & Tiers-temps", icon: <Accessibility className="w-4 h-4" /> },
+    ],
+  },
+  {
+    titre: "Commercial",
+    items: [
+      { href: "/operations/devis",       label: "Devis",       icon: <FileText className="w-4 h-4" /> },
+      { href: "/operations/facturation", label: "Facturation", icon: <Euro className="w-4 h-4" /> },
+    ],
+  },
+  {
+    titre: "Suivi & qualité",
+    items: [
+      { href: "/operations/presence",  label: "Présence",   icon: <ClipboardCheck className="w-4 h-4" /> },
+      { href: "/operations/incidents", label: "Incidents",  icon: <AlertTriangle className="w-4 h-4" /> },
+      { href: "/operations/rapports",  label: "Rapports",   icon: <BarChart3 className="w-4 h-4" /> },
+      { href: "/operations/risques",   label: "Risques IA", icon: <ShieldAlert className="w-4 h-4" /> },
+    ],
+  },
 ];
+
+export const NAV = NAV_SECTIONS.flatMap((s) => s.items);
 
 export interface ActiveMissionInfo {
   client: string;
@@ -43,7 +63,13 @@ function LogoBlock() {
   );
 }
 
-export function OpsSidebar({ activeMission }: { activeMission?: ActiveMissionInfo | null }) {
+export function OpsSidebar({
+  activeMission,
+  incidentsOuverts = 0,
+}: {
+  activeMission?: ActiveMissionInfo | null;
+  incidentsOuverts?: number;
+}) {
   const pathname = usePathname();
 
   return (
@@ -73,26 +99,41 @@ export function OpsSidebar({ activeMission }: { activeMission?: ActiveMissionInf
       )}
 
       {/* Nav */}
-      <div className="px-4 text-[10px] font-bold uppercase tracking-[1.5px] text-[#5f7a94] mb-1.5">Navigation</div>
-      <nav className="flex-1 overflow-y-auto px-3 space-y-0.5">
-        {NAV.map((item) => {
-          const active = isNavActive(pathname, item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={active ? "page" : undefined}
-              className={`flex items-center justify-between gap-2.5 rounded-xl px-3 py-[9px] text-[13px] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
-                active
-                  ? "bg-white text-[#0d2137] font-semibold shadow-sm"
-                  : "text-[#8fa3b8] hover:bg-white/[0.06] hover:text-[#d6e2ee]"
-              }`}
-            >
-              <span className="flex items-center gap-2.5">{item.icon}{item.label}</span>
-              {active && <ChevronRight className="w-3.5 h-3.5 text-[#0d2137]/40" />}
-            </Link>
-          );
-        })}
+      <nav aria-label="Navigation Opérations" className="flex-1 overflow-y-auto px-3 pb-2">
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.titre} className="mb-3 last:mb-0">
+            <h2 className="px-2 text-[9.5px] font-bold uppercase tracking-[1.5px] text-[#5f7a94] mb-1.5">{section.titre}</h2>
+            <ul className="space-y-0.5">
+              {section.items.map((item) => {
+                const active = isNavActive(pathname, item.href);
+                const badge = item.href === "/operations/incidents" ? incidentsOuverts : 0;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      aria-current={active ? "page" : undefined}
+                      className={`flex items-center justify-between gap-2.5 rounded-xl px-3 py-[9px] text-[13px] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+                        active
+                          ? "bg-gradient-to-r from-[#3156F5] to-[#6548F6] text-white font-semibold shadow-[0_4px_14px_rgba(79,70,245,0.35)]"
+                          : "text-[#8fa3b8] hover:bg-white/[0.06] hover:text-[#d6e2ee]"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2.5">{item.icon}{item.label}</span>
+                      {badge > 0 ? (
+                        <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF3E4D] text-white text-[10px] font-bold flex items-center justify-center">
+                          {badge}
+                          <span className="sr-only"> incident(s) non résolu(s)</span>
+                        </span>
+                      ) : (
+                        active && <ChevronRight className="w-3.5 h-3.5 text-white/60" aria-hidden />
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </nav>
 
       {/* Retour cockpit commercial */}
