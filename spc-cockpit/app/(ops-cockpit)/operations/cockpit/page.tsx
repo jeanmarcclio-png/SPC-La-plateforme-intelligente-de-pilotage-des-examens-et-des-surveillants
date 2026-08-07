@@ -2,115 +2,19 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import {
-  LayoutDashboard, Gauge, Activity, Briefcase, Users, CalendarClock, DoorOpen,
-  Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3,
-  ShieldAlert, ChevronRight, ChevronDown, Bell, RefreshCw, Calendar, MapPin,
-  CheckCircle2, Clock, Pencil, MessageSquare, MoreHorizontal, Sparkles, Settings,
-  UserCog, Info, LayoutGrid, Check,
+  Users, DoorOpen, AlertTriangle, ChevronRight, ChevronDown, Bell, RefreshCw,
+  Calendar, MapPin, CheckCircle2, Clock, Pencil, MessageSquare, MoreHorizontal,
+  Sparkles, Settings, UserCog, Info, LayoutGrid,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { requireActiveOrgId } from "@/lib/auth/org";
 import { getCurrentUser, getCurrentRole } from "@/lib/auth/session";
 import { getMissions, getAffectations, getSurveillants, getSalles, getIncidents } from "@/lib/operations/queries";
 import { buildCockpitView, DEMO_COCKPIT } from "@/lib/operations/cockpit";
-
-function nomDepuisEmail(email?: string | null): string {
-  if (!email) return "Coordinateur SPC";
-  const local = email.split("@")[0] ?? "";
-  const mots = local.split(/[._-]+/).filter(Boolean).map((m) => m.charAt(0).toUpperCase() + m.slice(1));
-  return mots.join(" ") || "Coordinateur SPC";
-}
-function libelleRole(role: string | null): string {
-  if (!role) return "Coordinateur";
-  const r = role.toLowerCase();
-  if (r.includes("admin")) return "Administrateur";
-  if (r.includes("edit") || r.includes("édit")) return "Éditeur";
-  if (r.includes("lect") || r.includes("read")) return "Lecture seule";
-  return role.charAt(0).toUpperCase() + role.slice(1);
-}
-function initialesNom(nom: string): string {
-  const p = nom.trim().split(/\s+/).filter(Boolean);
-  if (!p.length) return "SP";
-  return ((p[0][0] ?? "") + (p[p.length - 1][0] ?? "")).toUpperCase();
-}
-
-type NavItem = { href: string; label: string; Icon: LucideIcon; active?: boolean; badgeKey?: "inc" };
-const NAV_PILOTAGE: NavItem[] = [
-  { href: "/operations", label: "Dashboard", Icon: LayoutDashboard },
-  { href: "/operations/cockpit", label: "Cockpit", Icon: Gauge, active: true },
-  { href: "/operations/supervision", label: "Supervision live", Icon: Activity },
-  { href: "/operations/missions", label: "Missions", Icon: Briefcase },
-  { href: "/operations/surveillants", label: "Surveillants", Icon: Users },
-  { href: "/operations/planification", label: "Planification", Icon: CalendarClock },
-  { href: "/operations/salles", label: "Salles", Icon: DoorOpen },
-  { href: "/operations/pmr", label: "PMR & Tiers-temps", Icon: Accessibility },
-];
-const NAV_COMMERCIAL: NavItem[] = [
-  { href: "/operations/devis", label: "Devis", Icon: FileText },
-  { href: "/operations/facturation", label: "Facturation", Icon: Euro },
-];
-const NAV_SUIVI: NavItem[] = [
-  { href: "/operations/presence", label: "Présence", Icon: ClipboardCheck },
-  { href: "/operations/incidents", label: "Incidents", Icon: AlertTriangle, badgeKey: "inc" },
-  { href: "/operations/rapports", label: "Rapports", Icon: BarChart3 },
-  { href: "/operations/risques", label: "Risques IA", Icon: ShieldAlert },
-];
+import {
+  COMMAND_CSS, CommandSidebar, initialesNom, nomDepuisEmail, libelleRole,
+} from "@/components/ops/command/shell";
 
 const CSS = `
-.ckp{--bg-app:#071C48;--bg-app-deep:#051541;--bg-sidebar:#061944;--bg-header:#0A2054;--bg-panel:#102352;--bg-panel-soft:#132A5C;--bg-panel-hover:#173266;--bg-row-hover:#142D62;--bg-active-nav:#172C5B;
-  --border-default:rgba(119,151,211,.20);--border-soft:rgba(141,167,218,.13);--border-strong:rgba(117,155,232,.34);
-  --text-primary:#F4F7FF;--text-secondary:#A4ADC8;--text-muted:#727B9F;--text-disabled:#4C5575;
-  --blue-primary:#2667DD;--blue-bright:#2E7BFF;--cyan-info:#2997FF;--green-success:#33B162;--green-bright:#36D477;--green-dark:#146144;
-  --orange-warning:#F59E0B;--orange-dark:#A56500;--red-critical:#F0444B;--red-dark:#A72435;--purple-ai:#8B5CF6;
-  display:flex;min-height:100dvh;color:var(--text-primary);
-  font-family:Inter,"SF Pro Display","SF Pro Text",system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;
-  background:radial-gradient(1200px 640px at 78% -8%,rgba(46,123,255,.10),transparent 60%),var(--bg-app);}
-.ckp *{box-sizing:border-box}
-.ckp svg{display:block}
-
-.ckp .side{width:232px;flex:none;background:var(--bg-sidebar);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;padding:16px 14px 12px}
-.ckp .brand{display:flex;align-items:center;gap:10px;padding:2px 4px 14px}
-.ckp .brand .logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#2E7BFF,#7C5CFF);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(46,123,255,.4);flex:none;color:#fff}
-.ckp .brand .nm{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px;line-height:1}
-.ckp .brand .nm .ai{font-size:9px;font-weight:800;background:var(--purple-ai);color:#fff;border-radius:5px;padding:2px 5px;letter-spacing:.04em}
-.ckp .brand .sub{font-size:10.5px;color:var(--text-muted);margin-top:3px}
-.ckp .mcard{margin:2px 2px 16px;border:1px solid var(--border-default);background:var(--bg-active-nav);border-radius:10px;padding:9px 11px;display:flex;align-items:center;gap:9px;text-decoration:none}
-.ckp .mcard .dot{width:8px;height:8px;border-radius:50%;background:var(--green-bright);box-shadow:0 0 8px var(--green-bright);flex:none}
-.ckp .mcard .k{font-size:9.5px;font-weight:700;letter-spacing:.09em;color:var(--green-bright)}
-.ckp .mcard .v{font-size:12px;font-weight:600;color:var(--text-primary);margin-top:2px}
-.ckp .mcard .chev{margin-left:auto;color:var(--text-muted)}
-.ckp .navsec{font-size:9.5px;font-weight:700;letter-spacing:.13em;color:var(--text-disabled);padding:12px 8px 6px}
-.ckp .nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;color:var(--text-secondary);font-size:12.5px;font-weight:500;text-decoration:none;position:relative;margin-bottom:1px}
-.ckp .nav a:hover{background:var(--bg-panel-hover);color:var(--text-primary)}
-.ckp .nav a.active{background:var(--bg-active-nav);color:#fff;font-weight:650;box-shadow:inset 0 0 0 1px var(--border-strong)}
-.ckp .nav a.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:var(--blue-bright)}
-.ckp .nav a .bdg{margin-left:auto;min-width:17px;height:17px;padding:0 5px;border-radius:999px;background:var(--red-critical);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
-.ckp .side .foot{margin-top:auto;border-top:1px solid var(--border-soft);padding-top:10px}
-.ckp .side .foot a{display:flex;align-items:center;gap:8px;padding:8px 10px;color:var(--text-muted);font-size:12px;text-decoration:none;border-radius:7px}
-.ckp .side .foot a:hover{background:var(--bg-panel-hover);color:var(--text-secondary)}
-
-.ckp .main{flex:1;min-width:0;display:flex;flex-direction:column}
-.ckp .hdr{display:flex;align-items:flex-start;gap:20px;padding:16px 24px 14px;border-bottom:1px solid var(--border-soft);background:linear-gradient(180deg,var(--bg-header),rgba(10,32,84,.4))}
-.ckp .ttl{font-size:25px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:12px}
-.ckp .pill-live{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--green-bright);background:rgba(54,212,119,.12);border:1px solid rgba(54,212,119,.3);border-radius:999px;padding:4px 9px}
-.ckp .pill-live .d{width:7px;height:7px;border-radius:50%;background:var(--green-bright);box-shadow:0 0 7px var(--green-bright)}
-.ckp .subttl{font-size:12px;color:var(--text-secondary);margin-top:6px;display:flex;align-items:center;gap:8px}
-.ckp .right{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
-.ckp .toprow{display:flex;align-items:center;gap:14px}
-.ckp .datesel{display:flex;align-items:center;gap:10px;border:1px solid var(--border-default);background:var(--bg-panel);border-radius:10px;padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--text-primary)}
-.ckp .datesel svg{color:var(--text-secondary)}
-.ckp .bell{position:relative;width:38px;height:38px;border-radius:10px;border:1px solid var(--border-default);background:var(--bg-panel);display:flex;align-items:center;justify-content:center;color:var(--text-secondary)}
-.ckp .bell .b{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:999px;background:var(--red-critical);color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg-header)}
-.ckp .usr{display:flex;align-items:center;gap:9px}
-.ckp .usr .av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#2E7BFF,#6D45D9);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800;color:#fff}
-.ckp .usr .nm{font-size:12.5px;font-weight:700}
-.ckp .usr .rl{font-size:11px;color:var(--text-secondary)}
-.ckp .btns{display:flex;gap:10px}
-.ckp .btn{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:10px;font-size:12px;font-weight:650;cursor:pointer;border:1px solid transparent;text-decoration:none}
-.ckp .btn-sec{background:transparent;border-color:var(--border-strong);color:var(--text-primary)}
-.ckp .btn-pri{background:var(--blue-bright);color:#fff;box-shadow:0 6px 16px rgba(46,123,255,.32)}
-
-.ckp .scroll{flex:1;overflow:auto;padding:18px 24px 26px}
 .ckp .kpis{display:grid;grid-template-columns:repeat(4,1fr) 1.28fr;gap:14px}
 .ckp .kpi{border:1px solid var(--border-default);background:var(--bg-panel);border-radius:13px;padding:15px 16px 14px;box-shadow:0 2px 8px rgba(0,8,30,.16);min-height:118px}
 .ckp .kpi .top{display:flex;align-items:center;gap:10px}
@@ -254,51 +158,16 @@ export default async function CockpitOpsPage() {
   }
 
   const k = view.kpis;
-  const badges: Record<string, number> = { inc: openIncidents };
-
-  const navBlock = (items: NavItem[]) => items.map(({ href, label, Icon, active, badgeKey }) => {
-    const b = badgeKey ? badges[badgeKey] ?? 0 : 0;
-    return (
-      <Link key={href} href={href} className={active ? "active" : undefined}>
-        <Icon className="w-4 h-4" />{label}{b > 0 ? <span className="bdg">{b}</span> : null}
-      </Link>
-    );
-  });
 
   return (
     <div className="ckp">
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: COMMAND_CSS + CSS }} />
 
-      {/* SIDEBAR */}
-      <aside className="side">
-        <div className="brand">
-          <span className="logo"><Check className="w-[19px] h-[19px]" strokeWidth={2.4} /></span>
-          <div>
-            <div className="nm">Survéo <span className="ai">IA</span></div>
-            <div className="sub">Gestion des examens</div>
-          </div>
-        </div>
-
-        <Link href="/operations/missions" className="mcard">
-          <span className="dot" />
-          <div>
-            <div className="k">MISSION ACTIVE</div>
-            <div className="v">{view.missionLabel}</div>
-          </div>
-          <ChevronRight className="w-4 h-4 chev" />
-        </Link>
-
-        <div className="navsec">PILOTAGE</div>
-        <nav className="nav">{navBlock(NAV_PILOTAGE)}</nav>
-        <div className="navsec">COMMERCIAL</div>
-        <nav className="nav">{navBlock(NAV_COMMERCIAL)}</nav>
-        <div className="navsec">SUIVI &amp; QUALITÉ</div>
-        <nav className="nav">{navBlock(NAV_SUIVI)}</nav>
-
-        <div className="foot">
-          <Link href="/cockpit"><ChevronRight className="w-[15px] h-[15px] rotate-180" />Cockpit commercial</Link>
-        </div>
-      </aside>
+      <CommandSidebar
+        actif="/operations/cockpit"
+        missionLabel={view.missionLabel}
+        incidentsOuverts={openIncidents}
+      />
 
       {/* MAIN */}
       <div className="main">
