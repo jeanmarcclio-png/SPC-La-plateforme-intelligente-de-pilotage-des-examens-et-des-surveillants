@@ -133,7 +133,7 @@ export function CommandCenter({
         </Carte>
 
         <Carte
-          titre="Marge estimée"
+          titre="Marge estimée — cette session"
           icone={<TrendingUp className="w-3.5 h-3.5" />}
           teinte={COULEURS.vert}
           action={<LienCarte href={lienCopilote()}>Voir l&apos;analyse</LienCarte>}
@@ -190,7 +190,7 @@ export function CommandCenter({
           { label: "CA HT", valeur: euro(rentabilite.caHT), couleur: COULEURS.texte },
           { label: "Coût surveillants", valeur: euro(rentabilite.coutHT), couleur: COULEURS.secondaire },
           { label: "Marge HT", valeur: euro(rentabilite.margeHT), couleur: rentabilite.margeHT >= 0 ? COULEURS.vert : COULEURS.rouge },
-          { label: "Taux de marge", valeur: `${margePct} %`, couleur: COULEURS.vert },
+          { label: "Taux de marge — session", valeur: `${margePct} %`, couleur: COULEURS.vert },
         ].map((m) => (
           <div key={m.label} className="flex-1 min-w-[150px] px-5 py-3.5">
             <div className="text-[11px] text-[#667085]">{m.label}</div>
@@ -290,7 +290,7 @@ export function CommandCenter({
                 ["Heures planifiées", heuresFR(vue.heuresTotal, 2)],
                 ["Coût surveillants estimé", euro(rentabilite.coutHT)],
                 ["Marge HT", euro(rentabilite.margeHT)],
-                ["Taux de marge", `${margePct} %`],
+                ["Taux de marge — session", `${margePct} %`],
                 ["Marge après optimisation", `${Math.round(vue.tauxMargeApres * 100)} %`],
               ].map(([k, v]) => (
                 <div key={k} className="flex items-baseline justify-between gap-4 py-2.5 border-b border-[#E6EAF0] last:border-0">

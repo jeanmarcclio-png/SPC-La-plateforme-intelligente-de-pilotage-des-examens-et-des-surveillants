@@ -12,9 +12,13 @@ import type { Mission, Surveillant, Affectation, Devis, Incident, DevisEquipe, S
 import { STATUTS_CA_CONFIRME } from "./constants";
 import { FENETRE_MISSIONS_A_VENIR_J, DELAI_CONFIRMATION_J } from "./constants";
 import { SEUIL_SURCHARGE_H } from "./constants";
+import { couvertureSession, type EtatCouverture } from "./couverture";
 import { analyseRentabilite } from "./rentabilite";
 import { tendanceCA, type PointTendance } from "./stats";
 import { joursAvant, prioriteAlerte } from "./alertes";
+
+export type { EtatCouverture };
+export { couvertureSession };
 
 // ── Types de sortie ──────────────────────────────────────────────────────────
 
@@ -28,7 +32,6 @@ export interface DashboardFinancials {
   nbDevisConfirmes: number;
 }
 
-export type EtatCouverture = "complet" | "attention" | "risque" | "a-planifier";
 
 export interface StaffingCoverage {
   requis: number;
@@ -135,7 +138,6 @@ export interface DashboardInputs {
 // ── Constantes internes ──────────────────────────────────────────────────────
 
 const STATUTS_PLANIFIABLES: StatutMission[] = ["Acceptée", "Planifiée", "Validée", "En cours"];
-const STATUTS_VERROUILLES: StatutMission[] = ["Validée", "En cours", "Terminée", "Facturée", "Archivée"];
 const WEEKDAYS = ["LUN", "MAR", "MER", "JEU", "VEN", "SAM", "DIM"];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -154,36 +156,9 @@ export function missionActive(missions: Mission[]): Mission | null {
   );
 }
 
-function etatDepuisTaux(taux: number): EtatCouverture {
-  if (taux >= 1) return "complet";
-  if (taux >= 0.8) return "attention";
-  return "risque";
-}
-
-/**
- * Couverture d'une session. Priorité aux affectations réelles (postes pourvus =
- * affectation avec un créneau). Sans affectation détaillée : une session au
- * planning verrouillé (Validée/En cours/Terminée…) est considérée couverte ;
- * une session encore à planifier est marquée « à planifier » (jamais un faux 0
- * alarmant, jamais un faux 100 %).
- */
-export function couvertureSession(
-  mission: Mission,
-  affectations: Affectation[],
-): { pourvus: number; requis: number; taux: number; etat: EtatCouverture } {
-  const requis = Math.max(0, mission.nbSurveillants || 0);
-  const rows = affectations.filter((a) => a.missionId === mission.id);
-  if (rows.length > 0) {
-    const pourvus = rows.filter((a) => a.matin || a.apm).length;
-    const req = Math.max(requis, rows.length);
-    const taux = req > 0 ? pourvus / req : 1;
-    return { pourvus, requis: req, taux, etat: etatDepuisTaux(taux) };
-  }
-  if (STATUTS_VERROUILLES.includes(mission.statut)) {
-    return { pourvus: requis, requis, taux: 1, etat: "complet" };
-  }
-  return { pourvus: 0, requis, taux: 0, etat: "a-planifier" };
-}
+// La couverture d'une session vient désormais du module `couverture` — source
+// de vérité unique partagée par le dashboard, le cockpit, la planification, les
+// missions et les salles (audit QA forensic V2, BUG-005).
 
 // ── Finance ──────────────────────────────────────────────────────────────────
 

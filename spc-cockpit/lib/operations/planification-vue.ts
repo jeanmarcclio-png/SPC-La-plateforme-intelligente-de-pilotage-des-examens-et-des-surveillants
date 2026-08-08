@@ -13,7 +13,7 @@
 // Fonctions PURES : aucune dépendance React, aucun accès réseau.
 
 import type { Affectation, Creneau, Mission, Surveillant } from "./types";
-import { analyseCouverture, type Couverture } from "./couverture";
+import { analyseCouverture, couvertureSession, type Couverture } from "./couverture";
 import { analyseRentabilite, type Rentabilite } from "./rentabilite";
 import { scoreSanteSession, type SanteSession } from "./sante-session";
 import { detectSupervisorConflicts } from "./engine/planning-validation";
@@ -417,9 +417,11 @@ export function construireVueSession(input: {
   const minutesTotal = lignes.reduce((n, l) => n + l.minutes, 0);
   const heuresTotal = enHeures(minutesTotal);
   const actives = lignes.filter((l) => l.minutes > 0);
-  const affectes = new Set(actives.map((l) => l.surveillantId)).size;
 
-  const couverture = analyseCouverture({ requis: mission.nbSurveillants, affectes });
+  // Couverture : source de vérité unique (BUG-005) — même définition que le
+  // dashboard, le cockpit, les missions et les salles.
+  const couvSession = couvertureSession(mission, affectations);
+  const couverture = analyseCouverture({ requis: couvSession.requis, affectes: couvSession.pourvus });
   const rentabilite = analyseRentabilite({
     caHT: mission.montantHT,
     lignes: lignes.map((l) => ({ heures: l.heures, tauxHoraire: survById.get(l.surveillantId)?.tauxHoraire ?? 18 })),

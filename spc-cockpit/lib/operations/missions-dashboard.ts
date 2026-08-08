@@ -11,7 +11,7 @@
 // dépendance à l'heure système sauf via un paramètre explicite).
 
 import type { Affectation, Devis, DevisSalle, Incident, Mission, StatutMission } from "./types";
-import { analyseCouverture, type Couverture } from "./couverture";
+import { analyseCouverture, affectationsAvecCreneau, couvertureSession, type Couverture } from "./couverture";
 import { MISSION_STATUTS, STATUTS_PLANIFIABLES, STATUTS_TERMINES } from "./mission-status";
 import { joursAvant, prioriteAlerte, trierParPriorite, type NiveauAlerte } from "./alertes";
 import { calculateRoomDurationMinutes } from "./engine/financial-engine";
@@ -159,22 +159,15 @@ export function serieMensuelle(missions: Mission[], ref: Date = new Date(), nbMo
 // Couverture, heures et candidats d'une mission
 // ---------------------------------------------------------------------------
 
-/** Affectations d'une mission disposant d'au moins un créneau horaire réel. */
-export function affectationsAvecCreneau(affectations: Affectation[]): Affectation[] {
-  return affectations.filter(
-    (a) => a.matin || a.apm || !!a.matinCreneaux?.length || !!a.apmCreneaux?.length
-  );
-}
-
 /**
- * Couverture surveillants = affectés (avec créneau) / requis.
- * Cas « aucun surveillant requis » explicitement géré par analyseCouverture.
+ * Couverture surveillants — délègue à la source de vérité unique (BUG-005).
+ * `affectations` est ici déjà restreint à la mission par l'appelant : on rétablit
+ * le lien attendu par couvertureSession pour conserver une définition identique
+ * à celle du dashboard, du cockpit, de la planification et des salles.
  */
 export function couvertureMission(mission: Mission, affectations: Affectation[]): Couverture {
-  return analyseCouverture({
-    requis: mission.nbSurveillants,
-    affectes: affectationsAvecCreneau(affectations).length,
-  });
+  const c = couvertureSession(mission, affectations.map((a) => ({ ...a, missionId: mission.id })));
+  return analyseCouverture({ requis: c.requis, affectes: c.pourvus });
 }
 
 /** Salles distinctes réellement affectées sur la mission. */

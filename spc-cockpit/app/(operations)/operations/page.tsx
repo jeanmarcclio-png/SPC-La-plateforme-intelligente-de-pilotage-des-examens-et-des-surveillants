@@ -66,10 +66,10 @@ export default async function DashboardPage() {
             viz={<Sparkline points={caPoints} color="#10B981" className="w-full h-full" ariaLabel="Évolution du CA confirmé" />}
           />
           <KpiProCard
-            label="Marge HT"
+            label="Marge HT — portefeuille"
             value={euro(fin.margeHT)}
             delta={{ text: pctFR(fin.tauxMarge), direction: "flat" }}
-            sub="Taux de marge"
+            sub="Sur devis acceptés"
             tone="violet"
             icon={<Coins className="w-[18px] h-[18px]" />}
             href="/operations/facturation"

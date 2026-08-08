@@ -29,11 +29,11 @@ export function FinancialCard({ financials }: { financials: DashboardFinancials 
         <div className="grid grid-cols-2 gap-3 content-start">
           <Metric label="CA HT confirmé" value={euro(caConfirmeHT)} delta={variationCA} />
           <Metric label="CA TTC" value={euro(caTTC)} />
-          <Metric label="Marge HT" value={euro(margeHT)} />
+          <Metric label="Marge HT — portefeuille" value={euro(margeHT)} />
           <div className="rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3">
-            <div className="text-[10.5px] font-bold uppercase tracking-[0.6px] text-slate-400">Taux de marge</div>
+            <div className="text-[10.5px] font-bold uppercase tracking-[0.6px] text-slate-400">Taux de marge — portefeuille</div>
             <div className="text-[19px] font-extrabold text-slate-900 mt-1 tabular-nums">{pctFR(tauxMarge)}</div>
-            <div className="text-[11.5px] text-slate-400 mt-0.5">sur CA confirmé</div>
+            <div className="text-[11.5px] text-slate-400 mt-0.5">devis acceptés · coût au taux horaire moyen</div>
           </div>
         </div>
 

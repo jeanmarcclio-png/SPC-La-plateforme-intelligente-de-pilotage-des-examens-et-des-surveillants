@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Bell, ChevronDown, Calendar, FileText } from "lucide-react";
 import { requireActiveOrgId } from "@/lib/auth/org";
 import { getCurrentUser, getCurrentRole } from "@/lib/auth/session";
-import { getSalles, getIncidents, getMissions } from "@/lib/operations/queries";
+import { getSalles, getIncidents, getMissions, getAffectations } from "@/lib/operations/queries";
 import { construireVueSalles } from "@/lib/operations/salles-view";
 import { dateFR } from "@/lib/operations/format";
 import {
@@ -13,6 +13,7 @@ import {
 import { SallesCommandCenter } from "@/components/ops/salles/SallesCommandCenter";
 import { BandeauSource } from "@/components/ops/EtatSource";
 import { origineGlobale, premiereErreur } from "@/lib/operations/source";
+import { couvertureSession } from "@/lib/operations/couverture";
 import { SALLES_CSS } from "@/components/ops/salles/styles";
 import { Toaster } from "@/components/Toast";
 
@@ -22,16 +23,23 @@ export default async function SallesPage() {
   // Les lectures portent désormais leur ORIGINE (base / demo / vide / erreur) :
   // elles n'échouent plus silencieusement vers un jeu de démonstration, et les
   // exceptions sont déjà capturées dans queries.ts.
-  const [jSalles, jIncidents, jMissions] = await Promise.all([
-    getSalles(), getIncidents(), getMissions(),
+  const [jSalles, jIncidents, jMissions, jAffectations] = await Promise.all([
+    getSalles(), getIncidents(), getMissions(), getAffectations(),
   ]);
-  const view = construireVueSalles(jSalles.lignes);
   const incidentsOuverts = jIncidents.lignes.filter((i) => i.statut !== "Résolu").length;
 
   const active =
     jMissions.lignes.find((m) => m.statut === "En cours") ??
     jMissions.lignes.find((m) => m.statut === "Validée") ??
     jMissions.lignes.find((m) => m.statut === "Planifiée");
+
+  // La couverture affichée ici est celle de la SESSION, pas un ratio local :
+  // la page Salles répondait « manque 3 » quand les quatre autres écrans
+  // répondaient « manque 4 » (audit QA forensic V2, BUG-005).
+  const view = construireVueSalles(
+    jSalles.lignes,
+    active ? { couverture: couvertureSession(active, jAffectations.lignes) } : undefined,
+  );
   const missionLabel = active
     ? `${active.client} — ${dateFR(active.dateMission)}`
     : "Aucune mission active";

@@ -6,7 +6,8 @@
 // retombe sur un jeu de démonstration calé sur la référence visuelle.
 // -----------------------------------------------------------------------------
 
-import { analyseCouverture } from "./couverture";
+import { analyseCouverture, couvertureSession } from "./couverture";
+import { SEUIL_SURCHARGE_H } from "./constants";
 import { demoActif } from "./source";
 import type { Affectation, Mission, Salle, Surveillant } from "./types";
 
@@ -231,9 +232,11 @@ export function buildCockpitView(input: CockpitInput): CockpitView {
 
   const survById = new Map(surveillants.map((s) => [s.id, s]));
 
-  // Couverture (postes = surveillants requis ; couverts = distinct affectés).
-  const postesTotal = active.nbSurveillants || actifs.length;
-  const postesCouverts = new Set(actifs.map((a) => a.surveillantId)).size;
+  // Couverture : source de vérité unique partagée avec le dashboard, la
+  // planification, les missions et les salles (BUG-005).
+  const couvSession = couvertureSession(active, affectations);
+  const postesTotal = couvSession.requis;
+  const postesCouverts = couvSession.pourvus;
   const couv = analyseCouverture({ requis: postesTotal, affectes: postesCouverts });
 
   // Confirmations (présence « Présent »).
@@ -261,9 +264,14 @@ export function buildCockpitView(input: CockpitInput): CockpitView {
     const p = creneauDe(a, "apm");
     const enRetard = a.presence === "Absent";
     const sansSalle = !(a.salle ?? "").trim();
+    // « Surcharge » est réservé au dépassement de SEUIL_SURCHARGE_H, seule
+    // définition du produit (BUG-008 / BUG-009). Une affectation sans salle est
+    // un défaut de planification, pas une surcharge : elle porte son vrai nom.
+    const enSurcharge = (s?.heures ?? 0) >= SEUIL_SURCHARGE_H;
     let statut = "Conforme", statutClass: StatutClass = "ok";
     if (enRetard) { statut = "En retard"; statutClass = "wa"; }
-    else if (sansSalle) { statut = "Charge critique"; statutClass = "cr"; }
+    else if (sansSalle) { statut = "Sans salle"; statutClass = "cr"; }
+    else if (enSurcharge) { statut = "Surcharge"; statutClass = "cr"; }
     else if (a.presence === "En attente" && p) { statut = "À surveiller"; statutClass = "wa"; }
     const mkCre = (c: { debut?: string; fin?: string } | null, etat: string, cls: "enc" | "att" | "pre"): CockpitCreneau | null =>
       c && c.debut && c.fin ? { horaire: `${c.debut} – ${c.fin}`, etat, etatClass: cls } : null;
@@ -276,11 +284,15 @@ export function buildCockpitView(input: CockpitInput): CockpitView {
     };
   });
 
-  // Alertes / récap dérivés des statuts de session.
+  // Alertes / récap dérivés des statuts de session. Chaque alerte dit ce qui est
+  // RÉELLEMENT constaté — même vocabulaire que la planification (BUG-008).
+  const sansSalles = sessions.filter((s) => s.statut === "Sans salle");
+  const surcharges = sessions.filter((s) => s.statut === "Surcharge");
   const critiques = sessions.filter((s) => s.statutClass === "cr");
   const retards = sessions.filter((s) => s.statut === "En retard");
   const alerts: CockpitAlert[] = [
-    ...critiques.slice(0, 2).map<CockpitAlert>((s) => ({ niveau: "cr", lvLabel: "CRITIQUE", titre: `Charge critique — ${s.nom}`, detail: "Surcharge détectée — seuil de surcharge dépassé", heure: "—" })),
+    ...sansSalles.slice(0, 2).map<CockpitAlert>((s) => ({ niveau: "cr", lvLabel: "CRITIQUE", titre: `Aucune salle affectée — ${s.nom}`, detail: "Créneau planifié sans salle : à affecter avant l'ouverture", heure: "—" })),
+    ...surcharges.slice(0, 2).map<CockpitAlert>((s) => ({ niveau: "cr", lvLabel: "CRITIQUE", titre: `Surcharge — ${s.nom}`, detail: `Charge cumulée au-delà de ${SEUIL_SURCHARGE_H} h`, heure: "—" })),
     ...retards.slice(0, 2).map<CockpitAlert>((s) => ({ niveau: "rt", lvLabel: "RETARD", titre: `Surveillant en retard — ${s.nom}`, detail: `Salle ${s.salle}`, heure: "—" })),
   ];
   const alertesCritiques = critiques.length;
@@ -290,7 +302,8 @@ export function buildCockpitView(input: CockpitInput): CockpitView {
 
   // File « À traiter maintenant » dérivée des cas les plus urgents.
   const actions: CockpitAction[] = [
-    ...critiques.slice(0, 2).map<CockpitAction>((s) => ({ niveau: "critique", titre: `Traiter la charge critique — ${s.nom}`, detail: `Salle ${s.salle} · surcharge détectée`, cta: "Traiter" })),
+    ...sansSalles.slice(0, 2).map<CockpitAction>((s) => ({ niveau: "critique", titre: `Affecter une salle — ${s.nom}`, detail: "Créneau planifié sans salle", cta: "Affecter" })),
+    ...surcharges.slice(0, 2).map<CockpitAction>((s) => ({ niveau: "critique", titre: `Alléger la charge — ${s.nom}`, detail: `Charge cumulée au-delà de ${SEUIL_SURCHARGE_H} h`, cta: "Rééquilibrer" })),
     ...retards.slice(0, 2).map<CockpitAction>((s) => ({ niveau: "retard", titre: `Relancer ${s.nom} (retard)`, detail: `Salle ${s.salle} · prise de poste à confirmer`, cta: "Relancer" })),
   ];
 

@@ -299,7 +299,7 @@ export function CopiloteBoard({
                 { icone: <Users className="w-3.5 h-3.5" />, k: "Surveillants planifiés", v: `${couverture.affectes} / ${couverture.requis} requis` },
                 { icone: <Clock className="w-3.5 h-3.5" />, k: "Heures planifiées", v: heuresFR(vue.heuresTotal, 2) },
                 { icone: <Sparkles className="w-3.5 h-3.5" />, k: "Taux de couverture", v: `${Math.round(couverture.tauxCouverture * 100)} %` },
-                { icone: <EuroIcon className="w-3.5 h-3.5" />, k: "Marge estimée", v: `${margeAvant} %` },
+                { icone: <EuroIcon className="w-3.5 h-3.5" />, k: "Marge — session", v: `${margeAvant} %` },
               ].map((r) => (
                 <div key={r.k} className="flex items-center justify-between gap-3">
                   <dt className="inline-flex items-center gap-2 text-[12px] text-[#667085]">
@@ -317,7 +317,7 @@ export function CopiloteBoard({
                     ["CA HT", euro(rentabilite.caHT)],
                     ["Coût surveillants", euro(rentabilite.coutHT)],
                     ["Marge HT", euro(rentabilite.margeHT)],
-                    ["Taux de marge", `${margeAvant} %`],
+                    ["Taux de marge — session", `${margeAvant} %`],
                   ].map(([k, v]) => (
                     <div key={k} className="flex items-center justify-between gap-3 text-[12px]">
                       <dt className="text-[#667085]">{k}</dt>

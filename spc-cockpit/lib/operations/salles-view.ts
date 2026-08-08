@@ -6,7 +6,7 @@
 // =============================================================================
 
 import type { Salle } from "./types";
-import { analyseCouverture } from "./couverture";
+import type { CouvertureSession } from "./couverture";
 import {
   SEUIL_SALLE_VIGILANCE,
   SEUIL_SALLE_NORMALE,
@@ -71,9 +71,26 @@ export interface SallesKpis {
   sallesSousOccupees: number;
   partSousOccupees: number;
   alertesActives: number;
+  /**
+   * Couverture de la SESSION — provient de la source de vérité unique
+   * (`couvertureSession`) dès qu'un contexte de session est fourni, afin que la
+   * page Salles ne réponde plus « manque 3 » là où les quatre autres écrans
+   * répondent « manque 4 » (audit QA forensic V2, BUG-005).
+   */
   surveillantsRequis: number;
   surveillantsAffectes: number;
   surveillantsManquants: number;
+  /** true si les trois champs ci-dessus viennent de la session (et non du ratio). */
+  couvertureDeSession: boolean;
+  /**
+   * BESOIN THÉORIQUE des salles : Σ ceil(étudiants / ratio). C'est une aide au
+   * dimensionnement, PAS une couverture — d'où un libellé distinct à l'écran.
+   * Le manque est la somme des manques PAR SALLE : un surplus en salle E31 ne
+   * couvre pas un déficit en salle A21 (BUG-006).
+   */
+  besoinTheorique: number;
+  besoinTheoriqueAffectes: number;
+  besoinTheoriqueManquants: number;
 }
 
 export type AlerteTon = "critique" | "vigilance" | "info" | "ia";
@@ -252,11 +269,19 @@ function construireAlertes(salles: SalleVue[]): AlerteSalle[] {
   return alertes;
 }
 
+/** Couverture réelle de la session courante, injectée par la page. */
+export interface ContexteSessionSalles {
+  couverture: CouvertureSession;
+}
+
 /**
  * Construit la vue complète de la page Salles à partir des salles brutes.
  * Entrée vide → vue vide cohérente (aucune division par zéro).
+ *
+ * `contexte` porte la couverture RÉELLE de la session : sans lui, la page ne
+ * peut afficher qu'un besoin théorique, jamais une couverture.
  */
-export function construireVueSalles(salles: Salle[]): SallesView {
+export function construireVueSalles(salles: Salle[], contexte?: ContexteSessionSalles): SallesView {
   const vues = salles.map(construireSalleVue).sort(trierParCriticite);
   const alertes = construireAlertes(vues);
 
@@ -267,8 +292,9 @@ export function construireVueSalles(salles: Salle[]): SallesView {
   const critiques = vues.filter((s) => s.niveau === "critique").length;
   const sousOccupees = vues.filter((s) => s.niveau === "faible" || s.niveau === "inutilisee").length;
 
-  // Réutilise la fonction de couverture déjà testée plutôt qu'un calcul local.
-  const couverture = analyseCouverture({ requis: surveillantsRequis, affectes: surveillantsAffectes });
+  // Manque théorique = somme des manques PAR SALLE. On ne soustrait JAMAIS deux
+  // totaux : le surplus d'une salle ne couvre pas le déficit d'une autre.
+  const besoinTheoriqueManquants = vues.reduce((n, s) => n + s.surveillantsManquants, 0);
 
   const batiments = Array.from(
     new Set(vues.map((s) => s.batiment).filter((b): b is string => !!b)),
@@ -288,9 +314,13 @@ export function construireVueSalles(salles: Salle[]): SallesView {
       sallesSousOccupees: sousOccupees,
       partSousOccupees: pct(sousOccupees, vues.length),
       alertesActives: alertes.filter((a) => a.ton !== "ia").length,
-      surveillantsRequis,
-      surveillantsAffectes,
-      surveillantsManquants: couverture.manque,
+      surveillantsRequis: contexte ? contexte.couverture.requis : surveillantsRequis,
+      surveillantsAffectes: contexte ? contexte.couverture.pourvus : surveillantsAffectes,
+      surveillantsManquants: contexte ? contexte.couverture.manquants : besoinTheoriqueManquants,
+      couvertureDeSession: !!contexte,
+      besoinTheorique: surveillantsRequis,
+      besoinTheoriqueAffectes: surveillantsAffectes,
+      besoinTheoriqueManquants,
     },
   };
 }

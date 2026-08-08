@@ -8,6 +8,7 @@ import {
   mockMissions, mockAffectations, mockDevis, mockSalles, mockSurveillants, mockDevisEquipe, mockDevisSalles,
 } from "@/lib/operations/mock";
 import { construireVueSalles } from "@/lib/operations/salles-view";
+import { couvertureSession } from "@/lib/operations/couverture";
 import { calculateRoomBillableHours } from "@/lib/operations/engine";
 
 const MISSION_ACTIVE = mockMissions.find((m) => m.statut === "En cours")!;
@@ -62,22 +63,35 @@ describe("COUVERTURE — trois réponses différentes pour la même session", ()
     expect({ requis, pourvus, manque: requis - pourvus }).toEqual({ requis: 14, pourvus: 10, manque: 4 });
   });
 
-  it("page Salles : 19 requis, 16 affectés, manque 3 — calcul totalement indépendant", () => {
-    const k = construireVueSalles(mockSalles).kpis;
+  // CORRIGÉ (chantier 1) — la page Salles répondait « 19 / 16 / manque 3 » à
+  // partir d'un calcul indépendant. Elle consomme désormais la couverture de la
+  // session dès que la page la lui fournit.
+  it("page Salles avec contexte : reprend la couverture de session (14 / 10 / manque 4)", () => {
+    const couverture = couvertureSession(MISSION_ACTIVE, mockAffectations);
+    const k = construireVueSalles(mockSalles, { couverture }).kpis;
     expect({
       requis: k.surveillantsRequis,
       affectes: k.surveillantsAffectes,
       manque: k.surveillantsManquants,
-    }).toEqual({ requis: 19, affectes: 16, manque: 3 });
+      deSession: k.couvertureDeSession,
+    }).toEqual({ requis: 14, affectes: 10, manque: 4, deSession: true });
   });
 
-  it("BUG — le « manque » global des Salles (3) contredit la somme par salle (4)", () => {
+  it("le besoin théorique des salles reste disponible, sous un libellé distinct", () => {
+    const k = construireVueSalles(mockSalles).kpis;
+    expect(k.besoinTheorique).toBe(19);
+    expect(k.besoinTheoriqueAffectes).toBe(16);
+    expect(k.couvertureDeSession).toBe(false);
+  });
+
+  // CORRIGÉ (chantier 1) — le KPI sommait la différence des totaux (3) alors que
+  // le tableau affichait −1 / −2 / −1 (4).
+  it("le « manque » théorique égale désormais la somme des manques par salle", () => {
     const v = construireVueSalles(mockSalles);
     const sommeParSalle = v.salles.reduce((n, s) => n + s.surveillantsManquants, 0);
-    expect(v.kpis.surveillantsManquants).toBe(3); // KPI affiché
-    expect(sommeParSalle).toBe(4); // somme des « −1 / −2 / −1 » du tableau
-    // Le surplus d'une salle (E31 : 2 affectés pour 1 requis) compense
-    // silencieusement le déficit d'une autre — impossible sur le terrain.
+    expect(sommeParSalle).toBe(4);
+    expect(v.kpis.besoinTheoriqueManquants).toBe(4);
+    expect(v.kpis.surveillantsManquants).toBe(4);
   });
 });
 

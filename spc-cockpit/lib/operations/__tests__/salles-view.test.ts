@@ -99,12 +99,39 @@ describe("construireVueSalles", () => {
     expect(kpis.sallesSousOccupees).toBe(1); // E31 à 27 %
   });
 
-  it("calcule le besoin en surveillants et le manque", () => {
+  it("calcule le besoin théorique et somme les manques PAR SALLE", () => {
     const { kpis } = construireVueSalles(jeu);
-    // A21 : ceil(75/30)=3 · E31 : 1 · Amphi : ceil(320/30)=11
+    // A21 : ceil(75/30)=3 pour 3 affectés → manque 0
+    // E31 : ceil(8/30)=1  pour 2 affectés → manque 0 (surplus de 1)
+    // Amphi: ceil(320/30)=11 pour 8 affectés → manque 3
     expect(kpis.surveillantsRequis).toBe(15);
     expect(kpis.surveillantsAffectes).toBe(13);
-    expect(kpis.surveillantsManquants).toBe(2);
+
+    // Le manque vaut 3, PAS 2 (= 15 − 13). Le surplus de la salle E31 ne peut pas
+    // couvrir le déficit de l'amphithéâtre : un surveillant affecté en E31 n'est
+    // pas dans l'amphi. Soustraire deux totaux sous-estimait le recrutement
+    // nécessaire (audit QA forensic V2, BUG-006).
+    expect(kpis.surveillantsManquants).toBe(3);
+    expect(kpis.besoinTheoriqueManquants).toBe(3);
+  });
+
+  it("affiche la couverture de la SESSION dès qu'un contexte est fourni", () => {
+    // Sans contexte : la page ne peut exposer qu'un besoin théorique.
+    const sans = construireVueSalles(jeu).kpis;
+    expect(sans.couvertureDeSession).toBe(false);
+    expect(sans.surveillantsRequis).toBe(15); // ratio salles
+
+    // Avec contexte : la page reprend la couverture réelle de la session, la même
+    // que le dashboard, le cockpit, la planification et les missions (BUG-005).
+    const avec = construireVueSalles(jeu, {
+      couverture: { requis: 14, pourvus: 10, manquants: 4, taux: 10 / 14, etat: "risque" },
+    }).kpis;
+    expect(avec.couvertureDeSession).toBe(true);
+    expect(avec.surveillantsRequis).toBe(14);
+    expect(avec.surveillantsAffectes).toBe(10);
+    expect(avec.surveillantsManquants).toBe(4);
+    // Le besoin théorique reste disponible, mais sous un libellé distinct.
+    expect(avec.besoinTheorique).toBe(15);
   });
 
   it("trie par criticité décroissante", () => {

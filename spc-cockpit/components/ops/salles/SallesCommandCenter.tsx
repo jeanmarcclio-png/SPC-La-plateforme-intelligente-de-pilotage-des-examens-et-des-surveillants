@@ -400,10 +400,13 @@ export function SallesCommandCenter({ view }: { view: SallesView }) {
           <div className="skpi">
             <div className="ico ico-cyan"><Users className="w-[17px] h-[17px]" aria-hidden /></div>
             <div className="val">{k.surveillantsRequis}</div>
-            <div className="k">Surveillants requis</div>
+            <div className="k">{k.couvertureDeSession ? "Surveillants — session" : "Besoin théorique"}</div>
             <div className="sub">
-              affectés {k.surveillantsAffectes}
+              {k.couvertureDeSession ? "pourvus" : "affectés"} {k.surveillantsAffectes}
               {k.surveillantsManquants > 0 && ` · manque ${k.surveillantsManquants}`}
+              {k.couvertureDeSession && (
+                <> · besoin théorique salles {k.besoinTheorique}</>
+              )}
             </div>
           </div>
         </div>
