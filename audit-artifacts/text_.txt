@@ -1,0 +1,243 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Tableau de bord
+
+Pilotage temps réel · Dernière mise à jour : 13:48:23
+
+Actualiser
+CA CONFIRMÉ HT
+12 544,40 €
+-56,2 %
+vs mois précédent
+MARGE HT
+3 791,52 €
+30 %
+Taux de marge
+COUVERTURE SURVEILLANTS
+71 %
+10 sur 14 postes pourvus
+MISSIONS À VENIR
+3
+Sur les 30 prochains jours
+COUVERTURE DES SURVEILLANTS
+14
+Postes
+Pourvus
+10 · 71 %
+Manquants
+4 · 29 %
+Vacants
+0 · 0 %
+ÉVOLUTION SUR 7 JOURS
+0
+25
+50
+75
+100
+71 %
+14/04
+20/05
+18/06
+03/07
+10/07
+16/07
+30/07
+Pourvoir les 4 postes manquants →
+RISQUES & POINTS D'ATTENTION
+4
+Postes non pourvus
+À pourvoir rapidement
+0
+Confirmations J-48
+En attente
+2
+Conflits détectés
+À résoudre
+1
+Incident ouvert
+À traiter
+Voir tous les risques
+ACTIONS IMMÉDIATES
+Pourvoir 4 postes manquants
+ICP Paris — 30 juillet 2026
+CRITIQUE
+Incident critique ouvert
+Salle A21 — 28 mai 2026
+CRITIQUE
+2 conflits de planning
+À examiner et résoudre
+IMPORTANT
+Devis en attente de réponse
+Dauphine PSL — 2 600,00 € HT
+À SUIVRE
+Voir toutes les actions
+PROCHAINES SESSIONS
+Voir toutes les sessions
+DATE	MISSION	SALLES	SURV.	COUVERTURE	STATUT
+
+30 juil. 2026
+	
+ICP Paris
+Session principale
+	6	10/14	
+71 %
+	
+En cours
+
+12 août 2026
+	
+Dauphine PSL
+Oral admission
+	2	—	À planifier	
+Planifiée
+
+24 août 2026
+	
+HEC Paris
+Partiels (report)
+	8	—	À planifier	
+Acceptée
+
+01 août 2026
+	
+EDHEC
+Rattrapages
+	3	—	À planifier	
+Acceptée
+
+01 août 2026
+	
+Sorbonne Université
+Partiels S2
+	5	—	À planifier	
+Planifiée
+
+31 juil. 2026
+	
+ICN
+Concours DC
+	2	—	À planifier	
+À chiffrer
+CHARGE DES SURVEILLANTS
+Voir tout
+Par semaine
+Par jour
+Disponibilité
+FB
+Fatima Benali
+Surveillant salle
+108,0 h
+Surcharge
+ML
+Marie Lecomte
+Coordinatrice
+94,0 h
+Planifié
+JC
+Jean-Marc Clio
+Surveillant salle
+88,0 h
+Planifié
+SD
+Sophie Dubois
+Coordinatrice
+78,0 h
+Planifié
+KH
+Karim Haddad
+Surveillant salle
+66,0 h
+Planifié
+JM
+Jean-Pierre Moreau
+Surveillant volant
+61,0 h
+Planifié
+Planifié
+Disponible
+Surcharge
+CALENDRIER DES MISSIONS
+Voir le calendrier
+LUN
+3
+MAR
+4
+MER
+5
+JEU
+6
+VEN
+7
+SAM
+8
+DIM
+9
+Aucune session cette semaine.
+Bonne couverture
+Attention
+Risque
+À planifier
+PERFORMANCE FINANCIÈRE
+Voir les devis
+CA HT CONFIRMÉ
+12 544,40 €
+-56,2 %
+CA TTC
+15 053,28 €
+MARGE HT
+3 791,52 €
+TAUX DE MARGE
+30 %
+sur CA confirmé
+ÉVOLUTION DU CA HT
+Mar 26
+Avr 26
+Mai 26
+Juin 26
+Juil 26
+Août 26
+DEVIS RÉCENTS
+Voir tous les devis
+CLIENT	RÉF.	MONTANT HT	STATUT
+ICN	SPC-20260729-001	650,00 €	
+Brouillon
+ICP Reims	SPC-20260728-001	7 344,40 €	
+Accepté
+Sciences Po	SPC-20260727-001	5 200,00 €	
+Accepté
+Dauphine PSL	SPC-20260726-001	2 600,00 €	
+Envoyé
+ICP Paris	SPC-20260724-001	4 042,00 €	
+Brouillon

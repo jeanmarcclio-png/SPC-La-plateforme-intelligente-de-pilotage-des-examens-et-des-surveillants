@@ -1,0 +1,102 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Survéo
+SUPERVISION LIVE
+Session ICP Paris · 30 juillet 2026 · 8 salles
+13:51:46
+En direct
+CONSTANTES DE LA SESSION
+COUVERTURE
+71%
+8 / 8 salles couvertes
+SURVEILLANTS
+10
+déployés · 14 requis
+RENFORTS REQUIS
+4
+pour atteindre 100 %
+ALERTES ACTIVES
+1
+0 sous-effectif · salles à compléter
+PLAN DES SALLES · TEMPS RÉEL
+couverte
+renfort
+A21
+—
+1 surv.
+A22
+—
+1 surv.
+AMP
+—
+1 surv.
+C14
+—
+1 surv.
+E31
+—
+1 surv.
+E32
+—
+1 surv.
+F11
+—
+1 surv.
+F12
+—
+1 surv.
+FLUX EN DIRECT
+08:00 → maintenant
+SALLE
+2 surveillant(s) sans salle affectée.
+IA
+IA — 4 renfort(s) recommandé(s) pour atteindre 100 % de couverture.
+A21
+A21 — couverte (1 surv.).
+A22
+A22 — couverte (1 surv.).
+AMP
+AMP — couverte (1 surv.).
+CHRONOLOGIE DU JOUR · 08:00 → 18:00
+08h
+10h
+12h
+14h
+16h
+18h
+Matin · 9 salles
+Après-midi · 6 salles
+
+Écran Supervision live · thème sombre dédié · données réelles de la session active (EX-2026-041). Horloge et flux mis à jour au chargement.

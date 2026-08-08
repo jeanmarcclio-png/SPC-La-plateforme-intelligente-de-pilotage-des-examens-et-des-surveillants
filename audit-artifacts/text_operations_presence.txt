@@ -1,0 +1,110 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Présence
+Suivi des présences
+
+Émargement numérique des surveillants — ICP Paris, 30 juillet 2026
+
+PRÉSENTS
+10
+émargés
+ABSENTS
+0
+signalés
+EN ATTENTE
+0
+pas encore émargés
+Émargement de l'équipe
+10/10 confirmés
+ML
+Marie Lecomte
+Coordinatrice
+Présent
+Présent
+Absent
+JM
+Jean-Pierre Moreau
+Surveillant volant
+Présent
+Présent
+Absent
+FB
+Fatima Benali
+Surveillant salle
+Présent
+Présent
+Absent
+TG
+Thomas Girard
+Surveillant PMR
+Présent
+Présent
+Absent
+SD
+Sophie Dubois
+Coordinatrice
+Présent
+Présent
+Absent
+KH
+Karim Haddad
+Surveillant salle
+Présent
+Présent
+Absent
+LF
+Léa Fontaine
+Surveillant volant
+Présent
+Présent
+Absent
+MP
+Marc Petit
+Surveillant salle
+Présent
+Présent
+Absent
+SC
+Stanley Clio
+Surveillant salle
+Présent
+Présent
+Absent
+JC
+Jean-Marc Clio
+Coordinateur
+Présent
+Présent
+Absent

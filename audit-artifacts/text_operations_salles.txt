@@ -1,0 +1,168 @@
+Survéo
+IA
+Gestion des examens
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+PILOTAGE
+Dashboard
+Cockpit
+Supervision live
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+COMMERCIAL
+Devis
+Facturation
+SUIVI & QUALITÉ
+Présence
+Incidents
+1
+Rapports
+Risques IA
+Cockpit commercial
+Salles
+Centre de commandement des capacités et affectations
+1
+CS
+Coordinateur SPC
+Coordinateur
+Planification
+Nouveau devis
+RECHERCHE
+BÂTIMENT
+Tous
+Bâtiment A
+Bâtiment B
+Bâtiment C
+Bâtiment E
+STATUT
+Tous
+Critique
+Vigilance
+Normale
+Faible
+Non utilisée
+AMÉNAGEMENT
+Tous
+PMR
+Tiers-temps
+Sans aménagement
+Filtres
+Réinitialiser
+5
+Salles configurées
+4 bâtiment(s)
+540
+Capacité totale
+étudiants
+479
+Étudiants planifiés
+89 % de la capacité
+0
+Salles critiques
+0 % des salles
+1
+Salles sous-occupées
+20 % des salles
+3
+Alertes actives
+à traiter
+19
+Surveillants requis
+affectés 16 · manque 3
+Alertes & actions prioritaires
+Sous-occupation
+1 salle sous-utilisée
+Optimiser
+PMR / Tiers-temps
+1 aménagement à vérifier
+Consulter
+Surveillants manquants
+3 salles à compléter
+Affecter
+Optimisation IA disponible
+Améliorer la répartition globale
+Lancer l’IA
+Vue d’ensemble — Occupation des salles
+5 salles affichées
+Regrouper
+Tri : Criticité
+Tri : Occupation
+Tri : Capacité
+Tri : Nom
+Critique dépassement ou anomalie
+Vigilance ≥ 80 %
+Normale 60 – 79 %
+Faible < 60 %
+Non utilisée 0 étudiant
+A21
+75/80
+2 surv.
+94 %
+Bâtiment A · 2e étage
+VIGILANCE
+Grand Amphithéâtre
+280/300
+8 surv.
+93 %
+Bâtiment C · RDC
+VIGILANCE
+A22
+72/80
+2 surv.
+90 %
+Bâtiment A · 2e étage
+VIGILANCE
+B11
+TT
+44/50
+2 surv.
+88 %
+Bâtiment B · 1er étage
+VIGILANCE
+E31
+TT
+PMR
+8/30
+2 surv.
+27 %
+Bâtiment E · 3e étage
+FAIBLE
+Ajouter une salle
+Sélectionnez une salle pour afficher son détail, ses risques et ses actions.
+Détail des salles (5)
+Tableau détaillé
+Exporter
+Nouvelle salle
+SALLE	BÂTIMENT	CAPACITÉ	ÉTUDIANTS	OCCUPATION	SURV.	PMR	TT	NIVEAU	ACTIONS
+
+Salle A21
+2e étage
+	Bâtiment A	80	75	
+94 %	2 (−1)	—	—	Vigilance	
+
+
+Grand Amphithéâtre
+RDC
+	Bâtiment C	300	280	
+93 %	8 (−2)	—	—	Vigilance	
+
+
+Salle A22
+2e étage
+	Bâtiment A	80	72	
+90 %	2 (−1)	—	—	Vigilance	
+
+
+Salle B11
+1er étage
+	Bâtiment B	50	44	
+88 %	2	—	TT	Vigilance	
+
+
+Salle E31
+3e étage
+	Bâtiment E	30	8	
+27 %	2	PMR	TT	Faible	

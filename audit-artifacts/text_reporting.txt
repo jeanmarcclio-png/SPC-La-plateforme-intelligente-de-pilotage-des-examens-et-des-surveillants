@@ -1,0 +1,136 @@
+✦
+Survéo
+IA
+🎓 SURVEILLANCE D'EXAMENS
+Cockpit Dirigeant
+Tableau de bord
+Campagnes
+Qualification BANT
+Livrables
+Planning
+Reporting
+Opérations
+Paramètres
+Déconnexion
+CAMPAGNE ACTIVE
+—
+Chargement…
+Activer les rappels
+Recevez vos relances du jour
+Plus tard
+OK
+Reporting
+Performance commerciale
+3 campagnes
+À l'instant
+Export PDF
+⌘K
+|
+…
+📈 Prévision fin de trimestre
+IA Prédictive · Confiance 85%
+Base : 11 prospects · 3 campagnes
+TRAJECTOIRE ACTUELLE
+1
+conversions estimées
+35k€
+CA potentiel
+Taux de conversion actuel : 9%
+AVEC ACCÉLÉRATION RECOMMANDÉE
+2
+conversions estimées
+56k€
+CA potentiel
++100% vs trajectoire actuelle
+11
+Total prospects
+3 campagnes
+10
+Très chaud
+91% du pipeline
+9.8
+Score BANT moyen
+Sur 10 pts
+1
+RDV fixés
+dont 0 convertis
+Répartition par segment
+11
+prospects
+Business schools
+29
+CPGE
+9
+Santé
+15
+Universités
+22
+Statuts prospects
+Non contacté
+9 (82%)
+En cours
+1 (9%)
+RDV fixé
+1 (9%)
+Score / cluster
+Lyon / Rhône-Alpes
+9.8
+Paris IDF
+9.6
+Lille / HdF
+9.5
+Bordeaux / NA
+9.2
+Marseille / PACA
+9
+Nancy / Grand Est
+8.7
+Entonnoir de conversion
+Prospects
+11
+100%
+Contactés
+−82%
+2
+RDV fixés
+−50%
+1
+Convertis
+0
+Distribution score BANT
+0–2
+3–4
+5–6
+7–8
+10
+9–10
+Progression des livrables
+7/8 validés
+Ciblage commercial
+Validé
+Qualification BANT
+Validé
+Emails de prospection
+Validé
+Séquences LinkedIn
+Validé
+Scripts d'appel
+Validé
+Relances J+3 / J+7 / J+15
+Validé
+Deck commercial
+Validé
+Analytics J+30
+À rédiger
+✨
+
+Conseil Survéo — 10 prospects très chaud · score BANT moyen 9.8/10 · 1 RDV fixés. Lancez /analyse à J+30 pour le rapport complet.
+
+Voir les critères BANT
+Passer
+🎯
+Bienvenue sur Survéo
+
+Votre plateforme de pilotage des examens et des surveillants, augmentée par l'IA.
+
+Suivant →

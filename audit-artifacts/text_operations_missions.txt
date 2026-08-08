@@ -1,0 +1,334 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Missions
+Missions
+
+Suivi des sessions d'examens et de la mission active
+
+Nouvelle mission
+TOTAL MISSIONS
+
+15
+
+toutes périodes
+
+Missions par mois : janv. 26 : 0, févr. 26 : 1, mars 26 : 1, avr. 26 : 1, mai 26 : 1, juin 26 : 1, juil. 26 : 5, août 26 : 5.
+EN COURS
+
+6
+
+planifiée(s) ou active(s)
+
+Missions engagées par mois : janv. 26 : 0, févr. 26 : 0, mars 26 : 0, avr. 26 : 0, mai 26 : 0, juin 26 : 0, juil. 26 : 1, août 26 : 5.
+TERMINÉES
+
+8
+
+sessions clôturées
+
+Sessions clôturées par mois : janv. 26 : 0, févr. 26 : 1, mars 26 : 1, avr. 26 : 1, mai 26 : 1, juin 26 : 1, juil. 26 : 3, août 26 : 0.
+CA TOTAL (HT)
+
+75 861,40 €
+
+montants cumulés
+
+Chiffre d'affaires HT par mois : janv. 26 : 0,00 €, févr. 26 : 7 200,00 €, mars 26 : 8 100,00 €, avr. 26 : 9 000,00 €, mai 26 : 10 400,00 €, juin 26 : 12 000,00 €, juil. 26 : 14 636,40 €, août 26 : 14 525,00 €.
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+Session principale
+Voir le détail
+AVANCEMENT PRÉPARATION
+93 %
+préparé
+Devis accepté
+— terminé
+Surveillants 10/14
+— en cours
+Salles 8/6
+— terminé
+Planning validé
+— terminé
+RÉSUMÉ DE LA MISSION
+6 salles
+10/14 surveillants affectés
+Examen écrit
+30 juillet 2026
+INDICATEURS CLÉS
+Taux de couverture
+71 %
+4 surveillant(s) à mobiliser
+Heures prévues
+66h15
+créneaux planifiés
+Montant estimé HT
+4 042,00 €
+estimation mission
+ACTIONS RAPIDES
+Voir le planning
+Gérer les surveillants
+Détails de la mission
+
+4 postes à pourvoir avant la session.
+
+PROCHAINES MISSIONS À VENIR (3)
+12
+AOÛT
+
+Dauphine PSL
+
+Oral admission · 2 salles
+
+24
+AOÛT
+
+HEC Paris
+
+Partiels (report) · 8 salles
+
+28
+AOÛT
+
+Sciences Po
+
+Oral admission · 3 salles
+
+Dauphine PSL le 2026-08-12, 2 salles ; HEC Paris le 2026-08-24, 8 salles ; Sciences Po le 2026-08-28, 3 salles
+
+Sessions postérieures au 08/08/2026.
+
+Voir tout le calendrier
+ALERTES & POINTS D'ATTENTION (9)
+Bloquant — 5 surveillants manquants sur Dauphine PSL — EX-2026-046
+Bloquant — Planning non validé à J-3 — Dauphine PSL
+Bloquant — 16 surveillants manquants sur HEC Paris — EX-2026-047
+Bloquant — 6 surveillants manquants sur Sciences Po — EX-2026-048
+Bloquant — 1 incident non résolu dont 1 critique
+Bloquant — 4 surveillants manquants sur ICP Paris — EX-2026-041
+Bloquant — 12 surveillants manquants sur Sorbonne Université — EX-2026-044
+Bloquant — 7 surveillants manquants sur EDHEC — EX-2026-045
+Attention — Devis à chiffrer pour 1 mission
+Voir toutes les alertes
+RÉPARTITION DU CA (HT)
+75 861 €
+TOTAL HT
+Terminées
+56 644 €(75 %)
+En cours
+18 567 €(24 %)
+À venir
+650 €(1 %)
+
+Répartition du chiffre d'affaires hors taxes, total 75 861,40 € : Terminées 56 644,40 € soit 75 %, En cours 18 567,00 € soit 24 %, À venir 650,00 € soit 1 %.
+
+Voir le détail
+Tous statuts
+Brouillon
+À chiffrer
+Devis envoyé
+Acceptée
+Planifiée
+Validée
+En cours
+Terminée
+Facturée
+Archivée
+Annulée
+–
+Filtres
+Nouvelle mission
+Liste des missions — 15 résultat(s) sur 15.
+Référence
+	Client
+	Date
+	TYPE	VOLUME	Montant HT
+	Statut
+	Avancement
+	ACTIONS
+EX-2026-048	
+Sciences Po
+Oral admission
+	28 août 2026	Oral	
+3 salles · 6 surv.
+	1 800,00 €	
+Planifiée	
+25 %
+	
+
+EX-2026-047	
+HEC Paris
+Partiels (report)
+	24 août 2026	Examen écrit	
+8 salles · 16 surv.
+	5 100,00 €	
+Acceptée	
+25 %
+	
+
+EX-2026-046	
+Dauphine PSL
+Oral admission
+	12 août 2026	Oral	
+2 salles · 5 surv.
+	1 500,00 €	
+Planifiée	
+25 %
+	
+
+EX-2026-044	
+Sorbonne Université
+Partiels S2
+	1 août 2026	Examen écrit	
+5 salles · 12 surv.
+	4 200,00 €	
+Planifiée	
+25 %
+	
+
+EX-2026-045	
+EDHEC
+Rattrapages
+	1 août 2026	Examen écrit	
+3 salles · 7 surv.
+	1 925,00 €	
+Acceptée	
+25 %
+	
+
+DC-2026-4242	
+ICN
+Concours DC
+	31 juillet 2026	Concours	
+2 salles · 3 surv.
+	650,00 €	
+À chiffrer	
+0 %
+	
+
+EX-2026-041
+— mission active
+	
+ICP Paris
+Session principale
+	30 juillet 2026	Examen écrit	
+6 salles · 10/14 surv.
+	4 042,00 €	
+En cours	
+93 %
+	
+
+EX-2026-043	
+ICP Reims
+Rattrapages S1
+	16 juillet 2026	Examen écrit	
+5 salles · 5 surv.
+	3 672,20 €	
+Terminée	
+100 %
+	
+
+EX-2026-042	
+ICP Reims
+Rattrapages S2
+	10 juillet 2026	Examen écrit	
+6 salles · 6 surv.
+	3 672,20 €	
+Terminée	
+100 %
+	
+
+EX-2026-040	
+Dauphine PSL
+Partiels L3
+	3 juillet 2026	Examen écrit	
+4 salles · 9 surv.
+	2 600,00 €	
+Terminée	
+100 %
+	
+
+EX-2026-039	
+Sciences Po
+Concours écrit 2026
+	18 juin 2026	Concours	
+8 salles · 18 surv.
+	12 000,00 €	
+Terminée	
+100 %
+	
+
+EX-2026-038	
+ESSEC
+Concours 2026
+	20 mai 2026	Concours	
+8 salles · 17 surv.
+	10 400,00 €	
+Terminée	
+100 %
+	
+
+EX-2026-037	
+Audencia
+Partiels S2
+	14 avril 2026	Examen écrit	
+7 salles · 15 surv.
+	9 000,00 €	
+Terminée	
+100 %
+	
+
+EX-2026-036	
+Kedge BS
+Concours écrit
+	18 mars 2026	Concours	
+6 salles · 13 surv.
+	8 100,00 €	
+Terminée	
+100 %
+	
+
+EX-2026-035	
+HEC Paris
+Partiels S1
+	16 février 2026	Examen écrit	
+8 salles · 18 surv.
+	7 200,00 €	
+Terminée	
+100 %
+	
+
+15 mission(s) affichée(s) sur 15
+
+Exporter la sélection

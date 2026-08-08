@@ -1,0 +1,97 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Retour à la liste
+Dupliquer
+Imprimer / PDF
+Devis accepté — mission confirmée
+Vous pouvez planifier la session et créer la facture.
+Voir le planning →
+Créer la facture →
+✦
+Survéo · Surveillance d'examens
+DEVIS PRÉVISIONNEL
+
+Concours écrit 2026
+
+SPC-20260727-001
+Accepté
+INFORMATIONS CLIENT & MISSION
+ÉTABLISSEMENT
+Sciences Po
+CONTACT
+—
+E-MAIL
+—
+VILLE / SITE
+—
+TYPE D'ÉPREUVE
+—
+DATE DÉBUT
+—
+DATE FIN
+—
+JOURS CALENDAIRES
+—
+JOURS RETENUS
+—
+SESSION MATIN
+Non
+SESSION APRÈS-MIDI
+Non
+HEURES / JOUR
+—
+ÉQUIPE & VOLUME HORAIRE
+RÔLE	EFFECTIF	H FACT./PERS.	TOTAL HEURES	TAUX/H	SOUS-TOTAL HT
+Coordinateur·rice	2	10h	20h	35,00 €	700,00 €
+Surveillant·e en salle	16	11,25h	180h	25,00 €	4 500,00 €
+TOTAL	18		200h		5 200,00 €
+DÉTAIL DES PRESTATIONS
+DÉSIGNATION	QTÉ	PU HT	TOTAL HT
+Surveillance concours écrit 2026 — 8 salles · 18 surveillants · coordination incluse	200 h	26,00 €	5 200,00 €
+RÉCAPITULATIF FINANCIER
+Base brute HT (heures × tarifs)
+5 200,00 €
+Total HT
+5 200,00 €
+TVA 20 %
+1 040,00 €
+TOTAL TTC
+6 240,00 €
+
+Conditions
+
+Devis valable 30 jours à compter de son émission. Règlement à 30 jours date de facture. La prestation comprend la coordination terrain, la présence garantie en salle, la prise en charge des aménagements (tiers-temps, PMR, isolement) et le rapport post-session transmis à la direction des examens.
+
+Bon pour accord — date et signature du client : ______________________________

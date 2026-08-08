@@ -1,0 +1,57 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Incidents
+Incidents
+
+Déclaration, suivi et résolution des incidents pendant les examens
+
+TOTAL
+1
+incidents déclarés
+OUVERTS
+1
+à traiter
+RÉSOLUS
+0
+clôturés
+Déclarer un incident
+RÉFÉRENCE	DATE	SALLE	TYPE	GRAVITÉ	STATUT	
+INC-001	28 mai 2026	A21	
+Fraude suspectée
+Comportement suspect signalé par le surveillant de salle — rapport à valider sous 48h.
+	Critique	
+Ouvert	
+Modifier
+Supprimer

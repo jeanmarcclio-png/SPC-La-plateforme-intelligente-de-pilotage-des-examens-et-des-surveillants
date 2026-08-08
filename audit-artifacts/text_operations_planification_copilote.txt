@@ -1,0 +1,165 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Planification
+Copilote IA & contrôle
+
+Optimiser la couverture, détecter les risques et guider les décisions
+
+1
+Piloter
+— étape 1 sur 3
+Synthèse
+→
+2
+Planifier
+— étape 2 sur 3
+Affectations
+→
+3
+Optimiser
+— étape 3 sur 3, étape courante
+Copilote IA
+5
+alerte(s) à traiter
+Copilote IA & contrôle
+
+Optimise la couverture, détecte les risques et guide les décisions
+
+En cours
+30 juillet 2026
+ICP Paris
+8 salles
+16 créneaux
+Ajouter un surveillant
+Convocations
+Confirmer J-48
+Valider la session
+Suggestions
+3
+Remplacements
+3
+Sous-effectifs
+4
+Conflits
+2
+Historique IA
+Journal des changements
+Recommandations
+Mobiliser 4 surveillants
+
+Couverture à 71 % · écart le plus marqué : salle A21 (après-midi)
+
+Priorité haute
+Voir les profils
+Rééquilibrer la charge
+
+Thomas Girard porte 9,50 h · transférer 2,4 h ramènerait l'écart sous ± 2 h
+
+Priorité moyenne
+Voir les remplacements
+Optimisation marge
+
+Redistribuer 2,4 h vers un surveillant disponible
+
+Gain estimé : +44,81 €
+
+Impact positif
+Voir l'analyse
+Sous-effectifs détectés
+A21
+(après-midi)
+0 sur 1
+A22
+(après-midi)
+0 sur 1
+AMP
+(matin)
+0 sur 1
+C14
+(après-midi)
+0 sur 1
+4 surveillants à trouver
+71 % de couverture
+Conflits / alertes
+Jean-Pierre Moreau : aucune salle affectée
+Léa Fontaine : aucune salle affectée
+Disponibilité insuffisante : Thomas Girard — charge estimée à 9,50 h
+Disponibilité insuffisante : Marc Petit — charge estimée à 9,25 h
+Disponibilité insuffisante : Stanley Clio — charge estimée à 9,25 h
+Rééquilibrage de charge
+Écart max : 6,8 h
+cible : ± 2 h
+
+Thomas Girard 9,50 h · Fatima Benali 2,75 h
+
+Rééquilibrer dans le planning
+Impact sur la marge
+Avant
+69 %
+Après
+70 %
+
+Estimation fondée sur 2,4 h redistribuées, soit +44,81 € de marge.
+
+Aperçu de la session
+Date
+30 juillet 2026
+Lieu
+ICP Paris
+Salles
+8
+Créneaux
+16
+Surveillants planifiés
+10 / 14 requis
+Heures planifiées
+66,25 h
+Taux de couverture
+71 %
+Marge estimée
+69 %
+Détail financier
+Journal des modifications
+Informations complémentaires
+Historique des décisions
+Modifications tracées
+0
+Recommandations ouvertes
+3
+Gain de marge estimé
++44,81 €
+Alertes à traiter
+5
+Voir l'historique complet

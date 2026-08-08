@@ -1,0 +1,74 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/PMR & Tiers-temps
+PMR & Tiers-temps
+
+Gestion des aménagements pour étudiants à besoins spécifiques
+
+ÉTUDIANTS PMR/TT
+4
+aménagements suivis
+SALLES DÉDIÉES
+2
+équipées PMR ou tiers-temps
+TEMPS ADDITIONNEL
+3/3
+étudiants en durée majorée
+Étudiants avec aménagements
+Ajouter
+RÉF.	AMÉNAGEMENT	SALLE	TIERS-TEMPS	SURVEILLANT DÉDIÉ	
+ETU-001	PMR — Fauteuil roulant	E31	1/3	Thomas Girard	
+Modifier
+Supprimer
+
+ETU-002	Tiers-temps	E31	1/3	Thomas Girard	
+Modifier
+Supprimer
+
+ETU-003	Tiers-temps + secrétaire	B11	1/3	Sophie Dubois	
+Modifier
+Supprimer
+
+ETU-004	PMR — Malvoyant	E31	—	Thomas Girard	
+Modifier
+Supprimer
+Salles aménagées
+Salle E31
+Bâtiment E · 8 étud.
+PMR
+TIERS-TEMPS
+Salle B11
+Bâtiment B · 44 étud.
+TIERS-TEMPS

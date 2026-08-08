@@ -1,0 +1,68 @@
+SAS HENRIQUES DE OLIVEIRA
+Politique de confidentialité
+
+Plateforme Survéo — pilotage des examens et des surveillants
+
+PROJET — Version 0.1 — Juillet 2026 — À faire valider par un conseil juridique avant diffusion.
+
+Dernière mise à jour : [date de publication]. La présente politique décrit comment la SAS Henriques de Oliveira, éditrice de la plateforme Survéo (« Survéo », « nous »), traite les données personnelles dans le cadre de la plateforme Survéo et de ses services de surveillance d’examens.
+
+1. Qui est responsable de vos données ?
+
+Cela dépend de votre situation :
+
+Surveillant(e) ou candidat(e) chez Survéo : Survéo est responsable de traitement.
+Personnel d’un établissement client (coordinateur, scolarité) : votre établissement est responsable de traitement ; Survéo agit comme sous-traitant conformément à l’accord conclu avec lui.
+
+Contact : SAS Henriques de Oliveira — [adresse] — [email de contact RGPD].
+
+2. Quelles données traitons-nous, et pourquoi ?
+Finalité	Données	Base légale
+Gestion du vivier et affectation aux sessions	Identité, téléphone, email, disponibilités, historique d’affectations	Contrat de travail ; intérêt légitime (candidats)
+Convocations et notifications (SMS, email)	Téléphone, contenu des convocations, horodatage des réponses	Contrat de travail
+Décompte des heures et préparation de la paie	Heures, taux horaire, brut/net estimés	Obligation légale ; contrat
+Comptes utilisateurs et sécurité	Email, journaux de connexion, actions horodatées	Contrat ; intérêt légitime (sécurité)
+Assistance et amélioration du service	Échanges de support, données d’usage agrégées	Intérêt légitime
+
+La plateforme ne traite aucune donnée bancaire et n’a pas vocation à recevoir de données de santé. Les aménagements d’épreuves (ex. tiers-temps) sont enregistrés au niveau des sessions d’examen, sans identification des étudiants concernés.
+
+3. Qui accède à vos données ?
+Les équipes Survéo habilitées (coordination, administration), chacune selon son rôle.
+L’établissement dans lequel vous êtes affecté(e), pour le planning nominatif de ses propres sessions uniquement.
+Nos sous-traitants techniques : hébergement (Supabase, Vercel — données hébergées dans l’Union européenne), envoi de SMS ([prestataire]), paie ([prestataire]). Chacun est lié par un contrat conforme à l’article 28 du RGPD.
+
+Nous ne vendons ni ne louons aucune donnée personnelle.
+
+4. Transferts hors Union européenne
+
+Les données sont hébergées dans l’Union européenne. Si un sous-traitant venait à traiter des données hors UE (ex. support technique), ce transfert serait encadré par les mécanismes prévus au chapitre V du RGPD (décision d’adéquation, clauses contractuelles types). Le registre des sous-traitants est disponible sur demande.
+
+5. Combien de temps conservons-nous vos données ?
+Données	Durée
+Dossier surveillant actif	Durée de la relation contractuelle
+Éléments de calcul de paie	5 ans
+Candidatures sans suite	2 ans
+Journaux de connexion et d’envoi SMS	12 mois
+Comptes inactifs	Suppression ou anonymisation 2 ans après la fin de la relation
+Données de sessions d’examens	Purge à N+2
+6. Comment vos données sont-elles protégées ?
+Hébergement dans l’Union européenne, chiffrement en transit et au repos.
+Cloisonnement strict par établissement et par rôle : un surveillant n’accède qu’à ses propres plannings et disponibilités.
+Authentification par lien sécurisé à durée limitée ou mot de passe.
+Journalisation des actions sensibles (affectations, annulations, remplacements).
+7. Vos droits
+
+Vous disposez des droits d’accès, de rectification, d’effacement, de limitation, d’opposition et de portabilité, ainsi que du droit de définir des directives post-mortem. Pour les exercer : [email de contact RGPD]. Nous répondons dans un délai d’un mois. Si vous relevez d’un établissement client, nous transmettons votre demande à cet établissement, seul compétent pour y répondre.
+
+Vous pouvez introduire une réclamation auprès de la CNIL (www.cnil.fr).
+
+8. Cookies et traceurs
+
+La plateforme utilise uniquement des cookies strictement nécessaires (session, authentification, sécurité), exemptés de consentement. Aucun cookie publicitaire ou de mesure d’audience tierce n’est déposé.
+
+9. Évolution de la présente politique
+
+Toute évolution substantielle sera notifiée via la plateforme et, pour les surveillants, par les canaux habituels de convocation. La version en vigueur est datée en tête de document.
+
+© SAS Henriques de Oliveira
+Retour à la connexion

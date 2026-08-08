@@ -1,0 +1,83 @@
+✦
+Survéo
+IA
+🎓 SURVEILLANCE D'EXAMENS
+Cockpit Dirigeant
+Tableau de bord
+Campagnes
+Qualification BANT
+Livrables
+Planning
+Reporting
+Opérations
+Paramètres
+Déconnexion
+CAMPAGNE ACTIVE
+—
+Chargement…
+Activer les rappels
+Recevez vos relances du jour
+Plus tard
+OK
+Configuration
+Paramètres
+À l'instant
+⌘K
+|
+…
+Compte utilisateur
+NOM AFFICHÉ
+Sauver
+EMAIL
+—
+Changer le mot de passe →
+Notifications
+Alertes urgentes
+Rappels échéances
+Rapport J+30
+Campagne active
+Nom
+IDF Complète 2026
+Périmètre
+Paris · Île-de-France · Paris-Saclay
+Deadline
+30/06/2026
+Prospects
+43 cibles
+Score BANT
+9.4 / 10
+Statut
+Actif
+Équipe & rôles
+Aucun membre. Invitez votre équipe ci-dessous.
+PERMISSIONS PAR RÔLE
+Admin
+Tout accès · Gérer l'équipe · Exporter · Configurer
+Commercial
+Prospects · Campagnes · Copilote IA · Reporting
+Lecteur
+Lecture seule · Reporting · Dashboard
++ Inviter un membre
+Intégrations
+Base de données
+Supabase
+Authentification
+Supabase Auth
+Déploiement
+Vercel
+Agent IA
+Claude Sonnet 4.6
+Analytics J+30
+À configurer
+✨
+
+Conseil Survéo — Modifiez votre nom affiché et votre mot de passe directement depuis cette page. Les toggles de notifications seront connectés à Supabase à la prochaine version.
+
+Voir les critères BANT
+Passer
+🎯
+Bienvenue sur Survéo
+
+Votre plateforme de pilotage des examens et des surveillants, augmentée par l'IA.
+
+Suivant →

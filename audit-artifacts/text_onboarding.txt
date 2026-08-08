@@ -1,0 +1,6 @@
+Bienvenue sur SPC
+Créez votre organisation pour démarrer. Vous en serez l'administrateur.
+Nom de l'organisation
+Taux horaire (€/h)
+Coefficient net
+Créer mon organisation

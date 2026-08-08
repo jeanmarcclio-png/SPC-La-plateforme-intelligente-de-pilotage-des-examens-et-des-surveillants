@@ -1,0 +1,33 @@
+
+=== QA-STATUT-001 ===
+Ligne ciblée : EX-2026-043 ICP Reims Rattrapages S1 16 juillet 2026 Examen écrit 5 salles · 5 surv. 3 672,20 € Terminée 100 % 
+Statut courant du select : Terminée
+Options proposées (11) : Brouillon | À chiffrer | Devis envoyé | Acceptée | Planifiée | Validée | En cours | Terminée | Facturée | Archivée | Annulée
+Transition métier autorisée depuis « Terminée » (mission-status.ts) : Facturée, Archivée
+
+=== QA-STATUT-002 ===
+ligne 0: EX-2026-048 Sciences Po Oral admission 28 août 2026 Oral 3 salles · 6 surv. 1 800,00 € Pla → boutons: , , 
+ligne 1: EX-2026-047 HEC Paris Partiels (report) 24 août 2026 Examen écrit 8 salles · 16 surv. 5 10 → boutons: , , 
+ligne 2: EX-2026-046 Dauphine PSL Oral admission 12 août 2026 Oral 2 salles · 5 surv. 1 500,00 € Pl → boutons: , , 
+ligne 3: EX-2026-044 Sorbonne Université Partiels S2 1 août 2026 Examen écrit 5 salles · 12 surv. 4 → boutons: , , 
+
+=== QA-DBLCLICK-001 ===
+Requêtes POST déclenchées par 3 clics rapides : 3
+  POST http://localhost:3999/operations/missions
+  POST http://localhost:3999/operations/missions
+  POST http://localhost:3999/operations/missions
+Bouton désactivé pendant traitement : false
+Message d'erreur affiché : (aucun)
+
+=== QA-FORM-001 ===
+nb_salles: type=number min="1" max="" step="" required=false → saisie "-5" acceptée par le champ : "-5"
+nb_surveillants: type=number min="1" max="" step="" required=false → saisie "-5" acceptée par le champ : "-5"
+montant_ht: type=number min="0" max="" step="0.01" required=false → saisie "-5" acceptée par le champ : "-5"
+
+=== QA-FILTRE-001 ===
+Lignes sans filtre : 10
+Filtre « Sans salle 2 » → 2 ligne(s) affichée(s)
+Filtre « Matin 9 » → 9 ligne(s) affichée(s)
+Filtre « Après-midi 6 » → 6 ligne(s) affichée(s)
+Filtre « Coordination 3 » → 3 ligne(s) affichée(s)
+Filtre « Alertes 5 » → 5 ligne(s) affichée(s)

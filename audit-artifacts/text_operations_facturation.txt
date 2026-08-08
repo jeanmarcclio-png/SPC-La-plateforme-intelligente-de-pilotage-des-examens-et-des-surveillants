@@ -1,0 +1,71 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Facturation
+Facturation
+
+Suivi des factures, paiements et chiffre d'affaires
+
+CA TOTAL HT
+12 544,40 €
+toutes factures
+ENCAISSÉ HT
+5 200,00 €
+factures payées
+EN ATTENTE
+1
+factures émises non payées
+EN RETARD
+0
+à relancer
+Nouvelle facture
+Factures (2)
+RÉFÉRENCE	CLIENT	SESSION	STATUT	MONTANT HT	MONTANT TTC	ÉMISSION	ÉCHÉANCE	
+FA-2026-001	Sciences Po	Concours écrit 2026	
+À facturer
+Facturée
+Payée
+En retard
+	5 200,00 €	6 240,00 €	24 mai 2026	23 juin 2026	
+Supprimer
+
+FA-2026-002	ICP Reims	Rattrapages juin 2026	
+À facturer
+Facturée
+Payée
+En retard
+	7 344,40 €	8 813,28 €	3 juillet 2026	2 août 2026	
+Supprimer
+
+SOUS-TOTAL AFFICHÉ	12 544,40 €	15 053,28 €	

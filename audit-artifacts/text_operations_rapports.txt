@@ -1,0 +1,100 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Rapports
+Rapports post-session
+
+Bilan de l'activité, analyse des missions et export comptable
+
+Exporter CSV
+CA TOTAL (HT)
+75 861,40 €
+missions non annulées
+EXAMENS RÉALISÉS
+8
+missions terminées
+SURVEILLANTS ACTIFS
+15
+sur 15 dans l'équipe
+SALLES UTILISÉES
+81
+5 salles configurées
+Tendance CA
+
+Montants HT par mois de mission
+
+Mar 26
+8 100,00 €
+Avr 26
+9 000,00 €
+Mai 26
+10 400,00 €
+Juin 26
+12 000,00 €
+Juil 26
+14 636,40 €
+Août 26
+14 525,00 €
+Historique des missions
+RÉF.	CLIENT	DATE	PÉRIMÈTRE	STATUT	MONTANT HT
+EX-2026-041	ICP Paris	30 juillet 2026	6S / 14P	
+En cours	4 042,00 €
+DC-2026-4242	ICN	31 juillet 2026	2S / 3P	
+À chiffrer	650,00 €
+EX-2026-044	Sorbonne Université	1 août 2026	5S / 12P	
+Planifiée	4 200,00 €
+EX-2026-045	EDHEC	1 août 2026	3S / 7P	
+Acceptée	1 925,00 €
+EX-2026-046	Dauphine PSL	12 août 2026	2S / 5P	
+Planifiée	1 500,00 €
+EX-2026-047	HEC Paris	24 août 2026	8S / 16P	
+Acceptée	5 100,00 €
+EX-2026-048	Sciences Po	28 août 2026	3S / 6P	
+Planifiée	1 800,00 €
+EX-2026-043	ICP Reims	16 juillet 2026	5S / 5P	
+Terminée	3 672,20 €
+EX-2026-042	ICP Reims	10 juillet 2026	6S / 6P	
+Terminée	3 672,20 €
+EX-2026-040	Dauphine PSL	3 juillet 2026	4S / 9P	
+Terminée	2 600,00 €
+EX-2026-039	Sciences Po	18 juin 2026	8S / 18P	
+Terminée	12 000,00 €
+EX-2026-038	ESSEC	20 mai 2026	8S / 17P	
+Terminée	10 400,00 €
+EX-2026-037	Audencia	14 avril 2026	7S / 15P	
+Terminée	9 000,00 €
+EX-2026-036	Kedge BS	18 mars 2026	6S / 13P	
+Terminée	8 100,00 €
+EX-2026-035	HEC Paris	16 février 2026	8S / 18P	
+Terminée	7 200,00 €
