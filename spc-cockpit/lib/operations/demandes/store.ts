@@ -5,7 +5,7 @@
 // L'API imite un futur backend pour faciliter la migration.
 
 import type { DemandeClient } from "./types";
-import { mockDemandes } from "./mock";
+import { demandesDemo } from "./mock";
 
 const KEY = "spc_demandes_client_v1";
 
@@ -14,17 +14,20 @@ function isBrowser(): boolean {
 }
 
 export function chargerDemandes(): DemandeClient[] {
-  if (!isBrowser()) return mockDemandes;
+  // Le jeu de démo est ancré sur la date du jour : il n'est construit qu'au
+  // premier chargement, puis figé dans le store comme de vraies données.
+  if (!isBrowser()) return demandesDemo();
   try {
     const raw = window.localStorage.getItem(KEY);
     if (!raw) {
-      window.localStorage.setItem(KEY, JSON.stringify(mockDemandes));
-      return mockDemandes;
+      const demo = demandesDemo();
+      window.localStorage.setItem(KEY, JSON.stringify(demo));
+      return demo;
     }
     const list = JSON.parse(raw) as DemandeClient[];
-    return Array.isArray(list) ? list : mockDemandes;
+    return Array.isArray(list) ? list : demandesDemo();
   } catch {
-    return mockDemandes;
+    return demandesDemo();
   }
 }
 

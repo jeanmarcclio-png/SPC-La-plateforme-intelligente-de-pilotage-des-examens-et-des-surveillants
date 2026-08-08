@@ -28,6 +28,24 @@ export const SEUIL_SALLE_NORMALE = 60;
 // `organizations` portera ce réglage.
 export const RATIO_ETUDIANTS_PAR_SURVEILLANT = 30;
 
+// ---------------------------------------------------------------------------
+// Demandes clients — pilotage du portefeuille avant mission.
+// ---------------------------------------------------------------------------
+
+// Nombre de jours restants avant la première épreuve en-deçà duquel une demande
+// encore incomplète bascule en « urgente » (bandeau décisionnel + badge).
+export const SEUIL_URGENCE_DEMANDE_J = 5;
+
+// Valeur INDICATIVE d'un étudiant surveillé, en euros HT, utilisée uniquement
+// pour pondérer le pipeline commercial des demandes (« potentiel HT »).
+// ⚠ Ce n'est PAS un tarif de devis : aucun montant contractuel n'est calculé
+// depuis une demande. Le devis reste produit après conversion en mission, par
+// le moteur financier (lib/operations/engine), à partir des heures facturables.
+export const VALEUR_INDICATIVE_ETUDIANT_EUR = 30;
+
+// Objectif de conversion des demandes en missions (%), affiché en repère.
+export const OBJECTIF_CONVERSION_DEMANDES = 60;
+
 // Statuts de devis comptant dans le pipeline commercial (non encore gagnés).
 export const STATUTS_PIPELINE = ["Brouillon", "Envoyé"] as const;
 
