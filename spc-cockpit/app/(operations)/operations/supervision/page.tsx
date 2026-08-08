@@ -104,9 +104,12 @@ function firstCreneau(a: Affectation, periode: "matin" | "apm") {
 }
 
 export default async function SupervisionPage() {
-  const [missions, affectations, salles] = await Promise.all([
+  const [jMissions, jAffectations, jSalles] = await Promise.all([
     getMissions(), getAffectations(), getSalles(),
   ]);
+  const missions = jMissions.lignes;
+  const affectations = jAffectations.lignes;
+  const salles = jSalles.lignes;
   const salleByNom = new Map(salles.map((s) => [s.nom.trim(), s]));
 
   const mission = missions.find((m) => m.statut === "En cours")

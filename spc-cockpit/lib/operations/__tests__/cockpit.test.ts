@@ -19,10 +19,29 @@ const affectations: Affectation[] = [
 ];
 
 describe("buildCockpitView", () => {
-  it("retombe sur le jeu de démonstration sans mission active", () => {
+  // Ce test verrouillait auparavant le repli sur le jeu de démonstration
+  // (`expect(v).toBe(DEMO_COCKPIT)`). L'audit QA forensic V2 a établi (BUG-001)
+  // qu'un cockpit opérationnel ne doit jamais inventer de session : il est
+  // repris pour exiger le comportement corrigé.
+  it("rend une vue VIDE sans mission active (aucune donnée inventée)", () => {
+    delete process.env.SPC_DEMO;
     const v = buildCockpitView({ missions: [], affectations: [], surveillants: [], salles: [] });
-    expect(v.demo).toBe(true);
-    expect(v).toBe(DEMO_COCKPIT);
+    expect(v.vide).toBe(true);
+    expect(v.demo).toBe(false);
+    expect(v).not.toBe(DEMO_COCKPIT);
+    expect(v.sessions).toEqual([]);
+    expect(v.kpis.postesTotal).toBe(0);
+  });
+
+  it("sert le jeu de démonstration uniquement sous SPC_DEMO=1", () => {
+    process.env.SPC_DEMO = "1";
+    try {
+      const v = buildCockpitView({ missions: [], affectations: [], surveillants: [], salles: [] });
+      expect(v.demo).toBe(true);
+      expect(v).toBe(DEMO_COCKPIT);
+    } finally {
+      delete process.env.SPC_DEMO;
+    }
   });
 
   it("dérive couverture, sessions et statuts depuis les données réelles", () => {

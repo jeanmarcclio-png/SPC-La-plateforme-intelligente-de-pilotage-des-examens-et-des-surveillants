@@ -5,11 +5,17 @@ import { PMRBoard } from "@/components/ops/PMRBoard";
 import { Kpi } from "@/components/ops/Kpi";
 import { Accessibility, DoorOpen, Clock } from "lucide-react";
 import { PageHeader } from "@/components/ops/shell";
+import { BandeauSource } from "@/components/ops/EtatSource";
+import { origineGlobale, premiereErreur } from "@/lib/operations/source";
 
 export default async function PMRPage() {
-  const [amenagements, salles, surveillants] = await Promise.all([
+  const [jeuAmenagements, jeuSalles, jeuSurveillants] = await Promise.all([
     getAmenagements(), getSalles(), getSurveillants(),
   ]);
+  const amenagements = jeuAmenagements.lignes;
+  const salles = jeuSalles.lignes;
+  const surveillants = jeuSurveillants.lignes;
+  const origine = origineGlobale(jeuAmenagements, jeuSalles, jeuSurveillants);
 
   const sallesDediees = salles.filter((s) => s.pmr || s.tiersTemps);
   const tiersTemps = amenagements.filter((a) => a.tiersTemps).length;
@@ -17,6 +23,8 @@ export default async function PMRPage() {
   return (
     <div className="p-5 md:p-7 w-full max-w-[1560px] mx-auto pb-16">
       <PageHeader page="PMR & Tiers-temps" title="PMR &amp; Tiers-temps" subtitle="Gestion des aménagements pour étudiants à besoins spécifiques" />
+
+      <BandeauSource origine={origine} detail={premiereErreur(jeuAmenagements, jeuSalles, jeuSurveillants)} />
 
       <div className="grid grid-cols-3 gap-3.5 mb-5">
         <Kpi variant="vivid" accent="indigo" label="Étudiants PMR/TT" value={String(amenagements.length)} sub="aménagements suivis" icon={<Accessibility className="w-4 h-4" />} />

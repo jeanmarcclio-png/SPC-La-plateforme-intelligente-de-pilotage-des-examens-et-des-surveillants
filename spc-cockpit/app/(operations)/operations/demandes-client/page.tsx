@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { DemandesWorkspace } from "@/components/ops/demandes/DemandesWorkspace";
 import { OPS_CONTENT_CLASS } from "@/components/ops/shell";
 

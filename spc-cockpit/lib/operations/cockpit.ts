@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------------------
 
 import { analyseCouverture } from "./couverture";
+import { demoActif } from "./source";
 import type { Affectation, Mission, Salle, Surveillant } from "./types";
 
 export type StatutClass = "ok" | "wa" | "cr";
@@ -89,7 +90,8 @@ export interface CockpitView {
   sessionsPrep: number;
   sallesRatio: string;
   alerts: CockpitAlert[];
-  demo: boolean; // true si jeu de démonstration (aucune mission active)
+  demo: boolean; // true si jeu de démonstration (SPC_DEMO=1 uniquement)
+  vide: boolean; // true si aucune session exploitable → l'écran rend un état vide
 }
 
 const AVATAR_COLORS = ["#7C5CFF", "#2E7BFF", "#F0444B", "#33B162", "#2997FF", "#F59E0B", "#36D477", "#8B5CF6", "#1B59C4"];
@@ -164,7 +166,37 @@ export const DEMO_COCKPIT: CockpitView = {
     { niveau: "if", lvLabel: "INFO", titre: "Session du 23 mai 2026 — Sciences Po", detail: "Terminée", heure: "Hier" },
   ],
   demo: true,
+  vide: false,
 };
+
+/**
+ * Vue cockpit VIDE — servie quand aucune session n'est exploitable et que le
+ * mode démonstration n'est pas actif. Tous les compteurs sont à zéro et aucun
+ * nom, aucune salle, aucune alerte n'est inventé : l'écran affiche un état vide.
+ */
+export function cockpitVide(): CockpitView {
+  return {
+    missionLabel: "",
+    dateLabel: "",
+    majHeure: "",
+    kpis: {
+      couverturePct: 0, postesCouverts: 0, postesTotal: 0,
+      confirmationsPct: 0, confirmes: 0, confTotal: 0,
+      prisesDePoste: 0,
+      alertesTotal: 0, alertesCritiques: 0, alertesRetards: 0, alertesInfos: 0,
+      scoreIA: 0, scoreLabel: "—",
+    },
+    timeline: { nowPct: null, nowLabel: "" },
+    actions: [],
+    sessions: [],
+    sessionsEnCours: 0,
+    sessionsPrep: 0,
+    sallesRatio: "0 / 0 salles",
+    alerts: [],
+    demo: false,
+    vide: true,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Dérivation depuis les données réelles.
@@ -189,8 +221,13 @@ export function buildCockpitView(input: CockpitInput): CockpitView {
   const rows = active ? affectations.filter((a) => a.missionId === active.id) : [];
   const actifs = rows.filter((a) => a.matin || a.apm || a.matinCreneaux?.length || a.apmCreneaux?.length);
 
-  // Aucune donnée exploitable → jeu de démonstration (référence visuelle).
-  if (!active || actifs.length === 0) return DEMO_COCKPIT;
+  // Aucune donnée exploitable. Le jeu de démonstration n'est servi QUE sous
+  // SPC_DEMO=1 (audit QA forensic V2, BUG-001) : sans ce drapeau on retourne une
+  // vue VIDE, que l'écran rend en état vide explicite. Un cockpit opérationnel
+  // ne doit jamais inventer des surveillants, des salles et des alertes.
+  if (!active || actifs.length === 0) {
+    return demoActif() ? DEMO_COCKPIT : cockpitVide();
+  }
 
   const survById = new Map(surveillants.map((s) => [s.id, s]));
 
@@ -298,5 +335,6 @@ export function buildCockpitView(input: CockpitInput): CockpitView {
     sallesRatio: `${sallesAffectees} / ${active.nbSalles || sallesAffectees} salles`,
     alerts,
     demo: false,
+    vide: false,
   };
 }

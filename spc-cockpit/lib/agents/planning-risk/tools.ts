@@ -98,7 +98,8 @@ export interface PlanningRiskReport {
 
 /** Rapport pour affichage interne (noms visibles). Lecture seule. */
 export async function getPlanningRiskReport(missionId: number | null, todayISO: string): Promise<PlanningRiskReport> {
-  const [missions, surveillants, affectations] = await Promise.all([getMissions(), getSurveillants(), getAffectations()]);
+  const [jm, js, ja] = await Promise.all([getMissions(), getSurveillants(), getAffectations()]);
+  const missions = jm.lignes, surveillants = js.lignes, affectations = ja.lignes;
   const mission =
     (missionId ? missions.find((m) => m.id === missionId) : null) ??
     missions.find((m) => m.statut === "En cours") ??
@@ -124,7 +125,8 @@ export async function getPlanningRiskReport(missionId: number | null, todayISO: 
  * liste anonymisée des surveillants de la mission. Aucune donnée personnelle.
  */
 export async function getModelPayload(missionId: number | null, todayISO: string) {
-  const [missions, surveillants, affectations] = await Promise.all([getMissions(), getSurveillants(), getAffectations()]);
+  const [jm, js, ja] = await Promise.all([getMissions(), getSurveillants(), getAffectations()]);
+  const missions = jm.lignes, surveillants = js.lignes, affectations = ja.lignes;
   const mission =
     (missionId ? missions.find((m) => m.id === missionId) : null) ??
     missions.find((m) => m.statut === "En cours") ??

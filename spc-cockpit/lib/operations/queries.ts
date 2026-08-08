@@ -1,13 +1,57 @@
 import { createClient } from "@/lib/supabase/server";
+import { log } from "@/lib/log";
 import type { Surveillant, Mission, Affectation, Creneau, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle, DevisEquipe , JournalEntry } from "./types";
 import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures, mockDevisLignes, mockDevisSalles, mockDevisEquipe, mockJournal } from "./mock";
+import { demoActif, jeuBase, jeuDemo, jeuErreur, jeuVide, type Jeu } from "./source";
 
-export async function getSurveillants(): Promise<Surveillant[]> {
+// Chaque lecture retourne un `Jeu<T>` porteur de son ORIGINE (base / demo /
+// vide / erreur). Le jeu de démonstration n'est servi que sous `SPC_DEMO=1` :
+// une table vide reste vide, une erreur reste une erreur. Voir source.ts.
+
+// Next.js signale certains états par une EXCEPTION de contrôle de flux, qu'il
+// doit recevoir intacte : usage dynamique détecté pendant le rendu statique,
+// redirect(), notFound(). Les avaler ferait rendre statiquement une page qui
+// doit être dynamique. On les relaie donc systématiquement.
+const DIGESTS_NEXT = ["DYNAMIC_SERVER_USAGE", "NEXT_REDIRECT", "NEXT_NOT_FOUND", "NEXT_HTTP_ERROR_FALLBACK"];
+
+function estControleNext(e: unknown): boolean {
+  const digest = (e as { digest?: unknown } | null)?.digest;
+  return typeof digest === "string" && DIGESTS_NEXT.some((d) => digest.startsWith(d));
+}
+
+/** Enveloppe commune : porte de démonstration + capture des exceptions. */
+async function source<T>(demo: T[], lire: () => Promise<Jeu<T>>, table: string): Promise<Jeu<T>> {
+  if (demoActif()) return jeuDemo(demo);
   try {
+    return await lire();
+  } catch (e) {
+    if (estControleNext(e)) throw e;
+    const message = e instanceof Error ? e.message : String(e);
+    log.error(`[queries] lecture ${table} impossible :`, message);
+    return jeuErreur(message);
+  }
+}
+
+/** Résultat Supabase → Jeu, en distinguant erreur et absence de ligne. */
+function depuisSupabase<Row, T>(
+  table: string,
+  data: Row[] | null,
+  error: { message: string } | null,
+  mapper: (row: Row) => T,
+): Jeu<T> {
+  if (error) {
+    log.error(`[queries] lecture ${table} refusée :`, error.message);
+    return jeuErreur(error.message);
+  }
+  if (!data?.length) return jeuVide();
+  return jeuBase(data.map(mapper));
+}
+
+export async function getSurveillants(): Promise<Jeu<Surveillant>> {
+  return source(mockSurveillants, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.from("surveillants").select("*").order("nom");
-    if (error || !data?.length) return mockSurveillants;
-    return data.map((r) => ({
+    return depuisSupabase("surveillants", data, error, (r) => ({
       id: r.id,
       nom: r.nom,
       prenom: r.prenom ?? undefined,
@@ -24,17 +68,14 @@ export async function getSurveillants(): Promise<Surveillant[]> {
       note: Number(r.note ?? 0),
       tauxHoraire: Number(r.taux_horaire ?? 0),
     }));
-  } catch {
-    return mockSurveillants;
-  }
+  }, "surveillants");
 }
 
-export async function getMissions(): Promise<Mission[]> {
-  try {
+export async function getMissions(): Promise<Jeu<Mission>> {
+  return source(mockMissions, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.from("missions").select("*").order("date_mission", { ascending: false });
-    if (error || !data?.length) return mockMissions;
-    return data.map((r) => ({
+    return depuisSupabase("missions", data, error, (r) => ({
       id: r.id,
       reference: r.reference,
       client: r.client,
@@ -47,16 +88,18 @@ export async function getMissions(): Promise<Mission[]> {
       statut: r.statut ?? "Planifiée",
       notes: r.notes ?? undefined,
     }));
-  } catch {
-    return mockMissions;
-  }
+  }, "missions");
 }
 
-export async function getAffectations(): Promise<Affectation[]> {
-  try {
+export async function getAffectations(): Promise<Jeu<Affectation>> {
+  return source(mockAffectations, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.from("affectations").select("*").order("id");
-    if (error || !data?.length) return mockAffectations;
+    if (error) {
+      log.error("[queries] lecture affectations refusée :", error.message);
+      return jeuErreur<Affectation>(error.message);
+    }
+    if (!data?.length) return jeuVide<Affectation>();
 
     // Source de vérité des créneaux : table `creneaux` (§30). Repli gracieux sur
     // le jsonb (§29) puis sur les colonnes matin*/apm* si la table n'existe pas
@@ -74,7 +117,7 @@ export async function getAffectations(): Promise<Affectation[]> {
       byAff.set(c.affectation_id, e);
     }
 
-    return data.map((r) => {
+    return jeuBase(data.map((r) => {
       const cr = byAff.get(r.id);
       const matinCreneaux = cr?.matin.length ? cr.matin : Array.isArray(r.matin_creneaux) ? r.matin_creneaux : undefined;
       const apmCreneaux = cr?.apm.length ? cr.apm : Array.isArray(r.apm_creneaux) ? r.apm_creneaux : undefined;
@@ -95,18 +138,15 @@ export async function getAffectations(): Promise<Affectation[]> {
         apmCreneaux,
         presence: r.presence ?? "En attente",
       };
-    });
-  } catch {
-    return mockAffectations;
-  }
+    }));
+  }, "affectations");
 }
 
-export async function getDevisList(): Promise<Devis[]> {
-  try {
+export async function getDevisList(): Promise<Jeu<Devis>> {
+  return source(mockDevis, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.from("devis").select("*").order("created_at", { ascending: false });
-    if (error || !data?.length) return mockDevis;
-    return data.map((r) => ({
+    return depuisSupabase("devis", data, error, (r) => ({
       id: r.id,
       reference: r.reference,
       client: r.client,
@@ -127,17 +167,14 @@ export async function getDevisList(): Promise<Devis[]> {
       fraisCoordination: Number(r.frais_coordination ?? 0),
       remise: Number(r.remise ?? 0),
     }));
-  } catch {
-    return mockDevis;
-  }
+  }, "devis");
 }
 
-export async function getSalles(): Promise<Salle[]> {
-  try {
+export async function getSalles(): Promise<Jeu<Salle>> {
+  return source(mockSalles, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.from("salles").select("*").order("nom");
-    if (error || !data?.length) return mockSalles;
-    return data.map((r) => ({
+    return depuisSupabase("salles", data, error, (r) => ({
       id: r.id,
       nom: r.nom,
       batiment: r.batiment ?? undefined,
@@ -148,17 +185,14 @@ export async function getSalles(): Promise<Salle[]> {
       pmr: r.pmr ?? false,
       tiersTemps: r.tiers_temps ?? false,
     }));
-  } catch {
-    return mockSalles;
-  }
+  }, "salles");
 }
 
-export async function getIncidents(): Promise<Incident[]> {
-  try {
+export async function getIncidents(): Promise<Jeu<Incident>> {
+  return source(mockIncidents, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.from("incidents").select("*").order("created_at", { ascending: false });
-    if (error || !data?.length) return mockIncidents;
-    return data.map((r) => ({
+    return depuisSupabase("incidents", data, error, (r) => ({
       id: r.id,
       titre: r.titre,
       salle: r.salle ?? undefined,
@@ -168,34 +202,28 @@ export async function getIncidents(): Promise<Incident[]> {
       description: r.description ?? undefined,
       missionId: r.mission_id ?? undefined,
     }));
-  } catch {
-    return mockIncidents;
-  }
+  }, "incidents");
 }
 
-export async function getAmenagements(): Promise<Amenagement[]> {
-  try {
+export async function getAmenagements(): Promise<Jeu<Amenagement>> {
+  return source(mockAmenagements, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.from("amenagements").select("*").order("id");
-    if (error || !data?.length) return mockAmenagements;
-    return data.map((r) => ({
+    return depuisSupabase("amenagements", data, error, (r) => ({
       id: r.id,
       amenagement: r.amenagement,
       salle: r.salle ?? undefined,
       tiersTemps: r.tiers_temps ?? false,
       surveillant: r.surveillant ?? undefined,
     }));
-  } catch {
-    return mockAmenagements;
-  }
+  }, "amenagements");
 }
 
-export async function getFactures(): Promise<Facture[]> {
-  try {
+export async function getFactures(): Promise<Jeu<Facture>> {
+  return source(mockFactures, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.from("factures").select("*").order("id");
-    if (error || !data?.length) return mockFactures;
-    return data.map((r) => ({
+    return depuisSupabase("factures", data, error, (r) => ({
       id: r.id,
       reference: r.reference,
       client: r.client,
@@ -207,17 +235,14 @@ export async function getFactures(): Promise<Facture[]> {
       echeance: r.echeance ?? undefined,
       devisId: r.devis_id ?? undefined,
     }));
-  } catch {
-    return mockFactures;
-  }
+  }, "factures");
 }
 
-export async function getDevisLignes(): Promise<DevisLigne[]> {
-  try {
+export async function getDevisLignes(): Promise<Jeu<DevisLigne>> {
+  return source(mockDevisLignes, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.from("devis_lignes").select("*").order("ordre");
-    if (error || !data?.length) return mockDevisLignes;
-    return data.map((r) => ({
+    return depuisSupabase("devis_lignes", data, error, (r) => ({
       id: r.id,
       devisId: r.devis_id,
       designation: r.designation,
@@ -226,17 +251,14 @@ export async function getDevisLignes(): Promise<DevisLigne[]> {
       prixUnitaire: Number(r.prix_unitaire ?? 0),
       ordre: r.ordre ?? 1,
     }));
-  } catch {
-    return mockDevisLignes;
-  }
+  }, "devis_lignes");
 }
 
-export async function getDevisSalles(): Promise<DevisSalle[]> {
-  try {
+export async function getDevisSalles(): Promise<Jeu<DevisSalle>> {
+  return source(mockDevisSalles, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.from("devis_salles").select("*").order("ordre");
-    if (error || !data?.length) return mockDevisSalles;
-    return data.map((r) => ({
+    return depuisSupabase("devis_salles", data, error, (r) => ({
       id: r.id,
       devisId: r.devis_id,
       session: r.session === "apres-midi" ? "apres-midi" as const : "matin" as const,
@@ -250,17 +272,14 @@ export async function getDevisSalles(): Promise<DevisSalle[]> {
       observations: r.observations ?? undefined,
       ordre: r.ordre ?? 1,
     }));
-  } catch {
-    return mockDevisSalles;
-  }
+  }, "devis_salles");
 }
 
-export async function getDevisEquipe(): Promise<DevisEquipe[]> {
-  try {
+export async function getDevisEquipe(): Promise<Jeu<DevisEquipe>> {
+  return source(mockDevisEquipe, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase.from("devis_equipe").select("*").order("ordre");
-    if (error || !data?.length) return mockDevisEquipe;
-    return data.map((r) => ({
+    return depuisSupabase("devis_equipe", data, error, (r) => ({
       id: r.id,
       devisId: r.devis_id,
       role: r.role,
@@ -269,21 +288,18 @@ export async function getDevisEquipe(): Promise<DevisEquipe[]> {
       tauxH: Number(r.taux_h ?? 0),
       ordre: r.ordre ?? 1,
     }));
-  } catch {
-    return mockDevisEquipe;
-  }
+  }, "devis_equipe");
 }
 
-export async function getJournal(): Promise<JournalEntry[]> {
-  try {
+export async function getJournal(): Promise<Jeu<JournalEntry>> {
+  return source(mockJournal, async () => {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("journal_sessions")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(100);
-    if (error || !data?.length) return mockJournal;
-    return data.map((r) => ({
+    return depuisSupabase("journal_sessions", data, error, (r) => ({
       id: r.id,
       missionId: r.mission_id ?? null,
       utilisateur: r.utilisateur ?? "inconnu",
@@ -292,7 +308,5 @@ export async function getJournal(): Promise<JournalEntry[]> {
       nouvelle: r.nouvelle ?? null,
       createdAt: r.created_at,
     }));
-  } catch {
-    return mockJournal;
-  }
+  }, "journal_sessions");
 }

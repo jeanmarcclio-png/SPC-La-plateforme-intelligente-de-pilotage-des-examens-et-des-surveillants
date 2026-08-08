@@ -9,7 +9,9 @@ import {
 import { requireActiveOrgId } from "@/lib/auth/org";
 import { getCurrentUser, getCurrentRole } from "@/lib/auth/session";
 import { getMissions, getAffectations, getSurveillants, getSalles, getIncidents } from "@/lib/operations/queries";
-import { buildCockpitView, DEMO_COCKPIT } from "@/lib/operations/cockpit";
+import { buildCockpitView } from "@/lib/operations/cockpit";
+import { origineGlobale, premiereErreur } from "@/lib/operations/source";
+import { BandeauSource, EtatVide } from "@/components/ops/EtatSource";
 import {
   COMMAND_CSS, CommandSidebar, initialesNom, nomDepuisEmail, libelleRole,
 } from "@/components/ops/command/shell";
@@ -127,25 +129,21 @@ const ICO = "w-[17px] h-[17px]";
 export default async function CockpitOpsPage() {
   await requireActiveOrgId();
 
-  // Récupération résiliente : si Supabase n'est pas configuré (démo / preview),
-  // l'écran retombe sur le jeu de référence plutôt que de faire une 500.
-  let view = DEMO_COCKPIT;
-  try {
-    const [missions, affectations, surveillants, salles] = await Promise.all([
-      getMissions(), getAffectations(), getSurveillants(), getSalles(),
-    ]);
-    view = buildCockpitView({ missions, affectations, surveillants, salles });
-  } catch {
-    /* jeu de démonstration */
-  }
-
-  let openIncidents = 0;
-  try {
-    const incidents = await getIncidents();
-    openIncidents = incidents.filter((i) => i.statut !== "Résolu").length;
-  } catch {
-    /* pas d'incidents en démo */
-  }
+  // Le cockpit n'invente plus de session (audit QA forensic V2, BUG-001) :
+  // buildCockpitView ne sert le jeu de démonstration que sous SPC_DEMO=1, et
+  // retourne sinon une vue VIDE que l'écran rend en état vide explicite.
+  const [jMissions, jAffectations, jSurveillants, jSalles, jIncidents] = await Promise.all([
+    getMissions(), getAffectations(), getSurveillants(), getSalles(), getIncidents(),
+  ]);
+  const view = buildCockpitView({
+    missions: jMissions.lignes,
+    affectations: jAffectations.lignes,
+    surveillants: jSurveillants.lignes,
+    salles: jSalles.lignes,
+  });
+  const origine = origineGlobale(jMissions, jAffectations, jSurveillants, jSalles);
+  const detailErreur = premiereErreur(jMissions, jAffectations, jSurveillants, jSalles, jIncidents);
+  const openIncidents = jIncidents.lignes.filter((i) => i.statut !== "Résolu").length;
 
   let userName = "Coordinateur SPC";
   let roleLabel = "Coordinateur";
@@ -190,6 +188,18 @@ export default async function CockpitOpsPage() {
         </header>
 
         <div className="scroll">
+          {/* Origine des données : la démonstration et l'erreur sont signalées,
+              jamais masquées par des chiffres crédibles (BUG-001 / BUG-002). */}
+          <BandeauSource origine={origine} detail={detailErreur} />
+
+          {view.vide ? (
+            <EtatVide
+              titre="Aucune session à piloter"
+              message="Le cockpit affiche la session en cours, validée ou planifiée, avec son équipe affectée. Aucune session ne remplit ces conditions : ni couverture, ni frise horaire, ni alerte ne peuvent être calculées."
+              action={{ label: "Ouvrir la planification", href: "/operations/planification" }}
+            />
+          ) : (
+          <>
           <div className="navsec" style={{ padding: "0 2px 9px", color: "var(--text-secondary)", letterSpacing: ".12em" }}>SANTÉ DE LA MISSION</div>
 
           {/* KPIs */}
@@ -333,6 +343,8 @@ export default async function CockpitOpsPage() {
               </div>
             </div>
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>

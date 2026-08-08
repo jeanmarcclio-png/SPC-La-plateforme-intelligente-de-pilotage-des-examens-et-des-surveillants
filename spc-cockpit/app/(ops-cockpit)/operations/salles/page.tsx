@@ -11,40 +11,30 @@ import {
   COMMAND_CSS, CommandSidebar, initialesNom, nomDepuisEmail, libelleRole,
 } from "@/components/ops/command/shell";
 import { SallesCommandCenter } from "@/components/ops/salles/SallesCommandCenter";
+import { BandeauSource } from "@/components/ops/EtatSource";
+import { origineGlobale, premiereErreur } from "@/lib/operations/source";
 import { SALLES_CSS } from "@/components/ops/salles/styles";
 import { Toaster } from "@/components/Toast";
 
 export default async function SallesPage() {
   await requireActiveOrgId();
 
-  // Récupération résiliente : sans Supabase configuré (démo / preview), les
-  // requêtes retombent sur le jeu de référence plutôt que de renvoyer une 500.
-  let view = construireVueSalles([]);
-  try {
-    view = construireVueSalles(await getSalles());
-  } catch {
-    /* jeu de démonstration */
-  }
+  // Les lectures portent désormais leur ORIGINE (base / demo / vide / erreur) :
+  // elles n'échouent plus silencieusement vers un jeu de démonstration, et les
+  // exceptions sont déjà capturées dans queries.ts.
+  const [jSalles, jIncidents, jMissions] = await Promise.all([
+    getSalles(), getIncidents(), getMissions(),
+  ]);
+  const view = construireVueSalles(jSalles.lignes);
+  const incidentsOuverts = jIncidents.lignes.filter((i) => i.statut !== "Résolu").length;
 
-  let incidentsOuverts = 0;
-  try {
-    const incidents = await getIncidents();
-    incidentsOuverts = incidents.filter((i) => i.statut !== "Résolu").length;
-  } catch {
-    /* pas d'incidents en démo */
-  }
-
-  let missionLabel = "Aucune mission active";
-  try {
-    const missions = await getMissions();
-    const active =
-      missions.find((m) => m.statut === "En cours") ??
-      missions.find((m) => m.statut === "Validée") ??
-      missions.find((m) => m.statut === "Planifiée");
-    if (active) missionLabel = `${active.client} — ${dateFR(active.dateMission)}`;
-  } catch {
-    /* libellé par défaut */
-  }
+  const active =
+    jMissions.lignes.find((m) => m.statut === "En cours") ??
+    jMissions.lignes.find((m) => m.statut === "Validée") ??
+    jMissions.lignes.find((m) => m.statut === "Planifiée");
+  const missionLabel = active
+    ? `${active.client} — ${dateFR(active.dateMission)}`
+    : "Aucune mission active";
 
   let userName = "Coordinateur SPC";
   let roleLabel = "Coordinateur";
@@ -93,6 +83,13 @@ export default async function SallesPage() {
             </div>
           </div>
         </header>
+
+        <div style={{ padding: "0 26px" }}>
+          <BandeauSource
+            origine={origineGlobale(jSalles, jIncidents, jMissions)}
+            detail={premiereErreur(jSalles, jIncidents, jMissions)}
+          />
+        </div>
 
         <SallesCommandCenter view={view} />
       </div>

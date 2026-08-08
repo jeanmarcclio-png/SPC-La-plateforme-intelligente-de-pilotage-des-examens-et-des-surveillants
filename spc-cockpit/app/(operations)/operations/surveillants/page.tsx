@@ -11,6 +11,8 @@ import { computeMissionKpis, heuresAffectation, aUnCreneau } from "@/lib/operati
 import { dateFR } from "@/lib/operations/format";
 import type { Affectation } from "@/lib/operations/types";
 import type { SurvRow, CreneauLigne, PortailStatut } from "@/components/ops/surveillants/types";
+import { origineGlobale, premiereErreur } from "@/lib/operations/source";
+import { BandeauSource } from "@/components/ops/EtatSource";
 
 // Créneaux détaillés d'une affectation (onglet Planning du profil).
 function creneauxDe(a: Affectation, missionRef?: string): CreneauLigne[] {
@@ -23,12 +25,16 @@ function creneauxDe(a: Affectation, missionRef?: string): CreneauLigne[] {
 }
 
 export default async function SurveillantsPage() {
-  const [surveillants, affectations, missions, invitations] = await Promise.all([
+  const [jSurveillants, jAffectations, jMissions, invitations] = await Promise.all([
     getSurveillants(),
     getAffectations(),
     getMissions(),
     getInvitationStatuses(),
   ]);
+  const surveillants = jSurveillants.lignes;
+  const affectations = jAffectations.lignes;
+  const missions = jMissions.lignes;
+  const origine = origineGlobale(jSurveillants, jAffectations, jMissions);
 
   // Mission active : même priorité que le shell (En cours → Validée → Planifiée).
   const active =
@@ -103,6 +109,7 @@ export default async function SurveillantsPage() {
 
   return (
     <div className={OPS_CONTENT_CLASS}>
+      <BandeauSource origine={origine} detail={premiereErreur(jSurveillants, jAffectations, jMissions)} />
       <SurveillantsWorkspace
         rows={rows}
         affectations={affectations}

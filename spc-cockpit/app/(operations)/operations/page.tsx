@@ -16,11 +16,21 @@ import { WorkloadCard } from "@/components/ops/dashboard/WorkloadCard";
 import { CalendarCard } from "@/components/ops/dashboard/CalendarCard";
 import { FinancialCard } from "@/components/ops/dashboard/FinancialCard";
 import { QuotesCard } from "@/components/ops/dashboard/QuotesCard";
+import { origineGlobale, premiereErreur } from "@/lib/operations/source";
+import { BandeauSource } from "@/components/ops/EtatSource";
 
 export default async function DashboardPage() {
-  const [surveillants, missions, devis, incidents, affectations, devisEquipe] = await Promise.all([
+  const [jSurv, jMissions, jDevis, jIncidents, jAff, jEquipe] = await Promise.all([
     getSurveillants(), getMissions(), getDevisList(), getIncidents(), getAffectations(), getDevisEquipe(),
   ]);
+  const surveillants = jSurv.lignes;
+  const missions = jMissions.lignes;
+  const devis = jDevis.lignes;
+  const incidents = jIncidents.lignes;
+  const affectations = jAff.lignes;
+  const devisEquipe = jEquipe.lignes;
+  const origine = origineGlobale(jSurv, jMissions, jDevis, jIncidents, jAff);
+  const detailErreur = premiereErreur(jSurv, jMissions, jDevis, jIncidents, jAff, jEquipe);
 
   const data = buildDashboardData({ missions, surveillants, affectations, devis, incidents, devisEquipe });
   const { financials: fin, coverage, upcoming } = data;
@@ -33,6 +43,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-full bg-[#F6F8FC]">
       <div className="w-full max-w-[1600px] mx-auto px-4 md:px-6 py-5 pb-16">
+        <BandeauSource origine={origine} detail={detailErreur} />
         {/* En-tête compact */}
         <div className="mb-5 flex items-end justify-between gap-3 flex-wrap">
           <div>

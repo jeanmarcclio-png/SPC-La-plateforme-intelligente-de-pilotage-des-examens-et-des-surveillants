@@ -110,9 +110,15 @@ function SallesTable({ titre, salles }: { titre: string; salles: DevisSalle[] })
 export default async function DevisDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const devisId = Number(id);
-  const [devisList, lignes, sallesAll, equipeAll, factures, missions] = await Promise.all([
+  const [jDevis, jLignes, jSalles, jEquipe, jFactures, jMissions] = await Promise.all([
     getDevisList(), getDevisLignes(), getDevisSalles(), getDevisEquipe(), getFactures(), getMissions(),
   ]);
+  const devisList = jDevis.lignes;
+  const lignes = jLignes.lignes;
+  const sallesAll = jSalles.lignes;
+  const equipeAll = jEquipe.lignes;
+  const factures = jFactures.lignes;
+  const missions = jMissions.lignes;
   const devis = devisList.find((d) => d.id === devisId);
   if (!devis) notFound();
   const equipe = equipeAll.filter((e) => e.devisId === devisId).sort((a, b) => a.ordre - b.ordre);

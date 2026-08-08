@@ -13,6 +13,8 @@ import { RevenueDistributionCard } from "@/components/ops/missions/RevenueDistri
 import { MissionsTable } from "@/components/ops/missions/MissionsTable";
 import { NouvelleMissionBouton } from "@/components/ops/missions/NouvelleMissionBouton";
 import { CalendarCheck2 } from "lucide-react";
+import { origineGlobale, premiereErreur } from "@/lib/operations/source";
+import { BandeauSource } from "@/components/ops/EtatSource";
 
 // Centre de pilotage des missions.
 // La page ne calcule rien : elle charge les données du tenant puis délègue
@@ -20,13 +22,19 @@ import { CalendarCheck2 } from "lucide-react";
 // garantit la cohérence entre KPI, bandeau actif, alertes et tableau.
 
 export default async function MissionsPage() {
-  const [missions, affectations, devis, devisSalles, incidents] = await Promise.all([
+  const [jMissions, jAffectations, jDevis, jDevisSalles, jIncidents] = await Promise.all([
     getMissions(),
     getAffectations(),
     getDevisList(),
     getDevisSalles(),
     getIncidents(),
   ]);
+  const missions = jMissions.lignes;
+  const affectations = jAffectations.lignes;
+  const devis = jDevis.lignes;
+  const devisSalles = jDevisSalles.lignes;
+  const incidents = jIncidents.lignes;
+  const origine = origineGlobale(jMissions, jAffectations, jDevis, jIncidents);
 
   const vue = construireVueMissions({ missions, affectations, devis, devisSalles, incidents });
 
@@ -38,6 +46,8 @@ export default async function MissionsPage() {
         subtitle="Suivi des sessions d&apos;examens et de la mission active"
         actions={<NouvelleMissionBouton />}
       />
+
+      <BandeauSource origine={origine} detail={premiereErreur(jMissions, jAffectations, jDevis, jIncidents)} />
 
       <MissionsKpiGrid stats={vue.stats} serie={vue.serie} />
 
