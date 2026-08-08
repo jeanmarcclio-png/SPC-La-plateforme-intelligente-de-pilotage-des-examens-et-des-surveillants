@@ -223,15 +223,15 @@ export default async function CockpitOpsPage() {
               <div className="spark">{[40, 62, 48, 78, 56, 88, 70, 100, 64, 82].map((h, i) => <i key={i} style={{ height: `${h}%`, background: i % 2 ? "var(--orange-warning)" : "var(--orange-dark)" }} />)}</div>
             </div>
             <div className="kpi">
-              <div className="top"><span className="ico ico-red"><AlertTriangle className={ICO} /></span><span className="k">ALERTES ACTIVES</span></div>
+              <div className="top"><span className="ico ico-red"><AlertTriangle className={ICO} /></span><span className="k">ALERTES — CETTE SESSION</span></div>
               <div className="val">{k.alertesTotal}</div>
-              <div className="sub">{k.alertesCritiques} critiques · {k.alertesRetards} retards · {k.alertesInfos} infos</div>
+              <div className="sub">{k.alertesCritiques} critiques · {k.alertesRetards} retards · {k.alertesInfos} à surveiller</div>
               <div className="spark">{[100, 70, 85, 55, 60, 45, 40, 30, 35].map((h, i) => <i key={i} style={{ height: `${h}%`, background: i < 4 ? "var(--red-critical)" : i < 7 ? "var(--orange-warning)" : "var(--cyan-info)" }} />)}</div>
             </div>
             <div className="kpi ai">
-              <div className="top"><span className="ico ico-ai"><Sparkles className={ICO} /></span><span className="k">SCORE DE FLUIDITÉ IA</span></div>
-              <div className="val">{k.scoreIA.toLocaleString("fr-FR")} <small>/10</small></div>
-              <div className="sub"><span className="aihint">{k.scoreLabel} <Info className="w-3 h-3" /></span></div>
+              <div className="top"><span className="ico ico-ai"><Sparkles className={ICO} /></span><span className="k">SANTÉ DE LA SESSION</span></div>
+              <div className="val">{k.scoreIA.toLocaleString("fr-FR")} <small>/100</small></div>
+              <div className="sub"><span className="aihint">Session {k.scoreLabel} <Info className="w-3 h-3" /></span></div>
               <svg viewBox="0 0 260 40" preserveAspectRatio="none" style={{ width: "100%", height: 36, marginTop: 8 }}>
                 <polyline points="0,36 30,32 60,34 90,26 120,28 150,20 180,22 210,13 240,9 260,6" fill="none" stroke="#8B5CF6" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="210" cy="13" r="2.6" fill="#b79bff" /><circle cx="260" cy="6" r="2.8" fill="#c9b6ff" />
@@ -321,7 +321,7 @@ export default async function CockpitOpsPage() {
               </div>
 
               <div className="panel al" style={{ marginTop: 16 }}>
-                <div className="ph"><span className="t">Alertes</span><Link className="link" href="/operations/incidents">Voir toutes ({k.alertesTotal})</Link></div>
+                <div className="ph"><span className="t">Alertes — cette session</span><Link className="link" href="/operations/incidents">Voir toutes ({k.alertesTotal})</Link></div>
                 <div className="tabs">
                   <span>Toutes <span className="n">{k.alertesTotal}</span></span>
                   <span className="on">Critiques <span className="n">{k.alertesCritiques}</span></span>

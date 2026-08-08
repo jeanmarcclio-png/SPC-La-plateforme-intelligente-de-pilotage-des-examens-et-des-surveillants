@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildCockpitView, DEMO_COCKPIT } from "../cockpit";
+import { santeSession } from "../planification-vue";
 import type { Affectation, Mission, Salle, Surveillant } from "../types";
 
 const mission: Mission = {
@@ -60,8 +61,15 @@ describe("buildCockpitView", () => {
     const marie = v.sessions.find((s) => s.nom === "Marie Laroche");
     expect(marie?.coord).toBe(true);
     expect(marie?.statut).toBe("Conforme");
-    // score borné 0–10
+    // Score de santé de session : MÊME échelle que la planification (0–100).
+    // Le cockpit affichait auparavant une heuristique « fluidité IA » sur 10,
+    // qui contredisait le score de la planification pour la même session
+    // (audit QA forensic V2, BUG-025).
     expect(v.kpis.scoreIA).toBeGreaterThanOrEqual(0);
-    expect(v.kpis.scoreIA).toBeLessThanOrEqual(10);
+    expect(v.kpis.scoreIA).toBeLessThanOrEqual(100);
+    expect(v.kpis.scoreIA).toBe(
+      santeSession({ mission, missions: [mission], affectations, surveillants }).score,
+    );
+    expect(["prête", "à consolider", "à risque"]).toContain(v.kpis.scoreLabel);
   });
 });

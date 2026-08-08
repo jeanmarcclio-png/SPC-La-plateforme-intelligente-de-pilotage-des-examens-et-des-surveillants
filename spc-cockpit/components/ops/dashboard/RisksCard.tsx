@@ -36,7 +36,7 @@ function RiskTile({ risk }: { risk: DashboardRisk }) {
 
 export function RisksCard({ risks }: { risks: DashboardRisk[] }) {
   return (
-    <SectionCard title="Risques & points d'attention" icon={<AlertTriangle className="w-4 h-4" />}>
+    <SectionCard title="Risques & points d'attention — portefeuille" icon={<AlertTriangle className="w-4 h-4" />}>
       <div className="grid grid-cols-2 gap-3">
         {risks.map((r) => (
           <RiskTile key={r.key} risk={r} />

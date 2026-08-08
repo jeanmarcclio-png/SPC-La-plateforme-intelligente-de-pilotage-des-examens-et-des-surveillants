@@ -466,6 +466,29 @@ export function construireVueSession(input: {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Accès ciblés — permettent aux AUTRES écrans (cockpit) de consommer le même
+// catalogue d'alertes et le même score de santé pour une session donnée, au
+// lieu d'en recalculer une variante (audit QA forensic V2, BUG-025).
+// ---------------------------------------------------------------------------
+
+export interface EntreeSession {
+  mission: Mission;
+  missions: Mission[];
+  affectations: Affectation[];
+  surveillants: Surveillant[];
+}
+
+/** Alertes de planning d'une session — LA liste de référence. */
+export function alertesSession(input: EntreeSession): AlerteLigne[] {
+  return construireVueSession(input).alertes;
+}
+
+/** Score de santé d'une session — UN score, UNE échelle (0–100). */
+export function santeSession(input: EntreeSession): SanteSession {
+  return construireVueSession(input).sante;
+}
+
 /** Sessions proposées dans le sélecteur, mission engagée en tête. */
 export function sessionsSelectionnables(missions: Mission[]): Mission[] {
   const rang = (m: Mission) => (m.statut === "En cours" ? 0 : m.statut === "Validée" ? 1 : m.statut === "Planifiée" ? 2 : 3);

@@ -394,7 +394,7 @@ export function SallesCommandCenter({ view }: { view: SallesView }) {
           <div className="skpi">
             <div className="ico ico-amber"><ShieldAlert className="w-[17px] h-[17px]" aria-hidden /></div>
             <div className="val">{k.alertesActives}</div>
-            <div className="k">Alertes actives</div>
+            <div className="k">Alertes — salles</div>
             <div className="sub">à traiter</div>
           </div>
           <div className="skpi">

@@ -8,6 +8,7 @@
 
 import { analyseCouverture, couvertureSession } from "./couverture";
 import { SEUIL_SURCHARGE_H } from "./constants";
+import { alertesSession, santeSession } from "./planification-vue";
 import { demoActif } from "./source";
 import type { Affectation, Mission, Salle, Surveillant } from "./types";
 
@@ -28,8 +29,8 @@ export interface CockpitKpis {
   alertesCritiques: number;
   alertesRetards: number;
   alertesInfos: number;
-  scoreIA: number; // 0–10, un chiffre après la virgule
-  scoreLabel: string;
+  scoreIA: number; // score de santé de session 0–100 (même échelle que la planification)
+  scoreLabel: string; // « prête » | « à consolider » | « à risque »
 }
 
 export interface CockpitTimelineBar {
@@ -295,9 +296,14 @@ export function buildCockpitView(input: CockpitInput): CockpitView {
     ...surcharges.slice(0, 2).map<CockpitAlert>((s) => ({ niveau: "cr", lvLabel: "CRITIQUE", titre: `Surcharge — ${s.nom}`, detail: `Charge cumulée au-delà de ${SEUIL_SURCHARGE_H} h`, heure: "—" })),
     ...retards.slice(0, 2).map<CockpitAlert>((s) => ({ niveau: "rt", lvLabel: "RETARD", titre: `Surveillant en retard — ${s.nom}`, detail: `Salle ${s.salle}`, heure: "—" })),
   ];
-  const alertesCritiques = critiques.length;
+  // Décompte : le cockpit et la planification portent sur LA MÊME session — ils
+  // doivent donc annoncer le même nombre d'alertes (BUG-025). Le catalogue de
+  // référence est celui de planification-vue ; le cockpit y ajoute les retards,
+  // qui n'existent qu'en temps réel (présence constatée le jour J).
+  const alertesPlanning = alertesSession({ mission: active, missions, affectations, surveillants });
+  const alertesCritiques = alertesPlanning.filter((a) => a.niveau === "critique").length;
   const alertesRetards = retards.length;
-  const alertesInfos = 0;
+  const alertesInfos = alertesPlanning.filter((a) => a.niveau === "avertissement").length;
   const alertesTotal = alertesCritiques + alertesRetards + alertesInfos;
 
   // File « À traiter maintenant » dérivée des cas les plus urgents.
@@ -307,9 +313,13 @@ export function buildCockpitView(input: CockpitInput): CockpitView {
     ...retards.slice(0, 2).map<CockpitAction>((s) => ({ niveau: "retard", titre: `Relancer ${s.nom} (retard)`, detail: `Salle ${s.salle} · prise de poste à confirmer`, cta: "Relancer" })),
   ];
 
-  // Score de fluidité IA : heuristique bornée (couverture − pénalités alertes).
-  const scoreIA = Math.max(0, Math.min(10, Math.round((couv.tauxCouverture * 10 - alertesCritiques * 0.6 - alertesRetards * 0.3) * 10) / 10));
-  const scoreLabel = scoreIA >= 8 ? "Très bon" : scoreIA >= 6 ? "Correct" : scoreIA >= 4 ? "À surveiller" : "Critique";
+  // Santé de la session : MÊME score et MÊME échelle que la planification
+  // (0–100). Le cockpit affichait auparavant une heuristique « fluidité IA »
+  // sur 10, qui donnait 5,9/10 « À surveiller » là où la planification affichait
+  // 54/100 « À risque » pour la même session (BUG-025).
+  const sante = santeSession({ mission: active, missions, affectations, surveillants });
+  const scoreIA = sante.score;
+  const scoreLabel = sante.niveau;
 
   // Frise horaire : amplitude matin / après-midi réelle.
   const collect = (per: "matin" | "apm") => {
