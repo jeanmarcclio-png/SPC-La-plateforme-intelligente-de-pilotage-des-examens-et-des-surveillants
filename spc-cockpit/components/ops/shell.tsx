@@ -14,6 +14,7 @@ export function PageHeader({
   subtitle,
   actions,
   icon,
+  badge,
 }: {
   page: string;
   title?: string;
@@ -21,6 +22,8 @@ export function PageHeader({
   actions?: React.ReactNode;
   /** Pastille d'icône optionnelle affichée devant le titre (aucune page existante n'en dépend). */
   icon?: React.ReactNode;
+  /** Pastille de contexte affichée APRÈS le titre (ex. « Cockpit commercial »). */
+  badge?: React.ReactNode;
 }) {
   return (
     <div className="mb-6 flex items-end justify-between gap-3 flex-wrap">
@@ -33,6 +36,7 @@ export function PageHeader({
             </span>
           )}
           {title ?? page}
+          {badge}
         </h1>
         {typeof subtitle === "string" ? (
           <p className="text-[13px] text-gray-400 mt-0.5">{subtitle}</p>

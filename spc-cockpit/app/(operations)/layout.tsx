@@ -56,7 +56,8 @@ export default async function OperationsLayout({ children }: { children: React.R
   const orgOptions = orgs.map((o) => ({ orgId: o.orgId, nom: o.nom, role: o.role }));
 
   return (
-    <div className="flex h-dvh overflow-hidden flex-col md:flex-row" style={{ background: "#F6F8FC" }}>
+    <div className="flex h-dvh overflow-hidden flex-col md:flex-row" // Workspace ivoire minéral — signature Warm Light + Navy du module.
+      style={{ background: "#F4F2ED" }}>
       <OpsMobileHeader />
       <OpsSidebar openIncidents={openIncidents} />
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">

@@ -31,7 +31,7 @@ export default async function DashboardPage() {
   const couvTone = coverage.taux >= 0.85 ? "emerald" : coverage.taux >= 0.7 ? "amber" : "red";
 
   return (
-    <div className="min-h-full bg-[#F6F8FC]">
+    <div className="min-h-full bg-[#F4F2ED]">
       <div className="w-full max-w-[1600px] mx-auto px-4 md:px-6 py-5 pb-16">
         {/* En-tête compact */}
         <div className="mb-5 flex items-end justify-between gap-3 flex-wrap">

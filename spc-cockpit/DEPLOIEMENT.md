@@ -25,6 +25,8 @@ Jouer les migrations **dans l'ordre**, depuis `supabase/migrations/` :
 18_surveillants-affectations-liens.sql
 19_rls-surveillant.sql
 20_onboarding-rpc.sql
+21 → 30   (disponibilités, portail surveillant, RGPD, mono-tenant, créneaux)
+31_devis-suivi-commercial.sql
 ```
 
 Toutes les migrations sont idempotentes (rejouables sans effet de bord).

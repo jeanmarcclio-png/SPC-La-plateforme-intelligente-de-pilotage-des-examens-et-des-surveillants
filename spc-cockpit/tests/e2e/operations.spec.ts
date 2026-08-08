@@ -93,3 +93,41 @@ test.describe("Missions — cycle de vie à 11 statuts", () => {
     await expect(options).toHaveCount(11);
   });
 });
+
+test.describe("Devis — cockpit commercial", () => {
+  test("le cockpit expose les 5 KPI, le pipeline et les alertes", async ({ page }) => {
+    await page.goto("/operations/devis", { waitUntil: "networkidle" });
+    await expect(page.getByRole("main").getByText("Cockpit commercial", { exact: true })).toBeVisible();
+    for (const kpi of ["TOTAL DEVIS", "CA POTENTIEL HT", "TAUX DE TRANSFORMATION", "CA ACCEPTÉ HT", "PANIER MOYEN HT"]) {
+      await expect(page.getByRole("heading", { name: kpi })).toBeVisible();
+    }
+    await expect(page.getByRole("heading", { name: "Pipeline commercial" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Alertes & actions prioritaires" })).toBeVisible();
+  });
+
+  test("une étape du pipeline filtre le tableau, la puce la retire", async ({ page }) => {
+    await page.goto("/operations/devis", { waitUntil: "networkidle" });
+    const lignes = page.locator("#devis-tableau tbody tr");
+    const total = await lignes.count();
+    await page.getByRole("button", { name: /^En attente/ }).click();
+    await expect(lignes).toHaveCount(1);
+    await page.getByRole("button", { name: "Retirer ce filtre" }).click();
+    await expect(lignes).toHaveCount(total);
+  });
+
+  test("le tableau porte la marge estimée et la prochaine action", async ({ page }) => {
+    await page.goto("/operations/devis", { waitUntil: "networkidle" });
+    await expect(page.getByRole("columnheader", { name: "Marge estimée" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Prochaine action" })).toBeVisible();
+    // Devis envoyé sans réponse : la relance est datée, pas générique.
+    await expect(page.getByText(/^Relancer J\+\d+$/).first()).toBeVisible();
+    // Équipe non chiffrée : aucune marge inventée.
+    await expect(page.getByTitle(/Marge non calculable/).first()).toBeVisible();
+  });
+
+  test("la fenêtre d'analyse passe par l'URL", async ({ page }) => {
+    await page.goto("/operations/devis", { waitUntil: "networkidle" });
+    await page.getByLabel(/Fenêtre d'analyse/).selectOption("30j");
+    await expect(page).toHaveURL(/periode=30j/);
+  });
+});

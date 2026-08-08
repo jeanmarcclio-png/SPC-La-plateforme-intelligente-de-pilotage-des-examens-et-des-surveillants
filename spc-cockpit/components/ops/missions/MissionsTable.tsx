@@ -251,7 +251,7 @@ export function MissionsTable({ lignes, missionActiveId }: { lignes: LigneMissio
                 return (
                   <tr
                     key={m.id}
-                    className={`border-b border-[#EDF0F5] last:border-0 transition-colors hover:bg-[#F6F8FC] ${active ? "bg-[#F7F6FF]" : ""}`}
+                    className={`border-b border-[#EDF0F5] last:border-0 transition-colors hover:bg-[#F5F3EE] ${active ? "bg-[#F7F6FF]" : ""}`}
                   >
                     <td className={`px-4 py-3 text-[12px] font-mono text-[#64708A] whitespace-nowrap ${active ? "border-l-[3px] border-l-[#4F46F5] pl-[13px]" : ""}`}>
                       {m.reference}

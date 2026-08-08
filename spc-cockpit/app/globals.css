@@ -26,6 +26,73 @@
 
 html, body { height: 100%; overflow: hidden; }
 
+/* ---------------------------------------------------------------------------
+   Direction « Warm Light + Navy » — cockpit commercial.
+   Tokens VOLONTAIREMENT SCOPÉS à .cockpit-warm : la direction s'applique à la
+   page Devis sans toucher au thème des autres écrans Opérations. Basculer tout
+   le module revient à poser la classe sur le <main> du layout.
+   --------------------------------------------------------------------------- */
+.cockpit-warm {
+  /* Surfaces — ivoire minéral, jamais de blanc pur en fond */
+  --surface-app: #F4F2ED;
+  --surface-app-alt: #F7F5F1;
+  --surface-card: #FBFAF7;
+  --surface-card-hover: #F8F6F1;
+  --surface-subtle: #F1EFE9;
+
+  /* Navy institutionnel */
+  --navy-950: #061A36;
+  --navy-900: #082142;
+  --navy-850: #0A294D;
+
+  /* Encre */
+  --ink-primary: #0B1739;
+  --ink-secondary: #53627A;
+  --ink-muted: #7B8799;
+  --ink-disabled: #A4ACB8;
+
+  /* Accent premium — parcimonie absolue */
+  --accent: #5B3DF5;
+  --accent-hover: #4930D8;
+  --accent-soft: #EEEAFE;
+  --accent-border: #D9D1FE;
+
+  /* Couleurs métier — pilotage de la décision uniquement */
+  --metier-blue: #1473E6;      --metier-blue-soft: #EAF3FF;
+  --metier-green: #16A56D;     --metier-green-soft: #E8F8EF;
+  --metier-green-ink: #16865F;
+  --metier-amber: #F59E0B;     --metier-amber-soft: #FFF4DF;
+  --metier-amber-ink: #C97000;
+  --metier-red: #E83F5B;       --metier-red-soft: #FFECEF;
+  --metier-cyan: #17A9D6;      --metier-cyan-soft: #E7F8FC;
+  --metier-neutral: #7A8799;   --metier-neutral-soft: #EFF2F5;
+  --metier-neutral-ink: #475467;
+
+  /* Bordures très fines et ombres presque imperceptibles */
+  --border-soft: #E4E1DA;
+  --border-medium: #D8D4CB;
+  --border-strong: #C8C2B7;
+  --shadow-card: 0 1px 2px rgba(14, 28, 52, 0.035), 0 6px 18px rgba(14, 28, 52, 0.04);
+  --shadow-elevated: 0 8px 24px rgba(14, 28, 52, 0.08);
+}
+
+/* Survol de ligne : identifiable sans devenir coloré (§19). */
+.cockpit-warm .row-hover:hover { background: rgba(91, 61, 245, 0.025); }
+
+/* Actions de ligne : discrètes au repos, lisibles au survol (§19). */
+.cockpit-warm .row-actions { opacity: 0.55; transition: opacity 140ms ease-out; }
+.cockpit-warm tr:hover .row-actions,
+.cockpit-warm .row-actions:focus-within { opacity: 1; }
+
+/* Élévation des boutons — 120–160 ms ease-out, aucun halo (§21). */
+.cockpit-warm .lift { transition: transform 140ms ease-out, box-shadow 140ms ease-out, background-color 140ms ease-out; }
+.cockpit-warm .lift:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(6, 26, 54, 0.12); }
+.cockpit-warm :focus-visible { outline: 2px solid rgba(91, 61, 245, 0.28); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cockpit-warm .lift:hover:not(:disabled) { transform: none; }
+}
+
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
