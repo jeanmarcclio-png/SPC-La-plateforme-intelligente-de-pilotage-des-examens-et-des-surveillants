@@ -1,13 +1,12 @@
-import { DemandesWorkspace } from "@/components/ops/demandes/DemandesWorkspace";
-import { OPS_CONTENT_CLASS } from "@/components/ops/shell";
+import { DemandesCockpit } from "@/components/ops/demandes/DemandesCockpit";
 
-// Point d'entrée interne SPC pour les demandes clients reçues avant mission.
-// Accès réservé aux utilisateurs SPC (layout Opérations). MVP : pas de portail
-// client public, pas d'authentification client.
+// Cockpit des demandes clients — point d'entrée interne SPC pour les demandes
+// reçues avant mission. Accès réservé aux utilisateurs SPC (layout Opérations).
+// MVP : pas de portail client public, pas d'authentification client.
+//
+// Cette page porte son propre thème « Dark Graphite » (pleine largeur) : elle
+// n'utilise donc pas OPS_CONTENT_CLASS, dont les marges sont reprises à
+// l'intérieur du fond sombre par DemandesCockpit.
 export default function DemandesClientPage() {
-  return (
-    <div className={OPS_CONTENT_CLASS}>
-      <DemandesWorkspace />
-    </div>
-  );
+  return <DemandesCockpit />;
 }
