@@ -250,6 +250,12 @@ export interface EtapePreparation {
   label: string;
   fait: boolean;
   ratio: number; // 0–1
+  /**
+   * Écart à expliquer, `null` quand l'étape est saine. Un dépassement — 8 salles
+   * ouvertes pour 6 déclarées — se lisait auparavant comme un objectif atteint
+   * (BUG-021) : `Math.min(1, …)` le ramenait à 100 % et `fait` passait à vrai.
+   */
+  anomalie: string | null;
 }
 
 export interface PreparationMission {
@@ -276,21 +282,34 @@ export function preparationMission(input: {
 
   const planningValide = auMoins(mission.statut, "Validée");
 
+  // Salles ouvertes au planning ≠ salles déclarées : dans les DEUX sens, c'est
+  // un écart. Le dépassement (8/6) était compté comme un objectif atteint
+  // (BUG-021) ; il est désormais nommé et l'étape n'est PAS « faite ».
+  const ecartSalles = mission.nbSalles > 0 ? salles - mission.nbSalles : 0;
+  const anomalieSalles =
+    ecartSalles > 0
+      ? `${ecartSalles} salle${ecartSalles > 1 ? "s" : ""} de plus au planning que sur la mission`
+      : null;
+
   const etapes: EtapePreparation[] = [
-    { cle: "devis", label: devisAccepte ? "Devis accepté" : "Devis à valider", fait: devisAccepte, ratio: devisAccepte ? 1 : 0 },
+    { cle: "devis", label: devisAccepte ? "Devis accepté" : "Devis à valider", fait: devisAccepte, ratio: devisAccepte ? 1 : 0, anomalie: null },
     {
       cle: "surveillants",
       label: `Surveillants ${couverture.affectes}/${couverture.requis}`,
       fait: couverture.manque === 0,
       ratio: ratioSurveillants,
+      anomalie: null,
     },
     {
       cle: "salles",
-      label: `Salles ${salles}/${mission.nbSalles}`,
-      fait: mission.nbSalles > 0 ? salles >= mission.nbSalles : true,
+      label: anomalieSalles
+        ? `Salles ${salles}/${mission.nbSalles} — écart à corriger`
+        : `Salles ${salles}/${mission.nbSalles}`,
+      fait: mission.nbSalles > 0 ? salles === mission.nbSalles : true,
       ratio: ratioSalles,
+      anomalie: anomalieSalles,
     },
-    { cle: "planning", label: planningValide ? "Planning validé" : "Planning en cours", fait: planningValide, ratio: planningValide ? 1 : 0 },
+    { cle: "planning", label: planningValide ? "Planning validé" : "Planning en cours", fait: planningValide, ratio: planningValide ? 1 : 0, anomalie: null },
   ];
 
   const pourcentage = Math.round(

@@ -43,6 +43,14 @@ export interface StaffingCoverage {
   missionLabel: string | null;
   missionHref: string;
   trend: { label: string; taux: number }[]; // couverture des dernières sessions datées
+  /**
+   * Titre honnête de la courbe (BUG-017). Le libellé fixe « ÉVOLUTION SUR
+   * 7 JOURS » coiffait des points s'étalant du 14/04 au 30/07 — soit 3,5 mois :
+   * `trend` retourne les 7 dernières sessions DATÉES, jamais 7 jours.
+   */
+  trendTitre: string;
+  /** Période réellement couverte, ex. « 14/04 → 30/07 ». `null` si vide. */
+  trendPeriode: string | null;
 }
 
 export interface UpcomingKpi {
@@ -84,6 +92,16 @@ export interface SessionSummary {
   taux: number;
   etat: EtatCouverture;
   statut: StatutMission;
+  /**
+   * Situation de la session par rapport à aujourd'hui. Le tableau mêle sessions
+   * passées et à venir (c'est voulu : la fenêtre de pilotage est centrée sur le
+   * jour), mais il l'annonçait nulle part et sa colonne DATE n'était pas triée
+   * — d'où la suite `30 juil · 12 août · 24 août · 01 août` relevée par l'audit
+   * (BUG-018).
+   */
+  position: "passee" | "aujourdhui" | "avenir";
+  /** « Aujourd'hui » · « Dans 3 j » · « Il y a 9 j ». */
+  quand: string;
 }
 
 export interface WorkloadRow {
@@ -244,6 +262,17 @@ export function buildCoverage(
     return { label: `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`, taux: c.taux };
   });
 
+  // Le titre est DÉRIVÉ de ce que la courbe montre réellement : autant de points
+  // que de sessions retenues, et la période effectivement couverte (BUG-017).
+  const trendTitre =
+    trend.length === 0
+      ? "Évolution de la couverture"
+      : `${trend.length} dernière${trend.length > 1 ? "s" : ""} session${trend.length > 1 ? "s" : ""} datée${trend.length > 1 ? "s" : ""}`;
+  const trendPeriode =
+    trend.length === 0 ? null
+    : trend.length === 1 ? trend[0].label
+    : `${trend[0].label} → ${trend[trend.length - 1].label}`;
+
   return {
     requis: base.requis,
     pourvus: base.pourvus,
@@ -254,6 +283,8 @@ export function buildCoverage(
     missionLabel: active ? `${active.client}${active.session ? " — " + active.session : ""}` : null,
     missionHref: "/operations/planification",
     trend,
+    trendTitre,
+    trendPeriode,
   };
 }
 
@@ -418,6 +449,15 @@ export function buildActions(
 
 // ── Prochaines sessions ──────────────────────────────────────────────────────
 
+/** Écart en jours entiers entre deux dates `yyyy-mm-dd`. */
+function ecartJoursCalendaires(dateISO: string | undefined, jourRef: string): number | null {
+  if (!dateISO) return null;
+  const a = new Date(dateISO + "T00:00:00");
+  const b = new Date(jourRef + "T00:00:00");
+  if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) return null;
+  return Math.round((a.getTime() - b.getTime()) / 86_400_000);
+}
+
 export function buildSessions(missions: Mission[], affectations: Affectation[], now: Date): SessionSummary[] {
   const active = missionActive(missions);
   const today = isoDay(now);
@@ -439,8 +479,23 @@ export function buildSessions(missions: Mission[], affectations: Affectation[], 
   const unique = ordered.filter((m) => (seen.has(m.id) ? false : (seen.add(m.id), true)));
   return unique
     .slice(0, 6)
+    // Le tableau porte une colonne DATE : elle doit être MONOTONE (BUG-018).
+    // La sélection reste centrée sur le jour (session active + 2 à venir + 3
+    // récentes), mais l'ordre d'affichage est chronologique — sans quoi la
+    // colonne se lisait « 30 juil · 12 août · 24 août · 01 août · 31 juil ».
+    .sort((a, b) => (a.dateMission ?? "").localeCompare(b.dateMission ?? ""))
     .map((m) => {
       const c = couvertureSession(m, affectations);
+      // Écart en JOURS CALENDAIRES : `joursAvant` compare une date à minuit avec
+      // l'instant courant, ce qui rendrait « aujourd'hui à 14 h » égal à −1 jour.
+      const jours = ecartJoursCalendaires(m.dateMission, today);
+      const position: SessionSummary["position"] =
+        jours == null ? "avenir" : jours === 0 ? "aujourdhui" : jours > 0 ? "avenir" : "passee";
+      const quand =
+        jours == null ? "Date inconnue"
+        : jours === 0 ? "Aujourd’hui"
+        : jours > 0 ? `Dans ${jours} j`
+        : `Il y a ${Math.abs(jours)} j`;
       return {
         id: m.id,
         dateISO: m.dateMission,
@@ -453,6 +508,8 @@ export function buildSessions(missions: Mission[], affectations: Affectation[], 
         taux: c.taux,
         etat: c.etat,
         statut: m.statut,
+        position,
+        quand,
       };
     });
 }

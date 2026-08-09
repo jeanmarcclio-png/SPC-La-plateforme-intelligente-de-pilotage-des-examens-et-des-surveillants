@@ -171,8 +171,15 @@ export default async function CockpitOpsPage() {
       <div className="main">
         <header className="hdr">
           <div>
-            <div className="ttl">Cockpit opérationnel <span className="pill-live"><span className="d" />Temps réel</span></div>
-            <div className="subttl">Pilotage temps réel · Dernière mise à jour : {view.majHeure}<RefreshCw className="w-[13px] h-[13px]" /></div>
+            {/* Le badge « Temps réel » n'est allumé QUE le jour de la session
+                (BUG-014) : il s'affichait sur une session vieille de 9 jours. */}
+            <div className="ttl">Cockpit opérationnel {view.temporalite.tempsReel
+              ? <span className="pill-live"><span className="d" />Temps réel</span>
+              : view.vide ? null : <span className="pill-hist">{view.temporalite.jour === "passee" ? "Session close" : view.temporalite.jour === "avenir" ? "Session à venir" : "Hors calendrier"}</span>}</div>
+            <div className="subttl">
+              {view.vide ? "Aucune session à piloter" : view.temporalite.tempsReel ? "Pilotage temps réel" : view.temporalite.libelle}
+              {" · "}Dernière mise à jour : {view.majHeure}<RefreshCw className="w-[13px] h-[13px]" />
+            </div>
           </div>
           <div className="right">
             <div className="toprow">
@@ -218,8 +225,9 @@ export default async function CockpitOpsPage() {
             </div>
             <div className="kpi">
               <div className="top"><span className="ico ico-orange"><Clock className={ICO} /></span><span className="k">PRISES DE POSTE À VENIR</span></div>
-              <div className="val">{k.prisesDePoste}</div>
-              <div className="sub">dans les 2 prochaines heures</div>
+              <div className="val">{view.temporalite.tempsReel ? k.prisesDePoste : "—"}</div>
+              {/* Une prise de poste « à venir » n'existe que le jour J (BUG-014). */}
+              <div className="sub">{view.temporalite.tempsReel ? "dans les 2 prochaines heures" : "sans objet hors du jour de session"}</div>
               <div className="spark">{[40, 62, 48, 78, 56, 88, 70, 100, 64, 82].map((h, i) => <i key={i} style={{ height: `${h}%`, background: i % 2 ? "var(--orange-warning)" : "var(--orange-dark)" }} />)}</div>
             </div>
             <div className="kpi">
@@ -244,7 +252,7 @@ export default async function CockpitOpsPage() {
             <div>
               {/* TIMELINE */}
               <div className="panel">
-                <div className="ph"><span className="t">Frise horaire — vue du jour</span>
+                <div className="ph"><span className="t">Frise horaire — {view.temporalite.tempsReel ? "vue du jour" : view.temporalite.libelle}</span>
                   <div className="seg"><span className="on">Jour</span><span>Semaine</span><span>Vue salle</span></div>
                 </div>
                 <div className="tl-wrap">
@@ -296,7 +304,14 @@ export default async function CockpitOpsPage() {
                   </tbody>
                 </table>
                 <div className="tbl-foot">
-                  <span className="fi"><DoorOpen className="w-[14px] h-[14px]" />{view.sallesRatio}</span>
+                  {/* Un ratio salles > 100 % est un écart, pas un objectif
+                      dépassé : il se lit en rouge et se nomme (BUG-021). */}
+                  <span className="fi" style={view.salles.anomalie ? { color: "var(--red-critical)", fontWeight: 700 } : undefined}>
+                    {view.salles.anomalie
+                      ? <AlertTriangle className="w-[14px] h-[14px]" />
+                      : <DoorOpen className="w-[14px] h-[14px]" />}
+                    {view.salles.libelle}
+                  </span>
                   <span className="fi"><UserCog className="w-[14px] h-[14px]" />Coordinateur</span>
                   <Link className="link" href="/operations/planification">Ouvrir toutes les sessions →</Link>
                 </div>

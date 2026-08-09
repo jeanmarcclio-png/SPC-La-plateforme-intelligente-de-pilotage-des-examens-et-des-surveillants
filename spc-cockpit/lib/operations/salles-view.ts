@@ -5,8 +5,9 @@
 // Les composants n'appliquent AUCUNE règle de criticité — tout est ici.
 // =============================================================================
 
-import type { Salle } from "./types";
+import type { Affectation, Salle } from "./types";
 import type { CouvertureSession } from "./couverture";
+import { messageIncoherence, rapprocherSalles, type SalleFantome } from "./referentiel-salles";
 import {
   SEUIL_SALLE_VIGILANCE,
   SEUIL_SALLE_NORMALE,
@@ -110,6 +111,25 @@ export interface SallesView {
   kpis: SallesKpis;
   alertes: AlerteSalle[];
   batiments: string[];
+  /**
+   * Rapprochement référentiel ↔ planning (BUG-004). `null` quand la page n'a
+   * pas reçu les affectations : l'écran ne doit alors RIEN affirmer sur la
+   * cohérence, ni « tout va bien » ni le contraire.
+   */
+  integrite: IntegriteSalles | null;
+}
+
+export interface IntegriteSalles {
+  /** Salles du référentiel réellement utilisées au planning. */
+  utilisees: number;
+  /** Salles du référentiel qu'aucune affectation ne référence. */
+  orphelines: number;
+  /** Noms cités au planning sans contrepartie au référentiel. */
+  fantomes: SalleFantome[];
+  /** Affectations planifiées sans aucun nom de salle. */
+  sansSalle: number;
+  /** Message métier prêt à afficher, `null` si le rapprochement est propre. */
+  message: string | null;
 }
 
 function pct(part: number, total: number): number {
@@ -272,6 +292,11 @@ function construireAlertes(salles: SalleVue[]): AlerteSalle[] {
 /** Couverture réelle de la session courante, injectée par la page. */
 export interface ContexteSessionSalles {
   couverture: CouvertureSession;
+  /**
+   * Affectations de la session. Sans elles, aucun rapprochement référentiel ↔
+   * planning n'est possible et `view.integrite` reste `null`.
+   */
+  affectations?: Affectation[];
 }
 
 /**
@@ -284,6 +309,25 @@ export interface ContexteSessionSalles {
 export function construireVueSalles(salles: Salle[], contexte?: ContexteSessionSalles): SallesView {
   const vues = salles.map(construireSalleVue).sort(trierParCriticite);
   const alertes = construireAlertes(vues);
+
+  // Intégrité référentielle (BUG-004). L'audit a relevé 5 salles citées au
+  // planning et absentes du référentiel : renommer ou recapacité une salle
+  // n'avait aucun effet sur elles. L'écart est désormais dit à l'écran.
+  let integrite: IntegriteSalles | null = null;
+  if (contexte?.affectations) {
+    const r = rapprocherSalles(salles, contexte.affectations);
+    integrite = {
+      utilisees: r.utilisees.length,
+      orphelines: r.orphelines.length,
+      fantomes: r.fantomes,
+      sansSalle: r.sansSalle,
+      message: messageIncoherence(r),
+    };
+  }
+  // L'incohérence n'est volontairement PAS versée dans `alertes` : ces cartes
+  // portent un CTA qui filtre la grille sur des salles ciblées, et une salle
+  // fantôme n'a précisément aucune fiche à cibler. Elle est rendue par un
+  // bandeau dédié, avec l'action réelle (créer la fiche ou corriger le planning).
 
   const capaciteTotale = vues.reduce((n, s) => n + s.capacite, 0);
   const etudiantsPlanifies = vues.reduce((n, s) => n + s.etudiants, 0);
@@ -304,6 +348,7 @@ export function construireVueSalles(salles: Salle[], contexte?: ContexteSessionS
     salles: vues,
     alertes,
     batiments,
+    integrite,
     kpis: {
       sallesConfigurees: vues.length,
       capaciteTotale,

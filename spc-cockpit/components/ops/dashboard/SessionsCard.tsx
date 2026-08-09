@@ -8,8 +8,10 @@ import { CoverageBar } from "./badges";
 
 export function SessionsCard({ sessions }: { sessions: SessionSummary[] }) {
   return (
+    // Le tableau contient des sessions passées ET à venir : le titre le dit,
+    // et la colonne DATE est désormais triée chronologiquement (BUG-018).
     <SectionCard
-      title="Prochaines sessions"
+      title="Sessions récentes et à venir"
       icon={<CalendarClock className="w-4 h-4" />}
       action={{ label: "Voir toutes les sessions", href: "/operations/missions" }}
       padBody={false}
@@ -35,8 +37,19 @@ export function SessionsCard({ sessions }: { sessions: SessionSummary[] }) {
               {sessions.map((s) => (
                 <tr key={s.id} className="border-b border-slate-100 last:border-0 hover:bg-blue-50/40 transition-colors">
                   <td className="px-2.5 py-3 whitespace-nowrap">
-                    <Link href="/operations/missions" className="block text-[12.5px] font-semibold text-slate-700">
-                      {dateCourteFR(s.dateISO)}
+                    <Link href="/operations/missions" className="block">
+                      <span className="block text-[12.5px] font-semibold text-slate-700 leading-tight">
+                        {dateCourteFR(s.dateISO)}
+                      </span>
+                      <span
+                        className={`block text-[10.5px] leading-tight ${
+                          s.position === "aujourdhui" ? "font-bold text-blue-600"
+                          : s.position === "passee" ? "text-slate-400"
+                          : "text-slate-500"
+                        }`}
+                      >
+                        {s.quand}
+                      </span>
                     </Link>
                   </td>
                   <td className="px-2.5 py-3">

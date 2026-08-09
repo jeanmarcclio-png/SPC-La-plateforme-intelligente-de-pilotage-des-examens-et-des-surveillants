@@ -21,6 +21,12 @@ export interface EtatSession {
   nbAlertes: number;
   nbLignes: number;
   nbModifiees: number;
+  /**
+   * Postes non pourvus sur la session. Absent du garde d'origine (BUG-015) :
+   * une session à 10/14 passait tous les contrôles client dès que les alertes de
+   * ligne étaient corrigées, alors que le moteur central la refuse.
+   */
+  manqueSurveillants: number;
 }
 
 function Meta({ icone, children }: { icone: React.ReactNode; children: React.ReactNode }) {
@@ -77,10 +83,16 @@ export function SessionEnTete({
   // Validation (Master Prompt §15.4) : toute alerte est bloquante, et une
   // modification non enregistrée l'est aussi — on ne fige pas un planning
   // dont l'écran et la base divergent.
+  //
+  // Ces contrôles ne sont qu'un retour RAPIDE : le verdict qui fait foi est
+  // rendu côté serveur par `validerSession`, qui exécute le moteur central
+  // (BUG-015). Ils sont alignés sur lui pour ne pas laisser espérer une
+  // validation que le serveur refusera.
   function valider() {
     if (etat.nbLignes === 0) return showToast("Impossible de valider : aucun surveillant affecté à la session", "error");
     if (etat.nbModifiees > 0) return showToast("Des modifications ne sont pas enregistrées — enregistre chaque ligne avant de valider.", "error");
     if (etat.nbAlertes > 0) return showToast(`Impossible de valider : ${etat.nbAlertes} alerte(s) à corriger sur cette session.`, "error");
+    if (etat.manqueSurveillants > 0) return showToast(`Impossible de valider : ${etat.manqueSurveillants} poste(s) non pourvu(s) sur cette session.`, "error");
     startTransition(async () => {
       const r = await validerSession(mission.id);
       if (r.error) showToast(r.error, "error");

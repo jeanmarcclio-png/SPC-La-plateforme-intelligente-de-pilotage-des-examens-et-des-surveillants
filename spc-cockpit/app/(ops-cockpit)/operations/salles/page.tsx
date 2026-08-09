@@ -36,9 +36,17 @@ export default async function SallesPage() {
   // La couverture affichée ici est celle de la SESSION, pas un ratio local :
   // la page Salles répondait « manque 3 » quand les quatre autres écrans
   // répondaient « manque 4 » (audit QA forensic V2, BUG-005).
+  // Les affectations sont transmises pour que la page puisse rapprocher le
+  // référentiel du planning : sans elles, une salle citée au planning et absente
+  // du référentiel resterait invisible (audit QA forensic V2, BUG-004).
   const view = construireVueSalles(
     jSalles.lignes,
-    active ? { couverture: couvertureSession(active, jAffectations.lignes) } : undefined,
+    active
+      ? {
+          couverture: couvertureSession(active, jAffectations.lignes),
+          affectations: jAffectations.lignes.filter((a) => a.missionId === active.id),
+        }
+      : undefined,
   );
   const missionLabel = active
     ? `${active.client} — ${dateFR(active.dateMission)}`

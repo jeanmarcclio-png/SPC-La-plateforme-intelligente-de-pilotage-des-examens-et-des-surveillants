@@ -73,7 +73,7 @@ export function CommandCenter({
 
       <SessionEnTete
         mission={mission}
-        etat={{ nbSalles: vue.nbSalles, nbCreneaux: vue.nbCreneaux, nbAlertes: vue.alertes.length, nbLignes: vue.lignes.length, nbModifiees: 0 }}
+        etat={{ nbSalles: vue.nbSalles, nbCreneaux: vue.nbCreneaux, nbAlertes: vue.alertes.length, nbLignes: vue.lignes.length, nbModifiees: 0, manqueSurveillants: vue.couverture.manque }}
         disponibles={disponibles}
       />
 

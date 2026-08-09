@@ -195,7 +195,7 @@ export function PlanningWorkspace({
 
       <SessionEnTete
         mission={mission}
-        etat={{ nbSalles: vue.nbSalles, nbCreneaux: vue.nbCreneaux, nbAlertes: vue.alertes.length, nbLignes: vue.lignes.length, nbModifiees: modifiees }}
+        etat={{ nbSalles: vue.nbSalles, nbCreneaux: vue.nbCreneaux, nbAlertes: vue.alertes.length, nbLignes: vue.lignes.length, nbModifiees: modifiees, manqueSurveillants: vue.couverture.manque }}
         disponibles={disponibles}
         variante="compact"
         titre="Affectations & planning"

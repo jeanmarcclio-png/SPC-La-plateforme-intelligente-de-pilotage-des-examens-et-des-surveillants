@@ -47,3 +47,7 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# preuves générées par les tests e2e (relevés d'exécution, pas du code)
+/tests/e2e/preuves-*.txt
+/tests/e2e/evidence*.txt

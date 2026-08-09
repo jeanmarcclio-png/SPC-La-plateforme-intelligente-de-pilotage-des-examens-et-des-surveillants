@@ -49,7 +49,12 @@ export function CoverageCard({ coverage }: { coverage: StaffingCoverage }) {
 
         {/* Évolution */}
         <div className="flex-1 min-w-0">
-          <div className="text-[11px] font-bold uppercase tracking-[0.7px] text-slate-500 mb-1">Évolution sur 7 jours</div>
+          {/* Titre dérivé de la courbe, jamais fixe : « ÉVOLUTION SUR 7 JOURS »
+              coiffait des points étalés sur 3,5 mois (BUG-017). */}
+          <div className="text-[11px] font-bold uppercase tracking-[0.7px] text-slate-500">{coverage.trendTitre}</div>
+          {coverage.trendPeriode && (
+            <div className="text-[11px] font-semibold text-slate-400 mb-1 tabular-nums">{coverage.trendPeriode}</div>
+          )}
           <TrendLine points={coverage.trend} color="#10B981" height={132} />
         </div>
       </div>

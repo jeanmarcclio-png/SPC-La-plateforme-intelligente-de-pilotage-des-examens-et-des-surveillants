@@ -361,6 +361,26 @@ export function SallesCommandCenter({ view }: { view: SallesView }) {
       </div>
 
       <div className="scroll">
+        {/* ------- INTÉGRITÉ RÉFÉRENTIELLE (BUG-004) ------- */}
+        {view.integrite?.message && (
+          <div className="integr" role="status">
+            <TriangleAlert className="w-[17px] h-[17px] flex-shrink-0" aria-hidden />
+            <div>
+              <div className="t">Référentiel et planning divergent</div>
+              <div className="s">{view.integrite.message}</div>
+              {view.integrite.fantomes.length > 0 && (
+                <ul className="lst">
+                  {view.integrite.fantomes.map((f) => (
+                    <li key={f.nom}>
+                      <strong>{f.nom}</strong> — {f.affectations} affectation{f.affectations > 1 ? "s" : ""} au planning, aucune fiche de salle
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ---------------- KPI ---------------- */}
         <div className="skpis">
           <div className="skpi">

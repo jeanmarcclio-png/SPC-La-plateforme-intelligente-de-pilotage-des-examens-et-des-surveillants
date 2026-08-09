@@ -11,6 +11,8 @@ import type { StatutMission } from "@/lib/operations/types";
 import {
   entier, montant, texteRequis, premiereErreurDe, messageMetier,
 } from "@/lib/operations/validation-serveur";
+import { refusValidation, verdictSession } from "@/lib/operations/validation-session";
+import { getAffectations, getMissions, getSalles } from "@/lib/operations/queries";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -134,8 +136,17 @@ export async function updateMission(id: number, fd: FormData): Promise<{ error?:
   }
 }
 
-// Validation de session (Master Prompt §15.4) : les contrôles bloquants sont
-// exécutés côté client via planification-vue ; cette action scelle le statut.
+/**
+ * Validation de session (Master Prompt §15.4).
+ *
+ * BUG-015 : cette action n'effectuait AUCUN contrôle. Le commentaire d'origine
+ * — « les contrôles bloquants sont exécutés côté client via planification-vue »
+ * — était inexact : le garde client ne testait ni la sous-couverture ni les
+ * conflits de surveillants, et un Server Action est un point d'entrée réseau.
+ * Le moteur central `validateSessionForApproval`, jusqu'ici sans aucun appelant
+ * applicatif, est désormais exécuté ICI, côté serveur, avant tout changement de
+ * statut.
+ */
 export async function validerSession(id: number): Promise<{ error?: string }> {
   const auth = await requireCapability("validate");
   if (!auth.ok) return { error: auth.error };
@@ -146,6 +157,37 @@ export async function validerSession(id: number): Promise<{ error?: string }> {
     const ancien = avant?.statut as StatutMission | undefined;
     if (ancien && ancien !== "Validée" && !allowedTransitions(ancien).includes("Validée")) {
       return { error: `Validation refusée : une mission « ${ancien} » ne peut pas être validée.` };
+    }
+
+    // Contrôle métier bloquant. Les lectures portent leur origine : si elles ont
+    // échoué, on REFUSE plutôt que de valider sur un planning qu'on n'a pas pu
+    // lire — un jeu vide passerait sinon tous les contrôles de salle.
+    const [jMissions, jAffectations, jSalles] = await Promise.all([
+      getMissions(), getAffectations(), getSalles(),
+    ]);
+    if (jMissions.origine === "erreur" || jAffectations.origine === "erreur" || jSalles.origine === "erreur") {
+      return { error: "Validation impossible : le planning n'a pas pu être relu pour être contrôlé. Réessayez dans un instant." };
+    }
+    const mission = jMissions.lignes.find((m) => m.id === id);
+    if (!mission) {
+      return { error: "Validation impossible : cette session est introuvable." };
+    }
+    const verdict = verdictSession({
+      mission,
+      affectations: jAffectations.lignes,
+      salles: jSalles.lignes,
+    });
+    const refus = refusValidation(verdict);
+    if (refus) {
+      // Tracé même en cas de refus : « qui a tenté de valider quoi, et pourquoi
+      // cela a été refusé » fait partie de l'historique de session.
+      await journaliser(supabase, {
+        missionId: id,
+        objet: `Validation refusée — ${avant?.client ?? `mission #${id}`}`,
+        ancienne: ancien ?? null,
+        nouvelle: verdict.bloquants.join(" · "),
+      });
+      return { error: refus };
     }
 
     const { error } = await supabase.from("missions").update({ statut: "Validée" }).eq("id", id);

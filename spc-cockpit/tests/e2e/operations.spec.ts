@@ -86,10 +86,22 @@ test.describe("Planification — parcours Piloter → Planifier → Optimiser", 
 });
 
 test.describe("Missions — cycle de vie à 11 statuts", () => {
-  test("le formulaire d'édition propose les 11 statuts", async ({ page }) => {
+  // Ce test exigeait auparavant les 11 statuts dans le sélecteur, quel que soit
+  // l'état de la mission — il verrouillait BUG-011. Le formulaire ne propose
+  // désormais que les transitions LÉGALES depuis le statut courant, et le même
+  // contrôle est appliqué côté serveur dans `updateMission`.
+  test("le formulaire d'édition ne propose que les transitions légales", async ({ page }) => {
     await page.goto("/operations/missions", { waitUntil: "networkidle" });
     await page.getByRole("button", { name: /^Modifier/ }).first().click();
     const options = page.locator('select[name="statut"] option');
-    await expect(options).toHaveCount(11);
+
+    const n = await options.count();
+    expect(n).toBeGreaterThan(0);
+    expect(n).toBeLessThan(11);
+
+    // Le statut courant figure toujours dans la liste : le formulaire doit
+    // pouvoir être réenregistré sans changer d'état.
+    const courant = await page.locator('select[name="statut"]').inputValue();
+    await expect(options.filter({ hasText: courant })).toHaveCount(1);
   });
 });

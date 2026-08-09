@@ -52,8 +52,13 @@ describe("buildCockpitView", () => {
     expect(v.kpis.couverturePct).toBe(50);
     expect(v.kpis.postesCouverts).toBe(2);
     expect(v.kpis.postesTotal).toBe(4);
-    // 1 présent sur 2 → 50 %
-    expect(v.kpis.confirmationsPct).toBe(50);
+    // Confirmations : dénominateur = postes REQUIS, pas affectations existantes
+    // (BUG-020). L'écran affichait « 100 % · 10/10 confirmés » alors que 4 des
+    // 14 postes n'étaient pas pourvus. Ici : 1 présent sur 4 postes → 25 %, et
+    // non 1 sur 2 affectations → 50 %, qui masquait les 2 postes vacants.
+    expect(v.kpis.confTotal).toBe(4);
+    expect(v.kpis.confirmes).toBe(1);
+    expect(v.kpis.confirmationsPct).toBe(25);
     // Karim est « Absent » → statut En retard
     const karim = v.sessions.find((s) => s.nom === "Karim Haddad");
     expect(karim?.statut).toBe("En retard");
