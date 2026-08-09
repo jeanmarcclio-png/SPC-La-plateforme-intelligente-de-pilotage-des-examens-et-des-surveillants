@@ -26,9 +26,26 @@ sont couverts par **aucun test exécuté**.
    `eu-west-3`, choisie à la création et non modifiable ensuite.
 2. `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` renseignés.
 3. Les **32 migrations** appliquées dans l'ordre, `supabase/migrations/`.
-4. Un jeu de données de recette reproduisant le relevé de l'audit : mission
-   ICP Paris (14 surveillants requis, 6 salles déclarées), 10 affectations
-   dont 2 sans salle, salles A21 / A22 / E31 / Grand Amphithéâtre / B11.
+4. Le jeu de recette : `supabase/recette/00_jeu-audit.sql`. Il reproduit le
+   relevé de l'audit — mission à 14 postes requis pour 10 pourvus, 2 créneaux
+   sans salle, 5 salles fantômes, 1 orpheline, et le devis dont la grille et
+   les heures facturées divergent de 28,97 h.
+
+## Démarrage
+
+Dans le SQL Editor de l'instance de recette, dans cet ordre :
+
+```
+supabase/migrations/01…32   (une seule fois)
+supabase/recette/00_jeu-audit.sql
+supabase/recette/01_controles.sql   → tableau de verdicts
+```
+
+`01_controles.sql` couvre ce qui est vérifiable en SQL : présence de la clé
+étrangère et de son `on delete restrict`, index d'unicité, doublons bloquants,
+salles non rapprochées, et les chiffres de BUG-016 recalculés côté base. Les
+scénarios qui passent par l'application (refus de suppression, transitions,
+messages métier) se rejouent à l'écran — ils sont listés ci-dessous.
 
 ## Scénarios à rejouer
 

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { getSurveillants, getMissions, getDevisList, getIncidents, getAffectations, getDevisEquipe } from "@/lib/operations/queries";
 import { buildDashboardData } from "@/lib/operations/dashboard";
-import { euro, pctFR, deltaPct } from "@/lib/operations/format";
+import { euro, pctFR } from "@/lib/operations/format";
 import { Receipt, Coins, Users, CalendarClock } from "lucide-react";
 import { CockpitSubtitle, RefreshButton } from "@/components/ops/CockpitRefresh";
 
@@ -55,15 +55,21 @@ export default async function DashboardPage() {
 
         {/* ── Ligne 1 — KPI de synthèse ─────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
+          {/* BUG-007 : ce montant est un STOCK — le portefeuille de devis
+              acceptés, sans notion de mois. Le delta « −56,2 % vs mois
+              précédent » qui l'accompagnait venait d'une AUTRE série (le CA
+              réalisé des missions) et faisait lire « notre CA confirmé chute de
+              56 % », affirmation que la donnée ne porte pas. La variation
+              mensuelle est désormais rendue par la carte « Performance
+              financière », sur la série qu'elle mesure réellement. */}
           <KpiProCard
             label="CA confirmé HT"
             value={euro(fin.caConfirmeHT)}
-            delta={fin.variationCA != null ? { text: deltaPct(fin.variationCA), direction: fin.variationCA >= 0 ? "up" : "down" } : undefined}
-            sub="vs mois précédent"
+            sub={`${fin.nbDevisConfirmes} devis accepté${fin.nbDevisConfirmes > 1 ? "s" : ""} · portefeuille total — courbe : CA réalisé par mois`}
             tone="emerald"
             icon={<Receipt className="w-[18px] h-[18px]" />}
             href="/operations/devis"
-            viz={<Sparkline points={caPoints} color="#10B981" className="w-full h-full" ariaLabel="Évolution du CA confirmé" />}
+            viz={<Sparkline points={caPoints} color="#10B981" className="w-full h-full" ariaLabel="CA réalisé par mois" />}
           />
           <KpiProCard
             label="Marge HT — portefeuille"

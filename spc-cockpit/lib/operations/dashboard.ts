@@ -14,7 +14,7 @@ import { FENETRE_MISSIONS_A_VENIR_J, DELAI_CONFIRMATION_J } from "./constants";
 import { SEUIL_SURCHARGE_H } from "./constants";
 import { couvertureSession, type EtatCouverture } from "./couverture";
 import { analyseRentabilite } from "./rentabilite";
-import { tendanceCA, type PointTendance } from "./stats";
+import { tendanceCA, variationCAMensuelle, type PointTendance, type VariationCA } from "./stats";
 import { joursAvant, prioriteAlerte } from "./alertes";
 
 export type { EtatCouverture };
@@ -27,7 +27,12 @@ export interface DashboardFinancials {
   caTTC: number;
   margeHT: number;
   tauxMarge: number; // 0–1
-  variationCA: number | null; // % vs mois précédent (chiffre signé, ex. 18.2)
+  /**
+   * Variation du CA RÉALISÉ, à période équivalente (BUG-007). Elle porte son
+   * propre libellé : elle ne décrit PAS `caConfirmeHT`, qui est un stock de
+   * portefeuille sans notion de mois. Ne jamais l'accoler à ce montant.
+   */
+  variationCA: VariationCA | null;
   evolutionMensuelle: PointTendance[];
   nbDevisConfirmes: number;
 }
@@ -218,13 +223,10 @@ export function buildFinancials(
     (m) => m.dateMission && new Date(m.dateMission + "T00:00:00") <= nowDay && m.statut !== "Brouillon" && m.statut !== "À chiffrer",
   );
   const evolutionMensuelle = tendanceCA(missionsRealisees);
-  const n = evolutionMensuelle.length;
-  const dernier = evolutionMensuelle[n - 1];
-  const precedent = evolutionMensuelle[n - 2];
-  const variationCA =
-    dernier && precedent && precedent.total > 0
-      ? Math.round(((dernier.total - precedent.total) / precedent.total) * 1000) / 10
-      : null;
+  // La variation est calculée sur LA MÊME population que `evolutionMensuelle`
+  // (missions réalisées), et à période équivalente — 1–9 août face à 1–9 juillet
+  // et non face à juillet entier (BUG-007).
+  const variationCA = variationCAMensuelle(missionsRealisees, now);
 
   return {
     caConfirmeHT,
