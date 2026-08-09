@@ -11,6 +11,7 @@ import {
 import type { AlerteSalle, NiveauSalle, SalleVue, SallesView } from "@/lib/operations/salles-view";
 import { toCSV } from "@/lib/operations/csv";
 import { createSalle, updateSalle, deleteSalle } from "@/app/actions/salles";
+import { useSoumissionUnique } from "@/components/ops/useSoumissionUnique";
 import { showToast } from "@/components/Toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -59,12 +60,13 @@ function FormulaireSalle({
   onSubmit: (fd: FormData) => void;
   onCancel: () => void;
 }) {
+  // Verrou SYNCHRONE contre la rafale de clics (BUG-012) : `disabled={pending}`
+  // ne bascule qu'au rendu suivant et laissait passer 3 soumissions.
+  const soumettre = useSoumissionUnique(onSubmit, pending);
+
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit(new FormData(e.currentTarget));
-      }}
+      onSubmit={soumettre}
       className="space-y-3.5 mt-1"
     >
       <Champ label="Nom de la salle *">

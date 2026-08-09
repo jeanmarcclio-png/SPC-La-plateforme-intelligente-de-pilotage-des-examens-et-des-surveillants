@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useSoumissionUnique } from "@/components/ops/useSoumissionUnique";
 import type { Surveillant } from "@/lib/operations/types";
 import { createSurveillant, updateSurveillant } from "@/app/actions/surveillants";
 import { exporterDonneesSurveillant, anonymiserSurveillant } from "@/app/actions/rgpd";
@@ -51,9 +52,9 @@ export function SurveillantForm({
 }) {
   const [pending, startTransition] = useTransition();
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+  // Verrou SYNCHRONE contre la rafale de clics (BUG-012) — mesuré : 3 clics
+  // dans le même tick déclenchaient 3 créations.
+  const handleSubmit = useSoumissionUnique((fd) => {
     startTransition(async () => {
       const result = mode === "edit" && initial
         ? await updateSurveillant(initial.id, fd)
@@ -65,7 +66,7 @@ export function SurveillantForm({
         onDone();
       }
     });
-  }
+  }, pending);
 
   // RGPD — droit d'accès / portabilité.
   function handleExport() {

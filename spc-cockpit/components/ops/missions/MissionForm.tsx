@@ -1,7 +1,8 @@
 "use client";
 
 import type { Mission } from "@/lib/operations/types";
-import { MISSION_STATUTS } from "@/lib/operations/mission-status";
+import { MISSION_STATUTS, statutOptions } from "@/lib/operations/mission-status";
+import { useSoumissionUnique } from "@/components/ops/useSoumissionUnique";
 
 // Formulaire de création / édition d'une mission.
 // Champs et noms de champs INCHANGÉS (contrat des Server Actions
@@ -43,12 +44,13 @@ export function MissionForm({
   onSubmit: (fd: FormData) => void;
   onCancel: () => void;
 }) {
+  // Verrou SYNCHRONE contre la rafale de clics (BUG-012) : `disabled={pending}`
+  // ne bascule qu'au rendu suivant et laissait passer 3 soumissions.
+  const soumettre = useSoumissionUnique(onSubmit, pending);
+
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit(new FormData(e.currentTarget));
-      }}
+      onSubmit={soumettre}
       className="space-y-3.5 mt-1"
     >
       <div className="grid grid-cols-2 gap-3">
@@ -72,8 +74,14 @@ export function MissionForm({
           </select>
         </Field>
         <Field label="Statut">
+          {/* Seules les transitions LÉGALES depuis le statut courant sont
+              proposées (audit QA forensic V2, BUG-011) : le formulaire offrait
+              les 11 statuts, si bien qu'une mission « Terminée » pouvait
+              repasser en « Brouillon ». Le Server Action revalide de son côté. */}
           <select name="statut" defaultValue={initial?.statut ?? "Planifiée"} className={champ}>
-            {MISSION_STATUTS.map((s) => <option key={s} value={s}>{s}</option>)}
+            {(initial ? statutOptions(initial.statut) : MISSION_STATUTS).map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
           </select>
         </Field>
       </div>
