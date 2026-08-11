@@ -36,10 +36,22 @@ sont couverts par **aucun test exécuté**.
 Dans le SQL Editor de l'instance de recette, dans cet ordre :
 
 ```
-supabase/migrations/01…32   (une seule fois)
+supabase/recette/migrations-par-lots/lot-01.sql … lot-07.sql   (dans l'ordre)
 supabase/recette/00_jeu-audit.sql
 supabase/recette/01_controles.sql   → tableau de verdicts
 ```
+
+Les migrations sont livrées **en 7 lots de ~18 Ko**, et non en un seul fichier :
+le SQL Editor passe par l'API du dashboard, qui échoue sur un envoi de 108 Ko
+avec `Failed to fetch (api.supabase.com)` — ce n'est pas une erreur SQL.
+
+Chaque lot est **sûr à rejouer** : les politiques RLS sont précédées de leur
+`drop policy if exists`, le reste est en `if not exists` / `or replace`. Un lot
+interrompu se relance depuis son début.
+
+En cas de doute sur ce qui a réellement été appliqué, jouer
+`supabase/recette/00_ou-en-suis-je.sql` : requête de diagnostic courte, qui dit
+lot par lot ce qui existe en base.
 
 `01_controles.sql` couvre ce qui est vérifiable en SQL : présence de la clé
 étrangère et de son `on delete restrict`, index d'unicité, doublons bloquants,
