@@ -3,6 +3,8 @@
 --
 -- Migrations de ce lot : 27, 28, 29, 30, 31
 --
+-- Généré par supabase/recette/generer-lots.py — ne pas éditer à la main.
+--
 -- À coller dans Supabase → SQL Editor → Run. LOTS DANS L'ORDRE : 1, puis 2, etc.
 -- Attendre la fin d'un lot avant de lancer le suivant.
 --

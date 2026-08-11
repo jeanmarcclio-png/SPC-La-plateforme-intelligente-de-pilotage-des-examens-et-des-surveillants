@@ -3,6 +3,8 @@
 --
 -- Migrations de ce lot : 11, 11b, 12, 13, 14
 --
+-- Généré par supabase/recette/generer-lots.py — ne pas éditer à la main.
+--
 -- À coller dans Supabase → SQL Editor → Run. LOTS DANS L'ORDRE : 1, puis 2, etc.
 -- Attendre la fin d'un lot avant de lancer le suivant.
 --
@@ -304,5 +306,17 @@ create policy "authenticated read logs" on email_logs for select using (auth.rol
 drop policy if exists "authenticated write logs" on email_logs;
 create policy "authenticated write logs" on email_logs for insert using (auth.role() = 'authenticated');
 
--- colonne email dans prospects (optionnel)
-alter table prospects add column if not exists email text;
+-- Colonne email dans `prospects` — RÉELLEMENT optionnelle.
+--
+-- `prospects` appartient à la lignée COMMERCIALE (supabase/commercial/schema.sql),
+-- séparée du cockpit examens : elle n'existe pas sur une base Opérations seule.
+-- `add column if not exists` ne protège que contre une COLONNE déjà présente,
+-- jamais contre une TABLE absente — la migration échouait donc sur
+-- « relation "prospects" does not exist », alors que son propre commentaire
+-- l'annonce comme optionnelle.
+do $$
+begin
+  if to_regclass('public.prospects') is not null then
+    alter table prospects add column if not exists email text;
+  end if;
+end $$;

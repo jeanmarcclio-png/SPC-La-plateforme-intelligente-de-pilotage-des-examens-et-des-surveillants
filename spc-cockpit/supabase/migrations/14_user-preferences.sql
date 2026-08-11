@@ -36,5 +36,17 @@ alter table email_logs enable row level security;
 create policy "authenticated read logs" on email_logs for select using (auth.role() = 'authenticated');
 create policy "authenticated write logs" on email_logs for insert using (auth.role() = 'authenticated');
 
--- colonne email dans prospects (optionnel)
-alter table prospects add column if not exists email text;
+-- Colonne email dans `prospects` — RÉELLEMENT optionnelle.
+--
+-- `prospects` appartient à la lignée COMMERCIALE (supabase/commercial/schema.sql),
+-- séparée du cockpit examens : elle n'existe pas sur une base Opérations seule.
+-- `add column if not exists` ne protège que contre une COLONNE déjà présente,
+-- jamais contre une TABLE absente — la migration échouait donc sur
+-- « relation "prospects" does not exist », alors que son propre commentaire
+-- l'annonce comme optionnelle.
+do $$
+begin
+  if to_regclass('public.prospects') is not null then
+    alter table prospects add column if not exists email text;
+  end if;
+end $$;

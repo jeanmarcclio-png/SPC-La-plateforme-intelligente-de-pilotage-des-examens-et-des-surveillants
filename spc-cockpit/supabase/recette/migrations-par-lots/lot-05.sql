@@ -3,6 +3,8 @@
 --
 -- Migrations de ce lot : 22, 23, 24, 25
 --
+-- Généré par supabase/recette/generer-lots.py — ne pas éditer à la main.
+--
 -- À coller dans Supabase → SQL Editor → Run. LOTS DANS L'ORDRE : 1, puis 2, etc.
 -- Attendre la fin d'un lot avant de lancer le suivant.
 --
@@ -352,13 +354,31 @@ end;
 $$;
 
 -- Planification pg_cron (hebdomadaire, dimanche 03:00 UTC) --------------------
--- Nécessite l'extension pg_cron (à activer une fois dans Supabase).
-create extension if not exists pg_cron;
+--
+-- pg_cron n'est PAS activé par défaut sur un projet Supabase neuf, et son
+-- installation depuis l'éditeur SQL dépend des privilèges du projet. Le garde
+-- d'origine ne protégeait que le `unschedule` : `create extension` et
+-- `cron.schedule` restaient nus et faisaient échouer toute la migration sur une
+-- base sans pg_cron.
+--
+-- La purge RGPD elle-même (`spc_purge_rgpd`) est créée plus haut et reste
+-- appelable à la main. Seule sa PLANIFICATION est optionnelle : son absence ne
+-- doit pas empêcher le schéma de se poser. Elle est signalée par un NOTICE,
+-- jamais tue.
 do $$
 begin
+  create extension if not exists pg_cron;
   perform cron.unschedule('spc-purge-rgpd');
-exception when others then null; -- pas encore planifié : on ignore
+exception when others then null; -- extension absente ou tâche non planifiée
 end $$;
-select cron.schedule('spc-purge-rgpd', '0 3 * * 0', $cron$ select public.spc_purge_rgpd(); $cron$);
+
+do $$
+begin
+  perform cron.schedule('spc-purge-rgpd', '0 3 * * 0', $cron$ select public.spc_purge_rgpd(); $cron$);
+exception when others then
+  raise notice 'pg_cron indisponible : la purge RGPD n''est PAS planifiée. '
+               'Activez pg_cron puis rejouez ce bloc, ou appelez '
+               'select spc_purge_rgpd(); manuellement.';
+end $$;
 
 -- Exécution manuelle possible : select spc_purge_rgpd();  (dry-run par défaut)

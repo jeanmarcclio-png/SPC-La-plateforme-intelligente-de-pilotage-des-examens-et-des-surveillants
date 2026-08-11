@@ -59,6 +59,20 @@ salles non rapprochées, et les chiffres de BUG-016 recalculés côté base. Les
 scénarios qui passent par l'application (refus de suppression, transitions,
 messages métier) se rejouent à l'écran — ils sont listés ci-dessous.
 
+## Défauts trouvés PENDANT la recette
+
+La recette a commencé et a déjà rapporté, avant même d'être terminée. Deux
+migrations échouaient sur une base Opérations neuve — donc pour quiconque
+rejouerait le schéma depuis zéro, pas seulement pour la recette.
+
+| Migration | Défaut | Correction |
+|---|---|---|
+| `14_user-preferences.sql` | `alter table prospects …` : `prospects` appartient à la lignée COMMERCIALE (`supabase/commercial/schema.sql`) et n'existe pas sur une base Opérations. `add column if not exists` protège contre une colonne déjà là, **jamais contre une table absente** → `relation "prospects" does not exist`. Le commentaire de la ligne l'annonçait pourtant comme « optionnel ». | Encadré par `to_regclass('public.prospects')`. |
+| `25_rgpd-purges.sql` | `create extension if not exists pg_cron;` puis `cron.schedule(…)` à nu. pg_cron n'est pas activé sur un projet Supabase neuf : toute la migration échouait. Le garde existant ne couvrait que le `unschedule`. | Extension et planification encadrées ; l'absence de pg_cron lève un `NOTICE` explicite au lieu de tout bloquer. La fonction `spc_purge_rgpd()` reste appelable à la main. |
+
+Ces deux corrections sont **sans effet** là où `prospects` existe et où pg_cron
+est activé : elles ne changent rien à la base de production.
+
 ## Scénarios à rejouer
 
 ### Migrations
