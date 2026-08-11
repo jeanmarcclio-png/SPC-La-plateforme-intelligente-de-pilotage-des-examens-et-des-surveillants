@@ -34,7 +34,12 @@ create table if not exists email_logs (
 );
 alter table email_logs enable row level security;
 create policy "authenticated read logs" on email_logs for select using (auth.role() = 'authenticated');
-create policy "authenticated write logs" on email_logs for insert using (auth.role() = 'authenticated');
+-- `for insert` n'accepte PAS `using` : PostgreSQL exige `with check`, parce
+-- qu'une politique d'insertion contrôle la ligne PRODUITE, pas des lignes
+-- existantes à filtrer. Écrite avec `using`, cette instruction échouait sur
+-- « 42601: only WITH CHECK expression allowed for INSERT » — et faisait tomber
+-- toute la migration 14 avec elle.
+create policy "authenticated write logs" on email_logs for insert with check (auth.role() = 'authenticated');
 
 -- Colonne email dans `prospects` — RÉELLEMENT optionnelle.
 --

@@ -98,6 +98,31 @@ def entete(i: int, total: int, noms: list[str]) -> str:
 """
 
 
+def politiques_invalides(sql: str) -> list[str]:
+    """Politiques RLS que PostgreSQL refusera — vérifiées par INSTRUCTION.
+
+    Une politique `for insert` contrôle la ligne PRODUITE : elle exige
+    `with check` et rejette `using`. Symétriquement, `for select` et
+    `for delete` ne filtrent que des lignes existantes et n'acceptent pas
+    `with check`. Ces erreurs (42601) font tomber tout le lot ; mieux vaut les
+    voir ici qu'en base.
+    """
+    problemes = []
+    actif = "\n".join(l for l in sql.splitlines() if not l.strip().startswith("--"))
+    for instruction in actif.split(";"):
+        s = " ".join(instruction.split())
+        if not re.search(r"create\s+policy", s, re.I):
+            continue
+        if re.search(r"\bfor\s+insert\b", s, re.I):
+            if re.search(r"\busing\s*\(", s, re.I):
+                problemes.append(f"politique INSERT avec USING (interdit) : {s[:100]}")
+            elif not re.search(r"\bwith\s+check\b", s, re.I):
+                problemes.append(f"politique INSERT sans WITH CHECK : {s[:100]}")
+        if re.search(r"\bfor\s+(select|delete)\b", s, re.I) and re.search(r"\bwith\s+check\b", s, re.I):
+            problemes.append(f"politique SELECT/DELETE avec WITH CHECK (interdit) : {s[:100]}")
+    return problemes
+
+
 def verifier(lots_ecrits: list[str], fichiers: list[str]) -> None:
     """Contrôles bloquants. Un seul écart et le script sort en erreur."""
     concat = "".join(open(p, encoding="utf-8").read() for p in sorted(lots_ecrits))
@@ -137,12 +162,14 @@ def verifier(lots_ecrits: list[str], fichiers: list[str]) -> None:
                       f"{actives(original)} → {actives(concat)} "
                       f"(une politique commentée a probablement été décommentée)")
 
+    echecs.extend(politiques_invalides(concat))
+
     if echecs:
         for e in echecs:
             print(f"ÉCHEC — {e}", file=sys.stderr)
         sys.exit(1)
     print("vérifications : ordre ✓ · SQL identique ✓ · drops complets ✓ · "
-          f"politiques actives inchangées ({actives(concat)}) ✓")
+          f"politiques actives inchangées ({actives(concat)}) ✓ · syntaxe RLS ✓")
 
 
 def main() -> None:
