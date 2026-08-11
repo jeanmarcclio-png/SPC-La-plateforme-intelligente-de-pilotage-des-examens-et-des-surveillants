@@ -102,4 +102,34 @@ select d.id, v.role, v.effectif, v.heures, 28, v.ordre
     ) as v(role, effectif, heures, ordre)
  where d.reference = 'RECETTE-DEVIS-001';
 
+-- 6. Rapprochement salle_id — À REJOUER ICI, obligatoirement.
+--
+-- La migration 32 exécute ce rapprochement AU MOMENT OÙ ELLE PASSE, donc sur une
+-- table `affectations` encore vide en recette. Sans ce rejeu, les lignes créées
+-- ci-dessus resteraient toutes à `salle_id is null` et la vue
+-- `salles_non_rapprochees` listerait les 8 salles du planning au lieu des
+-- 5 fantômes — le contrôle M-3 ne voudrait plus rien dire.
+--
+-- Requête identique à celle de la migration 32.
+update affectations a
+   set salle_id = s.id
+  from salles s
+ where a.salle_id is null
+   and a.salle is not null
+   and spc_cle_salle(a.salle) <> ''
+   and spc_cle_salle(s.nom) = spc_cle_salle(a.salle)
+   and (s.org_id is not distinct from a.org_id or s.org_id is null or a.org_id is null);
+
 commit;
+
+-- Vérification immédiate : 3 rattachées (A21, A22, E31), 5 fantômes, 2 sans salle.
+select coalesce(a.salle, '(sans salle)') as salle_au_planning,
+       count(*)                          as affectations,
+       case when a.salle is null or btrim(a.salle) = '' then 'sans salle'
+            when count(a.salle_id) > 0                  then 'rattachée au référentiel'
+            else 'FANTÔME — absente du référentiel' end as etat
+  from affectations a
+  join missions m on m.id = a.mission_id
+ where m.reference = 'RECETTE-EX-001'
+ group by a.salle
+ order by etat, salle_au_planning;

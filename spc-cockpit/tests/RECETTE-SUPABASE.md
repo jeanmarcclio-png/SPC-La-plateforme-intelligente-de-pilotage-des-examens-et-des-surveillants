@@ -81,6 +81,7 @@ est activé : elles ne changent rien à la base de production.
 |---|---|---|
 | M-1 | Appliquer `31_unicite-salles-surveillants.sql` sur une base **contenant déjà des doublons** | La création d'index ÉCHOUE ; dédoublonner d'abord. À traiter avant mise en production. |
 | M-2 | Appliquer `32_integrite-salles-planning.sql` | `affectations.salle_id` créée, rapprochement effectué sur les noms normalisés. |
+| M-2b | Le rapprochement `salle_id` est rejoué APRÈS le jeu de recette | La migration 32 rapproche au moment où elle passe, donc sur une table vide en recette. `00_jeu-audit.sql` rejoue la requête à la fin — sans quoi M-3 listerait les 8 salles au lieu des 5 fantômes. |
 | M-3 | `select * from salles_non_rapprochees;` | Doit lister `AMP`, `C14`, `E32`, `F11`, `F12`. Non vide ⇒ INV-004 pas encore rétabli. |
 | M-4 | Arbitrer les alias (« AMP » = « Grand Amphithéâtre » ?) puis rejouer M-3 | Vue vide. `salle_id` peut alors passer `not null` dans une migration ultérieure. |
 
