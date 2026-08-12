@@ -3,10 +3,13 @@
 Audit QA forensic V2, chantier 5.
 
 Ce document existe pour une raison précise : **la couverture de test du produit
-s'arrête là où commence la base de données.** Tout ce qui est listé ici est
-écrit, relu et compilé, mais **n'a jamais été exécuté contre un PostgreSQL**.
-Aucun de ces points ne doit être annoncé comme validé avant d'avoir été rejoué
-sur une instance de recette.
+s'arrête là où commence la base de données.** Aucun point listé ici ne doit être
+annoncé comme validé avant d'avoir été rejoué sur une instance de recette.
+
+**État au 12 août 2026** — l'instance `spc-recette` (région UE) existe, les
+32 migrations sont appliquées et les contrôles SQL ont tourné. Ce qui est
+vérifiable en SQL est désormais tranché ; ce qui passe par l'application reste
+🔍 NON VÉRIFIÉ. Les résultats sont plus bas, avec leur statut ligne par ligne.
 
 ## Pourquoi cette limite existe
 
@@ -73,27 +76,88 @@ rejouerait le schéma depuis zéro, pas seulement pour la recette.
 Ces deux corrections sont **sans effet** là où `prospects` existe et où pg_cron
 est activé : elles ne changent rien à la base de production.
 
+## Résultats — passage du 12 août 2026, instance `spc-recette`
+
+Les 32 migrations ont été appliquées, le jeu de recette posé, `01_controles.sql`
+exécuté. **C'est la première fois que ce schéma existe sur un PostgreSQL réel.**
+
+### Ce que le jeu de recette a produit
+
+Requête de vérification de `00_jeu-audit.sql`, 9 lignes, conformes à l'attendu :
+
+| salle_au_planning | affectations | etat |
+|---|---|---|
+| AMP · C14 · E32 · F11 · F12 | 1 chacune | FANTÔME — absente du référentiel |
+| RECETTE A21 · A22 · E31 | 1 chacune | rattachée au référentiel |
+| (sans salle) | 2 | sans salle |
+
+Le rejeu du rapprochement `salle_id` après le seed (M-2b) fonctionne : sans lui,
+les 8 salles seraient sorties en fantômes et M-3 aurait perdu tout sens.
+
+### Ce que `01_controles.sql` a répondu
+
+| Contrôle | Attendu | Observé | Statut |
+|---|---|---|---|
+| M-2 `affectations.salle_id` existe | colonne présente | `présente` | ✅ VALIDÉ |
+| M-2b contrainte `on delete` | NO ACTION ou RESTRICT | `RESTRICT` | ✅ VALIDÉ — le garde de BUG-004 est réel en base, pas seulement applicatif |
+| M-3 salles non rapprochées | 0 une fois les alias arbitrés | `5` | ⚠️ à arbitrer — attendu à ce stade |
+| M-3b noms hors référentiel | liste à arbitrer | `AMP, C14, E32, F11, F12` | ✅ VALIDÉ — exactement le relevé de l'audit |
+| V-1 couverture de la session | 10 / 14 → validation refusée | `10 / 14` | ✅ VALIDÉ (côté données) |
+| I-1 affectations sans salle | 2 | `2` | ✅ VALIDÉ |
+| I-3 salle orpheline disponible | au moins 1 | `2` | ✅ VALIDÉ — voir note ci-dessous |
+| BUG-016 heures facturables (1 j) | 23,33 h | `23.33` | ✅ VALIDÉ — le SQL retrouve le chiffre du moteur TypeScript |
+| BUG-016 heures facturées (équipe) | 262,30 h | `262.30` | ✅ VALIDÉ — écart de 28,97 h confirmé en base |
+| BUG-016 effectifs | 6 / 10 / 4 | `6 / 10 / 4` | ✅ VALIDÉ |
+| D-2 / D-3 / D-4 index d'unicité | présent | `présent` ×3 | ⚠️ PARTIELLEMENT VALIDÉ — voir ci-dessous |
+| M-1 / M-1b doublons restants | 0 | `0` | 🔍 NON VÉRIFIÉ — voir ci-dessous |
+
+`I-3 = 2` et non 1 : `RECETTE AMPHI` est structurellement orpheline elle aussi.
+C'est voulu — c'est la fiche candidate à l'arbitrage « AMP ↔ AMPHI » (M-4). Une
+seule des deux, `RECETTE B11`, est réellement à supprimer. L'en-tête du seed, qui
+annonçait une orpheline unique, a été corrigé.
+
+### Défaut trouvé dans les contrôles eux-mêmes
+
+Les index de la migration 31 sont **partiels** : `where org_id is not null`. La
+recette a été montée sans organisation, donc `org_id` est NULL partout.
+
+| | |
+|---|---|
+| **Cause** | `M-1`/`M-1b` comptaient les doublons en filtrant `org_id is not null`, sans dire sur combien de fiches. |
+| **Source** | `supabase/recette/01_controles.sql` — formulation d'origine du contrôle. |
+| **Conséquence** | Sur ce jeu, la requête ne PEUT renvoyer que `0`, doublons ou pas. Quatre lignes affichaient un résultat rassurant qui ne prouvait rien : D-2/D-3/D-4 confirment que l'index *existe*, M-1/M-1b qu'aucun doublon n'existe *dans un périmètre vide*. |
+| **Correction** | `M-1`/`M-1b` publient désormais les deux nombres (`n doublon(s) · n fiche(s) examinée(s)`), un contrôle `D-1b` publie le périmètre réel, et le verdict bascule en 🔍 NON VÉRIFIÉ dès que le périmètre est vide. |
+| **Reste à faire** | Créer une organisation en recette et rattacher les données à son `org_id` : sans cela D-2, D-3, D-4 et R-3 restent 🔍 NON VÉRIFIÉ. |
+
+### Ce qui reste hors de portée du SQL
+
+Tout ce qui passe par l'application — refus de suppression, transitions de
+statut, appels directs aux Server Actions, messages métier, RLS vue d'un
+utilisateur — exige de pointer l'application sur cette instance
+(`NEXT_PUBLIC_SUPABASE_URL` / `ANON_KEY` de `spc-recette`). Ces scénarios restent
+🔍 NON VÉRIFIÉ et sont marqués comme tels ci-dessous.
+
 ## Scénarios à rejouer
 
 ### Migrations
 
-| # | Contrôle | Attendu |
-|---|---|---|
-| M-1 | Appliquer `31_unicite-salles-surveillants.sql` sur une base **contenant déjà des doublons** | La création d'index ÉCHOUE ; dédoublonner d'abord. À traiter avant mise en production. |
-| M-2 | Appliquer `32_integrite-salles-planning.sql` | `affectations.salle_id` créée, rapprochement effectué sur les noms normalisés. |
-| M-2b | Le rapprochement `salle_id` est rejoué APRÈS le jeu de recette | La migration 32 rapproche au moment où elle passe, donc sur une table vide en recette. `00_jeu-audit.sql` rejoue la requête à la fin — sans quoi M-3 listerait les 8 salles au lieu des 5 fantômes. |
-| M-3 | `select * from salles_non_rapprochees;` | Doit lister `AMP`, `C14`, `E32`, `F11`, `F12`. Non vide ⇒ INV-004 pas encore rétabli. |
-| M-4 | Arbitrer les alias (« AMP » = « Grand Amphithéâtre » ?) puis rejouer M-3 | Vue vide. `salle_id` peut alors passer `not null` dans une migration ultérieure. |
+| # | Contrôle | Attendu | Statut |
+|---|---|---|---|
+| M-1 | Appliquer `31_unicite-salles-surveillants.sql` sur une base **contenant déjà des doublons** | La création d'index ÉCHOUE ; dédoublonner d'abord. À traiter avant mise en production. | 🔍 NON VÉRIFIÉ — périmètre vide (`org_id` NULL) |
+| M-2 | Appliquer `32_integrite-salles-planning.sql` | `affectations.salle_id` créée, rapprochement effectué sur les noms normalisés. | ✅ VALIDÉ — colonne présente, `on delete RESTRICT` |
+| M-2b | Le rapprochement `salle_id` est rejoué APRÈS le jeu de recette | La migration 32 rapproche au moment où elle passe, donc sur une table vide en recette. `00_jeu-audit.sql` rejoue la requête à la fin — sans quoi M-3 listerait les 8 salles au lieu des 5 fantômes. | ✅ VALIDÉ — 3 rattachées, 5 fantômes, 2 sans salle |
+| M-3 | `select * from salles_non_rapprochees;` | Doit lister `AMP`, `C14`, `E32`, `F11`, `F12`. Non vide ⇒ INV-004 pas encore rétabli. | ✅ VALIDÉ — les 5 noms, exactement |
+| M-4 | Arbitrer les alias (« AMP » = « Grand Amphithéâtre » ?) puis rejouer M-3 | Vue vide. `salle_id` peut alors passer `not null` dans une migration ultérieure. | 🔴 EN ATTENTE — décision humaine, non automatisable |
 
 ### Intégrité référentielle (BUG-004)
 
-| # | Contrôle | Attendu |
-|---|---|---|
-| I-1 | Supprimer une salle utilisée au planning | **Refus** applicatif nommant le nombre d'affectations. |
-| I-2 | Même suppression via un appel direct au Server Action | Même refus — le garde n'est pas dans le formulaire. |
-| I-3 | Supprimer une salle orpheline (B11) | Suppression acceptée, ligne de journal écrite. |
-| I-4 | `delete from salles` en SQL sur une salle rattachée par `salle_id` | **Erreur de contrainte** (`on delete restrict`). |
-| I-5 | Renommer une salle référencée au planning | Journal explicite « le planning référence encore l'ancien nom ». |
+| # | Contrôle | Attendu | Statut |
+|---|---|---|---|
+| I-1 | Supprimer une salle utilisée au planning | **Refus** applicatif nommant le nombre d'affectations. | 🔍 NON VÉRIFIÉ — exige l'application branchée sur la recette |
+| I-2 | Même suppression via un appel direct au Server Action | Même refus — le garde n'est pas dans le formulaire. | 🔍 NON VÉRIFIÉ |
+| I-3 | Supprimer une salle orpheline (B11) | Suppression acceptée, ligne de journal écrite. | 🔍 NON VÉRIFIÉ — la salle orpheline existe bien (contrôle SQL ✅) |
+| I-4 | `delete from salles` en SQL sur une salle rattachée par `salle_id` | **Erreur de contrainte** (`on delete restrict`). | ⚠️ PARTIELLEMENT VALIDÉ — la contrainte est en `RESTRICT` (M-2b), le refus lui-même n'a pas été provoqué |
+| I-5 | Renommer une salle référencée au planning | Journal explicite « le planning référence encore l'ancien nom ». | 🔍 NON VÉRIFIÉ |
 
 ### Suppressions protégées et journal (BUG-003, BUG-023)
 
@@ -106,44 +170,45 @@ est activé : elles ne changent rien à la base de production.
 
 ### Doublons (BUG-012, BUG-013)
 
-| # | Contrôle | Attendu |
-|---|---|---|
-| D-1 | Trois clics dans le même tick sur « Ajouter la salle » | **1 seule ligne** créée. Le verrou client est mesuré (1 POST) ; reste à vérifier qu'aucune ligne en double n'atteint la base. |
-| D-2 | Deux requêtes concurrentes hors navigateur, même nom de salle | La seconde échoue sur `salles_org_nom_uniq`, message métier affiché. |
-| D-3 | Même e-mail de surveillant, casse différente | Refus sur `surveillants_org_email_uniq`. |
-| D-4 | Même téléphone, formats différents (`06 12 34 56 78` / `+33612345678`) | Refus sur `surveillants_org_tel_uniq`. |
+| # | Contrôle | Attendu | Statut |
+|---|---|---|---|
+| D-1 | Trois clics dans le même tick sur « Ajouter la salle » | **1 seule ligne** créée. Le verrou client est mesuré (1 POST) ; reste à vérifier qu'aucune ligne en double n'atteint la base. | 🔍 NON VÉRIFIÉ |
+| D-1b | Périmètre couvert par les index partiels | Non vide | 🔍 NON VÉRIFIÉ — `0 salle · 0 surveillant` avec un `org_id` renseigné |
+| D-2 | Deux requêtes concurrentes hors navigateur, même nom de salle | La seconde échoue sur `salles_org_nom_uniq`, message métier affiché. | ⚠️ PARTIELLEMENT VALIDÉ — index présent, jamais sollicité |
+| D-3 | Même e-mail de surveillant, casse différente | Refus sur `surveillants_org_email_uniq`. | ⚠️ PARTIELLEMENT VALIDÉ — idem |
+| D-4 | Même téléphone, formats différents (`06 12 34 56 78` / `+33612345678`) | Refus sur `surveillants_org_tel_uniq`. | ⚠️ PARTIELLEMENT VALIDÉ — idem |
 
 ### Validation de session (BUG-015)
 
-| # | Contrôle | Attendu |
-|---|---|---|
-| V-1 | Valider une session à 10/14 depuis l'écran | Refus. **Vérifié au navigateur** — mais le garde client s'arrête sur les alertes de ligne avant d'atteindre la sous-couverture. |
-| V-2 | Appeler `validerSession` **directement**, sans passer par l'écran | Refus par le moteur central. **C'est le contrôle qui compte** : un Server Action est un point d'entrée réseau. Non rejoué. |
-| V-3 | Couper la base puis valider | « le planning n'a pas pu être relu » — jamais une validation sur données vides. |
-| V-4 | Vérifier `journal_sessions` après un refus | Une ligne « Validation refusée » avec les motifs. |
+| # | Contrôle | Attendu | Statut |
+|---|---|---|---|
+| V-1 | Valider une session à 10/14 depuis l'écran | Refus. **Vérifié au navigateur** — mais le garde client s'arrête sur les alertes de ligne avant d'atteindre la sous-couverture. | ⚠️ PARTIELLEMENT VALIDÉ — la sous-dotation `10 / 14` est confirmée en base ; le refus n'a pas été rejoué sur cette instance |
+| V-2 | Appeler `validerSession` **directement**, sans passer par l'écran | Refus par le moteur central. **C'est le contrôle qui compte** : un Server Action est un point d'entrée réseau. | 🔍 NON VÉRIFIÉ |
+| V-3 | Couper la base puis valider | « le planning n'a pas pu être relu » — jamais une validation sur données vides. | 🔍 NON VÉRIFIÉ |
+| V-4 | Vérifier `journal_sessions` après un refus | Une ligne « Validation refusée » avec les motifs. | 🔍 NON VÉRIFIÉ |
 
 ### Transitions de statut (BUG-011)
 
-| # | Contrôle | Attendu |
-|---|---|---|
-| T-1 | Les 11 statuts, via le formulaire | Seules les transitions légales sont proposées. **Vérifié au navigateur.** |
-| T-2 | `updateMission` appelé directement avec « Terminée → Brouillon » | Refus serveur. Non rejoué. |
+| # | Contrôle | Attendu | Statut |
+|---|---|---|---|
+| T-1 | Les 11 statuts, via le formulaire | Seules les transitions légales sont proposées. | ✅ VALIDÉ au navigateur (hors base) |
+| T-2 | `updateMission` appelé directement avec « Terminée → Brouillon » | Refus serveur. | 🔍 NON VÉRIFIÉ |
 
 ### RLS et multi-organisation
 
-| # | Contrôle | Attendu |
-|---|---|---|
-| R-1 | Lire les salles d'une autre organisation | 0 ligne, jamais une erreur technique brute. |
-| R-2 | Écrire dans une autre organisation | Refus RLS traduit en « vos droits ne permettent pas cette action ». |
-| R-3 | Les index uniques de la migration 31 sont bien **par organisation** | Deux organisations peuvent avoir une salle « A21 ». |
+| # | Contrôle | Attendu | Statut |
+|---|---|---|---|
+| R-1 | Lire les salles d'une autre organisation | 0 ligne, jamais une erreur technique brute. | 🔍 NON VÉRIFIÉ — exige deux organisations et deux comptes |
+| R-2 | Écrire dans une autre organisation | Refus RLS traduit en « vos droits ne permettent pas cette action ». | 🔍 NON VÉRIFIÉ |
+| R-3 | Les index uniques de la migration 31 sont bien **par organisation** | Deux organisations peuvent avoir une salle « A21 ». | 🔍 NON VÉRIFIÉ |
 
 ### Import / export et volumétrie
 
-| # | Contrôle | Attendu |
-|---|---|---|
-| P-1 | Import d'un fichier de 500 salles | Aucune ligne partiellement écrite en cas d'échec. |
-| P-2 | Export puis réimport | Aller-retour sans perte ni doublon. |
-| P-3 | Session à 2 000 affectations | Les écrans restent exploitables ; relever les temps de rendu. |
+| # | Contrôle | Attendu | Statut |
+|---|---|---|---|
+| P-1 | Import d'un fichier de 500 salles | Aucune ligne partiellement écrite en cas d'échec. | 🔍 NON VÉRIFIÉ |
+| P-2 | Export puis réimport | Aller-retour sans perte ni doublon. | 🔍 NON VÉRIFIÉ |
+| P-3 | Session à 2 000 affectations | Les écrans restent exploitables ; relever les temps de rendu. | 🔍 NON VÉRIFIÉ |
 
 ## Ce que ce document ne dit pas
 

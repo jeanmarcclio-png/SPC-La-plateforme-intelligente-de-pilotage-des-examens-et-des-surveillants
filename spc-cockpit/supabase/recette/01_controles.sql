@@ -58,22 +58,42 @@ with controles as (
          coalesce((select 'présent' from pg_indexes where indexname = 'surveillants_org_tel_uniq' limit 1), 'ABSENT')
 
   union all
+  -- D-1b : PORTÉE RÉELLE des index de la migration 31.
+  --
+  -- Ces index sont PARTIELS : `where org_id is not null`. Sur une base sans
+  -- organisation — le cas d'une recette montée à vide — ils existent mais ne
+  -- contraignent aucune ligne. Sans ce contrôle, D-2/D-3/D-4 affichent
+  -- « présent » et M-1/M-1b affichent « 0 doublon » : quatre lignes vertes qui
+  -- ne prouvent rien. Le périmètre est donc publié explicitement.
+  select 'D-1b périmètre couvert par les index partiels',
+         'périmètre non vide',
+         (select count(*)::text from salles       where org_id is not null) || ' salle(s) · '
+      || (select count(*)::text from surveillants where org_id is not null) || ' surveillant(s)'
+
+  union all
   -- M-1 : les index d'unicité ne peuvent PAS être créés sur une base contenant
-  -- déjà des doublons. On compte ce qui bloquerait.
+  -- déjà des doublons. On compte ce qui bloquerait — ET le nombre de fiches
+  -- réellement examinées, sans quoi « 0 » est une vérité vide.
   select 'M-1  doublons de salles restants',
-         '0 avant création des index',
+         '0 doublon, sur un périmètre non vide',
          (select count(*)::text from (
             select org_id, lower(btrim(nom)) from salles
              where org_id is not null and btrim(nom) <> ''
              group by 1, 2 having count(*) > 1) x)
+         || ' doublon(s) · '
+         || (select count(*)::text from salles
+              where org_id is not null and btrim(nom) <> '') || ' fiche(s) examinée(s)'
 
   union all
   select 'M-1b doublons d''e-mail surveillant restants',
-         '0 avant création des index',
+         '0 doublon, sur un périmètre non vide',
          (select count(*)::text from (
             select org_id, lower(btrim(email)) from surveillants
              where org_id is not null and email is not null and btrim(email) <> ''
              group by 1, 2 having count(*) > 1) x)
+         || ' doublon(s) · '
+         || (select count(*)::text from surveillants
+              where org_id is not null and email is not null and btrim(email) <> '') || ' fiche(s) examinée(s)'
 
   union all
   -- Cohérence du jeu de recette : la sous-dotation que le moteur doit refuser.
@@ -131,7 +151,11 @@ select controle,
        observe,
        case
          when observe in ('ABSENTE', 'ABSENT', 'AUCUNE CONTRAINTE') then '❌ ÉCHEC'
-         when controle like 'M-1%'  and observe <> '0'               then '🔴 BLOQUANT — dédoublonner avant migration 31'
+         -- Périmètre vide AVANT tout jugement sur les doublons : un « 0 doublon »
+         -- calculé sur 0 fiche ne dit rien de la base, seulement du jeu d'essai.
+         when observe like '%· 0 fiche(s) examinée(s)'               then '🔍 NON VÉRIFIÉ — 0 fiche examinée, ce zéro ne prouve rien'
+         when controle like 'D-1b%' and observe like '0 salle(s)%'   then '🔍 NON VÉRIFIÉ — aucune organisation : index partiels non sollicités'
+         when controle like 'M-1%'  and observe not like '0 doublon%' then '🔴 BLOQUANT — dédoublonner avant migration 31'
          when controle like 'M-3  %' and observe <> '0'              then '⚠️ à arbitrer'
          else '🔍 à confronter à l''attendu'
        end as verdict

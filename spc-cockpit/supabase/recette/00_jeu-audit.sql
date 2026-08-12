@@ -9,7 +9,13 @@
 --   * mission ICP Paris — 14 surveillants requis, 6 salles déclarées ;
 --   * 10 affectations dont 2 SANS salle ;
 --   * 8 salles citées au planning pour 5 fiches au référentiel
---     (fantômes : C14, AMP, F11, F12, E32 — orpheline : B11) ;
+--     (fantômes : C14, AMP, F11, F12, E32) ;
+--   * DEUX fiches qu'aucune affectation n'utilise, et non une seule :
+--     - RECETTE B11    — vraie orpheline, c'est elle que le contrôle I-3
+--                        supprimera pour vérifier que la suppression passe ;
+--     - RECETTE AMPHI  — non référencée elle aussi, mais volontairement : c'est
+--                        la fiche candidate à l'arbitrage « AMP ↔ AMPHI » (M-4).
+--     Le contrôle I-3 en compte donc 2. Une seule est réellement à supprimer.
 --   * un devis dont la grille et les heures facturées ne se recoupent pas.
 --
 -- Idempotent : relancer le script repart d'un état propre pour ces références.
