@@ -69,10 +69,31 @@ delete from surveillants
 --    transaction, hors de tout gestionnaire d'exception — le script s'arrête et
 --    aucune sonde ne s'exécute.
 -- ---------------------------------------------------------------------------
+--    DEUX GARDES, parce que trois passages se sont arrêtés ici.
+--
+--    a) `not exists` — ne pas déplacer une salle vers une organisation qui
+--       porte déjà son nom. C'est le cas de la salle témoin de R-3, et de tout
+--       reliquat d'un passage antérieur.
+--    b) `s.id = (select min(...))` — si plusieurs salles candidates partagent
+--       la même clé normalisée, une seule bouge. Sans ce garde, l'UPDATE
+--       violerait l'index avec ses propres lignes, en une seule instruction.
+--
+--    Ce qui ne peut pas être rattaché est signalé dans le résultat final plutôt
+--    que d'interrompre le script : un arrêt ici empêche TOUTES les sondes de
+--    s'exécuter, et c'est précisément ce qui s'est produit.
 update salles       s set org_id = o.id from organizations o
  where o.nom = 'SPC Recette' and s.nom like 'RECETTE %' and s.org_id is distinct from o.id
    and s.org_id is distinct from (select id from organizations
-                                   where nom = 'SPC Recette — Concurrent');
+                                   where nom = 'SPC Recette — Concurrent')
+   and not exists (select 1 from salles t
+                    where t.org_id = o.id
+                      and lower(btrim(t.nom)) = lower(btrim(s.nom)))
+   and s.id = (select min(t2.id) from salles t2
+                where lower(btrim(t2.nom)) = lower(btrim(s.nom))
+                  and t2.nom like 'RECETTE %'
+                  and t2.org_id is distinct from o.id
+                  and t2.org_id is distinct from (select id from organizations
+                                                   where nom = 'SPC Recette — Concurrent'));
 
 update surveillants v set org_id = o.id from organizations o
  where o.nom = 'SPC Recette' and v.email like '%@recette.spc.test' and v.org_id is distinct from o.id;
@@ -345,6 +366,23 @@ select bloc, libelle, attendu, observe from (
          'la même pour la ligne de référence et pour la sonde',
          coalesce((select o.nom from salles s join organizations o on o.id = s.org_id
                     where s.nom = 'RECETTE A21' limit 1), '(aucune — sondes sans valeur)')
+
+  union all
+  -- Ce que le rattachement a REFUSÉ de déplacer, et pourquoi. Une salle listée
+  -- ici porte un nom déjà présent dans « SPC Recette » : la déplacer violerait
+  -- salles_org_nom_uniq et interromprait le script avant toute sonde.
+  select 2, 5, 'PÉRIMÈTRE', 'salles non rattachées (nom déjà pris dans la cible)',
+         '(aucune)',
+         coalesce((select string_agg(s.nom || ' [' || coalesce(o2.nom, 'sans organisation') || ']',
+                                     ' · ' order by s.nom)
+                     from salles s
+                     left join organizations o2 on o2.id = s.org_id
+                    where s.nom like 'RECETTE %'
+                      and s.org_id is distinct from (select id from organizations
+                                                      where nom = 'SPC Recette')
+                      and s.org_id is distinct from (select id from organizations
+                                                      where nom = 'SPC Recette — Concurrent')),
+                  '(aucune)')
 
   union all
   -- Inventaire nominatif : tout écart au jeu de recette se voit ici.
