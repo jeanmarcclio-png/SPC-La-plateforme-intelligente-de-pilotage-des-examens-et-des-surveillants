@@ -48,25 +48,25 @@ select 'SPC Recette — Concurrent'
 --    échouerait en production. C'est précisément le contrôle M-1.
 -- ---------------------------------------------------------------------------
 update salles       s set org_id = o.id from organizations o
- where o.nom = 'SPC Recette' and s.nom like 'RECETTE %' and s.org_id is null;
+ where o.nom = 'SPC Recette' and s.nom like 'RECETTE %' and s.org_id is distinct from o.id;
 
 update surveillants v set org_id = o.id from organizations o
- where o.nom = 'SPC Recette' and v.email like '%@recette.spc.test' and v.org_id is null;
+ where o.nom = 'SPC Recette' and v.email like '%@recette.spc.test' and v.org_id is distinct from o.id;
 
 update missions     m set org_id = o.id from organizations o
- where o.nom = 'SPC Recette' and m.reference like 'RECETTE-%' and m.org_id is null;
+ where o.nom = 'SPC Recette' and m.reference like 'RECETTE-%' and m.org_id is distinct from o.id;
 
 update devis        d set org_id = o.id from organizations o
- where o.nom = 'SPC Recette' and d.reference like 'RECETTE-%' and d.org_id is null;
+ where o.nom = 'SPC Recette' and d.reference like 'RECETTE-%' and d.org_id is distinct from o.id;
 
 update affectations a set org_id = m.org_id from missions m
- where m.id = a.mission_id and m.reference like 'RECETTE-%' and a.org_id is null;
+ where m.id = a.mission_id and m.reference like 'RECETTE-%' and a.org_id is distinct from m.org_id;
 
 update devis_salles ds set org_id = d.org_id from devis d
- where d.id = ds.devis_id and d.reference like 'RECETTE-%' and ds.org_id is null;
+ where d.id = ds.devis_id and d.reference like 'RECETTE-%' and ds.org_id is distinct from d.org_id;
 
 update devis_equipe de set org_id = d.org_id from devis d
- where d.id = de.devis_id and d.reference like 'RECETTE-%' and de.org_id is null;
+ where d.id = de.devis_id and d.reference like 'RECETTE-%' and de.org_id is distinct from d.org_id;
 
 commit;
 
@@ -127,11 +127,31 @@ delete from surveillants
  where email in ('UN@Recette.SPC.Test', 'sonde-sep@recette.spc.test', 'sonde-intl@recette.spc.test')
     or nom like 'Sonde %';
 
+-- ARRÊT DUR si les lignes de référence manquent.
+--
+-- Chaque sonde vise l'organisation de la ligne qu'elle doit heurter. Si cette
+-- ligne n'existe pas, l'organisation vaut NULL, l'index partiel ne s'applique
+-- pas, et TOUTES les sondes ressortent « acceptées » sans avoir rien testé.
+-- Mieux vaut une erreur franche qu'un tableau de faux rouges.
+do $$
+begin
+  if not exists (select 1 from salles where nom = 'RECETTE A21')
+     or not exists (select 1 from surveillants where email = 'un@recette.spc.test') then
+    raise exception 'Jeu de recette absent : joue d''abord 00_jeu-audit.sql. '
+                    'Sans ligne de référence, les sondes seraient toutes « acceptées » '
+                    'sans rien avoir testé.';
+  end if;
+end $$;
+
 -- D-2 : même nom de salle, casse différente.
 do $$
 declare v_org uuid; v_id integer;
 begin
-  select id into v_org from organizations where nom = 'SPC Recette';
+  -- L'organisation visée est celle de la LIGNE DE RÉFÉRENCE, jamais une
+  -- organisation résolue par son nom : une sonde posée dans une autre
+  -- organisation que sa cible ne peut pas entrer en collision, et
+  -- ressortirait « acceptée » sans avoir rien testé.
+  select org_id into v_org from salles where nom = 'RECETTE A21' limit 1;
   begin
     insert into salles (org_id, nom, batiment, etage, capacite, etudiants, nb_surveillants, pmr, tiers_temps)
     values (v_org, 'recette a21', 'Bâtiment A', '2e étage', 80, 75, 2, false, false)
@@ -152,7 +172,11 @@ end $$;
 do $$
 declare v_org uuid; v_id integer;
 begin
-  select id into v_org from organizations where nom = 'SPC Recette';
+  -- L'organisation visée est celle de la LIGNE DE RÉFÉRENCE, jamais une
+  -- organisation résolue par son nom : une sonde posée dans une autre
+  -- organisation que sa cible ne peut pas entrer en collision, et
+  -- ressortirait « acceptée » sans avoir rien testé.
+  select org_id into v_org from salles where nom = 'RECETTE A21' limit 1;
   begin
     insert into salles (org_id, nom, batiment, etage, capacite, etudiants, nb_surveillants, pmr, tiers_temps)
     values (v_org, 'RECETTE  A21', 'Bâtiment A', '2e étage', 80, 75, 2, false, false)
@@ -170,7 +194,8 @@ end $$;
 do $$
 declare v_org uuid; v_id integer;
 begin
-  select id into v_org from organizations where nom = 'SPC Recette';
+  -- Organisation de la ligne de référence — voir la note des sondes salles.
+  select org_id into v_org from surveillants where email = 'un@recette.spc.test' limit 1;
   begin
     insert into surveillants (org_id, nom, role, statut, email, telephone, nb_examens, heures, note, taux_horaire)
     values (v_org, 'Sonde Casse', 'Surveillant salle', 'Disponible', 'UN@Recette.SPC.Test', '0699000001', 0, 0, 0, 30)
@@ -190,7 +215,8 @@ end $$;
 do $$
 declare v_org uuid; v_id integer;
 begin
-  select id into v_org from organizations where nom = 'SPC Recette';
+  -- Organisation de la ligne de référence — voir la note des sondes salles.
+  select org_id into v_org from surveillants where email = 'un@recette.spc.test' limit 1;
   begin
     insert into surveillants (org_id, nom, role, statut, email, telephone, nb_examens, heures, note, taux_horaire)
     values (v_org, 'Sonde Séparateurs', 'Surveillant salle', 'Disponible', 'sonde-sep@recette.spc.test', '06 12 00 00 01', 0, 0, 0, 30)
@@ -212,7 +238,8 @@ end $$;
 do $$
 declare v_org uuid; v_id integer;
 begin
-  select id into v_org from organizations where nom = 'SPC Recette';
+  -- Organisation de la ligne de référence — voir la note des sondes salles.
+  select org_id into v_org from surveillants where email = 'un@recette.spc.test' limit 1;
   begin
     insert into surveillants (org_id, nom, role, statut, email, telephone, nb_examens, heures, note, taux_horaire)
     values (v_org, 'Sonde International', 'Surveillant salle', 'Disponible', 'sonde-intl@recette.spc.test', '+33 6 12 00 00 01', 0, 0, 0, 30)
@@ -276,6 +303,31 @@ select bloc, libelle, attendu, observe from (
   select 2, 2, 'PÉRIMÈTRE', 'membres d''organisation',
          'au moins 1, sinon l''application lira 0 ligne',
          (select count(*) from organization_members)::text || ' membre(s)'
+
+  union all
+  -- La migration 28 pose un DEFAULT sur org_id de chaque table métier, en
+  -- choisissant « la vraie organisation » parmi celles qui existent AU MOMENT où
+  -- elle passe. Sur une base neuve, les seules organisations sont les deux
+  -- fictives de la migration 11 : le défaut pointe donc sur une organisation de
+  -- DÉMONSTRATION, et toute insertion ultérieure y atterrit sans le dire.
+  select 2, 3, 'PÉRIMÈTRE', 'organisation par défaut de salles.org_id',
+         'l''organisation de travail, pas une organisation de démonstration',
+         coalesce((select o.nom
+                     from pg_attrdef ad
+                     join pg_class c on c.oid = ad.adrelid and c.relname = 'salles'
+                     join pg_attribute a on a.attrelid = c.oid and a.attnum = ad.adnum
+                                        and a.attname = 'org_id'
+                     join organizations o
+                       on o.id::text = btrim(split_part(pg_get_expr(ad.adbin, ad.adrelid), '''', 2))
+                    limit 1), '(aucun défaut)')
+
+  union all
+  -- L'organisation réellement visée par les sondes, lue sur la ligne de
+  -- référence. C'est elle qui décide si une sonde peut entrer en collision.
+  select 2, 4, 'PÉRIMÈTRE', 'organisation visée par les sondes',
+         'la même pour la ligne de référence et pour la sonde',
+         coalesce((select o.nom from salles s join organizations o on o.id = s.org_id
+                    where s.nom = 'RECETTE A21' limit 1), '(aucune — sondes sans valeur)')
 
   union all
   -- Inventaire nominatif : tout écart au jeu de recette se voit ici.
