@@ -40,15 +40,39 @@ select 'SPC Recette — Concurrent'
  where not exists (select 1 from organizations where nom = 'SPC Recette — Concurrent');
 
 -- ---------------------------------------------------------------------------
+-- 1b. Reliquats de sonde d'un passage précédent — AVANT tout rattachement.
+--
+--     Une sonde acceptée puis interrompue laisse sa ligne en base ; le passage
+--     suivant la verrait refusée pour cause de doublon, et afficherait un ✅
+--     obtenu par accident. Comparaisons SENSIBLES À LA CASSE : « recette a21 »
+--     est une sonde, « RECETTE A21 » est le jeu de recette.
+--
+--     Ce nettoyage précède le rattachement : déplacer des lignes vers une
+--     organisation où traîne encore un reliquat déclencherait l'index d'unicité
+--     au milieu du script, hors de tout gestionnaire d'exception.
+-- ---------------------------------------------------------------------------
+delete from salles where nom = 'recette a21' or nom = 'RECETTE  A21';
+delete from surveillants
+ where email in ('UN@Recette.SPC.Test', 'sonde-sep@recette.spc.test', 'sonde-intl@recette.spc.test')
+    or nom like 'Sonde %';
+
+-- ---------------------------------------------------------------------------
 -- 2. Rattachement du jeu de recette à « SPC Recette ».
 --
---    L'ordre importe peu ici (org_id est nullable partout), mais le
---    rattachement des salles ACTIVE l'index salles_org_nom_uniq sur ces lignes :
---    s'il existait un doublon parmi elles, c'est ici que la migration 31
---    échouerait en production. C'est précisément le contrôle M-1.
+--    Le rattachement des salles ACTIVE l'index salles_org_nom_uniq sur ces
+--    lignes : s'il existait un doublon parmi elles, c'est ici que la migration
+--    31 échouerait en production. C'est précisément le contrôle M-1.
+--
+--    LA SALLE TÉMOIN DE R-3 EST EXCLUE. Elle porte le même nom, dans l'autre
+--    organisation, exprès. Un filtre sur le seul nom la ramènerait dans « SPC
+--    Recette » où le nom existe déjà : violation d'unicité en pleine
+--    transaction, hors de tout gestionnaire d'exception — le script s'arrête et
+--    aucune sonde ne s'exécute.
 -- ---------------------------------------------------------------------------
 update salles       s set org_id = o.id from organizations o
- where o.nom = 'SPC Recette' and s.nom like 'RECETTE %' and s.org_id is distinct from o.id;
+ where o.nom = 'SPC Recette' and s.nom like 'RECETTE %' and s.org_id is distinct from o.id
+   and s.org_id is distinct from (select id from organizations
+                                   where nom = 'SPC Recette — Concurrent');
 
 update surveillants v set org_id = o.id from organizations o
  where o.nom = 'SPC Recette' and v.email like '%@recette.spc.test' and v.org_id is distinct from o.id;
@@ -117,15 +141,8 @@ end $$;
 create table if not exists recette_sondes (ordre int, sonde text, attendu text, observe text);
 delete from recette_sondes;
 
--- Reliquats d'un passage précédent. Sans ce nettoyage, une sonde ACCEPTÉE lors
--- d'un premier passage laisserait sa ligne en base, et le passage suivant la
--- verrait refusée pour cause de doublon — un ✅ obtenu par accident, exactement
--- le genre de faux vert que cet audit doit refuser. Comparaisons SENSIBLES À LA
--- CASSE : « recette a21 » est une sonde, « RECETTE A21 » est le jeu de recette.
-delete from salles where nom = 'recette a21' or nom = 'RECETTE  A21';
-delete from surveillants
- where email in ('UN@Recette.SPC.Test', 'sonde-sep@recette.spc.test', 'sonde-intl@recette.spc.test')
-    or nom like 'Sonde %';
+-- Le nettoyage des reliquats de sonde a lieu en section 1b, avant tout
+-- rattachement — voir l'explication à cet endroit.
 
 -- ARRÊT DUR si les lignes de référence manquent.
 --
