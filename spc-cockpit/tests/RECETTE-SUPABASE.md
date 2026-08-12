@@ -41,8 +41,18 @@ Dans le SQL Editor de l'instance de recette, dans cet ordre :
 ```
 supabase/recette/migrations-par-lots/lot-01.sql … lot-07.sql   (dans l'ordre)
 supabase/recette/00_jeu-audit.sql
-supabase/recette/01_controles.sql   → tableau de verdicts
+supabase/recette/01_controles.sql     → tableau de verdicts
+supabase/recette/02_organisation.sql  → organisation + sondes d'unicité
 ```
+
+`02_organisation.sql` n'est pas optionnel dès qu'on veut vérifier autre chose que
+la forme du schéma. Deux mécanismes du produit ne s'activent que si `org_id` est
+renseigné : les index d'unicité de la migration 31, qui sont partiels
+(`where org_id is not null`), et **toutes** les policies RLS, qui passent par
+`spc_member_of(org_id)` — c'est-à-dire `... and org_id = target`, jamais vrai
+quand `org_id` est NULL. Sur une recette sans organisation, un utilisateur
+authentifié lit zéro ligne : l'application paraît cassée alors que c'est le jeu
+d'essai qui l'est.
 
 Les migrations sont livrées **en 7 lots de ~18 Ko**, et non en un seul fichier :
 le SQL Editor passe par l'API du dashboard, qui échoue sur un envoi de 108 Ko
@@ -174,9 +184,11 @@ utilisateur — exige de pointer l'application sur cette instance
 |---|---|---|---|
 | D-1 | Trois clics dans le même tick sur « Ajouter la salle » | **1 seule ligne** créée. Le verrou client est mesuré (1 POST) ; reste à vérifier qu'aucune ligne en double n'atteint la base. | 🔍 NON VÉRIFIÉ |
 | D-1b | Périmètre couvert par les index partiels | Non vide | 🔍 NON VÉRIFIÉ — `0 salle · 0 surveillant` avec un `org_id` renseigné |
-| D-2 | Deux requêtes concurrentes hors navigateur, même nom de salle | La seconde échoue sur `salles_org_nom_uniq`, message métier affiché. | ⚠️ PARTIELLEMENT VALIDÉ — index présent, jamais sollicité |
-| D-3 | Même e-mail de surveillant, casse différente | Refus sur `surveillants_org_email_uniq`. | ⚠️ PARTIELLEMENT VALIDÉ — idem |
-| D-4 | Même téléphone, formats différents (`06 12 34 56 78` / `+33612345678`) | Refus sur `surveillants_org_tel_uniq`. | ⚠️ PARTIELLEMENT VALIDÉ — idem |
+| D-2 | Deux requêtes concurrentes hors navigateur, même nom de salle | La seconde échoue sur `salles_org_nom_uniq`, message métier affiché. | ⚠️ PARTIELLEMENT VALIDÉ — index présent, jamais sollicité ; sonde dans `02_organisation.sql` |
+| D-2b | Même nom, **espacement interne** différent (`RECETTE  A21`) | L'index normalise par `lower(btrim(nom))` : `btrim` ne retire que les bords. L'application, elle, retire tous les non-alphanumériques (`normaliserNomSalle`). **La base est donc plus permissive que l'application.** | 🔍 NON VÉRIFIÉ — cause établie par lecture de la migration 31, effet non rejoué |
+| D-3 | Même e-mail de surveillant, casse différente | Refus sur `surveillants_org_email_uniq`. | ⚠️ PARTIELLEMENT VALIDÉ — idem D-2 |
+| D-4a | Même téléphone, **séparateurs** différents (`06 12 00 00 01`) | Refus sur `surveillants_org_tel_uniq` — l'index compare les chiffres. | ⚠️ PARTIELLEMENT VALIDÉ — idem D-2 |
+| D-4b | Même numéro, **forme internationale** (`+33 6 12 00 00 01`) | Ce document annonçait un refus. `regexp_replace(telephone, '\D', '', 'g')` donne `33612000001` d'un côté et `0612000001` de l'autre : **deux clés différentes pour un seul numéro**, donc pas de refus. | 🔍 NON VÉRIFIÉ — cause établie par lecture de `31_unicite-salles-surveillants.sql:28`, effet non rejoué |
 
 ### Validation de session (BUG-015)
 
