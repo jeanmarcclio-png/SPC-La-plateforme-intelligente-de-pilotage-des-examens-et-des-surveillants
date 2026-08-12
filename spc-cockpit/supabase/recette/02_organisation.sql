@@ -108,8 +108,24 @@ end $$;
 --    livré son information (l'index ne l'a pas arrêtée) et n'a rien à faire
 --    dans le jeu de recette.
 -- ---------------------------------------------------------------------------
-drop table if exists recette_sondes;
-create temp table recette_sondes (ordre int, sonde text, attendu text, observe text);
+-- Table de résultats VOLONTAIREMENT PERMANENTE, et non temporaire.
+--
+-- Le SQL Editor de Supabase ouvre une connexion par exécution : une table
+-- `temp` disparaît avec elle, et le tableau des sondes serait irrécupérable dès
+-- qu'on relance autre chose. Elle est donc réelle, vidée à chaque passage, et
+-- supprimable à la main : `drop table recette_sondes;`.
+create table if not exists recette_sondes (ordre int, sonde text, attendu text, observe text);
+delete from recette_sondes;
+
+-- Reliquats d'un passage précédent. Sans ce nettoyage, une sonde ACCEPTÉE lors
+-- d'un premier passage laisserait sa ligne en base, et le passage suivant la
+-- verrait refusée pour cause de doublon — un ✅ obtenu par accident, exactement
+-- le genre de faux vert que cet audit doit refuser. Comparaisons SENSIBLES À LA
+-- CASSE : « recette a21 » est une sonde, « RECETTE A21 » est le jeu de recette.
+delete from salles where nom = 'recette a21' or nom = 'RECETTE  A21';
+delete from surveillants
+ where email in ('UN@Recette.SPC.Test', 'sonde-sep@recette.spc.test', 'sonde-intl@recette.spc.test')
+    or nom like 'Sonde %';
 
 -- D-2 : même nom de salle, casse différente.
 do $$
@@ -235,12 +251,53 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
--- 5. Résultats.
+-- 5. Résultats — UNE SEULE requête finale.
+--
+-- Le SQL Editor n'affiche que le dernier jeu de résultats d'un script. Deux
+-- `select` à la fin, et le premier — celui des sondes — n'apparaît jamais.
+-- Tout est donc réuni ici : sondes, périmètre, et l'INVENTAIRE NOMINATIF des
+-- lignes rattachées. Cet inventaire n'est pas décoratif : il est le seul moyen
+-- de savoir si un compte de lignes inattendu vient du jeu de recette, d'un
+-- reliquat de sonde, ou de données préexistantes de la base.
 -- ---------------------------------------------------------------------------
-select sonde, attendu, observe from recette_sondes order by ordre;
+select bloc, libelle, attendu, observe from (
 
--- Périmètre désormais couvert par les index partiels (contrôle D-1b) :
-select 'périmètre des index partiels' as controle,
-       (select count(*) from salles       where org_id is not null)::text || ' salle(s) · '
-    || (select count(*) from surveillants where org_id is not null)::text || ' surveillant(s) · '
-    || (select count(*) from organization_members)::text || ' membre(s)' as observe;
+  select 1 as ordre, ordre as sous_ordre, 'SONDE' as bloc,
+         sonde as libelle, attendu, observe
+    from recette_sondes
+
+  union all
+  select 2, 1, 'PÉRIMÈTRE', 'lignes soumises aux index partiels',
+         '6 salles · 10 surveillants (jeu de recette)',
+         (select count(*) from salles       where org_id is not null)::text || ' salle(s) · '
+      || (select count(*) from surveillants where org_id is not null)::text || ' surveillant(s)'
+
+  union all
+  select 2, 2, 'PÉRIMÈTRE', 'membres d''organisation',
+         'au moins 1, sinon l''application lira 0 ligne',
+         (select count(*) from organization_members)::text || ' membre(s)'
+
+  union all
+  -- Inventaire nominatif : tout écart au jeu de recette se voit ici.
+  select 3, 1, 'INVENTAIRE', 'salles rattachées, par organisation', '—',
+         coalesce((select string_agg(s.nom || ' → ' || o.nom, ' · ' order by o.nom, s.nom)
+                     from salles s join organizations o on o.id = s.org_id), '(aucune)')
+
+  union all
+  select 3, 2, 'INVENTAIRE', 'surveillants rattachés', '—',
+         coalesce((select string_agg(v.email, ' · ' order by v.email)
+                     from surveillants v where v.org_id is not null), '(aucun)')
+
+  union all
+  -- Lignes NON rattachées : elles restent invisibles à l'application sous RLS.
+  select 3, 3, 'INVENTAIRE', 'salles SANS organisation (invisibles sous RLS)', '—',
+         coalesce((select string_agg(nom, ' · ' order by nom)
+                     from salles where org_id is null), '(aucune)')
+
+  union all
+  select 3, 4, 'INVENTAIRE', 'surveillants SANS organisation (invisibles sous RLS)', '—',
+         coalesce((select string_agg(coalesce(email, nom), ' · ' order by coalesce(email, nom))
+                     from surveillants where org_id is null), '(aucun)')
+
+) x
+order by ordre, sous_ordre;
