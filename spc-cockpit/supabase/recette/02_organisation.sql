@@ -189,7 +189,18 @@ begin
   -- organisation résolue par son nom : une sonde posée dans une autre
   -- organisation que sa cible ne peut pas entrer en collision, et
   -- ressortirait « acceptée » sans avoir rien testé.
-  select org_id into v_org from salles where nom = 'RECETTE A21' limit 1;
+  -- « limit 1 » SANS ORDRE EST NON DÉTERMINISTE, et « RECETTE A21 » existe
+  -- désormais dans DEUX organisations : celle du jeu de recette et celle du
+  -- témoin R-3. Le premier passage a visé le témoin — la sonde partait donc
+  -- dans la mauvaise organisation, une fois de plus. On exclut le témoin et
+  -- on ordonne.
+  select s.org_id into v_org
+    from salles s
+   where s.nom = 'RECETTE A21'
+     and s.org_id is distinct from (select id from organizations
+                                     where nom = 'SPC Recette — Concurrent')
+   order by s.id
+   limit 1;
   begin
     insert into salles (org_id, nom, batiment, etage, capacite, etudiants, nb_surveillants, pmr, tiers_temps)
     values (v_org, 'recette a21', 'Bâtiment A', '2e étage', 80, 75, 2, false, false)
@@ -214,7 +225,18 @@ begin
   -- organisation résolue par son nom : une sonde posée dans une autre
   -- organisation que sa cible ne peut pas entrer en collision, et
   -- ressortirait « acceptée » sans avoir rien testé.
-  select org_id into v_org from salles where nom = 'RECETTE A21' limit 1;
+  -- « limit 1 » SANS ORDRE EST NON DÉTERMINISTE, et « RECETTE A21 » existe
+  -- désormais dans DEUX organisations : celle du jeu de recette et celle du
+  -- témoin R-3. Le premier passage a visé le témoin — la sonde partait donc
+  -- dans la mauvaise organisation, une fois de plus. On exclut le témoin et
+  -- on ordonne.
+  select s.org_id into v_org
+    from salles s
+   where s.nom = 'RECETTE A21'
+     and s.org_id is distinct from (select id from organizations
+                                     where nom = 'SPC Recette — Concurrent')
+   order by s.id
+   limit 1;
   begin
     insert into salles (org_id, nom, batiment, etage, capacite, etudiants, nb_surveillants, pmr, tiers_temps)
     values (v_org, 'RECETTE  A21', 'Bâtiment A', '2e étage', 80, 75, 2, false, false)
@@ -365,7 +387,10 @@ select bloc, libelle, attendu, observe from (
   select 2, 4, 'PÉRIMÈTRE', 'organisation visée par les sondes',
          'la même pour la ligne de référence et pour la sonde',
          coalesce((select o.nom from salles s join organizations o on o.id = s.org_id
-                    where s.nom = 'RECETTE A21' limit 1), '(aucune — sondes sans valeur)')
+                    where s.nom = 'RECETTE A21'
+                      and s.org_id is distinct from (select id from organizations
+                                                      where nom = 'SPC Recette — Concurrent')
+                    order by s.id limit 1), '(aucune — sondes sans valeur)')
 
   union all
   -- Ce que le rattachement a REFUSÉ de déplacer, et pourquoi. Une salle listée
