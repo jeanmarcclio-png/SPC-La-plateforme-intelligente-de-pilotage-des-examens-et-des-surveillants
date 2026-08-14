@@ -7,6 +7,7 @@ import { getActiveOrgId } from "@/lib/auth/org";
 import { journaliser } from "@/lib/operations/journal";
 import { log } from "@/lib/log";
 import { montant, texteRequis, premiereErreurDe, messageMetier } from "@/lib/operations/validation-serveur";
+import { cleTelephone } from "@/lib/operations/telephone";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -107,11 +108,14 @@ async function chercherDoublon(
   if (!data?.length) return null;
   const nomN = norm(fields.nom);
   const mailN = fields.email ? norm(fields.email) : null;
-  const telN = fields.telephone ? fields.telephone.replace(/\D/g, "") : null;
+  // Même normalisation que `spc_tel_cle()` en base : « +33 6 12 00 00 01 » et
+  // « 06 12 00 00 01 » sont un seul numéro. Retirer les non-chiffres ne suffit
+  // pas — c'est le défaut établi par la sonde D-4b de la recette.
+  const telN = cleTelephone(fields.telephone) || null;
   for (const e of data) {
     if (e.nom && norm(e.nom) === nomN) return { id: e.id, nom: e.nom };
     if (mailN && e.email && norm(e.email) === mailN) return { id: e.id, nom: e.nom };
-    if (telN && e.telephone && String(e.telephone).replace(/\D/g, "") === telN) return { id: e.id, nom: e.nom };
+    if (telN && e.telephone && cleTelephone(String(e.telephone)) === telN) return { id: e.id, nom: e.nom };
   }
   return null;
 }
@@ -283,7 +287,7 @@ export async function importSurveillants(
     for (const e of existing ?? []) {
       if (e.nom) byNom.set(norm(e.nom), e.id);
       if (e.email) byEmail.set(norm(e.email), e.id);
-      if (e.telephone) byTel.set(String(e.telephone).replace(/\D/g, ""), e.id);
+      if (cleTelephone(e.telephone)) byTel.set(cleTelephone(String(e.telephone)), e.id);
     }
 
     let ajoutes = 0, misAJour = 0, ignores = 0;
@@ -292,7 +296,7 @@ export async function importSurveillants(
       const matchId =
         byNom.get(norm(r.nom)) ??
         (r.email ? byEmail.get(norm(r.email)) : undefined) ??
-        (r.telephone ? byTel.get(r.telephone.replace(/\D/g, "")) : undefined);
+        (cleTelephone(r.telephone) ? byTel.get(cleTelephone(r.telephone)) : undefined);
 
       const fields = {
         nom: r.nom.trim(),
@@ -320,7 +324,7 @@ export async function importSurveillants(
         if (inserted) {
           byNom.set(norm(inserted.nom), inserted.id);
           if (inserted.email) byEmail.set(norm(inserted.email), inserted.id);
-          if (inserted.telephone) byTel.set(String(inserted.telephone).replace(/\D/g, ""), inserted.id);
+          if (cleTelephone(inserted.telephone)) byTel.set(cleTelephone(String(inserted.telephone)), inserted.id);
         }
         ajoutes++;
       }

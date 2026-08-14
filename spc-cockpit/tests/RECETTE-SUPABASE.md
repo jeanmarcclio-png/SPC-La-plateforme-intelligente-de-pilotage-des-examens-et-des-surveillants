@@ -159,6 +159,8 @@ utilisateur — exige de pointer l'application sur cette instance
 | M-2b | Le rapprochement `salle_id` est rejoué APRÈS le jeu de recette | La migration 32 rapproche au moment où elle passe, donc sur une table vide en recette. `00_jeu-audit.sql` rejoue la requête à la fin — sans quoi M-3 listerait les 8 salles au lieu des 5 fantômes. | ✅ VALIDÉ — 3 rattachées, 5 fantômes, 2 sans salle |
 | M-3 | `select * from salles_non_rapprochees;` | Doit lister `AMP`, `C14`, `E32`, `F11`, `F12`. Non vide ⇒ INV-004 pas encore rétabli. | ✅ VALIDÉ — les 5 noms, exactement |
 | M-4 | Arbitrer les alias (« AMP » = « Grand Amphithéâtre » ?) puis rejouer M-3 | Vue vide. `salle_id` peut alors passer `not null` dans une migration ultérieure. | 🔴 EN ATTENTE — décision humaine, non automatisable |
+| M-5 | Appliquer `33_unicite-telephone-normalise.sql` (lot 7) | `select spc_tel_cle('+33 6 12 00 00 01'), spc_tel_cle('06 12 00 00 01');` → **deux fois `0612000001`**. Puis `select * from surveillants_tel_doublons;` → vide, et `surveillants_org_tel_cle_uniq` présent. Si la vue n'est pas vide, l'index n'est **pas** créé : c'est voulu, fusionner d'abord. | 🔍 NON VÉRIFIÉ |
+| M-5b | Rejouer la sonde D-4b après M-5 | `02_organisation.sql` → `D-4b` doit passer de ❌ ACCEPTÉ à ✅ **refusé**. C'est le seul contrôle qui prouve la correction. | 🔍 NON VÉRIFIÉ |
 
 ### Intégrité référentielle (BUG-004)
 
@@ -207,7 +209,8 @@ observés sur PostgreSQL.
 | **Preuve** | Sonde D-4b insérée puis acceptée par la base, sur la même organisation que la fiche existante. |
 | **Modules impactés** | Référentiel surveillants, planification, couverture de session, paie, purge RGPD. Deux fiches pour une même personne : elle peut être affectée deux fois au même créneau, comptée deux fois dans la couverture, payée deux fois — et l'anonymisation RGPD n'en traiterait qu'une. |
 | **Risque de régression** | Corriger l'index suppose de normaliser les numéros existants **et** d'arbitrer l'indicatif retenu. Sur une base contenant déjà les deux formes du même numéro, la création de l'index échouera tant que les doublons ne sont pas fusionnés — c'est le scénario M-1. |
-| **Statut** | ❌ ÉCHEC — non corrigé. Correction non entreprise : elle demande une décision métier (SPC opère-t-il hors de France ?) et une fusion de fiches, pas une réécriture d'index. |
+| **Correction** | `33_unicite-telephone-normalise.sql` + `lib/operations/telephone.ts`. **Indicatif retenu : +33**, écrit aux deux mêmes endroits. La migration ne fusionne rien : elle expose la vue `surveillants_tel_doublons` (qui fusionner, avec les affectations et heures de chaque fiche pour arbitrer) et **ne crée l'index que si plus aucun doublon ne subsiste** — sinon elle s'abstient et le dit par un `NOTICE`, plutôt que de faire tomber la migration. L'ancien index n'est retiré qu'après le succès du nouveau. |
+| **Statut** | ⚠️ **CORRIGÉ, NON REJOUÉ** — 7 tests unitaires verts sur la normalisation TypeScript ; la migration elle-même n'a pas encore été appliquée sur `spc-recette`, et la sonde D-4b n'a pas été rejouée. Ne pas annoncer résolu avant. |
 
 ### D-2b — la base est plus permissive que l'application sur les noms de salles
 
