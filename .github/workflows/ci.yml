@@ -88,3 +88,46 @@ jobs:
           name: playwright-report
           path: spc-cockpit/playwright-report/
           retention-days: 7
+
+  # La recette base de données ne tournait NULLE PART. Elle se jouait à la main,
+  # dans le SQL Editor d'une instance hébergée, en sept lots copiés-collés : ni
+  # rejouable, ni vérifiable, et périmée dès le commit suivant. Trois migrations
+  # ont d'ailleurs été trouvées incapables de s'appliquer sur une base neuve —
+  # dont la v23, qui laissait le portail surveillant SANS AUCUNE RLS.
+  #
+  # Ce job rejoue la recette entière à chaque pull request, sur un PostgreSQL
+  # réel, et ÉCHOUE si une sonde vire au rouge.
+  #
+  # Il ne remplace pas une instance Supabase : il n'y a ici ni PostgREST ni
+  # GoTrue, donc rien qui passe par HTTP. Ce qu'il couvre, il le couvre pour de
+  # bon — migrations, contraintes, index d'unicité, policies RLS sollicitées
+  # sous une vraie identité.
+  recette-sql:
+    name: Recette base de données (migrations · unicité · RLS)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Le client seul suffit : le serveur est le conteneur de service ci-dessus.
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Recette SQL complète
+        run: supabase/recette/locale/recette-locale.sh

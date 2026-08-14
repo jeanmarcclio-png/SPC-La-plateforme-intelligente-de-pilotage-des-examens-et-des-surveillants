@@ -27,6 +27,32 @@ commercial), branche `claude/new-session-02clb5`, commit de base `ff9e87c`.
 | ⚠️ Partiellement validé | 9 |
 | 🔍 Non vérifié | 18 |
 
+> ## ⏱ SUITE AU 14 AOÛT 2026 — le verdict n'a pas encore basculé, mais le motif a changé
+>
+> Ce tableau reste le relevé du **8 août**. Il n'est pas réécrit : un audit qui
+> se corrige lui-même ne vaut plus rien comme point de comparaison.
+>
+> Depuis, le motif principal du NO-GO — « rien de ce qui touche la base n'a
+> jamais été exécuté » — **ne tient plus pour la partie SQL**. La recette est
+> désormais rejouable en une commande et tourne à chaque pull request
+> (`supabase/recette/locale/`, job CI `recette-sql`) :
+>
+> | | 8 août | 14 août |
+> |---|---|---|
+> | Sondes d'unicité | 4 vertes, **2 échecs** | **6/6**, rejouées en CI |
+> | RLS sollicitée sous une identité réelle | jamais | **11/11** (isolation inter-organisations, portail surveillant, `on delete restrict`) |
+> | Appels directs aux Server Actions (V-2, V-3, T-2, I-2) | jamais | **10 tests verts**, avec contrôles positifs |
+> | Migrations sur base neuve | 2 défauts corrigés | **3ᵉ défaut trouvé** — la v23 n'était jamais passée, le portail surveillant n'avait **aucune RLS** |
+> | Tests unitaires | 476 | **518** |
+>
+> **Ce qui bloque encore le GO tient en une phrase :** aucune écriture n'a
+> toujours atteint une base via `supabase-js`. La recette locale n'a ni
+> PostgREST ni GoTrue ; les tests d'appels directs remplacent la couche Supabase
+> par un client factice. Le cycle créer → sauvegarder → relire reste donc
+> inexécuté — c'est le motif 5 ci-dessous, et il est intact.
+>
+> Détail, contrôle par contrôle : `spc-cockpit/tests/RECETTE-SUPABASE.md`.
+
 ## Ce qui est solide
 
 Le **moteur financier** (`lib/operations/engine/financial-engine.ts`) est de
@@ -840,6 +866,31 @@ stress et non-régression sont couverts à ~5 % (lecture de code seule).
 refaire cet audit **sur une instance Supabase réelle** en exécutant les lots 1 à 4
 du plan de retest. Le socle de calcul étant sain, le chemin est court : la majorité
 des correctifs relèvent du branchement et de l'unification, pas de la réécriture.
+
+## ⏱ État du motif 5 au 14 août 2026
+
+Les motifs 1 à 4 ont été traités par les chantiers 1 à 6 et sont couverts par
+518 tests unitaires, 74 tests end-to-end et, depuis le 14 août, 17 contrôles SQL
+rejoués en CI. Le **motif 5 est le seul qui reste entier** — et il reste entier
+au sens strict :
+
+| Ce qui est désormais prouvé | Ce qui ne l'est toujours pas |
+|---|---|
+| Le schéma s'applique sur une base neuve, les 34 migrations dans l'ordre | Qu'une écriture partie de l'application atteigne la base |
+| Les index d'unicité **refusent** réellement les doublons (6 sondes) | Que trois clics ne créent qu'une ligne (D-1) |
+| La RLS **isole** réellement deux organisations, et le portail surveillant ne fuit pas | Qu'une session de connexion réelle produise les mêmes verdicts |
+| `on delete restrict` **refuse** réellement | Que le journal soit écrit avant la suppression (J-2) |
+| Les gardes serveur refusent l'appel direct **sans rien écrire** | Que le refus se journalise (V-4) |
+
+**Ce qu'il faut pour lever le motif 5 :** pointer l'application sur une instance
+de recette (`NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+**jamais** la clé `service_role`), avec au moins un compte dans
+`Authentication → Users`. Les scénarios à rejouer sont déjà écrits et listés :
+`spc-cockpit/tests/RECETTE-SUPABASE.md`, section « Ce qui reste 🔍 NON VÉRIFIÉ ».
+
+Tant que ces lignes ne sont pas vertes, annoncer le produit exploitable en
+production serait exactement le genre de vert non mérité que cet audit a été
+écrit pour démonter.
 
 ---
 

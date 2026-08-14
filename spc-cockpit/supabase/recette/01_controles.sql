@@ -42,10 +42,21 @@ with controles as (
                      from salles_non_rapprochees), '—')
 
   union all
-  -- D-2/D-3/D-4 : les index d'unicité de la migration 31 sont bien en place.
-  select 'D-2  index unicité salles (org, nom)',
-         'présent',
-         coalesce((select 'présent' from pg_indexes where indexname = 'salles_org_nom_uniq' limit 1), 'ABSENT')
+  -- D-2/D-3/D-4 : les index d'unicité sont bien en place.
+  --
+  -- ATTENTION AUX NOMS D'INDEX. Deux d'entre eux ont été REMPLACÉS après les
+  -- échecs de sonde de la recette : la migration 33 substitue
+  -- `surveillants_org_tel_cle_uniq` à `surveillants_org_tel_uniq` (D-4b), et la
+  -- 34 substitue `salles_org_cle_uniq` à `salles_org_nom_uniq` (D-2b). Chercher
+  -- l'ancien nom afficherait « ABSENT » sur une base pourtant correctement
+  -- migrée — un faux rouge. On accepte donc l'un OU l'autre, et on publie
+  -- lequel est en place : c'est ce qui distingue une base à jour d'une base
+  -- restée sur l'index faible.
+  select 'D-2  index unicité salles (org, nom normalisé)',
+         'salles_org_cle_uniq (v34)',
+         coalesce((select indexname from pg_indexes
+                    where indexname in ('salles_org_cle_uniq', 'salles_org_nom_uniq')
+                    order by indexname limit 1), 'ABSENT')
 
   union all
   select 'D-3  index unicité surveillants (org, e-mail)',
@@ -53,9 +64,11 @@ with controles as (
          coalesce((select 'présent' from pg_indexes where indexname = 'surveillants_org_email_uniq' limit 1), 'ABSENT')
 
   union all
-  select 'D-4  index unicité surveillants (org, téléphone)',
-         'présent',
-         coalesce((select 'présent' from pg_indexes where indexname = 'surveillants_org_tel_uniq' limit 1), 'ABSENT')
+  select 'D-4  index unicité surveillants (org, téléphone normalisé)',
+         'surveillants_org_tel_cle_uniq (v33)',
+         coalesce((select indexname from pg_indexes
+                    where indexname in ('surveillants_org_tel_cle_uniq', 'surveillants_org_tel_uniq')
+                    order by indexname limit 1), 'ABSENT')
 
   union all
   -- D-1b : PORTÉE RÉELLE des index de la migration 31.
