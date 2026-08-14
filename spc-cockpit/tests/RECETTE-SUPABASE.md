@@ -118,8 +118,9 @@ les 8 salles seraient sorties en fantômes et M-3 aurait perdu tout sens.
 | BUG-016 heures facturables (1 j) | 23,33 h | `23.33` | ✅ VALIDÉ — le SQL retrouve le chiffre du moteur TypeScript |
 | BUG-016 heures facturées (équipe) | 262,30 h | `262.30` | ✅ VALIDÉ — écart de 28,97 h confirmé en base |
 | BUG-016 effectifs | 6 / 10 / 4 | `6 / 10 / 4` | ✅ VALIDÉ |
-| D-2 / D-3 / D-4 index d'unicité | présent | `présent` ×3 | ⚠️ PARTIELLEMENT VALIDÉ — voir ci-dessous |
-| M-1 / M-1b doublons restants | 0 | `0` | 🔍 NON VÉRIFIÉ — voir ci-dessous |
+| D-2 / D-3 / D-4 index d'unicité | présent | `présent` ×3 | ✅ VALIDÉ — et **sollicités** depuis le passage de `02_organisation.sql` |
+| M-1 / M-1b doublons restants | 0 | `0` | 🔍 NON VÉRIFIÉ à la première mesure — voir ci-dessous |
+| Sondes d'unicité (D-2, D-2b, D-3, D-4a, D-4b, R-3) | 6 refus/acceptations attendus | 4 conformes, **2 échecs** | Détail dans « Défauts du produit établis par la recette » |
 
 `I-3 = 2` et non 1 : `RECETTE AMPHI` est structurellement orpheline elle aussi.
 C'est voulu — c'est la fiche candidate à l'arbitrage « AMP ↔ AMPHI » (M-4). Une
@@ -182,13 +183,42 @@ utilisateur — exige de pointer l'application sur cette instance
 
 | # | Contrôle | Attendu | Statut |
 |---|---|---|---|
-| D-1 | Trois clics dans le même tick sur « Ajouter la salle » | **1 seule ligne** créée. Le verrou client est mesuré (1 POST) ; reste à vérifier qu'aucune ligne en double n'atteint la base. | 🔍 NON VÉRIFIÉ |
-| D-1b | Périmètre couvert par les index partiels | Non vide | 🔍 NON VÉRIFIÉ — `0 salle · 0 surveillant` avec un `org_id` renseigné |
-| D-2 | Deux requêtes concurrentes hors navigateur, même nom de salle | La seconde échoue sur `salles_org_nom_uniq`, message métier affiché. | ⚠️ PARTIELLEMENT VALIDÉ — **l'index se déclenche réellement**, prouvé par un refus observé en base : `23505: duplicate key value violates unique constraint "salles_org_nom_uniq"`, `Key (org_id, lower(btrim(nom)))=(8b805254-…, recette a21) already exists`. Les deux lignes en cause portaient le même nom à la même casse : l'unicité **par organisation** est établie, la **normalisation de casse** ne l'est pas encore. |
-| D-2b | Même nom, **espacement interne** différent (`RECETTE  A21`) | L'index normalise par `lower(btrim(nom))` : `btrim` ne retire que les bords. L'application, elle, retire tous les non-alphanumériques (`normaliserNomSalle`). **La base est donc plus permissive que l'application.** | 🔍 NON VÉRIFIÉ — cause établie par lecture de la migration 31, effet non rejoué |
-| D-3 | Même e-mail de surveillant, casse différente | Refus sur `surveillants_org_email_uniq`. | ⚠️ PARTIELLEMENT VALIDÉ — idem D-2 |
-| D-4a | Même téléphone, **séparateurs** différents (`06 12 00 00 01`) | Refus sur `surveillants_org_tel_uniq` — l'index compare les chiffres. | ⚠️ PARTIELLEMENT VALIDÉ — idem D-2 |
-| D-4b | Même numéro, **forme internationale** (`+33 6 12 00 00 01`) | Ce document annonçait un refus. `regexp_replace(telephone, '\D', '', 'g')` donne `33612000001` d'un côté et `0612000001` de l'autre : **deux clés différentes pour un seul numéro**, donc pas de refus. | 🔍 NON VÉRIFIÉ — cause établie par lecture de `31_unicite-salles-surveillants.sql:28`, effet non rejoué |
+| D-1 | Trois clics dans le même tick sur « Ajouter la salle » | **1 seule ligne** créée. Le verrou client est mesuré (1 POST) ; reste à vérifier qu'aucune ligne en double n'atteint la base. | 🔍 NON VÉRIFIÉ — passe par le navigateur |
+| D-1b | Périmètre couvert par les index partiels | Non vide | ✅ VALIDÉ — `11 salles · 26 surveillants` portent un `org_id`, les index partiels s'appliquent |
+| D-2 | Deux requêtes concurrentes hors navigateur, même nom de salle | La seconde échoue sur `salles_org_nom_uniq`. | ✅ **VALIDÉ** — sonde `recette a21` contre `RECETTE A21`, même organisation : **refusée**. La normalisation de casse fonctionne. |
+| D-2b | Même nom, **espacement interne** différent (`RECETTE  A21`) | — | ❌ **ÉCHEC** — **acceptée**. Voir « Défauts du produit établis par la recette » ci-dessous. |
+| D-3 | Même e-mail de surveillant, casse différente | Refus sur `surveillants_org_email_uniq`. | ✅ **VALIDÉ** — `UN@Recette.SPC.Test` contre `un@recette.spc.test` : **refusée**. |
+| D-4a | Même téléphone, **séparateurs** différents (`06 12 00 00 01`) | Refus sur `surveillants_org_tel_uniq`. | ✅ **VALIDÉ** — **refusée**. L'index compare bien les seuls chiffres. |
+| D-4b | Même numéro, **forme internationale** (`+33 6 12 00 00 01`) | Refus. | ❌ **ÉCHEC** — **acceptée**. Voir ci-dessous. |
+| R-3 | Le même nom de salle dans une autre organisation | Accepté. | ✅ **VALIDÉ** — l'unicité est bien **par organisation**, jamais globale. |
+
+## Défauts du produit établis par la recette
+
+Deux sondes ont été acceptées là où elles devaient être refusées. Ce ne sont pas
+des défauts du jeu d'essai : ce sont des trous d'unicité du schéma, exécutés et
+observés sur PostgreSQL.
+
+### D-4b — un même numéro de téléphone passe deux fois
+
+| | |
+|---|---|
+| **Cause** | `31_unicite-salles-surveillants.sql:28` — `regexp_replace(telephone, '\D', '', 'g')` ne retire que les caractères non numériques. |
+| **Source** | `+33 6 12 00 00 01` donne la clé `33612000001` ; `0612000001` donne `0612000001`. **Deux clés pour un seul numéro.** L'index ne peut pas les rapprocher. |
+| **Preuve** | Sonde D-4b insérée puis acceptée par la base, sur la même organisation que la fiche existante. |
+| **Modules impactés** | Référentiel surveillants, planification, couverture de session, paie, purge RGPD. Deux fiches pour une même personne : elle peut être affectée deux fois au même créneau, comptée deux fois dans la couverture, payée deux fois — et l'anonymisation RGPD n'en traiterait qu'une. |
+| **Risque de régression** | Corriger l'index suppose de normaliser les numéros existants **et** d'arbitrer l'indicatif retenu. Sur une base contenant déjà les deux formes du même numéro, la création de l'index échouera tant que les doublons ne sont pas fusionnés — c'est le scénario M-1. |
+| **Statut** | ❌ ÉCHEC — non corrigé. Correction non entreprise : elle demande une décision métier (SPC opère-t-il hors de France ?) et une fusion de fiches, pas une réécriture d'index. |
+
+### D-2b — la base est plus permissive que l'application sur les noms de salles
+
+| | |
+|---|---|
+| **Cause** | L'index normalise par `lower(btrim(nom))` : `btrim` ne retire que les espaces **de bord**. |
+| **Source** | `normaliserNomSalle()` (`lib/operations/referentiel-salles.ts`) retire, elle, **tous** les caractères non alphanumériques. `RECETTE  A21` et `RECETTE A21` sont un doublon pour l'application, deux fiches distinctes pour la base. |
+| **Preuve** | Sonde D-2b insérée puis acceptée. |
+| **Modules impactés** | Référentiel salles et rapprochement salles ↔ planning. L'écran signale le doublon, la base l'accepte : deux fiches pour une même salle, avec des capacités, PMR et tiers-temps potentiellement divergents. |
+| **Risque de régression** | Aligner l'index sur `normaliserNomSalle` rendrait l'unicité plus stricte — donc susceptible d'échouer sur des données existantes légitimement distinctes. À traiter avec le même soin que M-1. |
+| **Statut** | ❌ ÉCHEC — non corrigé, pour la même raison. |
 
 ### Validation de session (BUG-015)
 
