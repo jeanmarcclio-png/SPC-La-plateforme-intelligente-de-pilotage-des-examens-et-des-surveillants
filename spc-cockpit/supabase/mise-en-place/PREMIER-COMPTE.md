@@ -8,17 +8,75 @@ Supabase, et le **mot de passe** de la base. Elles sont signalées 🔒.
 
 ---
 
-## 1. Créer le projet Supabase
+## 1. Créer le projet Supabase en région UE
 
-Sur [supabase.com](https://supabase.com) → **New project**.
+### 1.1 Le compte et l'organisation
+
+1. [supabase.com](https://supabase.com) → **Start your project** / **Sign in**
+   (connexion par GitHub ou par courriel).
+2. À la première connexion, Supabase demande de créer une **organisation** —
+   c'est le conteneur de facturation, distinct des « organisations » internes du
+   produit SPC. Nommez-la d'après l'entité qui paie (`SPC`).
+3. **Le plan.** Le plan gratuit convient pour essayer, **pas pour exploiter** :
+   un projet gratuit est **mis en pause après 7 jours sans activité**, et il faut
+   le réveiller à la main. Pour une instance qui porte de vraies sessions
+   d'examens, prendre le plan **Pro** dès le départ évite une mise en pause au
+   pire moment. Le plan se change plus tard ; la région, non.
+
+### 1.2 Le formulaire de création
+
+**New project**, puis, dans l'ordre :
 
 | Champ | Valeur | Pourquoi |
 |---|---|---|
-| Name | `spc-production` | — |
-| Database Password | un mot de passe long, **conservé dans un gestionnaire** | 🔒 non récupérable ensuite : Supabase ne l'affiche qu'une fois. Il est réinitialisable, mais cela coupe l'application le temps de remettre l'URL à jour partout. |
-| Region | **Central EU (Frankfurt)** ou **West EU (Paris)** | 🔒 **non modifiable après création.** Les données traitées sont nominatives — surveillants, étudiants, aménagements de tiers-temps. Un projet créé hors UE devrait être recréé de zéro pour être conforme au RGPD. |
+| **Organization** | celle créée ci-dessus | — |
+| **Project name** | `spc-production` | apparaît dans l'URL du tableau de bord |
+| **Database Password** | mot de passe long, **immédiatement copié dans un gestionnaire** | 🔒 Supabase ne le réaffiche jamais. Il est réinitialisable, mais toute URL de connexion enregistrée ailleurs devient alors fausse. Le bouton **Generate a password** en produit un correct. |
+| **Region** | 🔒 voir ci-dessous | **non modifiable après création** |
 
-Attendre que le projet passe en « Active » (2 à 3 minutes).
+### 1.3 La région — le point irréversible
+
+Le sélecteur **Region** liste les régions par continent. Choisir dans *Europe* :
+
+| Région | Code | Verdict |
+|---|---|---|
+| **Central EU (Frankfurt)** | `eu-central-1` | ✅ recommandé — la plus courante, la mieux desservie |
+| **West EU (Paris)** | `eu-west-3` | ✅ recommandé — latence la plus faible depuis l'Île-de-France |
+| North EU (Ireland) | `eu-west-1` | ✅ acceptable |
+| **West EU (London)** | `eu-west-2` | ⚠️ **à éviter** — le Royaume-Uni n'est plus dans l'Union européenne. Le transfert reste possible sous décision d'adéquation, mais cela ajoute une justification à tenir dans votre registre RGPD. Sans intérêt ici. |
+| Toute région hors Europe | — | ❌ |
+
+Pourquoi c'est sérieux : la base contiendra des **données personnelles** —
+noms, courriels et téléphones de surveillants, et surtout des **aménagements de
+tiers-temps**, qui touchent à la santé et relèvent des données sensibles au sens
+du RGPD. Un projet créé hors UE ne se déplace pas : il faut le recréer et
+rejouer toute la mise en service.
+
+En cas de doute entre Francfort et Paris : **Francfort**.
+
+### 1.4 Attendre, puis VÉRIFIER
+
+La création prend 2 à 3 minutes. Ne pas passer à l'étape 2 avant d'avoir
+confirmé la région — c'est le dernier moment où se tromper coûte cinq minutes
+plutôt qu'une demi-journée.
+
+**Project Settings → General** : la ligne *Region* doit afficher votre choix.
+
+Second contrôle, indépendant du libellé affiché — le nom d'hôte porte la région :
+
+```bash
+# Doit contenir « eu-central-1 » (Francfort) ou « eu-west-3 » (Paris)
+psql "$URL" -tAc "select inet_server_addr();"   # après l'étape 2
+```
+
+Plus simple encore : dans la chaîne de connexion du pooler, l'hôte s'écrit
+`aws-0-eu-central-1.pooler.supabase.com`. Si vous y lisez `us-east-1`, le projet
+est en Virginie — **le supprimer et le recréer maintenant**, avant d'y mettre la
+moindre donnée.
+
+> Les libellés du tableau de bord Supabase évoluent. Si l'un d'eux ne correspond
+> plus exactement, l'invariant reste : un champ **Region**, à régler sur une
+> région d'Europe continentale, et à vérifier après création.
 
 ---
 
