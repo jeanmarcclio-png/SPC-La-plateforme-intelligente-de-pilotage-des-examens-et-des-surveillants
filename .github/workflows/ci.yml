@@ -103,7 +103,7 @@ jobs:
   # bon — migrations, contraintes, index d'unicité, policies RLS sollicitées
   # sous une vraie identité.
   recette-sql:
-    name: Recette base de données (migrations · unicité · RLS)
+    name: Recette base de données et chemin d'écriture (migrations · unicité · RLS · persistance)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -131,3 +131,24 @@ jobs:
 
       - name: Recette SQL complète
         run: supabase/recette/locale/recette-locale.sh
+
+      # ------------------------------------------------------------------
+      # La recette SQL ci-dessus prouve que LA BASE impose ses règles.
+      # Celle-ci prouve que L'APPLICATION les respecte : les vraies Server
+      # Actions écrivent à travers @supabase/ssr → PostgREST → RLS. C'est le
+      # chemin d'écriture, resté invérifiable pendant tout l'audit V2, et le
+      # dernier motif qui tenait le verdict en NO-GO. Il ne doit plus jamais
+      # redevenir invérifié sans que la CI le dise.
+      # ------------------------------------------------------------------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: spc-cockpit/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Recette applicative (lots 1 à 4 — chemin d'écriture réel)
+        run: supabase/recette/locale/recette-applicative.sh

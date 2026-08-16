@@ -53,6 +53,63 @@ commercial), branche `claude/new-session-02clb5`, commit de base `ff9e87c`.
 >
 > Détail, contrôle par contrôle : `spc-cockpit/tests/RECETTE-SUPABASE.md`.
 
+> ## ✅ SUITE AU 16 AOÛT 2026 — le motif 5 est levé, le verdict bascule en GO
+>
+> Les deux relevés ci-dessus restent intacts, pour la même raison qu'avant.
+>
+> Le dernier motif — « aucune écriture n'a jamais atteint une base via
+> `supabase-js` » — **ne tient plus**. Il n'a pas été levé en le déclarant levé,
+> mais en montant la pile qui manquait :
+>
+> | Couche | 14 août | 16 août |
+> |---|---|---|
+> | PostgreSQL + 30 migrations | ✅ recette SQL | ✅ inchangé |
+> | PostgREST (l'API que `supabase-js` interroge) | absent | ✅ **v12.2.3, JWT vérifié par signature** |
+> | Chemin d'écriture applicatif | client factice | ✅ **vraies Server Actions, aucune doublure** |
+> | Persistance · CRUD · cascades · unicité · RLS en écriture | 🔍 non vérifiés | ✅ **11 contrôles verts** |
+>
+> **Ce qui est prouvé, et comment.** Les Server Actions réelles — `createSalle`,
+> `updateSalle`, `deleteSalle`, `deleteSurveillant`, `createMission` — sont
+> importées depuis `app/actions/` et exécutées sans réécriture. Elles appellent le
+> vrai `createClient()`, donc le vrai `@supabase/ssr`, qui émet de vraies requêtes
+> HTTP vers PostgREST, qui les exécute sur PostgreSQL sous les policies RLS. Le
+> jeton est lu dans un cookie de session au format exact de `@supabase/ssr`.
+> **Rien n'est simulé entre l'action et la table.**
+>
+> Les quatre lots du plan de retest, tous verts :
+>
+> | Lot | Ce qui est établi |
+> |---|---|
+> | 1 — persistance et CRUD | l'écriture part, revient, se modifie et se supprime ; `org_id` est renseigné ; la validation métier tient aussi sur le chemin réel et n'écrit rien quand elle refuse |
+> | 2 — cascades réelles | une suppression non confirmée est **refusée** ; confirmée, elle détruit la cascade **et laisse une trace au journal** (« 1 affectation(s) détruite(s) ») |
+> | 3 — double clic | 3 créations **simultanées** de même référence ne laissent **qu'une ligne**, et les perdantes reçoivent un message métier, pas une fuite technique |
+> | 4 — isolation | un tiers ne voit rien d'en face ; une modification inter-organisation **passée par l'application** échoue ; une salle créée porte l'org de son auteur |
+>
+> **Deux échecs rencontrés en route, tous deux dans le harnais, aucun dans le
+> produit** : une fixture qui échouait en silence (« 0 affectation » se lisait
+> comme un garde-fou défaillant alors que c'était la pose qui ratait) et une table
+> de journal nommée `journal_sessions` et non `journal`. Les fixtures sont depuis
+> bruyantes — une fixture muette rend le test suivant ininterprétable.
+>
+> **Ce n'est pas un coup ponctuel.** Le job CI « Recette base de données et chemin
+> d'écriture » monte la pile complète à chaque pull request. Le chemin d'écriture
+> ne peut plus redevenir invérifié sans que la CI le dise.
+>
+> **Limite honnête, qui ne conditionne pas le verdict.** GoTrue n'est pas rejoué :
+> inscription, mot de passe et rafraîchissement de jeton restent hors recette. Ce
+> sont des fonctions de la plateforme Supabase, pas du code SPC, et le motif 5
+> portait sur la persistance — intégralement couverte. Reste également à faire une
+> fois sur l'instance visée : vérifier que ses variables d'environnement et ses
+> comptes sont conformes, ce qu'aucun test ne peut établir à distance.
+>
+> Rejouable en une commande : `supabase/recette/locale/recette-applicative.sh`.
+>
+> ### 🟢 GO production
+>
+> Sous deux conditions d'exploitation, qui relèvent du déploiement et non du code :
+> appliquer les 30 migrations sur l'instance cible, et vérifier que ses comptes et
+> variables d'environnement correspondent à ceux que la recette suppose.
+
 ## Ce qui est solide
 
 Le **moteur financier** (`lib/operations/engine/financial-engine.ts`) est de
