@@ -150,5 +150,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Le binaire PostgREST est la seule dépendance externe de la recette. Le
+      # mettre en cache évite d'aller le chercher à chaque exécution : un
+      # « Connection reset by peer » a déjà fait passer ce job au rouge sans
+      # aucun rapport avec le code. Le script sait retenter et se rabattre sur
+      # un téléchargement si le cache est vide.
+      - name: Cache PostgREST
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/spc-recette
+          key: postgrest-v12.2.3-linux-x64
+
       - name: Recette applicative (lots 1 à 4 — chemin d'écriture réel)
         run: supabase/recette/locale/recette-applicative.sh

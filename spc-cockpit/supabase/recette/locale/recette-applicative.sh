@@ -72,13 +72,46 @@ SQL
 echo "  ✔ rôle « authenticator » en place"
 
 echo "▶ 3/5  PostgREST $PGRST_VERSION"
-BIN="${PGRST_BIN:-$TRAVAIL/postgrest}"
+# Le binaire vient d'Internet, et c'est le seul point du script qui dépende d'un
+# tiers. Un `curl` unique a déjà fait passer tout le job au rouge sur un
+# « Recv failure: Connection reset by peer » — un incident réseau, sans aucun
+# rapport avec le code testé. Un rouge de cette nature est pire qu'inutile : il
+# apprend à ne plus croire la CI.
+#
+# D'où trois précautions : un cache réutilisable entre exécutions, plusieurs
+# tentatives espacées, et une vérification que le fichier reçu est bien une
+# archive — une coupure au mauvais moment livre un fichier tronqué, et `tar`
+# échouerait alors plus loin avec un message incompréhensible.
+CACHE="${PGRST_CACHE:-$HOME/.cache/spc-recette}"
+BIN="${PGRST_BIN:-$CACHE/postgrest-$PGRST_VERSION}"
+
 if [ ! -x "$BIN" ]; then
+  mkdir -p "$CACHE"
   URL="https://github.com/PostgREST/postgrest/releases/download/$PGRST_VERSION/postgrest-$PGRST_VERSION-linux-static-x64.tar.xz"
-  curl -sSL -o "$TRAVAIL/pgrst.tar.xz" "$URL"
-  tar xf "$TRAVAIL/pgrst.tar.xz" -C "$TRAVAIL"
-  BIN="$TRAVAIL/postgrest"
-  chmod +x "$BIN"
+  ARCHIVE="$TRAVAIL/pgrst.tar.xz"
+  obtenu=0
+  for tentative in 1 2 3 4; do
+    if curl -fsSL --retry 2 --retry-delay 2 --connect-timeout 20 --max-time 180 \
+            -o "$ARCHIVE" "$URL" && tar tf "$ARCHIVE" >/dev/null 2>&1; then
+      obtenu=1
+      break
+    fi
+    delai=$((tentative * 5))
+    echo "  ⚠ téléchargement de PostgREST échoué (tentative $tentative/4) — nouvelle tentative dans ${delai}s"
+    sleep "$delai"
+  done
+
+  if [ "$obtenu" != "1" ]; then
+    echo "✘ PostgREST $PGRST_VERSION n'a pas pu être téléchargé après 4 tentatives."
+    echo "  L'échec est réseau, pas applicatif : ni la base ni le code ne sont en cause."
+    echo "  Contournement hors ligne : télécharger l'archive à la main, puis"
+    echo "    PGRST_BIN=/chemin/vers/postgrest $0"
+    exit 1
+  fi
+
+  tar xf "$ARCHIVE" -C "$TRAVAIL"
+  chmod +x "$TRAVAIL/postgrest"
+  mv "$TRAVAIL/postgrest" "$BIN"
 fi
 
 cat > "$TRAVAIL/pgrst.conf" <<CONF
