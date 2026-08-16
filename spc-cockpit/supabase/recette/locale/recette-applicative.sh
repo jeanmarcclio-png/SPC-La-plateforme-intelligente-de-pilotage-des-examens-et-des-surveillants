@@ -27,6 +27,7 @@ PORT_PGRST="${PORT_PGRST:-3002}"
 PORT_PASSERELLE="${PORT_PASSERELLE:-3001}"
 SECRET="${SPC_RECETTE_JWT_SECRET:-recette-locale-spc-secret-jwt-de-32-caracteres-minimum}"
 BASE="${BASE:-spc_recette_locale}"
+PWD_AUTHENTICATOR="${PWD_AUTHENTICATOR:-recettelocale}"
 
 UID_ADMIN="11111111-1111-1111-1111-111111111111"
 UID_TIERS="22222222-2222-2222-2222-222222222222"
@@ -53,12 +54,19 @@ echo "▶ 1/5  Base de recette (migrations, shim, jeu d'audit)"
 echo "  ✔ base « $BASE » prête"
 
 echo "▶ 2/5  Rôle d'authentification PostgREST"
-psql -v ON_ERROR_STOP=1 -q -d "$BASE" <<'SQL'
+# Mot de passe obligatoire, et non un excès de zèle : un cluster local monté en
+# `trust` s'en passe, mais l'image `postgres:16` de la CI impose
+# `scram-sha-256` sur TCP (pg_hba). Sans mot de passe, PostgREST est refusé par
+# la base — et le job échoue pour une raison qui n'a rien à voir avec le produit.
+# Ce secret ne protège rien : le rôle vit dans une base de recette jetable,
+# recréée à chaque exécution, et n'existe sur aucune instance réelle.
+psql -v ON_ERROR_STOP=1 -q -d "$BASE" -v mdp="$PWD_AUTHENTICATOR" <<'SQL'
 do $$ begin
   if not exists (select 1 from pg_roles where rolname = 'authenticator') then
     create role authenticator login noinherit;
   end if;
 end $$;
+alter role authenticator with login password :'mdp';
 grant anon, authenticated, service_role to authenticator;
 SQL
 echo "  ✔ rôle « authenticator » en place"
@@ -74,7 +82,7 @@ if [ ! -x "$BIN" ]; then
 fi
 
 cat > "$TRAVAIL/pgrst.conf" <<CONF
-db-uri = "postgres://authenticator@${PGHOST:-127.0.0.1}:${PGPORT:-5432}/$BASE"
+db-uri = "postgres://authenticator:$PWD_AUTHENTICATOR@${PGHOST:-127.0.0.1}:${PGPORT:-5432}/$BASE"
 db-schemas = "public"
 db-anon-role = "anon"
 jwt-secret = "$SECRET"
