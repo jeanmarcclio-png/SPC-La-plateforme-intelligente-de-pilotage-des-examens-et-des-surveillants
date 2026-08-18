@@ -118,7 +118,14 @@ function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                placeholder="••••••••"
+                /*
+                 * SURTOUT PAS une suite de points : elle est indiscernable d'un
+                 * mot de passe masqué déjà saisi. Un utilisateur a cru le champ
+                 * rempli, a cliqué, et n'a obtenu que « Veuillez renseigner ce
+                 * champ » — en concluant que son mot de passe était refusé.
+                 * Un texte indicatif doit se lire comme une indication.
+                 */
+                placeholder="Votre mot de passe"
                 className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-[14px] outline-none focus:border-[#4a90d9] transition-colors"
               />
             </div>
