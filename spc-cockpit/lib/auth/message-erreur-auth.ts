@@ -52,6 +52,22 @@ export function diagnostiquerErreurAuth(erreur: ErreurAuth | null | undefined): 
   const texte = (erreur.message ?? "").toLowerCase();
   const statut = erreur.status;
 
+  // --- 0. Aucune instance raccordée -----------------------------------------
+  // Émis par le client inerte (lib/supabase/client.ts) quand ni l'URL ni la clé
+  // ne sont définies. Deux situations légitimes, et le message couvre les deux
+  // sans en privilégier une : une démonstration publique, où c'est normal ; un
+  // hébergement réel incomplet, où c'est le diagnostic exact à afficher.
+  if (code === "spc_demo") {
+    return {
+      configuration: true,
+      message:
+        "Cette instance n'est reliée à aucune base de données. C'est le cas d'une " +
+        "démonstration ; sinon, les variables NEXT_PUBLIC_SUPABASE_URL et " +
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY sont absentes côté hébergement. " +
+        "Ce n'est pas votre mot de passe.",
+    };
+  }
+
   // --- 1. Service injoignable -----------------------------------------------
   // `AuthRetryableFetchError` est ce que remonte supabase-js quand la requête
   // n'aboutit pas : URL de projet erronée, projet en pause (offre gratuite,

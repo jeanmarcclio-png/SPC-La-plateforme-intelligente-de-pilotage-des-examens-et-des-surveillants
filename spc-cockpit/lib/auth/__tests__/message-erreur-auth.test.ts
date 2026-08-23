@@ -57,6 +57,13 @@ describe("diagnostiquerErreurAuth", () => {
       expect(d.message).toMatch(/Auto Confirm User/);
     });
 
+    it("aucune instance raccordée — le message couvre démo ET oubli de variables", () => {
+      const d = diagnostiquerErreurAuth({ code: "SPC_DEMO" });
+      expect(d.configuration).toBe(true);
+      expect(d.message).toMatch(/démonstration/i);
+      expect(d.message).toContain("NEXT_PUBLIC_SUPABASE_URL");
+    });
+
     it("cause inconnue : on affiche le code plutôt que d'inventer", () => {
       const d = diagnostiquerErreurAuth({ code: "quelque_chose_de_neuf" });
       expect(d.configuration).toBe(true);
