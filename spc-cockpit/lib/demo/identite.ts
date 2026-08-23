@@ -15,9 +15,22 @@ export const DEMO_ORG_ID = "00000000-0000-4000-8000-000000000d3d";
 export const DEMO_ORG_NOM = "Campus de démonstration";
 export const DEMO_ORG_SLUG = "demonstration";
 
-/** Compte fictif. Aucun compte de ce nom n'existe dans aucune instance. */
+/**
+ * Compte fictif. Aucun compte de ce nom n'existe dans aucune instance.
+ *
+ * La partie locale de l'adresse est REGARDÉE, pas seulement stockée :
+ * l'interface en dérive le nom affiché et les initiales de l'en-tête
+ * (`nomDepuisEmail`, qui découpe sur « . », « _ » et « - » puis capitalise).
+ * Un `visite.demonstration@…` produisait « Visite Demonstration », sans accent
+ * et bancal — ce qu'on ne montre pas à un prospect. Un seul mot rend « Demo »,
+ * et l'initiale « D ».
+ *
+ * Volontairement en ASCII : une adresse accentuée afficherait « Démo », mais
+ * les adresses internationalisées se comportent mal dès qu'un composant les
+ * valide ou les normalise. Un accent affiché ne vaut pas ce risque-là.
+ */
 export const DEMO_USER_ID = "00000000-0000-4000-8000-0000000000de";
-export const DEMO_EMAIL = "visite.demonstration@surveo.example";
+export const DEMO_EMAIL = "demo@surveo.example";
 
 /**
  * Rôle servi en démonstration. « admin » pour que le visiteur voie l'intégralité

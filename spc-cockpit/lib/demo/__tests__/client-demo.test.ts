@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { clientDemo } from "../client-demo";
 import { DEMO_ORG_ID, DEMO_EMAIL, DEMO_MESSAGE_ECRITURE } from "../identite";
+import { nomDepuisEmail, initialesNom } from "@/components/ops/command/shell";
 
 /**
  * Ce que ce fichier protège n'est pas le confort de la démonstration, mais ses
@@ -24,6 +25,18 @@ describe("client de démonstration", () => {
     it("sert un utilisateur — sans quoi le layout redirige vers /login", async () => {
       const { data } = await clientDemo().auth.getUser();
       expect(data.user?.email).toBe(DEMO_EMAIL);
+    });
+
+    it("l'adresse de démonstration produit un nom d'en-tête présentable", () => {
+      // L'interface DÉRIVE le nom affiché de l'adresse. Un premier jet
+      // (`visite.demonstration@…`) affichait « Visite Demonstration » : deux
+      // mots, sans accent, bancal — repéré seulement dans un diff de capture
+      // d'écran. Ce test rend la vérification durable.
+      expect(nomDepuisEmail(DEMO_EMAIL)).toBe("Demo");
+      expect(initialesNom(nomDepuisEmail(DEMO_EMAIL))).toBe("DD");
+      // Pas d'accent perdu en route : l'adresse reste en ASCII pur, car une
+      // adresse internationalisée casse dès qu'un composant la valide.
+      expect(DEMO_EMAIL).toMatch(/^[\x20-\x7E]+$/);
     });
   });
 
