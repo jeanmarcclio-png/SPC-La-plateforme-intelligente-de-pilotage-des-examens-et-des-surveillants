@@ -40,12 +40,31 @@ import {
 
 type ErreurDemo = { message: string; details: string; hint: string; code: string };
 
-type ResultatDemo = {
+export type ResultatDemo = {
   data: unknown;
   error: ErreurDemo | null;
   count: number | null;
   status: number;
   statusText: string;
+};
+
+/**
+ * Chaîne de requête simulée : à la fois « attendable » (elle se résout sur un
+ * `ResultatDemo`) et indéfiniment chaînable par n'importe quel nom de méthode.
+ *
+ * Ce type existe pour que les APPELANTS restent typés. La première version
+ * retournait `unknown`, ce qui compilait au build de Next — lequel ne
+ * type-vérifie pas les fichiers de test — mais faisait échouer `tsc --noEmit`
+ * en intégration continue.
+ */
+export type ChaineDemo = PromiseLike<ResultatDemo> &
+  Record<string, (...args: unknown[]) => ChaineDemo>;
+
+/** Canal temps réel simulé : s'abonne et se désabonne, n'émet jamais rien. */
+export type CanalDemo = {
+  on: (...args: unknown[]) => CanalDemo;
+  subscribe: (...args: unknown[]) => CanalDemo;
+  unsubscribe: () => Promise<string>;
 };
 
 function lecture(data: unknown): ResultatDemo {
@@ -106,7 +125,7 @@ const UNITAIRES = new Set(["single", "maybeSingle"]);
  * cher que l'indirection d'un Proxy. Ici, TOUTE méthode inconnue se comporte en
  * filtre neutre — la dégradation par défaut est sûre.
  */
-function chaine(resultat: ResultatDemo): unknown {
+function chaine(resultat: ResultatDemo): ChaineDemo {
   const promesse = Promise.resolve(resultat);
   const socle: Record<string, unknown> = {
     then: promesse.then.bind(promesse),
@@ -129,7 +148,7 @@ function chaine(resultat: ResultatDemo): unknown {
       // `select`, `eq`, `order`, `limit`, et tout le reste : filtre neutre.
       return () => chaine(resultat);
     },
-  });
+  }) as unknown as ChaineDemo;
 }
 
 /**
@@ -139,13 +158,13 @@ function chaine(resultat: ResultatDemo): unknown {
  */
 export function clientDemo() {
   return {
-    from(table: string) {
+    from(table: string): ChaineDemo {
       return chaine(lecture(lignes(table)));
     },
 
     // Les procédures stockées (spc_create_organization, confirmation
     // d'affectation…) sont toutes des écritures : refus explicite.
-    rpc(..._args: unknown[]) {
+    rpc(..._args: unknown[]): ChaineDemo {
       void _args;
       return chaine(refusEcriture());
     },
@@ -155,12 +174,13 @@ export function clientDemo() {
     // doit pouvoir s'abonner et se désabonner sans lever — sinon c'est tout
     // l'écran qui tombe (c'est précisément ce qui faisait échouer /operations/
     // planification en 500).
-    channel(_nom: string) {
+    channel(_nom: string): CanalDemo {
       void _nom;
-      const canal: Record<string, unknown> = {};
-      canal.on = () => canal;
-      canal.subscribe = () => canal;
-      canal.unsubscribe = () => Promise.resolve("ok");
+      const canal: CanalDemo = {
+        on: () => canal,
+        subscribe: () => canal,
+        unsubscribe: () => Promise.resolve("ok"),
+      };
       return canal;
     },
     removeChannel(_canal: unknown) {

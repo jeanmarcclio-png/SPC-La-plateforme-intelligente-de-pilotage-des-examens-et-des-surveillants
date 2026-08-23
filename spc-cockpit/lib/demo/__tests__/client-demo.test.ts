@@ -29,11 +29,22 @@ describe("client de démonstration", () => {
 
   describe("AUCUNE écriture ne doit paraître réussie", () => {
     it.each(["insert", "update", "upsert", "delete"] as const)("%s est refusé explicitement", async (methode) => {
-      const table = clientDemo().from("missions") as unknown as Record<string, () => PromiseLike<{ error: { message: string; code: string } | null }>>;
-      const { error } = await table[methode]();
+      const { error } = await clientDemo().from("missions")[methode]({ client: "X" });
       expect(error).not.toBeNull();
       expect(error?.code).toBe("SPC_DEMO");
       expect(error?.message).toBe(DEMO_MESSAGE_ECRITURE);
+    });
+
+    it("un filtre posé APRÈS l'écriture ne la rend pas soudainement licite", () => {
+      // `.update({…}).eq("id", 1)` est la forme réelle : le refus doit survivre
+      // au chaînage, sinon toute écriture filtrée passerait pour un succès.
+      return clientDemo()
+        .from("missions")
+        .update({ statut: "terminee" })
+        .eq("id", "1")
+        .then(({ error }) => {
+          expect(error?.code).toBe("SPC_DEMO");
+        });
     });
 
     it("les procédures stockées aussi — ce sont des écritures", async () => {
@@ -57,23 +68,34 @@ describe("client de démonstration", () => {
     it("une méthode de filtrage jamais prévue ne fait pas tomber l'écran", async () => {
       // C'est tout l'intérêt du Proxy : `overlaps`, `textSearch`, `rangeGt`…
       // n'ont pas été écrits à la main et fonctionnent quand même.
-      const requete = clientDemo().from("organizations") as unknown as Record<string, (...a: unknown[]) => Record<string, (...a: unknown[]) => PromiseLike<{ error: unknown; data: unknown }>>>;
-      const { error, data } = await requete.select("*").overlaps("zones", ["A"]);
+      const { error, data } = await clientDemo()
+        .from("organizations")
+        .select("*")
+        .overlaps("zones", ["A"])
+        .textSearch("nom", "démo");
       expect(error).toBeNull();
       expect(Array.isArray(data)).toBe(true);
     });
 
     it("single() rend un objet et non un tableau", async () => {
-      const requete = clientDemo().from("organizations") as unknown as Record<string, (...a: unknown[]) => Record<string, () => PromiseLike<{ data: { id?: string } | null }>>>;
-      const { data } = await requete.select("*").single();
+      const { data } = await clientDemo().from("organizations").select("*").single();
       expect(Array.isArray(data)).toBe(false);
-      expect(data?.id).toBe(DEMO_ORG_ID);
+      expect((data as { id: string }).id).toBe(DEMO_ORG_ID);
     });
 
     it("single() sur une table vide rend null, pas une erreur", async () => {
-      const requete = clientDemo().from("missions") as unknown as Record<string, (...a: unknown[]) => Record<string, () => PromiseLike<{ data: unknown }>>>;
-      const { data } = await requete.select("*").single();
+      const { data, error } = await clientDemo().from("missions").select("*").single();
       expect(data).toBeNull();
+      expect(error).toBeNull();
+    });
+
+    it("le temps réel s'abonne et se désabonne sans lever", () => {
+      // RealtimeRefresh emportait tout l'écran en 500 sans ces méthodes.
+      const client = clientDemo();
+      const canal = client.channel("realtime-missions");
+      expect(() => canal.on("postgres_changes", {}, () => {})).not.toThrow();
+      expect(() => canal.subscribe()).not.toThrow();
+      expect(() => client.removeChannel(canal)).not.toThrow();
     });
 
     it("la connexion par mot de passe est refusée : il n'y a aucun compte", async () => {
