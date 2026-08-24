@@ -9,7 +9,8 @@ import { PrintButton } from "@/components/ops/PrintButton";
 import { DuplicateDevisButton } from "@/components/ops/DuplicateDevisButton";
 import { euro, dateFR } from "@/lib/operations/format";
 import { calculateDevisTotals, parseTimeToMinutes, eurosToCents, centsToEuros } from "@/lib/operations/engine";
-import { ArrowLeft, CheckCircle2, Euro, CalendarClock, Briefcase, AlertTriangle } from "lucide-react";
+import { reconcilierDevis, effectifsDevis } from "@/lib/operations/devis-reconciliation";
+import { ArrowLeft, CheckCircle2, Euro, CalendarClock, Briefcase, AlertTriangle, TriangleAlert } from "lucide-react";
 
 // Couleur du document devis alignée sur la marque Survéo (deep teal, contraste AA texte blanc).
 const NAVY = "#0f766e";
@@ -110,9 +111,15 @@ function SallesTable({ titre, salles }: { titre: string; salles: DevisSalle[] })
 export default async function DevisDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const devisId = Number(id);
-  const [devisList, lignes, sallesAll, equipeAll, factures, missions] = await Promise.all([
+  const [jDevis, jLignes, jSalles, jEquipe, jFactures, jMissions] = await Promise.all([
     getDevisList(), getDevisLignes(), getDevisSalles(), getDevisEquipe(), getFactures(), getMissions(),
   ]);
+  const devisList = jDevis.lignes;
+  const lignes = jLignes.lignes;
+  const sallesAll = jSalles.lignes;
+  const equipeAll = jEquipe.lignes;
+  const factures = jFactures.lignes;
+  const missions = jMissions.lignes;
   const devis = devisList.find((d) => d.id === devisId);
   if (!devis) notFound();
   const equipe = equipeAll.filter((e) => e.devisId === devisId).sort((a, b) => a.ordre - b.ordre);
@@ -139,9 +146,16 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
 
   const matin = plage(sallesMatin);
   const apm = plage(sallesApm);
-  const heuresJour = matin.heures + apm.heures;
+  // `plage()` donne l'AMPLITUDE d'ouverture, pas un volume facturable : les
+  // deux étaient affichés sous le même mot « heures » (BUG-016). Les heures
+  // facturables viennent du moteur central, jamais d'une addition locale.
+  const amplitudeJour = matin.heures + apm.heures;
   const calendaires = joursCalendaires(devis.dateDebut, devis.dateFin);
   const retenus = joursOuvres(devis.dateDebut, devis.dateFin);
+  const reconciliation = reconcilierDevis({
+    salles, equipe, lignes: lignesDevis, joursRetenus: retenus,
+  });
+  const effectifs = effectifsDevis({ devis, equipe, salles });
 
   return (
     <div className="p-5 md:p-7 max-w-[900px] mx-auto pb-16 print:p-0 print:max-w-none">
@@ -222,7 +236,13 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
             <Info label="Jours retenus" value={retenus !== null ? String(retenus) : "—"} />
             <Info label="Session matin" value={matin.label} />
             <Info label="Session après-midi" value={apm.label} />
-            <Info label="Heures / jour" value={heuresJour > 0 ? `${heuresJour.toFixed(2).replace(".", ",")} h` : "—"} />
+            {/* Deux grandeurs distinctes, désormais nommées : l'amplitude
+                d'ouverture des salles, et le volume facturable de la grille. */}
+            <Info label="Amplitude / jour" value={amplitudeJour > 0 ? `${amplitudeJour.toFixed(2).replace(".", ",")} h` : "—"} />
+            <Info
+              label="Heures facturables / jour"
+              value={reconciliation.heuresGrilleJour > 0 ? `${reconciliation.heuresGrilleJour.toFixed(2).replace(".", ",")} h` : "—"}
+            />
           </div>
         </section>
 
@@ -270,6 +290,53 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
                   </tr>
                 </tfoot>
               </table>
+            </div>
+          </section>
+        )}
+
+        {/* Réconciliation grille ↔ heures facturées (BUG-016).
+            Les deux blocs étaient posés l'un sous l'autre sans lien de calcul :
+            un client qui additionne la grille n'obtenait pas le total facturé. */}
+        {(reconciliation.message || effectifs.message) && (
+          <section className="pt-2 pb-4">
+            <div className="rounded-xl border border-amber-300 bg-amber-50/70 px-5 py-4">
+              <div className="flex items-start gap-2.5">
+                <TriangleAlert className="w-[17px] h-[17px] text-amber-600 flex-shrink-0 mt-0.5" aria-hidden />
+                <div className="min-w-0">
+                  <h2 className="text-[11px] font-bold uppercase tracking-[1px] text-amber-800">
+                    Contrôle de cohérence — à lever avant envoi
+                  </h2>
+                  {reconciliation.message && (
+                    <p className="text-[12.5px] text-amber-900 mt-1.5 leading-relaxed">{reconciliation.message}</p>
+                  )}
+                  {effectifs.message && (
+                    <p className="text-[12.5px] text-amber-900 mt-2 leading-relaxed">{effectifs.message}</p>
+                  )}
+                  {reconciliation.statut === "ecart" && (
+                    <dl className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-x-5 gap-y-2 text-[12px]">
+                      <div>
+                        <dt className="text-amber-700">Grille — 1 journée</dt>
+                        <dd className="font-bold text-amber-900 tabular-nums">{reconciliation.heuresGrilleJour.toFixed(2).replace(".", ",")} h</dd>
+                      </div>
+                      <div>
+                        <dt className="text-amber-700">× {reconciliation.joursRetenus} jours retenus</dt>
+                        <dd className="font-bold text-amber-900 tabular-nums">{reconciliation.heuresGrilleProjetees!.toFixed(2).replace(".", ",")} h</dd>
+                      </div>
+                      <div>
+                        <dt className="text-amber-700">Facturé</dt>
+                        <dd className="font-bold text-amber-900 tabular-nums">{reconciliation.heuresFacturees.toFixed(2).replace(".", ",")} h</dd>
+                      </div>
+                      <div>
+                        <dt className="text-amber-700">Écart</dt>
+                        <dd className="font-extrabold text-amber-900 tabular-nums">
+                          {reconciliation.ecartHeures! > 0 ? "+" : "−"}
+                          {Math.abs(reconciliation.ecartHeures!).toFixed(2).replace(".", ",")} h · {euro(Math.abs(reconciliation.ecartMontantHT!))}
+                        </dd>
+                      </div>
+                    </dl>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
         )}

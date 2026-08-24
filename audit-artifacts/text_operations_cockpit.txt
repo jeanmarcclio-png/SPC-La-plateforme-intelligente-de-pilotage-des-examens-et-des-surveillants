@@ -1,0 +1,255 @@
+Survéo
+IA
+Gestion des examens
+MISSION ACTIVE
+ICP Paris — 2026-07-30
+PILOTAGE
+Dashboard
+Cockpit
+Supervision live
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+COMMERCIAL
+Devis
+Facturation
+SUIVI & QUALITÉ
+Présence
+Incidents
+1
+Rapports
+Risques IA
+Cockpit commercial
+Cockpit opérationnel
+Temps réel
+Pilotage temps réel · Dernière mise à jour : 13:48:42
+2026-07-30
+1
+CS
+Coordinateur SPC
+Coordinateur
+Actualiser
+Planification
+SANTÉ DE LA MISSION
+COUVERTURE GLOBALE
+71 %
+10 / 14 postes couverts
+CONFIRMATIONS
+100 %
+10 / 10 confirmés
+PRISES DE POSTE À VENIR
+2
+dans les 2 prochaines heures
+ALERTES ACTIVES
+2
+2 critiques · 0 retards · 0 infos
+SCORE DE FLUIDITÉ IA
+5,9 /10
+À surveiller
+FRISE HORAIRE — VUE DU JOUR
+Jour
+Semaine
+Vue salle
+07:00
+08:00
+09:00
+10:00
+11:00
+12:00
+13:00
+14:00
+15:00
+16:00
+17:00
+18:00
+19:00
+13:48
+MATIN
+08:00 – 14:00
+7 salles · 9 surveillants
+APRÈS-MIDI
+13:00 – 19:00
+5 salles · 6 surveillants
+SESSIONS ACTIVES
+1 en cours
+3 en préparation
+Voir planning →
+SURVEILLANT	SALLE	MATIN	APRÈS-MIDI	STATUT	CONF.	ACTIONS
+
+ML
+Marie Lecomte
+COORD
+Coordinatrice
+	
+A21	
+08:00 – 14:00
+En cours
+	—	
+Conforme	
+	
+
+
+JM
+Jean-Pierre Moreau
+Surveillant volant
+	
+—	
+08:00 – 12:15
+En cours
+	
+14:15 – 17:00
+En cours
+	
+Charge critique	
+	
+
+
+FB
+Fatima Benali
+Surveillant salle
+	
+C14	
+09:15 – 12:00
+En cours
+	—	
+Conforme	
+	
+
+
+TG
+Thomas Girard
+Surveillant PMR
+	
+E31	
+08:30 – 13:00
+En cours
+	
+13:30 – 18:30
+En cours
+	
+Conforme	
+	
+
+
+SD
+Sophie Dubois
+COORD
+Coordinatrice
+	
+AMP	—	
+13:00 – 19:00
+En cours
+	
+Conforme	
+	
+
+
+KH
+Karim Haddad
+Surveillant salle
+	
+A22	
+08:30 – 13:30
+En cours
+	—	
+Conforme	
+	
+
+
+LF
+Léa Fontaine
+Surveillant volant
+	
+—	
+10:00 – 13:00
+En cours
+	—	
+Charge critique	
+	
+
+
+MP
+Marc Petit
+Surveillant salle
+	
+F11	
+08:00 – 13:00
+En cours
+	
+13:15 – 17:30
+En cours
+	
+Conforme	
+	
+
+
+SC
+Stanley Clio
+Surveillant salle
+	
+F12	
+08:00 – 13:00
+En cours
+	
+13:30 – 18:00
+En cours
+	
+Conforme	
+	
+
+
+JC
+Jean-Marc Clio
+Surveillant salle
+	
+E32	
+08:00 – 13:00
+En cours
+	
+14:30 – 18:00
+En cours
+	
+Conforme	
+	
+8 / 6 salles
+Coordinateur
+Ouvrir toutes les sessions →
+À TRAITER MAINTENANT
+2
+Traiter la charge critique — Jean-Pierre Moreau
+Salle — · surcharge détectée
+Traiter
+Traiter la charge critique — Léa Fontaine
+Salle — · surcharge détectée
+Traiter
+ALERTES
+Voir toutes (2)
+Toutes
+2
+Critiques
+2
+Retards
+0
+Infos
+0
+CRITIQUE
+Charge critique — Jean-Pierre Moreau
+Surcharge détectée — seuil de surcharge dépassé
+—
+CRITIQUE
+Charge critique — Léa Fontaine
+Surcharge détectée — seuil de surcharge dépassé
+—
+Gérer les alertes
+RÉCAPITULATIF
+Aujourd’hui
+2
+Critiques
+0
+Retards
+0
+Informations
+2
+Total alertes

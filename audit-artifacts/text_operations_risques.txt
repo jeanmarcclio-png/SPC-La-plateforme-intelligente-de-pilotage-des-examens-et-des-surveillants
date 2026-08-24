@@ -1,0 +1,77 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Risques IA
+Auditeur de risques planning
+
+Analyse lecture seule des risques opérationnels de la session active — détection déterministe, explication IA facultative
+
+Agent
+lecture seule
+— il détecte, explique et recommande. Il ne crée, ne modifie et ne valide jamais rien : toute correction reste une décision humaine.
+SESSION ANALYSÉE
+ICP Paris
+EX-2026-041 · 30 juillet 2026
+CRITIQUES
+0
+à traiter en priorité
+AVERTISSEMENTS
+3
+à surveiller
+INFORMATIONS
+0
+pour information
+Risques détectés
+
+Calcul déterministe depuis les affectations réelles
+
+AVERTISSEMENT
+Jean-Pierre Moreau
+Salle manquante — Jean-Pierre Moreau
+aucune salle affectée
+Reco : Affecter une salle à ce surveillant. (validation humaine requise)
+AVERTISSEMENT
+Léa Fontaine
+Salle manquante — Léa Fontaine
+aucune salle affectée
+Reco : Affecter une salle à ce surveillant. (validation humaine requise)
+AVERTISSEMENT
+Fatima Benali
+Charge critique — Fatima Benali
+108h planifiées — seuil de 100h dépassé
+Reco : Rééquilibrer la charge vers un surveillant moins sollicité. (validation humaine requise)
+Explication & priorisation IA
+Analyser les risques
+
+Lecture seule · l'agent explique et hiérarchise des risques déjà calculés — aucune action n'est appliquée, aucune donnée personnelle n'est transmise au modèle.

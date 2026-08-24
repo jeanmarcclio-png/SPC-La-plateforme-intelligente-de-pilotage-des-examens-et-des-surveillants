@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { Narrateur } from "@/components/demo/Narrateur";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,6 +58,14 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ServiceWorkerRegistration />
         {children}
+        {/*
+          Narrateur monté ICI, au layout racine, et non dans (operations) : le
+          cockpit et l'écran Salles vivent dans le groupe (ops-cockpit), qui n'a
+          pas de layout propre. Un seul point de montage couvre les 18 écrans.
+          La condition est évaluée côté serveur : hors démonstration, le
+          composant n'est pas même envoyé au navigateur.
+        */}
+        {process.env.SPC_DEMO === "1" && <Narrateur />}
       </body>
     </html>
   );

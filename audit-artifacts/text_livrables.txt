@@ -1,0 +1,134 @@
+✦
+Survéo
+IA
+🎓 SURVEILLANCE D'EXAMENS
+Cockpit Dirigeant
+Tableau de bord
+Campagnes
+Qualification BANT
+Livrables
+Planning
+Reporting
+Opérations
+Paramètres
+Déconnexion
+CAMPAGNE ACTIVE
+—
+Chargement…
+Activer les rappels
+Recevez vos relances du jour
+Plus tard
+OK
+Production
+Livrables
+7 validés
+À l'instant
+⌘K
+|
+…
+🎓
+Documents types — Surveillance d'examens
+Cliquer pour créer
+📄
+Convocations surveillants
+Lettres de mission + horaires par établissement
++
+📅
+Planning surveillants
+Attribution des salles et horaires de présence
++
+🗺️
+Répartition des salles
+Plan de salle par session et capacité PMR
++
+⚠️
+Rapports d'incidents
+Compte rendu par session — à valider sous 48h
++
+✍️
+Feuilles d'émargement
+Signatures électroniques par salle et candidat
++
+LIVRABLE	DESCRIPTION	CAMPAGNE	STATUT	
+Ciblage commercial	Identification et priorisation des cibles A/B/C	IDF Complète 2026	
+À rédiger
+En cours
+Validé
+À renforcer
+	
+Modifier
+Ouvrir →
+
+Qualification BANT	Scoring Budget · Autorité · Besoin · Timing	IDF Complète 2026	
+À rédiger
+En cours
+Validé
+À renforcer
+	
+Modifier
+Ouvrir →
+
+Emails de prospection	8 emails · Vague 1 (juin) + Vague 2 (sept.)	IDF Complète 2026	
+À rédiger
+En cours
+Validé
+À renforcer
+	
+Modifier
+Ouvrir →
+
+Séquences LinkedIn	8 séquences J+0 / J+3 / J+10	IDF Complète 2026	
+À rédiger
+En cours
+Validé
+À renforcer
+	
+Modifier
+Ouvrir →
+
+Scripts d'appel	3 scripts + tableau 6 objections	IDF Complète 2026	
+À rédiger
+En cours
+Validé
+À renforcer
+	
+Modifier
+Ouvrir →
+
+Relances J+3 / J+7 / J+15	14 prospects Très chaud · séquences par établissement	IDF Complète 2026	
+À rédiger
+En cours
+Validé
+À renforcer
+	
+Modifier
+Ouvrir →
+
+Deck commercial	15 slides · SCQA · Audit gratuit CTA	IDF Complète 2026	
+À rédiger
+En cours
+Validé
+À renforcer
+	
+Modifier
+Ouvrir →
+
+Analytics J+30	Rapport de performance · mi-juillet 2026	IDF Complète 2026	
+À rédiger
+En cours
+Validé
+À renforcer
+	
+Modifier
+✨
+
+Conseil Survéo — Tous les livrables de prospection IDF sont validés. Prochaine étape : lancer l'Analytics J+30 le 17 juillet 2026 via /analyse.
+
+Voir les critères BANT
+Passer
+🎯
+Bienvenue sur Survéo
+
+Votre plateforme de pilotage des examens et des surveillants, augmentée par l'IA.
+
+Suivant →

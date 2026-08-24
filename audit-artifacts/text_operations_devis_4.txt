@@ -1,0 +1,111 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Retour à la liste
+Dupliquer
+Imprimer / PDF
+Devis accepté — mission confirmée
+Vous pouvez planifier la session et créer la facture.
+Voir le planning →
+Créer la facture →
+✦
+Survéo · Surveillance d'examens
+DEVIS PRÉVISIONNEL
+
+Rattrapages juin 2026 — 74 créneaux · 262,3 h
+
+SPC-20260728-001
+Date : 15 juin 2026
+Accepté
+INFORMATIONS CLIENT & MISSION
+ÉTABLISSEMENT
+ICP Reims
+CONTACT
+Mathilde Régnier — Pôle Scolarité
+E-MAIL
+scolarite.reims@icp.fr
+VILLE / SITE
+Reims
+TYPE D'ÉPREUVE
+Rattrapage
+DATE DÉBUT
+15 juin 2026
+DATE FIN
+26 juin 2026
+JOURS CALENDAIRES
+12
+JOURS RETENUS
+10
+SESSION MATIN
+08:30–13:15
+SESSION APRÈS-MIDI
+13:30–17:05
+HEURES / JOUR
+8,33 h
+RÉPARTITION DES SALLES — SESSION DU MATIN
+N° SALLE	ÉTUDIANTS	SURV.	PMR	TIERS-T.	DÉBUT	FIN	OBSERVATIONS
+B22	30	1	—	—	08:30	12:15	—
+B23	30	1	—	—	08:30	12:15	—
+B11 Tiers-temps	30	1	—	1/3	08:30	13:15	Durées majorées 1/3
+B21 Isolé	1	1	—	—	08:30	13:15	Candidat isolé
+Total (4 salles)	91	4	PMR : 0 · TT : 1
+RÉPARTITION DES SALLES — SESSION DE L'APRÈS-MIDI
+N° SALLE	ÉTUDIANTS	SURV.	PMR	TIERS-T.	DÉBUT	FIN	OBSERVATIONS
+B22	30	1	—	—	13:30	16:15	—
+B11 Tiers-temps	30	1	—	1/3	13:30	17:05	Durées majorées 1/3
+Total (2 salles)	60	2	PMR : 0 · TT : 1
+ÉQUIPE & VOLUME HORAIRE
+RÔLE	EFFECTIF	H FACT./PERS.	TOTAL HEURES	TAUX/H	SOUS-TOTAL HT
+Surveillant·e en salle — semaine du 15 au 19 juin	5	23,64h	118,2h	28,00 €	3 309,60 €
+Surveillant·e en salle — semaine du 22 au 26 juin	5	28,82h	144,1h	28,00 €	4 034,80 €
+TOTAL	10		262,3h		7 344,40 €
+DÉTAIL DES PRESTATIONS
+DÉSIGNATION	QTÉ	PU HT	TOTAL HT
+Surveillance rattrapages — semaine du 15 au 19 juin 2026 (35 créneaux, salles B11 TT/B13/B21/B22/B23)	118,2 h	28,00 €	3 309,60 €
+Surveillance rattrapages — semaine du 22 au 26 juin 2026 (39 créneaux, salles B11 TT/B12/B13/B21/B22/B23)	144,1 h	28,00 €	4 034,80 €
+RÉCAPITULATIF FINANCIER
+Base brute HT (heures × tarifs)
+7 344,40 €
+Total HT
+7 344,40 €
+TVA 20 %
+1 468,88 €
+TOTAL TTC
+8 813,28 €
+
+Conditions
+
+Devis valable 30 jours à compter de son émission. Règlement à 30 jours date de facture. La prestation comprend la coordination terrain, la présence garantie en salle, la prise en charge des aménagements (tiers-temps, PMR, isolement) et le rapport post-session transmis à la direction des examens.
+
+Bon pour accord — date et signature du client : ______________________________

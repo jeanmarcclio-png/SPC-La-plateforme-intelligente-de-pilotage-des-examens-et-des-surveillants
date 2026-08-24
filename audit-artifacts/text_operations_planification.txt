@@ -1,0 +1,142 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Planification
+Planification
+
+Piloter la session : couverture, marge, heures et points de blocage
+
+1
+Piloter
+— étape 1 sur 3, étape courante
+Synthèse
+→
+2
+Planifier
+— étape 2 sur 3
+Affectations
+→
+3
+Optimiser
+— étape 3 sur 3
+Copilote IA
+5
+alerte(s) à traiter
+SESSION PRINCIPALE
+ICP Paris — 30 juillet 2026
+En cours
+30 juillet 2026
+ICP Paris
+8 salles
+16 créneaux
+Ajouter un surveillant
+Convocations
+Confirmer J-48
+Valider la session
+Santé de la session
+54
+/100
+À risque
+•
+Mobiliser 4 surveillants supplémentaires
+•
+Corriger 5 alertes de planning (salle / créneau / conflit)
+Voir le détail
+Couverture surveillants
+10 / 14 requis
+
+4 surveillants à trouver
+
+71 % de couverture
+
+Voir la couverture
+Marge estimée
+69 %
+Marge saine
+
+2 792,00 €
+
+Sur CA HT de 4 042,00 €
+
+Voir l'analyse
+Heures planifiées
+66,25 h
+
+Planifiées
+
+Moyenne / surveillant
+
+6,63 h
+
+Voir le planning
+Refus / alertes
+
+5 alertes actives
+
+Jean-Pierre Moreau : aucune salle affectée
+Disponibilité insuffisante : Thomas Girard — charge estimée à 9,50 h
+Voir les alertes
+CA HT
+4 042,00 €
+Coût surveillants
+1 250,00 €
+Marge HT
+2 792,00 €
+Taux de marge
+69 %
+Voir le détail financier
+Sélectionner une session
+30 juillet 2026
+ICP Paris
+28 août 2026
+Sciences Po
+12 août 2026
+Dauphine PSL
+1 août 2026
+Sorbonne Université
+24 août 2026
+HEC Paris
+1 août 2026
+EDHEC
+31 juillet 2026
+ICN
+Toutes les sessions
+Copilote d'affectation
+
+Résumé IA pour vous aider à finaliser votre session.
+
+4 surveillants à mobiliser
+2 conflit(s) détecté(s)
+4 salle(s) en écart
+Voir les recommandations

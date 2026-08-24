@@ -13,6 +13,14 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    // La passerelle de recette est un utilitaire Node autonome, lancé par
+    // `node fichier.cjs` hors de toute compilation Next. CommonJS y est le
+    // format correct, pas une entorse : `require` est le seul chargeur
+    // disponible dans un `.cjs`.
+    files: ["supabase/recette/**/*.cjs"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;

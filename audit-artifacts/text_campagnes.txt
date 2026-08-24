@@ -1,0 +1,171 @@
+✦
+Survéo
+IA
+🎓 SURVEILLANCE D'EXAMENS
+Cockpit Dirigeant
+Tableau de bord
+Campagnes
+Qualification BANT
+Livrables
+Planning
+Reporting
+Opérations
+Paramètres
+Déconnexion
+CAMPAGNE ACTIVE
+—
+Chargement…
+Activer les rappels
+Recevez vos relances du jour
+Plus tard
+OK
+Prospection B2B
+Mes campagnes
+2 actives
+À l'instant
+⌘K
+|
+…
+3 campagnes
++ Nouvelle campagne
+IDF Complète 2026
+Paris · Île-de-France · Paris-Saclay
+Actif
+En cours
+Terminé
+Archivé
+43
+cibles
+14
+très chaud
+9.4
+score /10
+Deadline : 30/06/2026
+Terminé
+66/100
+National Écoles 2026
+Lyon · Lille · Bordeaux · Marseille · Nancy
+Actif
+En cours
+Terminé
+Archivé
+32
+cibles
+23
+très chaud
+9.2
+score /10
+Deadline : 08/07/2026
+Terminé
+76/100
+Paris-Saclay Juin 2026
+Cluster Paris-Saclay · 29 cibles
+Actif
+En cours
+Terminé
+Archivé
+29
+cibles
+12
+très chaud
+9.1
+score /10
+Deadline : 15/06/2026
+Terminé
+72/100
+Phases de campagne
+88% complété
+✓
+Ciblage
+✓
+Qualification
+✓
+Vague 1
+📞
+Vague 2
+87%
+📈
+Analytics
+—
+Plan de campagne — IDF Complète 2026
+7/8 livrables validés
+Ciblage commercial
+Identification et priorisation des cibles A/B/C
+Validé
+Ouvrir →
+Qualification BANT
+Scoring Budget · Autorité · Besoin · Timing
+Validé
+Ouvrir →
+Emails de prospection
+8 emails · Vague 1 (juin) + Vague 2 (sept.)
+Validé
+Ouvrir →
+Séquences LinkedIn
+8 séquences J+0 / J+3 / J+10
+Validé
+Ouvrir →
+Scripts d'appel
+3 scripts + tableau 6 objections
+Validé
+Ouvrir →
+Relances J+3 / J+7 / J+15
+14 prospects Très chaud · séquences par établissement
+Validé
+Ouvrir →
+Deck commercial
+15 slides · SCQA · Audit gratuit CTA
+Validé
+Ouvrir →
+8
+Analytics J+30
+Rapport de performance · mi-juillet 2026
+À rédiger
+À générer
+⚠
+Section à renforcer
+📊
+Analytics J+30 manquant
+Aucun rapport de performance généré — lancer /analyse à partir du 17/07/2026.
+📞
+7 contacts sans interlocuteur nominatif
+Identifier le responsable des examens avant tout envoi. Utiliser LinkedIn ou appel standard.
+📧
+Vague 2 non planifiée
+Les emails Vague 2 (septembre) sont rédigés mais aucune date d'envoi n'a été fixée.
+Conformité globale
+88%
+CONFORMITÉ
+Livrables produits
+7/8
+Contacts identifiés
+36/43
+Vague 2 planifiée
+Non
+Analytics J+30
+Manquant
+Actions rapides
+📊
+Lancer /analyse
+Rapport J+30
+›
+📧
+Planifier Vague 2
+Septembre 2026
+›
+🎯
+Nouvelle campagne
+Ciblage → /cibler
+›
+✨
+
+Conseil Survéo — La campagne IDF Complète 2026 est à J-8 de sa deadline. Priorité : décrocher les RDV EM Lyon, CPGE Versailles et IFSI CHU Paris cette semaine.
+
+Voir les critères BANT
+Passer
+🎯
+Bienvenue sur Survéo
+
+Votre plateforme de pilotage des examens et des surveillants, augmentée par l'IA.
+
+Suivant →

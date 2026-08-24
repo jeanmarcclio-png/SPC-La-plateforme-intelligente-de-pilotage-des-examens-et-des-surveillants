@@ -19,7 +19,7 @@ export function MissionAlertsCard({ alertes }: { alertes: AlerteMission[] }) {
   return (
     <CarteRepliable
       cle="alertes"
-      titre="Alertes & points d'attention"
+      titre="Alertes & points d'attention — toutes missions"
       compteur={alertes.length}
       pied={
         <Link href="/operations/cockpit" className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#4F46F5] hover:text-[#3730c9] transition-colors">

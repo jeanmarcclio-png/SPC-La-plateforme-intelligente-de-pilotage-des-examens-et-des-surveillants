@@ -11,7 +11,7 @@
 // dépendance à l'heure système sauf via un paramètre explicite).
 
 import type { Affectation, Devis, DevisSalle, Incident, Mission, StatutMission } from "./types";
-import { analyseCouverture, type Couverture } from "./couverture";
+import { analyseCouverture, affectationsAvecCreneau, couvertureSession, type Couverture } from "./couverture";
 import { MISSION_STATUTS, STATUTS_PLANIFIABLES, STATUTS_TERMINES } from "./mission-status";
 import { joursAvant, prioriteAlerte, trierParPriorite, type NiveauAlerte } from "./alertes";
 import { calculateRoomDurationMinutes } from "./engine/financial-engine";
@@ -159,22 +159,15 @@ export function serieMensuelle(missions: Mission[], ref: Date = new Date(), nbMo
 // Couverture, heures et candidats d'une mission
 // ---------------------------------------------------------------------------
 
-/** Affectations d'une mission disposant d'au moins un créneau horaire réel. */
-export function affectationsAvecCreneau(affectations: Affectation[]): Affectation[] {
-  return affectations.filter(
-    (a) => a.matin || a.apm || !!a.matinCreneaux?.length || !!a.apmCreneaux?.length
-  );
-}
-
 /**
- * Couverture surveillants = affectés (avec créneau) / requis.
- * Cas « aucun surveillant requis » explicitement géré par analyseCouverture.
+ * Couverture surveillants — délègue à la source de vérité unique (BUG-005).
+ * `affectations` est ici déjà restreint à la mission par l'appelant : on rétablit
+ * le lien attendu par couvertureSession pour conserver une définition identique
+ * à celle du dashboard, du cockpit, de la planification et des salles.
  */
 export function couvertureMission(mission: Mission, affectations: Affectation[]): Couverture {
-  return analyseCouverture({
-    requis: mission.nbSurveillants,
-    affectes: affectationsAvecCreneau(affectations).length,
-  });
+  const c = couvertureSession(mission, affectations.map((a) => ({ ...a, missionId: mission.id })));
+  return analyseCouverture({ requis: c.requis, affectes: c.pourvus });
 }
 
 /** Salles distinctes réellement affectées sur la mission. */
@@ -257,6 +250,12 @@ export interface EtapePreparation {
   label: string;
   fait: boolean;
   ratio: number; // 0–1
+  /**
+   * Écart à expliquer, `null` quand l'étape est saine. Un dépassement — 8 salles
+   * ouvertes pour 6 déclarées — se lisait auparavant comme un objectif atteint
+   * (BUG-021) : `Math.min(1, …)` le ramenait à 100 % et `fait` passait à vrai.
+   */
+  anomalie: string | null;
 }
 
 export interface PreparationMission {
@@ -283,21 +282,34 @@ export function preparationMission(input: {
 
   const planningValide = auMoins(mission.statut, "Validée");
 
+  // Salles ouvertes au planning ≠ salles déclarées : dans les DEUX sens, c'est
+  // un écart. Le dépassement (8/6) était compté comme un objectif atteint
+  // (BUG-021) ; il est désormais nommé et l'étape n'est PAS « faite ».
+  const ecartSalles = mission.nbSalles > 0 ? salles - mission.nbSalles : 0;
+  const anomalieSalles =
+    ecartSalles > 0
+      ? `${ecartSalles} salle${ecartSalles > 1 ? "s" : ""} de plus au planning que sur la mission`
+      : null;
+
   const etapes: EtapePreparation[] = [
-    { cle: "devis", label: devisAccepte ? "Devis accepté" : "Devis à valider", fait: devisAccepte, ratio: devisAccepte ? 1 : 0 },
+    { cle: "devis", label: devisAccepte ? "Devis accepté" : "Devis à valider", fait: devisAccepte, ratio: devisAccepte ? 1 : 0, anomalie: null },
     {
       cle: "surveillants",
       label: `Surveillants ${couverture.affectes}/${couverture.requis}`,
       fait: couverture.manque === 0,
       ratio: ratioSurveillants,
+      anomalie: null,
     },
     {
       cle: "salles",
-      label: `Salles ${salles}/${mission.nbSalles}`,
-      fait: mission.nbSalles > 0 ? salles >= mission.nbSalles : true,
+      label: anomalieSalles
+        ? `Salles ${salles}/${mission.nbSalles} — écart à corriger`
+        : `Salles ${salles}/${mission.nbSalles}`,
+      fait: mission.nbSalles > 0 ? salles === mission.nbSalles : true,
       ratio: ratioSalles,
+      anomalie: anomalieSalles,
     },
-    { cle: "planning", label: planningValide ? "Planning validé" : "Planning en cours", fait: planningValide, ratio: planningValide ? 1 : 0 },
+    { cle: "planning", label: planningValide ? "Planning validé" : "Planning en cours", fait: planningValide, ratio: planningValide ? 1 : 0, anomalie: null },
   ];
 
   const pourcentage = Math.round(

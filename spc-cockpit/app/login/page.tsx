@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { diagnostiquerErreurAuth } from "@/lib/auth/message-erreur-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Mode = "password" | "magic";
@@ -11,6 +12,9 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  // Distingue une saisie fautive d'une installation en cause : voir
+  // lib/auth/message-erreur-auth.ts.
+  const [configuration, setConfiguration] = useState(false);
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -21,13 +25,16 @@ function LoginForm() {
     e.preventDefault();
     setError("");
     setNotice("");
+    setConfiguration(false);
     setLoading(true);
 
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError("Email ou mot de passe incorrect.");
+      const diag = diagnostiquerErreurAuth(error);
+      setError(diag.message);
+      setConfiguration(diag.configuration);
       setLoading(false);
     } else {
       router.push(redirect);
@@ -39,6 +46,7 @@ function LoginForm() {
     e.preventDefault();
     setError("");
     setNotice("");
+    setConfiguration(false);
     setLoading(true);
 
     const supabase = createClient();
@@ -47,7 +55,9 @@ function LoginForm() {
 
     setLoading(false);
     if (error) {
-      setError("Envoi du lien impossible. Vérifiez l'adresse email.");
+      const diag = diagnostiquerErreurAuth(error);
+      setError(diag.configuration ? diag.message : "Envoi du lien impossible. Vérifiez l'adresse email.");
+      setConfiguration(diag.configuration);
     } else {
       setNotice("Lien de connexion envoyé. Consultez votre boîte mail.");
     }
@@ -108,14 +118,36 @@ function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                placeholder="••••••••"
+                /*
+                 * SURTOUT PAS une suite de points : elle est indiscernable d'un
+                 * mot de passe masqué déjà saisi. Un utilisateur a cru le champ
+                 * rempli, a cliqué, et n'a obtenu que « Veuillez renseigner ce
+                 * champ » — en concluant que son mot de passe était refusé.
+                 * Un texte indicatif doit se lire comme une indication.
+                 */
+                placeholder="Votre mot de passe"
                 className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-[14px] outline-none focus:border-[#4a90d9] transition-colors"
               />
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-100 text-red-600 text-[12px] rounded-xl px-3.5 py-2.5">
+            /*
+             * Deux registres, parce que les deux causes n'appellent pas la même
+             * action. Rouge : votre saisie est à corriger. Ambre : rien à
+             * ressaisir, c'est l'installation qui est en cause — laisser
+             * l'utilisateur retenter un mot de passe correct serait le faire
+             * tourner en rond.
+             */
+            <div
+              role="alert"
+              className={
+                configuration
+                  ? "bg-amber-50 border border-amber-200 text-amber-800 text-[12px] rounded-xl px-3.5 py-2.5"
+                  : "bg-red-50 border border-red-100 text-red-600 text-[12px] rounded-xl px-3.5 py-2.5"
+              }
+            >
+              {configuration && <span className="font-semibold block mb-0.5">Problème de configuration</span>}
               {error}
             </div>
           )}

@@ -1,0 +1,1266 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Surveillants
+Surveillants
+
+Annuaire, rôles et disponibilité de l'équipe pour la mission ICP Paris
+
+Vue calendrier
+Filtres
+Ajouter un surveillant
+30 juillet 2026
+Tous les rôles
+Coordinatrice
+Surveillant salle
+Surveillant volant
+Surveillant PMR
+Tous les statuts
+Disponible
+Planifié
+Annulé
+Indisponible
+Trier : note
+Trier : heures
+Trier : nom
+ENTRE MISSION
+30 juillet 2026
+ICP Paris · Session principale
+BESOINS
+14
+postes à couvrir · 6 salles
+COUVERTURE
+10 / 14
+71%
+HEURES PLANIFIÉES
+66 h
+sur 10 créneaux
+POSTES RESTANTS
+4
+à pourvoir
+ALERTES
+4
+postes critiques
+1
+risque de fatigue
+Équipe mobilisable
+
+15 surveillants
+
+SURVEILLANT	RÔLE	COMPÉTENCES	DISPONIBILITÉ (MAJ)	HEURES PRÉVUES	MISSION	NOTE	
+
+SD
+Sophie Dubois
+—
+	Coordinatrice	
+Coordination
+	
+Planifié
+Paris 7e
+	78 h	
+ICP Paris
+Non invité
+	
+5.0
+	
+
+
+ML
+Marie Lecomte
+—
+	Coordinatrice	
+Coordination
+Tiers-temps
+	
+Planifié
+08:00–14:00 · Non
+	94 h	
+ICP Paris
+Non invité
+	
+4.9
+	
+
+
+JC
+Jean-Marc Clio
+—
+	Surveillant salle	
+Coordination
+Tiers-temps
+	
+Planifié
+Saclay
+	88 h	
+ICP Paris
+Non invité
+	
+4.9
+	
+
+
+FB
+Fatima Benali
+—
+	Surveillant salle	
+Amphithéâtres
+	
+Planifié
+Paris 12e
+	108 h	
+ICP Paris
+Non invité
+	
+4.8
+	
+
+
+LF
+Léa Fontaine
+—
+	Surveillant volant	
+Renforts
+Concours
+	
+Planifié
+Saclay
+	38 h	
+ICP Paris
+Non invité
+	
+4.8
+	
+
+
+CM
+Chloé Martin
+—
+	Coordinatrice	
+Coordination
+	
+Disponible
+Oui · Oui
+	57 h	
+—
+Non invité
+	
+4.8
+	
+
+
+JM
+Jean-Pierre Moreau
+—
+	Surveillant volant	
+Renforts
+	
+Planifié
+Oui · Oui
+	61 h	
+ICP Paris
+Non invité
+	
+4.7
+	
+
+
+NC
+Nadia Cherif
+—
+	Surveillant salle	
+Amphithéâtres
+	
+Disponible
+Oui · Oui
+	44 h	
+—
+Non invité
+	
+4.7
+	
+
+
+TG
+Thomas Girard
+—
+	Surveillant PMR	
+PMR
+Tiers-temps
+	
+Planifié
+Saclay
+	47 h	
+ICP Paris
+Non invité
+	
+4.6
+	
+
+
+SC
+Stanley Clio
+—
+	Surveillant salle	
+Salles multiples
+Concours
+	
+Planifié
+Paris 13e
+	41 h	
+ICP Paris
+Non invité
+	
+4.6
+	
+Affichage de 1 à 10 sur 15 surveillants
+1
+2
+10 / page
+25 / page
+50 / page
+Disponibilités — juillet 2026
+
+Disponibilité déclarée et affectations réelles par jour
+
+Aujourd'hui
+Mois
+2 sem.
+Semaine
+Libre
+Demi-journée
+Affecté
+Indisponible
+Non ouvré
+SURVEILLANT	
+MER
+1
+	
+JEU
+2
+	
+VEN
+3
+	
+SAM
+4
+	
+DIM
+5
+	
+LUN
+6
+	
+MAR
+7
+	
+MER
+8
+	
+JEU
+9
+	
+VEN
+10
+	
+SAM
+11
+	
+DIM
+12
+	
+LUN
+13
+	
+MAR
+14
+	
+MER
+15
+	
+JEU
+16
+	
+VEN
+17
+	
+SAM
+18
+	
+DIM
+19
+	
+LUN
+20
+	
+MAR
+21
+	
+MER
+22
+	
+JEU
+23
+	
+VEN
+24
+	
+SAM
+25
+	
+DIM
+26
+	
+LUN
+27
+	
+MAR
+28
+	
+MER
+29
+	
+JEU
+30
+	
+VEN
+31
+
+
+SD
+Sophie Dubois
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+6h
+	
+·
+
+
+ML
+Marie Lecomte
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+6h
+	
+½
+
+
+JC
+Jean-Marc Clio
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+9h
+	
+·
+
+
+FB
+Fatima Benali
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+3h
+	
+·
+
+
+LF
+Léa Fontaine
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+3h
+	
+·
+
+
+CM
+Chloé Martin
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+
+
+JM
+Jean-Pierre Moreau
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+7h
+	
+·
+
+
+NC
+Nadia Cherif
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+
+
+TG
+Thomas Girard
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+10h
+	
+·
+
+
+SC
+Stanley Clio
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+9h
+	
+·
+
+
+AT
+Amina Traoré
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+
+
+KH
+Karim Haddad
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+5h
+	
+·
+
+
+PG
+Paul Giraud
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+½
+	
+½
+
+
+BL
+Bruno Lefèvre
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+½
+	
+½
+	
+	
+	
+½
+	
+½
+	
+½
+	
+½
+	
+½
+
+
+MP
+Marc Petit
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+·
+	
+·
+	
+	
+	
+·
+	
+·
+	
+·
+	
+9h
+	
+·
+Disponibilité par jour
+
+Disponibles vs affectés
+
+Disponibles
+Affectés
+16
+17
+20
+21
+22
+23
+24
+27
+28
+29
+30
+31
+Couverture moyenne
+3%
+Détail des besoins
+4 postes à couvrir
+Mission ICP Paris — besoin de renforts
+1 surveillant en risque de fatigue
+Fatima Benali
+0 invitation en attente
+Accès portail surveillant
+Import Excel / CSV
+
+Extrait prénom + nom · ajoute à la liste existante · signale les surveillants déjà affectés à d'autres salles
+
+Modèle Excel
+Export Excel
+Export CSV
+Déposez votre fichier ici ou cliquez pour parcourir
+.xlsx, .xls, .csv
+Accès portail surveillant
+— invitez vos surveillants à consulter leur planning
+Aucun surveillant dans l'annuaire.

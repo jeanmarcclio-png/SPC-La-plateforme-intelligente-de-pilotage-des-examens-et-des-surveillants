@@ -11,6 +11,7 @@ import {
 import type { AlerteSalle, NiveauSalle, SalleVue, SallesView } from "@/lib/operations/salles-view";
 import { toCSV } from "@/lib/operations/csv";
 import { createSalle, updateSalle, deleteSalle } from "@/app/actions/salles";
+import { useSoumissionUnique } from "@/components/ops/useSoumissionUnique";
 import { showToast } from "@/components/Toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -59,12 +60,13 @@ function FormulaireSalle({
   onSubmit: (fd: FormData) => void;
   onCancel: () => void;
 }) {
+  // Verrou SYNCHRONE contre la rafale de clics (BUG-012) : `disabled={pending}`
+  // ne bascule qu'au rendu suivant et laissait passer 3 soumissions.
+  const soumettre = useSoumissionUnique(onSubmit, pending);
+
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit(new FormData(e.currentTarget));
-      }}
+      onSubmit={soumettre}
       className="space-y-3.5 mt-1"
     >
       <Champ label="Nom de la salle *">
@@ -359,6 +361,26 @@ export function SallesCommandCenter({ view }: { view: SallesView }) {
       </div>
 
       <div className="scroll">
+        {/* ------- INTÉGRITÉ RÉFÉRENTIELLE (BUG-004) ------- */}
+        {view.integrite?.message && (
+          <div className="integr" role="status">
+            <TriangleAlert className="w-[17px] h-[17px] flex-shrink-0" aria-hidden />
+            <div>
+              <div className="t">Référentiel et planning divergent</div>
+              <div className="s">{view.integrite.message}</div>
+              {view.integrite.fantomes.length > 0 && (
+                <ul className="lst">
+                  {view.integrite.fantomes.map((f) => (
+                    <li key={f.nom}>
+                      <strong>{f.nom}</strong> — {f.affectations} affectation{f.affectations > 1 ? "s" : ""} au planning, aucune fiche de salle
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ---------------- KPI ---------------- */}
         <div className="skpis">
           <div className="skpi">
@@ -394,16 +416,19 @@ export function SallesCommandCenter({ view }: { view: SallesView }) {
           <div className="skpi">
             <div className="ico ico-amber"><ShieldAlert className="w-[17px] h-[17px]" aria-hidden /></div>
             <div className="val">{k.alertesActives}</div>
-            <div className="k">Alertes actives</div>
+            <div className="k">Alertes — salles</div>
             <div className="sub">à traiter</div>
           </div>
           <div className="skpi">
             <div className="ico ico-cyan"><Users className="w-[17px] h-[17px]" aria-hidden /></div>
             <div className="val">{k.surveillantsRequis}</div>
-            <div className="k">Surveillants requis</div>
+            <div className="k">{k.couvertureDeSession ? "Surveillants — session" : "Besoin théorique"}</div>
             <div className="sub">
-              affectés {k.surveillantsAffectes}
+              {k.couvertureDeSession ? "pourvus" : "affectés"} {k.surveillantsAffectes}
               {k.surveillantsManquants > 0 && ` · manque ${k.surveillantsManquants}`}
+              {k.couvertureDeSession && (
+                <> · besoin théorique salles {k.besoinTheorique}</>
+              )}
             </div>
           </div>
         </div>

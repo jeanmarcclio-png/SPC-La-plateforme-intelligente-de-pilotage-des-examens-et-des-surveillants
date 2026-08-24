@@ -84,6 +84,8 @@ export const COMMAND_CSS = `
 .ckp .ttl{font-size:25px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:12px}
 .ckp .pill-live{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--green-bright);background:rgba(54,212,119,.12);border:1px solid rgba(54,212,119,.3);border-radius:999px;padding:4px 9px}
 .ckp .pill-live .d{width:7px;height:7px;border-radius:50%;background:var(--green-bright);box-shadow:0 0 7px var(--green-bright)}
+/* Session hors du jour : aucun voyant vert, aucune animation (BUG-014). */
+.ckp .pill-hist{display:inline-flex;align-items:center;font-size:11px;font-weight:700;color:var(--text-secondary);background:rgba(255,255,255,.06);border:1px solid var(--border-default);border-radius:999px;padding:4px 9px}
 .ckp .subttl{font-size:12px;color:var(--text-secondary);margin-top:6px;display:flex;align-items:center;gap:8px}
 .ckp .datesel{display:flex;align-items:center;gap:10px;border:1px solid var(--border-default);background:var(--bg-panel);border-radius:10px;padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--text-primary)}
 .ckp .datesel svg{color:var(--text-secondary)}

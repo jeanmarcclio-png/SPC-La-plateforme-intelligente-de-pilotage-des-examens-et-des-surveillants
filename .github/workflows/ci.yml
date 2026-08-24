@@ -42,3 +42,124 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+  # Les tests end-to-end ne tournaient PAS en intégration continue. Conséquence
+  # constatée : un test verrouillait le comportement fautif du sélecteur de
+  # statuts (BUG-011) et est resté rouge plusieurs commits sans que personne le
+  # voie. Ils sont désormais exécutés à chaque pull request.
+  e2e:
+    name: Tests end-to-end (navigateur)
+    runs-on: ubuntu-latest
+    env:
+      # Valeurs FACTICES, jamais déployées : le build inline les variables
+      # publiques, et le client Supabase du navigateur refuse de s'initialiser
+      # sans elles. Les tests s'exécutent sous SPC_DEMO=1 et n'atteignent
+      # aucune base — voir spc-cockpit/tests/RECETTE-SUPABASE.md pour ce qui
+      # nécessite une vraie instance.
+      NEXT_PUBLIC_SUPABASE_URL: https://exemple.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: cle-anon-factice-ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: spc-cockpit/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Production build
+        run: npm run build
+
+      - name: End-to-end tests
+        run: npm run e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: spc-cockpit/playwright-report/
+          retention-days: 7
+
+  # La recette base de données ne tournait NULLE PART. Elle se jouait à la main,
+  # dans le SQL Editor d'une instance hébergée, en sept lots copiés-collés : ni
+  # rejouable, ni vérifiable, et périmée dès le commit suivant. Trois migrations
+  # ont d'ailleurs été trouvées incapables de s'appliquer sur une base neuve —
+  # dont la v23, qui laissait le portail surveillant SANS AUCUNE RLS.
+  #
+  # Ce job rejoue la recette entière à chaque pull request, sur un PostgreSQL
+  # réel, et ÉCHOUE si une sonde vire au rouge.
+  #
+  # Il ne remplace pas une instance Supabase : il n'y a ici ni PostgREST ni
+  # GoTrue, donc rien qui passe par HTTP. Ce qu'il couvre, il le couvre pour de
+  # bon — migrations, contraintes, index d'unicité, policies RLS sollicitées
+  # sous une vraie identité.
+  recette-sql:
+    name: Recette base de données et chemin d'écriture (migrations · unicité · RLS · persistance)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Le client seul suffit : le serveur est le conteneur de service ci-dessus.
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Recette SQL complète
+        run: supabase/recette/locale/recette-locale.sh
+
+      # ------------------------------------------------------------------
+      # La recette SQL ci-dessus prouve que LA BASE impose ses règles.
+      # Celle-ci prouve que L'APPLICATION les respecte : les vraies Server
+      # Actions écrivent à travers @supabase/ssr → PostgREST → RLS. C'est le
+      # chemin d'écriture, resté invérifiable pendant tout l'audit V2, et le
+      # dernier motif qui tenait le verdict en NO-GO. Il ne doit plus jamais
+      # redevenir invérifié sans que la CI le dise.
+      # ------------------------------------------------------------------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: spc-cockpit/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Le binaire PostgREST est la seule dépendance externe de la recette. Le
+      # mettre en cache évite d'aller le chercher à chaque exécution : un
+      # « Connection reset by peer » a déjà fait passer ce job au rouge sans
+      # aucun rapport avec le code. Le script sait retenter et se rabattre sur
+      # un téléchargement si le cache est vide.
+      - name: Cache PostgREST
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/spc-recette
+          key: postgrest-v12.2.3-linux-x64
+
+      - name: Recette applicative (lots 1 à 4 — chemin d'écriture réel)
+        run: supabase/recette/locale/recette-applicative.sh

@@ -1,0 +1,8 @@
+Survéo · Mon espace
+Aperçu · vue surveillant
+
+Votre compte n'est pas rattaché à une fiche surveillant. Cet espace montre ce que voit un surveillant : son planning, la confirmation des affectations et la déclaration de ses disponibilités.
+
+Mes affectations
+Aucune donnée en mode aperçu.
+Politique de confidentialité

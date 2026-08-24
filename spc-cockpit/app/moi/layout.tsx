@@ -1,4 +1,6 @@
 import { Toaster } from "@/components/Toast";
+import { BandeauDemo } from "@/components/ops/EtatSource";
+import { demoActif } from "@/lib/operations/source";
 
 // Portail surveillant — shell épuré, mobile-first (ouvert depuis un lien SMS).
 export default function MoiLayout({ children }: { children: React.ReactNode }) {
@@ -10,7 +12,12 @@ export default function MoiLayout({ children }: { children: React.ReactNode }) {
           <span className="font-extrabold tracking-tight text-[#0d1e2e]">Survéo · Mon espace</span>
         </div>
       </header>
-      <main className="max-w-md mx-auto px-4 py-5 pb-16">{children}</main>
+      <main className="max-w-md mx-auto px-4 py-5 pb-16">
+        {/* Le portail surveillant affiche des missions nominatives : en
+            démonstration, il doit dire qu'elles sont fictives. */}
+        {demoActif() && <BandeauDemo />}
+        {children}
+      </main>
       <footer className="max-w-md mx-auto px-4 pb-8 text-center">
         <a href="/confidentialite" className="text-[11px] text-gray-400 hover:underline">
           Politique de confidentialité

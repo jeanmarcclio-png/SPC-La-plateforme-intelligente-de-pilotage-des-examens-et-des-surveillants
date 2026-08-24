@@ -1,0 +1,307 @@
+[
+  {
+    "route": "/operations/devis",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 1474,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "Devis"
+    ]
+  },
+  {
+    "route": "/operations/devis/4",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 2712,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "DEVIS PRÉVISIONNEL"
+    ]
+  },
+  {
+    "route": "/operations/devis/1",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 1800,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "DEVIS PRÉVISIONNEL"
+    ]
+  },
+  {
+    "route": "/operations/facturation",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 1072,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "Facturation"
+    ]
+  },
+  {
+    "route": "/operations/presence",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 1195,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "Suivi des présences"
+    ]
+  },
+  {
+    "route": "/operations/incidents",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 805,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "Incidents"
+    ]
+  },
+  {
+    "route": "/operations/pmr",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 1128,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "PMR & Tiers-temps"
+    ]
+  },
+  {
+    "route": "/operations/rapports",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 1922,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "Rapports post-session"
+    ]
+  },
+  {
+    "route": "/operations/risques",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 1687,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "Auditeur de risques planning"
+    ]
+  },
+  {
+    "route": "/operations/supervision",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 1331,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": []
+  },
+  {
+    "route": "/operations/demandes-client",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 1334,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "Demandes clients"
+    ]
+  },
+  {
+    "route": "/dashboard",
+    "status": 200,
+    "consoleErrors": [
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] WebSocket connection to 'wss://placeholder.supabase.co/realtime/v1/websocket?apikey=placeholder&vsn=2.0.0' failed: Establishing a tunnel via proxy server failed.",
+      "[error] WebSocket connection to 'wss://placeholder.supabase.co/realtime/v1/websocket?apikey=placeholder&vsn=2.0.0' failed: Establishing a tunnel via proxy server failed."
+    ],
+    "pageErrors": [],
+    "bodyLen": 4724,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": []
+  },
+  {
+    "route": "/cockpit",
+    "status": 200,
+    "consoleErrors": [
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+    ],
+    "pageErrors": [],
+    "bodyLen": 2130,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": []
+  },
+  {
+    "route": "/planning",
+    "status": 200,
+    "consoleErrors": [
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+    ],
+    "pageErrors": [],
+    "bodyLen": 1392,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": []
+  },
+  {
+    "route": "/qualification",
+    "status": 200,
+    "consoleErrors": [
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+    ],
+    "pageErrors": [],
+    "bodyLen": 3588,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": []
+  },
+  {
+    "route": "/reporting",
+    "status": 200,
+    "consoleErrors": [
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+    ],
+    "pageErrors": [],
+    "bodyLen": 1695,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": []
+  },
+  {
+    "route": "/livrables",
+    "status": 200,
+    "consoleErrors": [
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+    ],
+    "pageErrors": [],
+    "bodyLen": 2168,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": []
+  },
+  {
+    "route": "/campagnes",
+    "status": 200,
+    "consoleErrors": [
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+    ],
+    "pageErrors": [],
+    "bodyLen": 2555,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": []
+  },
+  {
+    "route": "/parametres",
+    "status": 200,
+    "consoleErrors": [
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+      "[error] Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+    ],
+    "pageErrors": [],
+    "bodyLen": 1330,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": []
+  },
+  {
+    "route": "/moi",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 314,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "Aperçu · vue surveillant"
+    ]
+  },
+  {
+    "route": "/onboarding",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 169,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": []
+  },
+  {
+    "route": "/confidentialite",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 4459,
+    "suspicious": [],
+    "title": "Politique de confidentialité — Survéo",
+    "h1": [
+      "Politique de confidentialité"
+    ]
+  },
+  {
+    "route": "/offline",
+    "status": 200,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyLen": 115,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": []
+  },
+  {
+    "route": "/route-inexistante-xyz",
+    "status": 404,
+    "consoleErrors": [
+      "[error] Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "pageErrors": [],
+    "bodyLen": 33,
+    "suspicious": [],
+    "title": "Survéo — Pilotage des examens et des surveillants",
+    "h1": [
+      "404"
+    ]
+  }
+]

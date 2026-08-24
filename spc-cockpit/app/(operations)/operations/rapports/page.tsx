@@ -8,11 +8,17 @@ import { euro, dateFR } from "@/lib/operations/format";
 import { tendanceCA } from "@/lib/operations/stats";
 import { Euro, ClipboardCheck, Users, DoorOpen } from "lucide-react";
 import { PageHeader } from "@/components/ops/shell";
+import { BandeauSource } from "@/components/ops/EtatSource";
+import { origineGlobale, premiereErreur } from "@/lib/operations/source";
 
 export default async function RapportsPage() {
-  const [missions, surveillants, salles] = await Promise.all([
+  const [jeuMissions, jeuSurveillants, jeuSalles] = await Promise.all([
     getMissions(), getSurveillants(), getSalles(),
   ]);
+  const missions = jeuMissions.lignes;
+  const surveillants = jeuSurveillants.lignes;
+  const salles = jeuSalles.lignes;
+  const origine = origineGlobale(jeuMissions, jeuSurveillants, jeuSalles);
 
   const realisees = missions.filter((m) => m.statut === "Terminée");
   const caTotal = missions.filter((m) => m.statut !== "Annulée").reduce((s, m) => s + m.montantHT, 0);
@@ -30,6 +36,8 @@ export default async function RapportsPage() {
         subtitle="Bilan de l'activité, analyse des missions et export comptable"
         actions={<RapportExportCSV missions={missions} />}
       />
+
+      <BandeauSource origine={origine} detail={premiereErreur(jeuMissions, jeuSurveillants, jeuSalles)} />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
         <Kpi variant="vivid" accent="emerald" label="CA total (HT)" value={euro(caTotal)} sub="missions non annulées" icon={<Euro className="w-4 h-4" />} href="/operations/devis" />

@@ -5,8 +5,9 @@
 // Les composants n'appliquent AUCUNE règle de criticité — tout est ici.
 // =============================================================================
 
-import type { Salle } from "./types";
-import { analyseCouverture } from "./couverture";
+import type { Affectation, Salle } from "./types";
+import type { CouvertureSession } from "./couverture";
+import { messageIncoherence, rapprocherSalles, type SalleFantome } from "./referentiel-salles";
 import {
   SEUIL_SALLE_VIGILANCE,
   SEUIL_SALLE_NORMALE,
@@ -71,9 +72,26 @@ export interface SallesKpis {
   sallesSousOccupees: number;
   partSousOccupees: number;
   alertesActives: number;
+  /**
+   * Couverture de la SESSION — provient de la source de vérité unique
+   * (`couvertureSession`) dès qu'un contexte de session est fourni, afin que la
+   * page Salles ne réponde plus « manque 3 » là où les quatre autres écrans
+   * répondent « manque 4 » (audit QA forensic V2, BUG-005).
+   */
   surveillantsRequis: number;
   surveillantsAffectes: number;
   surveillantsManquants: number;
+  /** true si les trois champs ci-dessus viennent de la session (et non du ratio). */
+  couvertureDeSession: boolean;
+  /**
+   * BESOIN THÉORIQUE des salles : Σ ceil(étudiants / ratio). C'est une aide au
+   * dimensionnement, PAS une couverture — d'où un libellé distinct à l'écran.
+   * Le manque est la somme des manques PAR SALLE : un surplus en salle E31 ne
+   * couvre pas un déficit en salle A21 (BUG-006).
+   */
+  besoinTheorique: number;
+  besoinTheoriqueAffectes: number;
+  besoinTheoriqueManquants: number;
 }
 
 export type AlerteTon = "critique" | "vigilance" | "info" | "ia";
@@ -93,6 +111,25 @@ export interface SallesView {
   kpis: SallesKpis;
   alertes: AlerteSalle[];
   batiments: string[];
+  /**
+   * Rapprochement référentiel ↔ planning (BUG-004). `null` quand la page n'a
+   * pas reçu les affectations : l'écran ne doit alors RIEN affirmer sur la
+   * cohérence, ni « tout va bien » ni le contraire.
+   */
+  integrite: IntegriteSalles | null;
+}
+
+export interface IntegriteSalles {
+  /** Salles du référentiel réellement utilisées au planning. */
+  utilisees: number;
+  /** Salles du référentiel qu'aucune affectation ne référence. */
+  orphelines: number;
+  /** Noms cités au planning sans contrepartie au référentiel. */
+  fantomes: SalleFantome[];
+  /** Affectations planifiées sans aucun nom de salle. */
+  sansSalle: number;
+  /** Message métier prêt à afficher, `null` si le rapprochement est propre. */
+  message: string | null;
 }
 
 function pct(part: number, total: number): number {
@@ -252,13 +289,45 @@ function construireAlertes(salles: SalleVue[]): AlerteSalle[] {
   return alertes;
 }
 
+/** Couverture réelle de la session courante, injectée par la page. */
+export interface ContexteSessionSalles {
+  couverture: CouvertureSession;
+  /**
+   * Affectations de la session. Sans elles, aucun rapprochement référentiel ↔
+   * planning n'est possible et `view.integrite` reste `null`.
+   */
+  affectations?: Affectation[];
+}
+
 /**
  * Construit la vue complète de la page Salles à partir des salles brutes.
  * Entrée vide → vue vide cohérente (aucune division par zéro).
+ *
+ * `contexte` porte la couverture RÉELLE de la session : sans lui, la page ne
+ * peut afficher qu'un besoin théorique, jamais une couverture.
  */
-export function construireVueSalles(salles: Salle[]): SallesView {
+export function construireVueSalles(salles: Salle[], contexte?: ContexteSessionSalles): SallesView {
   const vues = salles.map(construireSalleVue).sort(trierParCriticite);
   const alertes = construireAlertes(vues);
+
+  // Intégrité référentielle (BUG-004). L'audit a relevé 5 salles citées au
+  // planning et absentes du référentiel : renommer ou recapacité une salle
+  // n'avait aucun effet sur elles. L'écart est désormais dit à l'écran.
+  let integrite: IntegriteSalles | null = null;
+  if (contexte?.affectations) {
+    const r = rapprocherSalles(salles, contexte.affectations);
+    integrite = {
+      utilisees: r.utilisees.length,
+      orphelines: r.orphelines.length,
+      fantomes: r.fantomes,
+      sansSalle: r.sansSalle,
+      message: messageIncoherence(r),
+    };
+  }
+  // L'incohérence n'est volontairement PAS versée dans `alertes` : ces cartes
+  // portent un CTA qui filtre la grille sur des salles ciblées, et une salle
+  // fantôme n'a précisément aucune fiche à cibler. Elle est rendue par un
+  // bandeau dédié, avec l'action réelle (créer la fiche ou corriger le planning).
 
   const capaciteTotale = vues.reduce((n, s) => n + s.capacite, 0);
   const etudiantsPlanifies = vues.reduce((n, s) => n + s.etudiants, 0);
@@ -267,8 +336,9 @@ export function construireVueSalles(salles: Salle[]): SallesView {
   const critiques = vues.filter((s) => s.niveau === "critique").length;
   const sousOccupees = vues.filter((s) => s.niveau === "faible" || s.niveau === "inutilisee").length;
 
-  // Réutilise la fonction de couverture déjà testée plutôt qu'un calcul local.
-  const couverture = analyseCouverture({ requis: surveillantsRequis, affectes: surveillantsAffectes });
+  // Manque théorique = somme des manques PAR SALLE. On ne soustrait JAMAIS deux
+  // totaux : le surplus d'une salle ne couvre pas le déficit d'une autre.
+  const besoinTheoriqueManquants = vues.reduce((n, s) => n + s.surveillantsManquants, 0);
 
   const batiments = Array.from(
     new Set(vues.map((s) => s.batiment).filter((b): b is string => !!b)),
@@ -278,6 +348,7 @@ export function construireVueSalles(salles: Salle[]): SallesView {
     salles: vues,
     alertes,
     batiments,
+    integrite,
     kpis: {
       sallesConfigurees: vues.length,
       capaciteTotale,
@@ -288,9 +359,13 @@ export function construireVueSalles(salles: Salle[]): SallesView {
       sallesSousOccupees: sousOccupees,
       partSousOccupees: pct(sousOccupees, vues.length),
       alertesActives: alertes.filter((a) => a.ton !== "ia").length,
-      surveillantsRequis,
-      surveillantsAffectes,
-      surveillantsManquants: couverture.manque,
+      surveillantsRequis: contexte ? contexte.couverture.requis : surveillantsRequis,
+      surveillantsAffectes: contexte ? contexte.couverture.pourvus : surveillantsAffectes,
+      surveillantsManquants: contexte ? contexte.couverture.manquants : besoinTheoriqueManquants,
+      couvertureDeSession: !!contexte,
+      besoinTheorique: surveillantsRequis,
+      besoinTheoriqueAffectes: surveillantsAffectes,
+      besoinTheoriqueManquants,
     },
   };
 }

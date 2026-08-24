@@ -9,6 +9,8 @@ import { MobileFabBar } from "@/components/MobileFabBar";
 import { OnboardingOverlay } from "@/components/OnboardingOverlay";
 import { SyncStamp } from "@/components/SyncStamp";
 import { TenantProvider } from "@/lib/tenant/TenantContext";
+import { BandeauDemo } from "@/components/ops/EtatSource";
+import { demoActif } from "@/lib/operations/source";
 
 export default function CockpitLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,6 +20,15 @@ export default function CockpitLayout({ children }: { children: React.ReactNode 
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           <div className="flex-1 overflow-hidden flex flex-col pb-[136px] md:pb-0">
             <PushNotificationBanner />
+            {/* Le mode démonstration doit se signaler ICI AUSSI : ces écrans
+                commerciaux n'avaient aucun bandeau, alors qu'ils affichent
+                des chiffres. Un jeu fictif que rien ne trahit est exactement
+                le défaut corrigé sous BUG-001 / BUG-002. */}
+            {demoActif() && (
+              <div className="px-4 pt-4 md:px-6 md:pt-6">
+                <BandeauDemo />
+              </div>
+            )}
             {children}
           </div>
         </div>

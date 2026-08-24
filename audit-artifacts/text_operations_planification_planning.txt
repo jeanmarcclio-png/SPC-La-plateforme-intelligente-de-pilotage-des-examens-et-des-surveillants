@@ -1,0 +1,197 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Planification
+Affectations & planning
+
+Affecter les salles et les créneaux, contrôler la charge en temps réel
+
+1
+Piloter
+— étape 1 sur 3
+Synthèse
+→
+2
+Planifier
+— étape 2 sur 3, étape courante
+Affectations
+→
+3
+Optimiser
+— étape 3 sur 3
+Copilote IA
+5
+alerte(s) à traiter
+Affectations & planning
+
+ICP Paris — 30 juillet 2026
+
+En cours
+30 juillet 2026
+ICP Paris
+8 salles
+16 créneaux
+Exporter
+Ajouter un surveillant
+Convocations
+Confirmer J-48
+Valider la session
+Tous
+10
+Sans salle
+2
+Matin
+9
+Après-midi
+6
+Coordination
+3
+Surveillants salle
+4
+Surveillants volants
+2
+Alertes
+5
+Liste
+Planning
+Gantt
+Carte
+Affectations de la session ICP Paris du 30 juillet 2026 — 10 ligne(s) affichée(s).
+#	SURVEILLANT	RÔLE	SALLE	HEURES	STATUT	
+Chronologie de 08:00 à 19:00
+08:00
+10:00
+12:00
+14:00
+16:00
+18:00
+	ACTIONS
+1	
+ML
+Marie Lecomte
+	Coordinatrice	A21	6,0 h	
+Planifiée	
+08:00 – 14:00
+	
+
+2	
+JM
+Jean-Pierre Moreau
+	Surveillant volant	à définir	7,0 h	
+À corriger	
+08:00 – 12:15
+14:15 – 17:00
+	
+1 alerte(s) : Jean-Pierre Moreau : aucune salle affectée
+
+3	
+FB
+Fatima Benali
+	Surveillant salle	C14	2,8 h	
+Planifiée	
+09:15 – 12:00
+	
+
+4	
+TG
+Thomas Girard
+	Surveillant PMR	E31	9,5 h	
+Planifiée	
+08:30 – 13:00
+13:30 – 18:30
+	
+1 alerte(s) : Disponibilité insuffisante : Thomas Girard — charge estimée à 9,50 h
+
+5	
+SD
+Sophie Dubois
+	Coordinatrice	AMP	6,0 h	
+Planifiée	
+13:00 – 19:00
+	
+
+6	
+KH
+Karim Haddad
+	Surveillant salle	A22	5,0 h	
+Planifiée	
+08:30 – 13:30
+	
+
+7	
+LF
+Léa Fontaine
+	Surveillant volant	à définir	3,0 h	
+À corriger	
+10:00 – 13:00
+	
+1 alerte(s) : Léa Fontaine : aucune salle affectée
+
+8	
+MP
+Marc Petit
+	Surveillant salle	F11	9,3 h	
+Planifiée	
+08:00 – 13:00
+13:15 – 17:30
+	
+1 alerte(s) : Disponibilité insuffisante : Marc Petit — charge estimée à 9,25 h
+
+9	
+SC
+Stanley Clio
+	Surveillant salle	F12	9,3 h	
+Planifiée	
+08:00 – 09:45
+10:00 – 13:00
+13:30 – 18:00
+	
+1 alerte(s) : Disponibilité insuffisante : Stanley Clio — charge estimée à 9,25 h
+
+10	
+JC
+Jean-Marc Clio
+	Coordinateur	E32	8,5 h	
+Planifiée	
+08:00 – 13:00
+14:30 – 18:00
+	
+10 surveillants
+TOTAL HEURES PLANIFIÉES
+66,25 h
+30 juillet 2026
+Revenir à la synthèse
+100 %
+Plein écran
+5

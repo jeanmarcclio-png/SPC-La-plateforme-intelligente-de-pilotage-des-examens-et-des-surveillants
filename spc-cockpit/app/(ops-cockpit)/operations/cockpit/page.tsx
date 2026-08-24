@@ -9,7 +9,9 @@ import {
 import { requireActiveOrgId } from "@/lib/auth/org";
 import { getCurrentUser, getCurrentRole } from "@/lib/auth/session";
 import { getMissions, getAffectations, getSurveillants, getSalles, getIncidents } from "@/lib/operations/queries";
-import { buildCockpitView, DEMO_COCKPIT } from "@/lib/operations/cockpit";
+import { buildCockpitView } from "@/lib/operations/cockpit";
+import { origineGlobale, premiereErreur } from "@/lib/operations/source";
+import { BandeauDemo, BandeauSource, EtatVide } from "@/components/ops/EtatSource";
 import {
   COMMAND_CSS, CommandSidebar, initialesNom, nomDepuisEmail, libelleRole,
 } from "@/components/ops/command/shell";
@@ -127,25 +129,21 @@ const ICO = "w-[17px] h-[17px]";
 export default async function CockpitOpsPage() {
   await requireActiveOrgId();
 
-  // Récupération résiliente : si Supabase n'est pas configuré (démo / preview),
-  // l'écran retombe sur le jeu de référence plutôt que de faire une 500.
-  let view = DEMO_COCKPIT;
-  try {
-    const [missions, affectations, surveillants, salles] = await Promise.all([
-      getMissions(), getAffectations(), getSurveillants(), getSalles(),
-    ]);
-    view = buildCockpitView({ missions, affectations, surveillants, salles });
-  } catch {
-    /* jeu de démonstration */
-  }
-
-  let openIncidents = 0;
-  try {
-    const incidents = await getIncidents();
-    openIncidents = incidents.filter((i) => i.statut !== "Résolu").length;
-  } catch {
-    /* pas d'incidents en démo */
-  }
+  // Le cockpit n'invente plus de session (audit QA forensic V2, BUG-001) :
+  // buildCockpitView ne sert le jeu de démonstration que sous SPC_DEMO=1, et
+  // retourne sinon une vue VIDE que l'écran rend en état vide explicite.
+  const [jMissions, jAffectations, jSurveillants, jSalles, jIncidents] = await Promise.all([
+    getMissions(), getAffectations(), getSurveillants(), getSalles(), getIncidents(),
+  ]);
+  const view = buildCockpitView({
+    missions: jMissions.lignes,
+    affectations: jAffectations.lignes,
+    surveillants: jSurveillants.lignes,
+    salles: jSalles.lignes,
+  });
+  const origine = origineGlobale(jMissions, jAffectations, jSurveillants, jSalles);
+  const detailErreur = premiereErreur(jMissions, jAffectations, jSurveillants, jSalles, jIncidents);
+  const openIncidents = jIncidents.lignes.filter((i) => i.statut !== "Résolu").length;
 
   let userName = "Coordinateur SPC";
   let roleLabel = "Coordinateur";
@@ -173,8 +171,15 @@ export default async function CockpitOpsPage() {
       <div className="main">
         <header className="hdr">
           <div>
-            <div className="ttl">Cockpit opérationnel <span className="pill-live"><span className="d" />Temps réel</span></div>
-            <div className="subttl">Pilotage temps réel · Dernière mise à jour : {view.majHeure}<RefreshCw className="w-[13px] h-[13px]" /></div>
+            {/* Le badge « Temps réel » n'est allumé QUE le jour de la session
+                (BUG-014) : il s'affichait sur une session vieille de 9 jours. */}
+            <div className="ttl">Cockpit opérationnel {view.temporalite.tempsReel
+              ? <span className="pill-live"><span className="d" />Temps réel</span>
+              : view.vide ? null : <span className="pill-hist">{view.temporalite.jour === "passee" ? "Session close" : view.temporalite.jour === "avenir" ? "Session à venir" : "Hors calendrier"}</span>}</div>
+            <div className="subttl">
+              {view.vide ? "Aucune session à piloter" : view.temporalite.tempsReel ? "Pilotage temps réel" : view.temporalite.libelle}
+              {" · "}Dernière mise à jour : {view.majHeure}<RefreshCw className="w-[13px] h-[13px]" />
+            </div>
           </div>
           <div className="right">
             <div className="toprow">
@@ -190,6 +195,22 @@ export default async function CockpitOpsPage() {
         </header>
 
         <div className="scroll">
+          {/* Origine des données : la démonstration et l'erreur sont signalées,
+              jamais masquées par des chiffres crédibles (BUG-001 / BUG-002).
+              Le bandeau de démonstration est rendu ICI, et non par le cadre
+              applicatif : cet écran vit dans le groupe (ops-cockpit), qui n'a
+              pas de layout propre. */}
+          {origine === "demo" && <BandeauDemo />}
+          <BandeauSource origine={origine} detail={detailErreur} />
+
+          {view.vide ? (
+            <EtatVide
+              titre="Aucune session à piloter"
+              message="Le cockpit affiche la session en cours, validée ou planifiée, avec son équipe affectée. Aucune session ne remplit ces conditions : ni couverture, ni frise horaire, ni alerte ne peuvent être calculées."
+              action={{ label: "Ouvrir la planification", href: "/operations/planification" }}
+            />
+          ) : (
+          <>
           <div className="navsec" style={{ padding: "0 2px 9px", color: "var(--text-secondary)", letterSpacing: ".12em" }}>SANTÉ DE LA MISSION</div>
 
           {/* KPIs */}
@@ -208,20 +229,21 @@ export default async function CockpitOpsPage() {
             </div>
             <div className="kpi">
               <div className="top"><span className="ico ico-orange"><Clock className={ICO} /></span><span className="k">PRISES DE POSTE À VENIR</span></div>
-              <div className="val">{k.prisesDePoste}</div>
-              <div className="sub">dans les 2 prochaines heures</div>
+              <div className="val">{view.temporalite.tempsReel ? k.prisesDePoste : "—"}</div>
+              {/* Une prise de poste « à venir » n'existe que le jour J (BUG-014). */}
+              <div className="sub">{view.temporalite.tempsReel ? "dans les 2 prochaines heures" : "sans objet hors du jour de session"}</div>
               <div className="spark">{[40, 62, 48, 78, 56, 88, 70, 100, 64, 82].map((h, i) => <i key={i} style={{ height: `${h}%`, background: i % 2 ? "var(--orange-warning)" : "var(--orange-dark)" }} />)}</div>
             </div>
             <div className="kpi">
-              <div className="top"><span className="ico ico-red"><AlertTriangle className={ICO} /></span><span className="k">ALERTES ACTIVES</span></div>
+              <div className="top"><span className="ico ico-red"><AlertTriangle className={ICO} /></span><span className="k">ALERTES — CETTE SESSION</span></div>
               <div className="val">{k.alertesTotal}</div>
-              <div className="sub">{k.alertesCritiques} critiques · {k.alertesRetards} retards · {k.alertesInfos} infos</div>
+              <div className="sub">{k.alertesCritiques} critiques · {k.alertesRetards} retards · {k.alertesInfos} à surveiller</div>
               <div className="spark">{[100, 70, 85, 55, 60, 45, 40, 30, 35].map((h, i) => <i key={i} style={{ height: `${h}%`, background: i < 4 ? "var(--red-critical)" : i < 7 ? "var(--orange-warning)" : "var(--cyan-info)" }} />)}</div>
             </div>
             <div className="kpi ai">
-              <div className="top"><span className="ico ico-ai"><Sparkles className={ICO} /></span><span className="k">SCORE DE FLUIDITÉ IA</span></div>
-              <div className="val">{k.scoreIA.toLocaleString("fr-FR")} <small>/10</small></div>
-              <div className="sub"><span className="aihint">{k.scoreLabel} <Info className="w-3 h-3" /></span></div>
+              <div className="top"><span className="ico ico-ai"><Sparkles className={ICO} /></span><span className="k">SANTÉ DE LA SESSION</span></div>
+              <div className="val">{k.scoreIA.toLocaleString("fr-FR")} <small>/100</small></div>
+              <div className="sub"><span className="aihint">Session {k.scoreLabel} <Info className="w-3 h-3" /></span></div>
               <svg viewBox="0 0 260 40" preserveAspectRatio="none" style={{ width: "100%", height: 36, marginTop: 8 }}>
                 <polyline points="0,36 30,32 60,34 90,26 120,28 150,20 180,22 210,13 240,9 260,6" fill="none" stroke="#8B5CF6" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="210" cy="13" r="2.6" fill="#b79bff" /><circle cx="260" cy="6" r="2.8" fill="#c9b6ff" />
@@ -234,7 +256,7 @@ export default async function CockpitOpsPage() {
             <div>
               {/* TIMELINE */}
               <div className="panel">
-                <div className="ph"><span className="t">Frise horaire — vue du jour</span>
+                <div className="ph"><span className="t">Frise horaire — {view.temporalite.tempsReel ? "vue du jour" : view.temporalite.libelle}</span>
                   <div className="seg"><span className="on">Jour</span><span>Semaine</span><span>Vue salle</span></div>
                 </div>
                 <div className="tl-wrap">
@@ -286,7 +308,14 @@ export default async function CockpitOpsPage() {
                   </tbody>
                 </table>
                 <div className="tbl-foot">
-                  <span className="fi"><DoorOpen className="w-[14px] h-[14px]" />{view.sallesRatio}</span>
+                  {/* Un ratio salles > 100 % est un écart, pas un objectif
+                      dépassé : il se lit en rouge et se nomme (BUG-021). */}
+                  <span className="fi" style={view.salles.anomalie ? { color: "var(--red-critical)", fontWeight: 700 } : undefined}>
+                    {view.salles.anomalie
+                      ? <AlertTriangle className="w-[14px] h-[14px]" />
+                      : <DoorOpen className="w-[14px] h-[14px]" />}
+                    {view.salles.libelle}
+                  </span>
                   <span className="fi"><UserCog className="w-[14px] h-[14px]" />Coordinateur</span>
                   <Link className="link" href="/operations/planification">Ouvrir toutes les sessions →</Link>
                 </div>
@@ -311,7 +340,7 @@ export default async function CockpitOpsPage() {
               </div>
 
               <div className="panel al" style={{ marginTop: 16 }}>
-                <div className="ph"><span className="t">Alertes</span><Link className="link" href="/operations/incidents">Voir toutes ({k.alertesTotal})</Link></div>
+                <div className="ph"><span className="t">Alertes — cette session</span><Link className="link" href="/operations/incidents">Voir toutes ({k.alertesTotal})</Link></div>
                 <div className="tabs">
                   <span>Toutes <span className="n">{k.alertesTotal}</span></span>
                   <span className="on">Critiques <span className="n">{k.alertesCritiques}</span></span>
@@ -333,6 +362,8 @@ export default async function CockpitOpsPage() {
               </div>
             </div>
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>

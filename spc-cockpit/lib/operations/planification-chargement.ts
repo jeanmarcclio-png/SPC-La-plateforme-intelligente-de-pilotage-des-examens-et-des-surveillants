@@ -1,5 +1,6 @@
 import { getAffectations, getJournal, getMissions, getSurveillants } from "./queries";
 import { construireVueSession, sessionsSelectionnables, type VueSession } from "./planification-vue";
+import { origineGlobale, premiereErreur, type OrigineDonnees } from "./source";
 import type { JournalEntry, Mission, Surveillant } from "./types";
 
 // Chargement commun aux trois pages du parcours Planification.
@@ -14,19 +15,28 @@ export interface ContexteSession {
   /** Surveillants non encore affectés à la session courante. */
   disponibles: Surveillant[];
   journal: JournalEntry[];
+  /** Origine des données — l'écran doit signaler démonstration et erreur. */
+  origine: OrigineDonnees;
+  erreur?: string;
 }
 
 export async function chargerContexteSession(sessionParam?: string): Promise<ContexteSession> {
-  const [missions, surveillants, affectations, journal] = await Promise.all([
+  const [jeuMissions, jeuSurveillants, jeuAffectations, jeuJournal] = await Promise.all([
     getMissions(), getSurveillants(), getAffectations(), getJournal(),
   ]);
+  const missions = jeuMissions.lignes;
+  const surveillants = jeuSurveillants.lignes;
+  const affectations = jeuAffectations.lignes;
+  const journal = jeuJournal.lignes;
+  const origine = origineGlobale(jeuMissions, jeuSurveillants, jeuAffectations);
+  const erreur = premiereErreur(jeuMissions, jeuSurveillants, jeuAffectations, jeuJournal);
 
   const sessions = sessionsSelectionnables(missions);
   const demandee = sessionParam ? sessions.find((m) => String(m.id) === sessionParam) : undefined;
   const mission = demandee ?? sessions[0] ?? null;
 
   if (!mission) {
-    return { vue: null, sessions, surveillants, disponibles: surveillants, journal: [] };
+    return { vue: null, sessions, surveillants, disponibles: surveillants, journal: [], origine, erreur };
   }
 
   const vue = construireVueSession({ mission, missions, affectations, surveillants });
@@ -38,5 +48,7 @@ export async function chargerContexteSession(sessionParam?: string): Promise<Con
     surveillants,
     disponibles: surveillants.filter((s) => !affectes.has(s.id)),
     journal: journal.filter((j) => j.missionId === mission.id),
+    origine,
+    erreur,
   };
 }

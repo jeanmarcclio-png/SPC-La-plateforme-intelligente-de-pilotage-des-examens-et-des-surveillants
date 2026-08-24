@@ -1,6 +1,7 @@
 import { OpsSidebar, OpsMobileHeader } from "@/components/ops/OpsSidebar";
 import { OpsTopbar, type MissionOption } from "@/components/ops/OpsTopbar";
 import { Toaster } from "@/components/Toast";
+import { BandeauDemo } from "@/components/ops/EtatSource";
 import { getMissions, getIncidents } from "@/lib/operations/queries";
 import { dateFR, dateCourteFR } from "@/lib/operations/format";
 import { selectionnerMissionActive } from "@/lib/operations/missions-dashboard";
@@ -27,7 +28,7 @@ export default async function OperationsLayout({ children }: { children: React.R
   // Exige une organisation active (→ /onboarding au premier login).
   await requireActiveOrgId();
 
-  const [missions, incidents, orgs, activeOrgId, user, role] = await Promise.all([
+  const [jeuMissions, jeuIncidents, orgs, activeOrgId, user, role] = await Promise.all([
     getMissions(),
     getIncidents(),
     getMyOrganizations(),
@@ -35,6 +36,11 @@ export default async function OperationsLayout({ children }: { children: React.R
     getCurrentUser(),
     getCurrentRole(),
   ]);
+  const missions = jeuMissions.lignes;
+  const incidents = jeuIncidents.lignes;
+  // Le jeu de démonstration est global (SPC_DEMO=1) : on le signale UNE fois
+  // dans le cadre applicatif plutôt que sur chacun des 14 écrans.
+  const demo = jeuMissions.origine === "demo";
 
   // Même sélection que la page Missions (source unique, cf. missions-dashboard).
   const active = selectionnerMissionActive(missions);
@@ -70,6 +76,11 @@ export default async function OperationsLayout({ children }: { children: React.R
           notifCount={openIncidents}
         />
         <main className="flex-1 min-w-0 overflow-y-auto">
+          {demo && (
+            <div className="px-5 md:px-7 pt-5 w-full max-w-[1560px] mx-auto">
+              <BandeauDemo />
+            </div>
+          )}
           {children}
         </main>
       </div>

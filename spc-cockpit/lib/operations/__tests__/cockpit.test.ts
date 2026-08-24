@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildCockpitView, DEMO_COCKPIT } from "../cockpit";
+import { santeSession } from "../planification-vue";
 import type { Affectation, Mission, Salle, Surveillant } from "../types";
 
 const mission: Mission = {
@@ -19,10 +20,29 @@ const affectations: Affectation[] = [
 ];
 
 describe("buildCockpitView", () => {
-  it("retombe sur le jeu de démonstration sans mission active", () => {
+  // Ce test verrouillait auparavant le repli sur le jeu de démonstration
+  // (`expect(v).toBe(DEMO_COCKPIT)`). L'audit QA forensic V2 a établi (BUG-001)
+  // qu'un cockpit opérationnel ne doit jamais inventer de session : il est
+  // repris pour exiger le comportement corrigé.
+  it("rend une vue VIDE sans mission active (aucune donnée inventée)", () => {
+    delete process.env.SPC_DEMO;
     const v = buildCockpitView({ missions: [], affectations: [], surveillants: [], salles: [] });
-    expect(v.demo).toBe(true);
-    expect(v).toBe(DEMO_COCKPIT);
+    expect(v.vide).toBe(true);
+    expect(v.demo).toBe(false);
+    expect(v).not.toBe(DEMO_COCKPIT);
+    expect(v.sessions).toEqual([]);
+    expect(v.kpis.postesTotal).toBe(0);
+  });
+
+  it("sert le jeu de démonstration uniquement sous SPC_DEMO=1", () => {
+    process.env.SPC_DEMO = "1";
+    try {
+      const v = buildCockpitView({ missions: [], affectations: [], surveillants: [], salles: [] });
+      expect(v.demo).toBe(true);
+      expect(v).toBe(DEMO_COCKPIT);
+    } finally {
+      delete process.env.SPC_DEMO;
+    }
   });
 
   it("dérive couverture, sessions et statuts depuis les données réelles", () => {
@@ -32,8 +52,13 @@ describe("buildCockpitView", () => {
     expect(v.kpis.couverturePct).toBe(50);
     expect(v.kpis.postesCouverts).toBe(2);
     expect(v.kpis.postesTotal).toBe(4);
-    // 1 présent sur 2 → 50 %
-    expect(v.kpis.confirmationsPct).toBe(50);
+    // Confirmations : dénominateur = postes REQUIS, pas affectations existantes
+    // (BUG-020). L'écran affichait « 100 % · 10/10 confirmés » alors que 4 des
+    // 14 postes n'étaient pas pourvus. Ici : 1 présent sur 4 postes → 25 %, et
+    // non 1 sur 2 affectations → 50 %, qui masquait les 2 postes vacants.
+    expect(v.kpis.confTotal).toBe(4);
+    expect(v.kpis.confirmes).toBe(1);
+    expect(v.kpis.confirmationsPct).toBe(25);
     // Karim est « Absent » → statut En retard
     const karim = v.sessions.find((s) => s.nom === "Karim Haddad");
     expect(karim?.statut).toBe("En retard");
@@ -41,8 +66,15 @@ describe("buildCockpitView", () => {
     const marie = v.sessions.find((s) => s.nom === "Marie Laroche");
     expect(marie?.coord).toBe(true);
     expect(marie?.statut).toBe("Conforme");
-    // score borné 0–10
+    // Score de santé de session : MÊME échelle que la planification (0–100).
+    // Le cockpit affichait auparavant une heuristique « fluidité IA » sur 10,
+    // qui contredisait le score de la planification pour la même session
+    // (audit QA forensic V2, BUG-025).
     expect(v.kpis.scoreIA).toBeGreaterThanOrEqual(0);
-    expect(v.kpis.scoreIA).toBeLessThanOrEqual(10);
+    expect(v.kpis.scoreIA).toBeLessThanOrEqual(100);
+    expect(v.kpis.scoreIA).toBe(
+      santeSession({ mission, missions: [mission], affectations, surveillants }).score,
+    );
+    expect(["prête", "à consolider", "à risque"]).toContain(v.kpis.scoreLabel);
   });
 });

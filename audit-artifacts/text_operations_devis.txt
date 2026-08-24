@@ -1,0 +1,96 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Devis
+Devis
+
+Gestion des devis et suivi du pipeline commercial opérations
+
+TOTAL DEVIS
+5
+créés
+BROUILLONS
+2
+à finaliser
+ENVOYÉS
+1
+en attente de réponse
+ACCEPTÉS
+2
+missions confirmées
+CA ACCEPTÉ HT
+12 544,40 €
+devis acceptés ou facturés
+Tous statuts
+Brouillon
+Envoyé
+Accepté
+Refusé
+Facturé
+Nouveau devis
+RÉFÉRENCE	CLIENT	SESSION	PÉRIODE	STATUT	MONTANT HT	MONTANT TTC	ÉQUIPE	
+SPC-20260729-001	ICN	Concours DC 2026	—	
+Brouillon	650,00 €	780,00 €	3 surv.	
+Voir
+Modifier
+Dupliquer
+Supprimer
+
+SPC-20260728-001	ICP Reims	Rattrapages juin 2026 — 74 créneaux · 262,3 h	15 juin 2026 → 26 juin 2026	
+Accepté	7 344,40 €	8 813,28 €	6 surv.	
+Voir
+Modifier
+Dupliquer
+Supprimer
+
+SPC-20260727-001	Sciences Po	Concours écrit 2026	—	
+Accepté	5 200,00 €	6 240,00 €	18 surv.	
+Voir
+Modifier
+Dupliquer
+Supprimer
+
+SPC-20260726-001	Dauphine PSL	Oral admission 2026	—	
+Envoyé	2 600,00 €	3 120,00 €	5 surv.	
+Voir
+Modifier
+Dupliquer
+Supprimer
+
+SPC-20260724-001	ICP Paris	Session principale — juil. 2026	—	
+Brouillon	4 042,00 €	4 850,40 €	14 surv.	
+Voir
+Modifier
+Dupliquer
+Supprimer

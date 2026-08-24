@@ -1,0 +1,76 @@
+✦
+Survéo
+IA
+Gestion des examens
+NAVIGATION
+Dashboard
+Cockpit opérationnel
+Supervision live
+Demandes clients
+Missions
+Surveillants
+Planification
+Salles
+PMR & Tiers-temps
+Devis
+Facturation
+Présence
+Incidents
+1
+Rapports
+Risques IA
+RACCOURCIS
+Nouvelle mission
+Planifier une équipe
+Gérer les salles
+Créer un devis
+Cockpit commercial
+⌘ K
+MISSION ACTIVE
+ICP Paris — 30 juillet 2026
+1
+US
+Utilisateur SPC
+Administrateur
+Dashboard/Demandes clients
+Demandes clients
+
+Centralisez les demandes de surveillance avant mission et devis
+
+Modèle
+Importer Excel/CSV
+Nouvelle demande client
+BROUILLON
+1
+en cours de saisie
+À VÉRIFIER
+1
+à contrôler
+VALIDÉES SPC
+1
+prêtes à convertir
+CONVERTIES
+0
+en mission
+Tous les statuts
+Brouillon
+À vérifier
+À corriger
+Complète
+Validée SPC
+Convertie en mission
+Archivée
+Annulée
+RÉFÉRENCE	CLIENT	DEMANDEUR	RESPONSABLE CLIENT	RESPONSABLE SPC	PÉRIODE	SALLES	ÉTUD.	STATUT	ACTIONS
+DC-20260615-001	ICP Paris
+Campus Bauer
+	Mathilde Régnier	Hélène Duval	Jean-Marc Clio	2026-06-15 → 2026-06-16	2	70	
+À vérifier	
+
+DC-20260620-001	Dauphine PSL	Karim Haddad	Karim Haddad	Jean-Marc Clio	2026-06-22	1	180	
+Validée SPC	
+
+DC-20260701-001	ESSEC	Sophie Bernard	—	Jean-Marc Clio	—	0	0	
+Brouillon	
+
+Le devis n'est jamais calculé ici : Demande → validation SPC → conversion en mission → devis. Données enregistrées localement (MVP interne).

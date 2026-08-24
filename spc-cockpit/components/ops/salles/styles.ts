@@ -17,6 +17,13 @@ export const SALLES_CSS = `
 .ckp .chipbtn:hover{background:var(--bg-panel-hover)}
 .ckp .chipbtn .n{min-width:18px;height:18px;border-radius:999px;background:var(--purple-ai);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px}
 
+/* Bandeau d'incohérence référentiel ↔ planning (audit QA forensic V2, BUG-004). */
+.ckp .integr{display:flex;gap:11px;align-items:flex-start;border:1px solid #F0444B;border-left-width:3px;background:rgba(240,68,75,.08);border-radius:12px;padding:13px 15px;margin-bottom:14px;color:#FFD9DB}
+.ckp .integr .t{font-size:13px;font-weight:800;color:#fff;line-height:1.3}
+.ckp .integr .s{font-size:12px;font-weight:550;margin-top:4px;line-height:1.45}
+.ckp .integr .lst{margin:8px 0 0;padding-left:17px;font-size:11.5px;line-height:1.7;list-style:disc}
+.ckp .integr .lst strong{font-weight:800;color:#fff}
+
 .ckp .skpis{display:grid;grid-template-columns:repeat(7,1fr);gap:11px}
 .ckp .skpi{border:1px solid var(--border-default);background:var(--bg-panel);border-radius:12px;padding:13px 13px 12px;box-shadow:0 2px 8px rgba(0,8,30,.16)}
 .ckp .skpi .ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:9px}

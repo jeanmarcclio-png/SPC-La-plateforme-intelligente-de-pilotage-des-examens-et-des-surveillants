@@ -55,7 +55,22 @@ describe("dashboard — finance (source unique = devis gagnés)", () => {
   it("évolution mensuelle en progression, variation positive", () => {
     expect(fin.evolutionMensuelle.length).toBeGreaterThanOrEqual(2);
     expect(fin.variationCA).not.toBeNull();
-    expect(fin.variationCA!).toBeGreaterThan(0);
+    expect(fin.variationCA!.pourcentage).toBeGreaterThan(0);
+  });
+
+  it("la variation dit ce qu'elle compare, et sur quelle période (BUG-007)", () => {
+    // Le chiffre était auparavant un simple `number`, affiché sous « CA confirmé
+    // HT · vs mois précédent » alors qu'il mesurait une AUTRE série. Il porte
+    // désormais son propre libellé, et la comparaison est bornée à période
+    // équivalente : au 30 juillet, 1–30 juillet face à 1–30 juin.
+    const v = fin.variationCA!;
+    expect(v.libelle).toContain("CA réalisé");
+    expect(v.libelle).toContain("juillet");
+    expect(v.libelle).toContain("juin");
+    expect(v.courant).toBeGreaterThan(0);
+    expect(v.precedent).toBeGreaterThan(0);
+    // Le montant comparé n'est PAS le portefeuille de devis acceptés.
+    expect(v.courant).not.toBeCloseTo(fin.caConfirmeHT, 2);
   });
 });
 

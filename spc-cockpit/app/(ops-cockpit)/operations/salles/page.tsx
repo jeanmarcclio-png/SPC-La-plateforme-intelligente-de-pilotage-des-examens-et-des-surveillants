@@ -4,47 +4,53 @@ import Link from "next/link";
 import { Bell, ChevronDown, Calendar, FileText } from "lucide-react";
 import { requireActiveOrgId } from "@/lib/auth/org";
 import { getCurrentUser, getCurrentRole } from "@/lib/auth/session";
-import { getSalles, getIncidents, getMissions } from "@/lib/operations/queries";
+import { getSalles, getIncidents, getMissions, getAffectations } from "@/lib/operations/queries";
 import { construireVueSalles } from "@/lib/operations/salles-view";
 import { dateFR } from "@/lib/operations/format";
 import {
   COMMAND_CSS, CommandSidebar, initialesNom, nomDepuisEmail, libelleRole,
 } from "@/components/ops/command/shell";
 import { SallesCommandCenter } from "@/components/ops/salles/SallesCommandCenter";
+import { BandeauDemo, BandeauSource } from "@/components/ops/EtatSource";
+import { origineGlobale, premiereErreur } from "@/lib/operations/source";
+import { couvertureSession } from "@/lib/operations/couverture";
 import { SALLES_CSS } from "@/components/ops/salles/styles";
 import { Toaster } from "@/components/Toast";
 
 export default async function SallesPage() {
   await requireActiveOrgId();
 
-  // Récupération résiliente : sans Supabase configuré (démo / preview), les
-  // requêtes retombent sur le jeu de référence plutôt que de renvoyer une 500.
-  let view = construireVueSalles([]);
-  try {
-    view = construireVueSalles(await getSalles());
-  } catch {
-    /* jeu de démonstration */
-  }
+  // Les lectures portent désormais leur ORIGINE (base / demo / vide / erreur) :
+  // elles n'échouent plus silencieusement vers un jeu de démonstration, et les
+  // exceptions sont déjà capturées dans queries.ts.
+  const [jSalles, jIncidents, jMissions, jAffectations] = await Promise.all([
+    getSalles(), getIncidents(), getMissions(), getAffectations(),
+  ]);
+  const incidentsOuverts = jIncidents.lignes.filter((i) => i.statut !== "Résolu").length;
 
-  let incidentsOuverts = 0;
-  try {
-    const incidents = await getIncidents();
-    incidentsOuverts = incidents.filter((i) => i.statut !== "Résolu").length;
-  } catch {
-    /* pas d'incidents en démo */
-  }
+  const active =
+    jMissions.lignes.find((m) => m.statut === "En cours") ??
+    jMissions.lignes.find((m) => m.statut === "Validée") ??
+    jMissions.lignes.find((m) => m.statut === "Planifiée");
 
-  let missionLabel = "Aucune mission active";
-  try {
-    const missions = await getMissions();
-    const active =
-      missions.find((m) => m.statut === "En cours") ??
-      missions.find((m) => m.statut === "Validée") ??
-      missions.find((m) => m.statut === "Planifiée");
-    if (active) missionLabel = `${active.client} — ${dateFR(active.dateMission)}`;
-  } catch {
-    /* libellé par défaut */
-  }
+  // La couverture affichée ici est celle de la SESSION, pas un ratio local :
+  // la page Salles répondait « manque 3 » quand les quatre autres écrans
+  // répondaient « manque 4 » (audit QA forensic V2, BUG-005).
+  // Les affectations sont transmises pour que la page puisse rapprocher le
+  // référentiel du planning : sans elles, une salle citée au planning et absente
+  // du référentiel resterait invisible (audit QA forensic V2, BUG-004).
+  const view = construireVueSalles(
+    jSalles.lignes,
+    active
+      ? {
+          couverture: couvertureSession(active, jAffectations.lignes),
+          affectations: jAffectations.lignes.filter((a) => a.missionId === active.id),
+        }
+      : undefined,
+  );
+  const missionLabel = active
+    ? `${active.client} — ${dateFR(active.dateMission)}`
+    : "Aucune mission active";
 
   let userName = "Coordinateur SPC";
   let roleLabel = "Coordinateur";
@@ -93,6 +99,16 @@ export default async function SallesPage() {
             </div>
           </div>
         </header>
+
+        <div style={{ padding: "0 26px" }}>
+          {/* Bandeau de démonstration rendu ici : cet écran vit dans le groupe
+              (ops-cockpit), qui n'a pas de layout propre pour le porter. */}
+          {origineGlobale(jSalles, jIncidents, jMissions) === "demo" && <BandeauDemo />}
+          <BandeauSource
+            origine={origineGlobale(jSalles, jIncidents, jMissions)}
+            detail={premiereErreur(jSalles, jIncidents, jMissions)}
+          />
+        </div>
 
         <SallesCommandCenter view={view} />
       </div>

@@ -1,0 +1,320 @@
+✦
+Survéo
+IA
+🎓 SURVEILLANCE D'EXAMENS
+Cockpit Dirigeant
+Tableau de bord
+Campagnes
+Qualification BANT
+Livrables
+Planning
+Reporting
+Opérations
+Paramètres
+Déconnexion
+CAMPAGNE ACTIVE
+—
+Chargement…
+Activer les rappels
+Recevez vos relances du jour
+Plus tard
+OK
+Campagnes en cours
+Tableau de bord
+Actif
+À l'instant
+⌘K
+|
+…
+🎓 327 surveillances planifiées — IDF et régions
+42 établissements actifs · 185 salles couvertes · 612 candidats
+👁️
+327
+Surveillances
+sessions planifiées
+🏫
+42
+Établissements
+sites actifs
+🚪
+185
+Salles
+capacité totale
+✅
+98%
+Couverture
+taux de présence
+🎓
+612
+Candidats
+inscrits ce mois
+⚠️
+4
+Remplacements
+urgents aujourd'hui
+🧠 ALERTES IA
+🔴
+3 surveillants risquent dépassement horaire — Paris 8 et Dauphine
+🔴
+2 salles nécessitent un renfort avant 8h30 demain
+🟠
+Couverture IDF 98% mais Reims sous tension — prévoir renforts
+IA PROACTIVE
+Analyse en temps réel
+🚀
+
+9 prospects à fort potentiel non contactés
+
+Score BANT moyen 9.7/10 — contacter maintenant
+
+Voir →
+🔥
+
+10 prospects "Très chaud" — fenêtre d'opportunité ouverte
+
+Probabilité de conversion +11% si contact aujourd'hui
+
+Voir →
+📉
+
+82% du pipeline non contacté — campagne à accélérer
+
+9 établissements en attente de premier contact
+
+Voir →
+11
+→ 18% contactés
+établissements ciblés
+Voir tous →
+10
+↑ 91% du pipeline
+prospects Très chaud
+Voir la liste →
+9,8
+↑ Excellent ↑
+Score BANT moyen /10
+Voir l'analyse →
+406k€
+↑ 0 convertis · 1 RDV
+CA pipeline estimé
+Voir pipeline →
+Cockpit dirigeant
+Détection proactive
+Vue complète →
+🔴
+Taux de contact
+18% — campagne à relancer
+🟢
+Qualité pipeline
+Score BANT moyen 9.8/10 — excellent
+🔴
+Taux de conversion
+0% — relancer la machine
+🔴
+Alertes actives
+12 alertes — action requise
+🟠
+Échéances urgentes
+1 deadline urgente à traiter
+📈 Prévision IA — objectif fin de campagne
+Risque critique
+Confiance IA : 92%
+SANS ACTION AUJOURD'HUI
+12%
+objectif atteint estimé
+RECOMMANDATIONS IA SUIVIES ✓
+41%
+objectif atteint estimé
+🧠
+
++29 points de progression estimée si les 5 recommandations sont appliquées cette semaine. Impact CA estimé : +1k€.
+
+🤖 Recommandations IA
+Moteur de décision
+Voir tous →
+URGENT
+Confiance
+99%
+EM Lyon
+Commerce · BANT 10/10
+Impact estimé
++45k€
+Aujourd’hui
++11%
+J+3
+-8%
+✓
+Très chaud — intérêt fort confirmé
+✓
+Priorité A — cible stratégique
+→ Premier contact
+URGENT
+Confiance
+99%
+IFSI CHU Lyon
+Santé · BANT 10/10
+Impact estimé
++38k€
+Aujourd’hui
++11%
+J+3
+-8%
+✓
+Très chaud — intérêt fort confirmé
+✓
+Priorité A — cible stratégique
+→ Premier contact
+PRIORITÉ
+Confiance
+99%
+IFSI CHU Lille
+Santé · BANT 10/10
+Impact estimé
++35k€
+Aujourd’hui
++11%
+J+3
+-8%
+✓
+Très chaud — intérêt fort confirmé
+✓
+Priorité A — cible stratégique
+→ Relancer maintenant
+Pipeline commercial
+11 prospects au total
+Non contacté
+9
+En cours
+1
+RDV fixé
+1
+Converti
+0
+🗓
+Sessions à venir
+Prochaines surveillances planifiées
+Voir le planning →
+03
+juil.
+Confirmé
+Kedge Business School
+Bordeaux
+👤 12
+⏱ 4 tiers-temps
+08
+juil.
+En attente
+IFSI CHU Lyon
+Lyon
+👤 8
+⏱ 2 tiers-temps
+14
+juil.
+Confirmé
+CPGE Fermat Toulouse
+Toulouse
+👤 6
+⏱ 1 tiers-temps
+22
+juil.
+À confirmer
+Université Paris-Saclay
+Palaiseau
+👤 18
+⏱ 6 tiers-temps
+Mes campagnes en cours
+Voir toutes les campagnes
+CAMPAGNE	PÉRIMÈTRE	DEADLINE	SCORE	STATUT	
+IDF Complète 2026	Paris · Île-de-France · Paris-Saclay	Terminé
+30/06/2026
+	9.4 / 10	
+Actif	›
+National Écoles 2026	Lyon · Lille · Bordeaux · Marseille · Nancy	Terminé
+08/07/2026
+	9.2 / 10	
+En cours	›
+Paris-Saclay Juin 2026	Cluster Paris-Saclay · 29 cibles	Terminé
+15/06/2026
+	9.1 / 10	
+Terminé	›
+Répartition segments
+75
+Business schools
+29
+CPGE
+9
+Santé
+15
+Universités
+22
+Scores BANT par cluster
+Lyon / Rhône-Alpes
+9.8
+Paris IDF
+9.6
+Lille / HdF
+9.5
+Bordeaux / NA
+9.2
+Marseille / PACA
+9
+Nancy / Grand Est
+8.7
+Actions recommandées
+📞
+Appeler IFSI CHU Lyon — urgent S1
+›
+📧
+Email relance CPGE Lyon J+7
+›
+🔗
+LinkedIn Kedge Bordeaux J+3
+›
+📊
+Planifier /analyse à J+30
+›
+⚠
+Alertes critiques
+📁
+Contacts manquants
+7 établissements sans interlocuteur nominatif identifié
+Voir les dossiers →
+7
+⏰
+Relances J+7 dues
+2 établissements sans réponse depuis la vague 1
+Voir les dossiers →
+2
+📊
+Analytics J+30 à prévoir
+3 campagnes en attente de rapport de performance
+Voir les dossiers →
+3
+Échéances à venir
+24/06
+Relances CPGE Lyon
+J+7
+26/06
+Email IFSI CHU Bordeaux
+J+3
+30/06
+Fin Vague 1 IDF
+Deadline
+01/09
+Lancement Vague 2
+National
+Voir toutes les échéances →
+✨
+
+Conseil Survéo — Lancez les appels IFSI CHU (Lyon, Lille, Bordeaux, Marseille) simultanément en semaine 1. Une réponse positive crée une référence CHU exploitable pour les autres dès J+5.
+
+Impact · +122k€
+Confiance IA · 92%
+Voir les critères BANT
+Passer
+🎯
+Bienvenue sur Survéo
+
+Votre plateforme de pilotage des examens et des surveillants, augmentée par l'IA.
+
+Suivant →

@@ -1,0 +1,327 @@
+✦
+Survéo
+IA
+🎓 SURVEILLANCE D'EXAMENS
+Cockpit Dirigeant
+Tableau de bord
+Campagnes
+Qualification BANT
+Livrables
+Planning
+Reporting
+Opérations
+Paramètres
+Déconnexion
+CAMPAGNE ACTIVE
+—
+Chargement…
+Activer les rappels
+Recevez vos relances du jour
+Plus tard
+OK
+Qualification BANT
+Analyse Go / No-Go
+10 Très chaud
+À l'instant
+⌘K
+|
+…
+Prospect priorité A · Vague 1
+EM Lyon
+Commerce · Lyon/RA
+Très chaud
+10
+SCORE BANT / 10
+0
+10
+💰
+2.5
+/2.5
+Budget
+👤
+2.5
+/2.5
+Autorité
+🎯
+2.5
+/2.5
+Besoin
+⏱
+2.5
+/2.5
+Timing
+Interlocuteur
+Resp. examens / Dir. opér. acad.
+Canal prioritaire
+Appel + Email
+Statut
+Non contacté
+En cours
+RDV fixé
+Converti
+Notes
+⚠
+Risques majeurs
+· Interlocuteur non nominatif — risque de filtrage par secrétariat
+· Cycle de décision long (3 semaines) si consultation interne
+· Présence d'un prestataire sortant non identifié
+✓
+Points forts
+· Volume élevé (1 200+ étudiants · 3 sessions/an)
+· Budget formation confirmé en interne
+· Tiers-temps non géré actuellement
+· Réseau CHU : référence duplicable sur 4 villes
+Prochaine étape recommandée
+Appel sortant — Lundi matin
+Demander le responsable des examens · Script : segment Commerce · Proposer audit gratuit 30 min.
+Lancer le script d'appel →
+Vue Pipeline
+Kanban
+11 prospects au total
+Non contacté
+9
+EM Lyon
+Commerce · Lyon/RA
+10/10
+🔥
+IFSI CHU Lyon
+Santé · Lyon/RA
+10/10
+🔥
+Kedge Bordeaux
+Commerce · Bordeaux/NA
+10/10
+🔥
+Skema Lille
+Commerce · Lille/HdF
+10/10
+🔥
+IFSI CHU Bordeaux
+Santé · Bordeaux/NA
+10/10
+🔥
+ICN Nancy
+Commerce · Nancy/GE
+10/10
+🔥
+CPGE Lyon
+CPGE · Lyon/RA
+9.5/10
+🔥
+CPGE Lille
+CPGE · Lille/HdF
+9.5/10
+🔥
++1 autres
+En cours
+1
+IFSI CHU Lille
+Santé · Lille/HdF
+10/10
+🔥
+RDV fixé
+1
+Grenoble EM
+Commerce · Lyon/RA
+10/10
+🔥
+Converti
+0
+Aucun prospect
+Non contacté
+82%
+En cours
+9%
+RDV fixé
+9%
+Converti
+0%
+Top prospects — Vague 1
+11 prospects
+CSV
++ Ajouter un établissement
+Tous segments
+CPGE
+Commerce
+Santé
+Université
+Tous clusters
+Bordeaux/NA
+Lille/HdF
+Lyon/RA
+Nancy/GE
+Paris/IDF
+Tous statuts
+En cours
+Non contacté
+RDV fixé
+#	
+Établissement
+	
+Segment
+	
+Score
+	
+Relance
+	
+Statut
+	EMAIL	
+1	
+EM Lyon
+Lyon/RA
+	Commerce	
+10
+	—	
+Non contacté
+En cours
+RDV fixé
+Converti
+	Email →	
+
+2	
+IFSI CHU Lyon
+Lyon/RA
+	Santé	
+10
+	—	
+Non contacté
+En cours
+RDV fixé
+Converti
+	Email →	
+
+3	
+IFSI CHU Lille
+Lille/HdF
+	Santé	
+10
+	—	
+Non contacté
+En cours
+RDV fixé
+Converti
+	Email →	
+
+4	
+Kedge Bordeaux
+Bordeaux/NA
+	Commerce	
+10
+	—	
+Non contacté
+En cours
+RDV fixé
+Converti
+	Email →	
+
+5	
+Skema Lille
+Lille/HdF
+	Commerce	
+10
+	—	
+Non contacté
+En cours
+RDV fixé
+Converti
+	Email →	
+
+6	
+IFSI CHU Bordeaux
+Bordeaux/NA
+	Santé	
+10
+	—	
+Non contacté
+En cours
+RDV fixé
+Converti
+	Email →	
+
+7	
+ICN Nancy
+Nancy/GE
+	Commerce	
+10
+	—	
+Non contacté
+En cours
+RDV fixé
+Converti
+	Email →	
+
+8	
+Grenoble EM
+Lyon/RA
+	Commerce	
+10
+	—	
+Non contacté
+En cours
+RDV fixé
+Converti
+	Email →	
+
+9	
+CPGE Lyon
+Lyon/RA
+	CPGE	
+9.5
+	—	
+Non contacté
+En cours
+RDV fixé
+Converti
+	Email →	
+
+10	
+CPGE Lille
+Lille/HdF
+	CPGE	
+9.5
+	—	
+Non contacté
+En cours
+RDV fixé
+Converti
+	Email →	
+
+11	
+Université Paris 1
+Paris/IDF
+	Université	
+8.5
+	—	
+Non contacté
+En cours
+RDV fixé
+Converti
+	Email →	
+Scores par cluster
+Lyon / Rhône-Alpes
+9.8
+Paris IDF
+9.6
+Lille / HdF
+9.5
+Bordeaux / NA
+9.2
+Marseille / PACA
+9
+Nancy / Grand Est
+8.7
+Meilleur cluster
+Lyon / Rhône-Alpes
+EM Lyon · IFSI CHU · Grenoble EM
+✨
+
+Conseil Survéo — EM Lyon, IFSI CHU Lyon, Kedge Bordeaux : 3 prospects à 10/10 — démarrer les appels lundi matin pour maximiser le taux de conversion Vague 1.
+
+Voir les critères BANT
+Passer
+🎯
+Bienvenue sur Survéo
+
+Votre plateforme de pilotage des examens et des surveillants, augmentée par l'IA.
+
+Suivant →

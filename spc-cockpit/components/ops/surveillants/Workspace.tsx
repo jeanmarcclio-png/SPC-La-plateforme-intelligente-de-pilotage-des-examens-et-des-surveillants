@@ -12,7 +12,7 @@ import { buildGrilleDispo, besoinsParJour, couvertureMoyenne } from "@/lib/opera
 import { PageHeader } from "@/components/ops/shell";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { showToast } from "@/components/Toast";
-import { deleteSurveillant } from "@/app/actions/surveillants";
+import { deleteSurveillant, desactiverSurveillant, dependancesSurveillant } from "@/app/actions/surveillants";
 import { EquipeTable } from "./EquipeTable";
 import { ProfilePanel } from "./ProfilePanel";
 import { DispoCalendar } from "./DispoCalendar";
@@ -148,10 +148,37 @@ export function SurveillantsWorkspace({
     setPanelOpen(true);
   }
 
+  // Suppression protégée (BUG-003) : on annonce d'abord les affectations qui
+  // seront détruites en cascade, et on propose la désactivation — qui conserve
+  // l'historique du planning — comme issue par défaut.
   function handleDelete(row: SurvRow) {
-    if (!confirm(`Supprimer définitivement « ${row.nom} » de l'équipe ?`)) return;
     startTransition(async () => {
-      const res = await deleteSurveillant(row.id);
+      const dep = await dependancesSurveillant(row.id);
+
+      if (dep.affectations > 0) {
+        const ou = dep.missions.length ? `\n\nMissions concernées : ${dep.missions.join(", ")}` : "";
+        const supprimer = confirm(
+          `« ${row.nom} » porte ${dep.affectations} affectation(s).${ou}\n\n` +
+          `OK = SUPPRIMER définitivement la fiche ET ses ${dep.affectations} affectation(s).\n` +
+          `Annuler = le DÉSACTIVER (il sort des disponibilités, le planning est conservé).`,
+        );
+        if (!supprimer) {
+          const res = await desactiverSurveillant(row.id);
+          if (res.error) showToast(res.error, "error");
+          else showToast(`« ${row.nom} » désactivé — planning conservé`);
+          return;
+        }
+        const res = await deleteSurveillant(row.id, true);
+        if (res.error) showToast(res.error, "error");
+        else {
+          showToast(`« ${row.nom} » et ses ${dep.affectations} affectation(s) supprimés`);
+          if (selectedId === row.id) { setPanelOpen(false); setSelectedId(null); }
+        }
+        return;
+      }
+
+      if (!confirm(`Supprimer définitivement « ${row.nom} » de l'équipe ?`)) return;
+      const res = await deleteSurveillant(row.id, true);
       if (res.error) showToast(res.error, "error");
       else {
         showToast(`« ${row.nom} » supprimé`);
