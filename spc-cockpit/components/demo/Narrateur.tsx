@@ -76,6 +76,35 @@ const CSS = `
  */
 const RELANCE_MS = 10_000;
 
+/**
+ * Débit de parole (`rate`), pas hauteur de voix (`pitch`) — deux réglages
+ * distincts qu'on confond volontiers. Ici on ralentit l'élocution ; la hauteur
+ * reste à 1, la baisser rendrait la voix caverneuse.
+ *
+ * POURQUOI 0,85 ET PAS 0,75
+ * -------------------------
+ * En dessous de 0,80, la plupart des voix françaises système étirent les
+ * voyelles et hachent la prosodie : le résultat n'est pas « posé », il est
+ * « ralenti ». 0,85 est le point où la diction reste naturelle tout en laissant
+ * le temps de suivre. Sur le script du cockpit — quatre étapes — cela ajoute
+ * une dizaine de secondes ; 0,75 en aurait ajouté vingt-cinq.
+ *
+ * Valeur volontairement isolée ici : c'est un réglage d'oreille, qui se juge en
+ * écoutant, pas en lisant du code. Une seule ligne à changer.
+ */
+const DEBIT = 0.85;
+
+/**
+ * Silence entre deux étapes.
+ *
+ * C'est LUI qui rend la narration pédagogique, davantage que la lenteur du
+ * débit. Sans pause, la voix enchaîne une idée sur l'autre sans respiration, et
+ * l'auditeur n'a pas le temps de rattacher ce qu'il vient d'entendre à ce qu'il
+ * voit à l'écran. Sept dixièmes de seconde suffisent à marquer la césure sans
+ * donner l'impression que la lecture s'est arrêtée.
+ */
+const PAUSE_ENTRE_ETAPES_MS = 700;
+
 function synthese(): SpeechSynthesis | null {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
   return window.speechSynthesis;
@@ -161,22 +190,37 @@ export function Narrateur() {
     const etape = etapes[index];
     if (!etape) return;
 
+    // `annule` distingue une fin NATURELLE d'une interruption. Sans lui, le
+    // `cancel()` du nettoyage — qui déclenche `onend` sur plusieurs navigateurs
+    // — faisait avancer d'une étape à chaque pause et à chaque changement
+    // d'écran : on arrivait sur la page suivante à l'étape 2 sans l'avoir
+    // demandé, et sans que rien ne soit lu.
+    let annule = false;
+    let attente: number | undefined;
+
     synth.cancel();
 
     const enonce = new SpeechSynthesisUtterance(`${etape.titre}. ${etape.texte}`);
     enonce.lang = "fr-FR";
     const voix = voixFrancaise(synth);
     if (voix) enonce.voice = voix;
-    enonce.rate = 0.98;
+    enonce.rate = DEBIT;
     enonce.pitch = 1;
 
     enonce.onend = () => {
-      if (index < etapes.length - 1) setIndex((i) => i + 1);
-      else setLecture(false);
+      if (annule) return;
+      if (index >= etapes.length - 1) {
+        setLecture(false);
+        return;
+      }
+      // La respiration entre deux idées — voir PAUSE_ENTRE_ETAPES_MS.
+      attente = window.setTimeout(() => setIndex((i) => i + 1), PAUSE_ENTRE_ETAPES_MS);
     };
     // Une voix indisponible ou une lecture refusée ne doit pas figer le panneau
     // sur un bouton « Pause » qui ne correspond à aucun son.
-    enonce.onerror = () => setLecture(false);
+    enonce.onerror = () => {
+      if (!annule) setLecture(false);
+    };
 
     synth.speak(enonce);
     const relance = window.setInterval(() => {
@@ -184,7 +228,9 @@ export function Narrateur() {
     }, RELANCE_MS);
 
     return () => {
+      annule = true;
       window.clearInterval(relance);
+      if (attente !== undefined) window.clearTimeout(attente);
       synth.cancel();
     };
   }, [lecture, index, etapes]);
