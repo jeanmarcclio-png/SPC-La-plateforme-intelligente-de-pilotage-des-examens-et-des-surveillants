@@ -253,7 +253,7 @@ const SCRIPTS: Record<string, ScriptEcran> = {
   },
 
   "/operations": {
-    ecran: "Opérations",
+    ecran: "Tableau de bord",
     etapes: [
       {
         titre: "Bienvenue",
@@ -267,11 +267,244 @@ const SCRIPTS: Record<string, ScriptEcran> = {
           "Le menu de gauche suit le déroulé réel d'une session : la mission, la planification, le jour de l'examen, puis la facturation. " +
           "Ce panneau commente chaque écran au fur et à mesure. Vous pouvez le replier à tout moment.",
       },
+      {
+        titre: "Ce que montre cet écran",
+        texte:
+          "Le tableau de bord est la vue du dirigeant, pas celle du terrain. " +
+          "Il croise le chiffre d'affaires confirmé, la marge, la couverture en surveillants et les missions à venir. " +
+          "Pour piloter une session en cours, c'est le cockpit opérationnel qu'il faut ouvrir.",
+      },
+      {
+        titre: "Chiffre d'affaires et marge",
+        texte:
+          "Le chiffre d'affaires affiché ne compte que les devis acceptés, jamais les devis en attente. " +
+          "C'est une règle de prudence : un portefeuille gonflé de propositions non signées donne une image fausse de l'activité.",
+      },
+    ],
+  },
+
+  "/operations/supervision": {
+    ecran: "Supervision live",
+    etapes: [
+      {
+        titre: "Le jour J, en direct",
+        texte:
+          "Cet écran ne sert qu'un seul moment : pendant que les épreuves se déroulent. " +
+          "Il montre salle par salle qui est en poste, qui manque, et où en est chaque créneau.",
+      },
+      {
+        titre: "Pourquoi une vue séparée",
+        texte:
+          "Le cockpit répond à la question de la veille : est-ce que tout est prêt. " +
+          "La supervision répond à celle de l'instant : est-ce que tout se passe. " +
+          "Ce ne sont pas les mêmes informations, ni les mêmes personnes qui les regardent.",
+      },
+    ],
+  },
+
+  "/operations/demandes-client": {
+    ecran: "Demandes clients",
+    etapes: [
+      {
+        titre: "Avant la mission",
+        texte:
+          "Une session commence rarement par un planning. Elle commence par une demande : " +
+          "un établissement annonce des dates, un volume de candidats, parfois des contraintes particulières.",
+      },
+      {
+        titre: "Ce que cet écran évite",
+        texte:
+          "Sans point d'entrée unique, ces demandes vivent dans des courriels et des appels, et l'une d'elles finit par se perdre. " +
+          "Les tracer ici, c'est aussi pouvoir répondre plus tard à la question « quand nous l'avez-vous demandé ? ».",
+      },
+    ],
+  },
+
+  "/operations/risques": {
+    ecran: "Risques IA",
+    etapes: [
+      {
+        titre: "Un auditeur, pas un oracle",
+        texte:
+          "Cet écran relit votre planning et signale ce qui menace la session : sous-couverture, surcharge d'un surveillant, " +
+          "aménagement non pourvu, salle sans responsable.",
+      },
+      {
+        titre: "Ce qu'il ne fait pas",
+        texte:
+          "Il ne décide rien et ne modifie rien. Il attire l'attention, et c'est vous qui tranchez. " +
+          "Une aide à la décision qui déciderait à votre place serait ingérable le jour où elle se trompe.",
+      },
+    ],
+  },
+
+  "/operations/planification/planning": {
+    ecran: "Affectations",
+    etapes: [
+      {
+        titre: "Le plan de salle",
+        texte:
+          "Ici on pose les surveillants sur les salles et les créneaux. La charge de chacun se met à jour à mesure, " +
+          "ce qui évite de découvrir en fin de saisie qu'une personne a été placée sur deux salles à la même heure.",
+      },
+      {
+        titre: "La règle du quota",
+        texte:
+          "Le nombre de surveillants requis découle de la capacité de la salle, pas d'une saisie libre. " +
+          "C'est ce qui rend la couverture comparable d'une session à l'autre.",
+      },
+    ],
+  },
+
+  "/operations/planification/copilote": {
+    ecran: "Copilote",
+    etapes: [
+      {
+        titre: "Ce que propose le copilote",
+        texte:
+          "Il examine les disponibilités, les zones géographiques et les qualifications, puis propose des affectations " +
+          "pour les postes encore vacants.",
+      },
+      {
+        titre: "La validation reste humaine",
+        texte:
+          "Aucune proposition ne s'applique seule. Vous acceptez, vous modifiez, ou vous ignorez. " +
+          "C'est une contrainte assumée : la responsabilité d'une session ne se délègue pas à un calcul.",
+      },
+    ],
+  },
+
+  // --- Espace commercial ----------------------------------------------------
+  // Accessible depuis « Cockpit commercial », en bas du menu.
+
+  "/cockpit": {
+    ecran: "Cockpit dirigeant",
+    etapes: [
+      {
+        titre: "La vue de direction",
+        texte:
+          "Activité commerciale, portefeuille et santé des campagnes en un écran. " +
+          "C'est la contrepartie du cockpit opérationnel : l'un regarde la session du jour, l'autre l'entreprise.",
+      },
+    ],
+  },
+
+  "/dashboard": {
+    ecran: "Tableau de bord commercial",
+    etapes: [
+      {
+        titre: "Le suivi de l'activité",
+        texte:
+          "Prospects, campagnes, échéances et alertes commerciales. " +
+          "Cet espace sert la prospection, pas la conduite des sessions d'examen.",
+      },
+    ],
+  },
+
+  "/planning": {
+    ecran: "Calendrier",
+    etapes: [
+      {
+        titre: "Vue calendaire",
+        texte:
+          "Les sessions replacées dans le temps, pour repérer d'un coup d'œil les périodes de tension — " +
+          "en pratique, les fins de semestre, où tout se concentre sur quelques jours.",
+      },
+    ],
+  },
+
+  "/qualification": {
+    ecran: "Go / No-Go",
+    etapes: [
+      {
+        titre: "Décider d'engager, ou non",
+        texte:
+          "Toutes les demandes ne se valent pas. Cet écran confronte le volume, les contraintes et la marge attendue " +
+          "pour dire si une session mérite d'être engagée.",
+      },
+    ],
+  },
+
+  "/reporting": {
+    ecran: "Performance",
+    etapes: [
+      {
+        titre: "Ce que disent les chiffres",
+        texte:
+          "Performance commerciale sur la durée : taux de transformation, valeur moyenne, saisonnalité. " +
+          "Utile pour préparer la saison suivante plutôt que pour piloter la semaine en cours.",
+      },
+    ],
+  },
+
+  "/campagnes": {
+    ecran: "Campagnes",
+    etapes: [
+      {
+        titre: "Actions commerciales",
+        texte:
+          "Le suivi des campagnes de prospection auprès des établissements : ce qui a été envoyé, à qui, et ce que ça a produit.",
+      },
+    ],
+  },
+
+  "/livrables": {
+    ecran: "Livrables",
+    etapes: [
+      {
+        titre: "Ce qu'on remet au client",
+        texte:
+          "Documents produits pour les établissements — propositions, rapports, pièces contractuelles — rassemblés au même endroit.",
+      },
+    ],
+  },
+
+  "/parametres": {
+    ecran: "Paramètres",
+    etapes: [
+      {
+        titre: "Réglages de l'organisation",
+        texte:
+          "Tarifs, taux de majoration, coordonnées de facturation, membres de l'équipe. " +
+          "Ce sont ces valeurs qu'utilise le moteur de calcul : les modifier change tous les devis à venir.",
+      },
+      {
+        titre: "En démonstration",
+        texte:
+          "Vous pouvez ouvrir cet écran, mais aucun réglage ne sera enregistré. " +
+          "Toute tentative de modification répond explicitement qu'elle est refusée.",
+      },
+    ],
+  },
+
+  "/moi": {
+    ecran: "Espace surveillant",
+    etapes: [
+      {
+        titre: "L'autre côté du produit",
+        texte:
+          "Ce que voit un surveillant sur son téléphone : ses missions à venir, ses créneaux, et la confirmation de sa présence.",
+      },
+      {
+        titre: "Pourquoi c'est décisif",
+        texte:
+          "C'est par cet écran que remontent les émargements. Sans lui, la présence resterait déclarative, " +
+          "et la facturation ne pourrait pas s'appuyer sur le réalisé.",
+      },
     ],
   },
 };
 
-/** Script par défaut, pour tout écran non commenté. */
+/**
+ * Script par défaut, pour les pages utilitaires (connexion, hors-ligne,
+ * confidentialité) qui ne font pas partie du parcours produit.
+ *
+ * Un écran du PRODUIT qui retombe ici est un défaut, pas un choix : c'est ce
+ * que vérifie `narration-couverture.test.ts`, qui énumère l'arborescence réelle
+ * des routes plutôt qu'une liste tenue à la main — une liste écrite à la main
+ * oublie précisément les écrans ajoutés après elle, ce qui est arrivé pour le
+ * tableau de bord, la supervision, les demandes clients et les risques.
+ */
 const PAR_DEFAUT: ScriptEcran = {
   ecran: "Démonstration",
   etapes: [
@@ -299,4 +532,13 @@ export function scriptPour(chemin: string): ScriptEcran {
     }
   }
   return meilleur ?? PAR_DEFAUT;
+}
+
+/**
+ * `true` si le chemin est réellement commenté, `false` s'il retombe sur le
+ * script par défaut. Sert au test de couverture ; l'interface, elle, n'a pas à
+ * connaître la différence.
+ */
+export function aUnScriptDedie(chemin: string): boolean {
+  return scriptPour(chemin) !== PAR_DEFAUT;
 }

@@ -11,7 +11,7 @@ import { getCurrentUser, getCurrentRole } from "@/lib/auth/session";
 import { getMissions, getAffectations, getSurveillants, getSalles, getIncidents } from "@/lib/operations/queries";
 import { buildCockpitView } from "@/lib/operations/cockpit";
 import { origineGlobale, premiereErreur } from "@/lib/operations/source";
-import { BandeauSource, EtatVide } from "@/components/ops/EtatSource";
+import { BandeauDemo, BandeauSource, EtatVide } from "@/components/ops/EtatSource";
 import {
   COMMAND_CSS, CommandSidebar, initialesNom, nomDepuisEmail, libelleRole,
 } from "@/components/ops/command/shell";
@@ -196,7 +196,11 @@ export default async function CockpitOpsPage() {
 
         <div className="scroll">
           {/* Origine des données : la démonstration et l'erreur sont signalées,
-              jamais masquées par des chiffres crédibles (BUG-001 / BUG-002). */}
+              jamais masquées par des chiffres crédibles (BUG-001 / BUG-002).
+              Le bandeau de démonstration est rendu ICI, et non par le cadre
+              applicatif : cet écran vit dans le groupe (ops-cockpit), qui n'a
+              pas de layout propre. */}
+          {origine === "demo" && <BandeauDemo />}
           <BandeauSource origine={origine} detail={detailErreur} />
 
           {view.vide ? (

@@ -8,9 +8,18 @@ describe("narration de démonstration", () => {
 
   it("un écran de détail hérite du script de sa section", () => {
     // /operations/devis/42 n'a pas de script propre et ne doit pas retomber sur
-    // le script générique : la correspondance se fait par préfixe.
+    // le script générique : la correspondance se fait par préfixe. C'est ce qui
+    // évite d'écrire un script par identifiant de devis.
     expect(scriptPour("/operations/devis/42").ecran).toBe("Devis");
-    expect(scriptPour("/operations/planification/planning").ecran).toBe("Planification");
+  });
+
+  it("mais un sous-écran QUI A son script garde le sien", () => {
+    // L'héritage par préfixe ne doit pas écraser un commentaire écrit
+    // spécialement : le planning et le copilote ont chacun le leur, et ne
+    // doivent pas être commentés comme la planification en général.
+    expect(scriptPour("/operations/planification").ecran).toBe("Planification");
+    expect(scriptPour("/operations/planification/planning").ecran).toBe("Affectations");
+    expect(scriptPour("/operations/planification/copilote").ecran).toBe("Copilote");
   });
 
   it("le préfixe le PLUS LONG gagne", () => {

@@ -11,7 +11,7 @@ import {
   COMMAND_CSS, CommandSidebar, initialesNom, nomDepuisEmail, libelleRole,
 } from "@/components/ops/command/shell";
 import { SallesCommandCenter } from "@/components/ops/salles/SallesCommandCenter";
-import { BandeauSource } from "@/components/ops/EtatSource";
+import { BandeauDemo, BandeauSource } from "@/components/ops/EtatSource";
 import { origineGlobale, premiereErreur } from "@/lib/operations/source";
 import { couvertureSession } from "@/lib/operations/couverture";
 import { SALLES_CSS } from "@/components/ops/salles/styles";
@@ -101,6 +101,9 @@ export default async function SallesPage() {
         </header>
 
         <div style={{ padding: "0 26px" }}>
+          {/* Bandeau de démonstration rendu ici : cet écran vit dans le groupe
+              (ops-cockpit), qui n'a pas de layout propre pour le porter. */}
+          {origineGlobale(jSalles, jIncidents, jMissions) === "demo" && <BandeauDemo />}
           <BandeauSource
             origine={origineGlobale(jSalles, jIncidents, jMissions)}
             detail={premiereErreur(jSalles, jIncidents, jMissions)}

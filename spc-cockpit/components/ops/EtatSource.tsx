@@ -60,9 +60,20 @@ export function BandeauErreur({ detail }: { detail?: string }) {
  * Bandeau d'origine à poser en tête d'écran. Ne rend rien quand les données
  * viennent réellement de la base (cas nominal) ou quand l'écran est simplement
  * vide — ce dernier cas relève de `EtatVide`, au plus près du contenu absent.
+ *
+ * NE REND PAS le bandeau de démonstration, volontairement.
+ * ---------------------------------------------------------
+ * Le mode démonstration est GLOBAL : il ne concerne pas telle ou telle lecture,
+ * mais l'instance entière. Il est donc signalé une seule fois, par le cadre
+ * applicatif (`app/(operations)/layout.tsx`, et le layout racine pour les
+ * écrans qui n'en ont pas).
+ *
+ * Le rendre ici AUSSI affichait deux bandeaux identiques empilés sur les neuf
+ * écrans qui appellent ce composant, et un seul sur les sept autres — une
+ * incohérence visible en démonstration, et le genre de détail qui fait douter
+ * du reste.
  */
 export function BandeauSource({ origine, detail }: { origine: OrigineDonnees; detail?: string }) {
-  if (origine === "demo") return <BandeauDemo />;
   if (origine === "erreur") return <BandeauErreur detail={detail} />;
   return null;
 }
