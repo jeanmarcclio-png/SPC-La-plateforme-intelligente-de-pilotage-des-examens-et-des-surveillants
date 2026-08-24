@@ -41,11 +41,47 @@ fictives sans que rien ne le trahisse côté serveur.
    **N'ajoutez aucune variable Supabase.** Pas d'URL, pas de clé anonyme, et
    surtout pas `SUPABASE_SERVICE_ROLE_KEY` : une instance publique n'a aucune
    raison de porter un passe-partout de base de données.
-4. Déployer, puis **Settings → Domains** → `demo.votre-domaine.fr`.
+4. Déployer.
+5. **Régler la branche de production** — voir l'encadré ci-dessous.
+6. **Settings → Domains** → `demo.votre-domaine.fr`.
 
 Un domaine propre n'est pas cosmétique ici : sur `*.vercel.app`, Chrome affiche
 un avertissement « Dangereux » hérité du domaine partagé, et vous ne pouvez pas
 envoyer à une direction de la scolarité un lien que son navigateur signale.
+
+### ⚠️ Le premier déploiement sera cassé — et c'est normal
+
+À la création d'un projet, Vercel déploie **`main`**, sans demander. Tant que le
+mode démonstration n'est pas fusionné sur `main`, ce premier déploiement produit
+donc l'ancienne application : elle se construit sans erreur, puis rend une
+**« Internal Server Error »** sur chaque écran, faute de variables Supabase.
+
+Ne cherchez pas la panne, il n'y en a pas. Réglez la branche :
+
+**Settings → Environments → Production → Branch Tracking**
+
+> Le champ a changé de place au fil des versions de Vercel. Il a été dans
+> *Settings → Git* sous le nom *Production Branch* ; il est aujourd'hui dans
+> *Environments → Production*, sous le nom *Branch Tracking*. L'invariant :
+> c'est le réglage qui dit **quelle branche produit la production**.
+
+Vercel affiche alors une phrase qui sert de contrôle, et c'est le seul signe
+qui compte :
+
+```
+Every commit pushed to the <branche> branch will create a Production Deployment.
+```
+
+Un bandeau rouge peut apparaître — *« No deployments found for … Deploy the
+branch, then retry »*. Il est attendu : ce projet n'a encore jamais construit
+cette branche. Il disparaît au premier envoi de code dessus.
+
+Enfin, **régler la branche ne déclenche rien**. Vercel attend le prochain
+commit. Poussez n'importe quelle modification touchant `spc-cockpit/` — le
+réglage *Skip deployments when there are no changes to the root directory*
+étant actif par défaut, une modification hors de ce dossier serait ignorée.
+
+Une fois la PR fusionnée sur `main`, remettez ce réglage sur `main`.
 
 ---
 
