@@ -58,7 +58,7 @@ export default async function OperationsLayout({ children }: { children: React.R
   return (
     <div className="flex h-dvh overflow-hidden flex-col md:flex-row" style={{ background: "#F6F8FC" }}>
       <OpsMobileHeader />
-      <OpsSidebar openIncidents={openIncidents} />
+      <OpsSidebar openIncidents={openIncidents} isAdmin={role === "administrateur"} />
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
         <OpsTopbar
           orgs={orgOptions}

@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Bell, HelpCircle, CalendarClock, ChevronDown, Check } from "lucide-react";
+import { Search, Bell, HelpCircle, CalendarClock, ChevronDown, Check, KeyRound } from "lucide-react";
 import { NAV } from "./OpsSidebar";
 import { OrgSwitcher, type OrgOption } from "./OrgSwitcher";
 
@@ -185,6 +185,15 @@ export function OpsTopbar({
         >
           <HelpCircle className="w-[18px] h-[18px]" aria-hidden />
         </button>
+
+        <Link
+          href="/compte/mot-de-passe"
+          title="Changer mon mot de passe"
+          aria-label="Changer mon mot de passe"
+          className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+        >
+          <KeyRound className="w-[18px] h-[18px]" aria-hidden />
+        </Link>
 
         {/* Profil */}
         <Link

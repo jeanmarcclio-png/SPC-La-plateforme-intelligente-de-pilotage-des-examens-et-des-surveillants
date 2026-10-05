@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Gauge, Activity, Inbox, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert, Plus, FilePlus2 } from "lucide-react";
+import { LayoutDashboard, Gauge, Activity, Inbox, Users, Briefcase, CalendarClock, DoorOpen, Accessibility, FileText, Euro, ClipboardCheck, AlertTriangle, BarChart3, ArrowLeft, ChevronRight, ShieldAlert, Plus, FilePlus2, UserCog } from "lucide-react";
 import { isNavActive } from "@/lib/operations/nav";
 
 export const NAV = [
@@ -21,6 +21,12 @@ export const NAV = [
   { href: "/operations/incidents",       label: "Incidents",            icon: <AlertTriangle className="w-4 h-4" /> },
   { href: "/operations/rapports",        label: "Rapports",             icon: <BarChart3 className="w-4 h-4" /> },
   { href: "/operations/risques",         label: "Risques IA",           icon: <ShieldAlert className="w-4 h-4" /> },
+];
+
+// Entrées réservées aux administrateurs (affichées seulement pour eux ; la page
+// vérifie aussi le rôle côté serveur).
+export const NAV_ADMIN = [
+  { href: "/operations/collaborateurs",  label: "Collaborateurs",       icon: <UserCog className="w-4 h-4" /> },
 ];
 
 const RACCOURCIS = [
@@ -47,7 +53,7 @@ function LogoBlock() {
   );
 }
 
-export function OpsSidebar({ openIncidents = 0 }: { openIncidents?: number }) {
+export function OpsSidebar({ openIncidents = 0, isAdmin = false }: { openIncidents?: number; isAdmin?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -85,6 +91,30 @@ export function OpsSidebar({ openIncidents = 0 }: { openIncidents?: number }) {
             </Link>
           );
         })}
+
+        {isAdmin && (
+          <>
+            <div className="px-1 pt-4 pb-1.5 text-[10px] font-bold uppercase tracking-[1.5px] text-[#5f7a94]">Administration</div>
+            {NAV_ADMIN.map((item) => {
+              const active = isNavActive(pathname, item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex items-center justify-between gap-2.5 rounded-xl px-3 py-[9px] text-[13px] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+                    active
+                      ? "bg-white text-[#0d2137] font-semibold shadow-sm"
+                      : "text-[#8fa3b8] hover:bg-white/[0.06] hover:text-[#d6e2ee]"
+                  }`}
+                >
+                  <span className="flex items-center gap-2.5">{item.icon}{item.label}</span>
+                  {active && <ChevronRight className="w-3.5 h-3.5 text-[#0d2137]/40" />}
+                </Link>
+              );
+            })}
+          </>
+        )}
 
         {/* Raccourcis */}
         <div className="px-1 pt-4 pb-1.5 text-[10px] font-bold uppercase tracking-[1.5px] text-[#5f7a94]">Raccourcis</div>
