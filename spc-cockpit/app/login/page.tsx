@@ -6,15 +6,21 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 type Mode = "password" | "magic";
 
+// Erreurs transmises par les routes d'authentification (?error=…).
+const MESSAGES_ERREUR: Record<string, string> = {
+  lien: "Ce lien d'accès a expiré ou a déjà été utilisé. Demandez-en un nouveau à votre administrateur.",
+  auth: "La connexion par lien a échoué. Réessayez ou utilisez votre mot de passe.",
+};
+
 function LoginForm() {
   const [mode, setMode] = useState<Mode>("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const search = useSearchParams();
+  const [error, setError] = useState(() => MESSAGES_ERREUR[search.get("error") ?? ""] ?? "");
+  const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(false);
   const redirect = search.get("redirect") ?? "/operations";
 
   async function handlePassword(e: React.FormEvent) {
