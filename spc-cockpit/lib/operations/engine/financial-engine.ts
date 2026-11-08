@@ -171,6 +171,129 @@ export function ttcFromHT(htEuros: number, vatRate: number = TVA_RATE): number {
 }
 
 // ---------------------------------------------------------------------------
+// Totaux et plages d'un devis — source unique pour la liste, la fiche,
+// les KPI et la facturation. Aucune page ne recalcule ces montants.
+// ---------------------------------------------------------------------------
+
+export interface DevisLigneCalcul {
+  quantite: number;
+  prixUnitaire: number;
+}
+
+export interface DevisEquipeCalcul {
+  effectif: number;
+  heuresPers: number;
+  tauxH: number;
+}
+
+export interface TotauxDevis {
+  baseBruteHT: number;
+  baseAjustee: number;
+  ht: number;
+  tva: number;
+  ttc: number;
+}
+
+/**
+ * Base brute HT d'un devis, en centimes :
+ *  - équipe saisie → Σ effectif × heures × taux horaire ;
+ *  - sinon lignes saisies → Σ quantité × prix unitaire ;
+ *  - sinon → le montant de base saisi sur le devis.
+ * Chaque ligne est arrondie au centime une seule fois.
+ */
+export function calculateDevisBaseBruteCents(input: {
+  montantHTBase: number;
+  lignes: DevisLigneCalcul[];
+  equipe: DevisEquipeCalcul[];
+}): number {
+  if (input.equipe.length > 0) {
+    return input.equipe.reduce((s, e) => s + roundCents(e.effectif * e.heuresPers * e.tauxH * 100), 0);
+  }
+  if (input.lignes.length > 0) {
+    return input.lignes.reduce((s, l) => s + roundCents(l.quantite * l.prixUnitaire * 100), 0);
+  }
+  return eurosToCents(input.montantHTBase);
+}
+
+/**
+ * Totaux complets d'un devis : base (équipe > lignes > montant saisi) →
+ * coefficient (une seule fois) → + frais − remise → TVA → TTC.
+ */
+export function calculateDevisTotauxComplets(input: {
+  montantHTBase: number;
+  coefficient?: number;
+  fraisDeplacement?: number;
+  fraisCoordination?: number;
+  remise?: number;
+  lignes?: DevisLigneCalcul[];
+  equipe?: DevisEquipeCalcul[];
+  vatRate?: number;
+}): TotauxDevis {
+  const baseCents = calculateDevisBaseBruteCents({
+    montantHTBase: input.montantHTBase,
+    lignes: input.lignes ?? [],
+    equipe: input.equipe ?? [],
+  });
+  const baseBruteHT = centsToEuros(baseCents);
+  const totaux = calculateDevisTotals({
+    baseBruteHT,
+    coefficient: input.coefficient,
+    fraisDeplacement: input.fraisDeplacement,
+    fraisCoordination: input.fraisCoordination,
+    remise: input.remise,
+    vatRate: input.vatRate,
+  });
+  return { baseBruteHT, ...totaux };
+}
+
+export interface PlageHoraire {
+  debutMinutes: number;
+  finMinutes: number;
+  heures: number;
+}
+
+/**
+ * Plage couverte par un ensemble de créneaux : du plus tôt au plus tard.
+ * Les horaires absents ou invalides sont ignorés. Renvoie null si aucune
+ * plage exploitable (horaires manquants ou fin ≤ début).
+ */
+export function calculatePlageHoraire(
+  creneaux: Array<{ debut?: string | null; fin?: string | null }>,
+): PlageHoraire | null {
+  const debuts: number[] = [];
+  const fins: number[] = [];
+  for (const c of creneaux) {
+    try { if (c.debut) debuts.push(parseTimeToMinutes(c.debut)); } catch { /* horaire invalide : ignoré */ }
+    try { if (c.fin) fins.push(parseTimeToMinutes(c.fin)); } catch { /* horaire invalide : ignoré */ }
+  }
+  if (!debuts.length || !fins.length) return null;
+  const debutMinutes = Math.min(...debuts);
+  const finMinutes = Math.max(...fins);
+  if (finMinutes <= debutMinutes) return null;
+  return { debutMinutes, finMinutes, heures: (finMinutes - debutMinutes) / 60 };
+}
+
+/** Heures d'une ligne d'équipe = effectif × heures par personne. */
+export function calculateEquipeHeures(e: DevisEquipeCalcul): number {
+  return e.effectif * e.heuresPers;
+}
+
+/** Montant d'une ligne d'équipe (euros, arrondi au centime). */
+export function calculateEquipeLigneEuros(e: DevisEquipeCalcul): number {
+  return centsToEuros(roundCents(e.effectif * e.heuresPers * e.tauxH * 100));
+}
+
+/** Total de l'équipe (euros) : même règle que la base brute du devis. */
+export function calculateEquipeTotalEuros(equipe: DevisEquipeCalcul[]): number {
+  return centsToEuros(calculateDevisBaseBruteCents({ montantHTBase: 0, lignes: [], equipe }));
+}
+
+/** Heures d'une journée = heures du matin + heures de l'après-midi (Product Bible §9.2). */
+export function calculateDayHours(matinHeures: number, apmHeures: number): number {
+  return matinHeures + apmHeures;
+}
+
+// ---------------------------------------------------------------------------
 // Formatage d'affichage (jamais utilisé dans les calculs)
 // ---------------------------------------------------------------------------
 

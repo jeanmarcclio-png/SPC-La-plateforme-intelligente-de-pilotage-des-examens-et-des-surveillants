@@ -8,29 +8,18 @@ import { DevisBadge } from "@/components/ops/badges";
 import { PrintButton } from "@/components/ops/PrintButton";
 import { DuplicateDevisButton } from "@/components/ops/DuplicateDevisButton";
 import { euro, dateFR } from "@/lib/operations/format";
-import { calculateDevisTotals, parseTimeToMinutes, eurosToCents, centsToEuros } from "@/lib/operations/engine";
-import { ArrowLeft, CheckCircle2, Euro, CalendarClock, Briefcase, AlertTriangle } from "lucide-react";
+import { calculateDayHours, calculateDevisTotauxComplets, calculateEquipeHeures, calculateEquipeLigneEuros, calculateEquipeTotalEuros, calculatePlageHoraire } from "@/lib/operations/engine";
+import { ArrowLeft, CheckCircle2, Euro, CalendarClock, Briefcase } from "lucide-react";
 
 // Couleur du document devis alignée sur la marque Survéo (deep teal, contraste AA texte blanc).
 const NAVY = "#0f766e";
 
-function mins(hm?: string): number | null {
-  if (!hm) return null;
-  try {
-    return parseTimeToMinutes(hm);
-  } catch {
-    return null;
-  }
-}
-
+// Mise en forme seulement : le calcul de la plage vit dans le moteur.
 function plage(salles: DevisSalle[]): { label: string; heures: number } {
-  const debuts = salles.map((s) => mins(s.debut)).filter((v): v is number => v !== null);
-  const fins = salles.map((s) => mins(s.fin)).filter((v): v is number => v !== null);
-  if (!debuts.length || !fins.length) return { label: "Non", heures: 0 };
-  const d = Math.min(...debuts);
-  const f = Math.max(...fins);
+  const p = calculatePlageHoraire(salles.map((s) => ({ debut: s.debut, fin: s.fin })));
+  if (!p) return { label: "Non", heures: 0 };
   const fmt = (v: number) => `${String(Math.floor(v / 60)).padStart(2, "0")}:${String(v % 60).padStart(2, "0")}`;
-  return { label: `${fmt(d)}–${fmt(f)}`, heures: (f - d) / 60 };
+  return { label: `${fmt(p.debutMinutes)}–${fmt(p.finMinutes)}`, heures: p.heures };
 }
 
 function joursCalendaires(debut?: string, fin?: string): number | null {
@@ -124,22 +113,20 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
   const sallesMatin = salles.filter((s) => s.session === "matin");
   const sallesApm = salles.filter((s) => s.session === "apres-midi");
 
-  const totalLignes = lignesDevis.reduce((s, l) => s + l.quantite * l.prixUnitaire, 0);
-  const totalEquipe = equipe.reduce((s, e) => s + e.effectif * e.heuresPers * e.tauxH, 0);
-  const baseBrute = equipe.length > 0 ? totalEquipe : lignesDevis.length > 0 ? totalLignes : devis.montantHT;
   const coefficient = devis.coefficient > 0 ? devis.coefficient : 1;
-  const { baseAjustee, ht, tva, ttc } = calculateDevisTotals({
-    baseBruteHT: baseBrute,
+  const { baseBruteHT, baseAjustee, ht, tva, ttc } = calculateDevisTotauxComplets({
+    montantHTBase: devis.montantHTBase ?? devis.montantHT,
     coefficient,
     fraisDeplacement: devis.fraisDeplacement,
     fraisCoordination: devis.fraisCoordination,
     remise: devis.remise,
+    lignes: lignesDevis,
+    equipe,
   });
-  const ecart = centsToEuros(eurosToCents(ht) - eurosToCents(devis.montantHT));
 
   const matin = plage(sallesMatin);
   const apm = plage(sallesApm);
-  const heuresJour = matin.heures + apm.heures;
+  const heuresJour = calculateDayHours(matin.heures, apm.heures);
   const calendaires = joursCalendaires(devis.dateDebut, devis.dateFin);
   const retenus = joursOuvres(devis.dateDebut, devis.dateFin);
 
@@ -255,7 +242,7 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
                       <td className="px-4 py-2.5 text-[13px] text-gray-700">{e.heuresPers.toLocaleString("fr-FR")}h</td>
                       <td className="px-4 py-2.5 text-[13px] font-bold text-gray-900">{(e.effectif * e.heuresPers).toLocaleString("fr-FR")}h</td>
                       <td className="px-4 py-2.5 text-[13px] text-gray-700 whitespace-nowrap">{euro(e.tauxH)}</td>
-                      <td className="px-4 py-2.5 text-[13px] font-bold text-gray-900 whitespace-nowrap text-right">{euro(e.effectif * e.heuresPers * e.tauxH)}</td>
+                      <td className="px-4 py-2.5 text-[13px] font-bold text-gray-900 whitespace-nowrap text-right">{euro(calculateEquipeLigneEuros(e))}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -264,9 +251,9 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
                     <td className="px-4 py-2.5 text-[12.5px] font-extrabold text-gray-900">TOTAL</td>
                     <td className="px-4 py-2.5 text-[13px] font-extrabold text-gray-900">{equipe.reduce((t, e) => t + e.effectif, 0)}</td>
                     <td />
-                    <td className="px-4 py-2.5 text-[13px] font-extrabold text-gray-900">{equipe.reduce((t, e) => t + e.effectif * e.heuresPers, 0).toLocaleString("fr-FR")}h</td>
+                    <td className="px-4 py-2.5 text-[13px] font-extrabold text-gray-900">{equipe.reduce((t, e) => t + calculateEquipeHeures(e), 0).toLocaleString("fr-FR")}h</td>
                     <td />
-                    <td className="px-4 py-2.5 text-[13.5px] font-extrabold text-gray-900 whitespace-nowrap text-right">{euro(totalEquipe)}</td>
+                    <td className="px-4 py-2.5 text-[13.5px] font-extrabold text-gray-900 whitespace-nowrap text-right">{euro(calculateEquipeTotalEuros(equipe))}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -314,7 +301,7 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
           <div className="rounded-xl border border-gray-100 divide-y divide-gray-100">
             <div className="flex justify-between px-4 py-2.5 text-[13px] text-gray-700">
               <span>Base brute HT ({equipe.length > 0 ? "heures × tarifs" : "détail des prestations"})</span>
-              <span className="font-semibold">{euro(baseBrute)}</span>
+              <span className="font-semibold">{euro(baseBruteHT)}</span>
             </div>
             {coefficient !== 1 && (
               <>
@@ -359,15 +346,6 @@ export default async function DevisDetailPage({ params }: { params: Promise<{ id
             </div>
           </div>
 
-          {Math.abs(ecart) >= 0.01 && (
-            <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-[12.5px] text-amber-800 print:hidden">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden />
-              <span>
-                Écart de <strong>{euro(Math.abs(ecart))}</strong> entre le total calculé ({euro(ht)}) et le montant
-                enregistré sur le devis ({euro(devis.montantHT)}). Mettez à jour le devis ou son détail pour aligner les deux.
-              </span>
-            </div>
-          )}
 
           {facture && (
             <div className="mt-3 rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-3 flex items-center justify-between gap-3 flex-wrap">

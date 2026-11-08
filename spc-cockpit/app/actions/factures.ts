@@ -16,14 +16,14 @@ function parseForm(fd: FormData) {
   const reference = (fd.get("reference") as string | null)?.trim();
   const client = (fd.get("client") as string | null)?.trim();
   const montantHT = Number(fd.get("montant_ht") ?? 0) || 0;
-  const montantTTCRaw = Number(fd.get("montant_ttc") ?? 0) || 0;
   return {
     reference,
     client,
     session: (fd.get("session") as string | null)?.trim() || null,
     statut: (fd.get("statut") as string | null) ?? "À facturer",
     montant_ht: montantHT,
-    montant_ttc: montantTTCRaw > 0 ? montantTTCRaw : ttcFromHT(montantHT),
+    // TTC jamais saisi : calculé depuis le HT (TVA appliquée une seule fois).
+    montant_ttc: ttcFromHT(montantHT),
     emission: (fd.get("emission") as string | null) || null,
     echeance: (fd.get("echeance") as string | null) || null,
   };

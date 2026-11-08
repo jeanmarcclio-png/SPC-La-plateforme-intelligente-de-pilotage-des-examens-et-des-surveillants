@@ -2,9 +2,10 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { ttcFromHT } from "@/lib/operations/engine";
+import { calculateDevisTotauxComplets } from "@/lib/operations/engine";
 import { requireCapability } from "@/lib/auth/session";
 import { getActiveOrgId } from "@/lib/auth/org";
+import { prochaineReferenceMission } from "@/lib/operations/reference-mission";
 
 function revalidateOps() {
   revalidatePath("/operations");
@@ -91,14 +92,20 @@ function parseForm(fd: FormData) {
   const reference = (fd.get("reference") as string | null)?.trim();
   const client = (fd.get("client") as string | null)?.trim();
   const montantHT = Number(fd.get("montant_ht") ?? 0) || 0;
-  const montantTTCRaw = Number(fd.get("montant_ttc") ?? 0) || 0;
+  const coefficient = Number(fd.get("coefficient") ?? 1) || 1;
+  const fraisDeplacement = Number(fd.get("frais_deplacement") ?? 0) || 0;
+  const fraisCoordination = Number(fd.get("frais_coordination") ?? 0) || 0;
+  const remise = Number(fd.get("remise") ?? 0) || 0;
+  // Le TTC n'est jamais accepté depuis le formulaire : il est calculé par le moteur.
+  // Colonne indicative : toute lecture recalcule les totaux (lignes et équipe inclus).
+  const totaux = calculateDevisTotauxComplets({ montantHTBase: montantHT, coefficient, fraisDeplacement, fraisCoordination, remise });
   return {
     reference,
     client,
     session: (fd.get("session") as string | null)?.trim() || null,
     statut: (fd.get("statut") as string | null) ?? "Brouillon",
     montant_ht: montantHT,
-    montant_ttc: montantTTCRaw > 0 ? montantTTCRaw : ttcFromHT(montantHT),
+    montant_ttc: totaux.ttc,
     nb_surveillants: Number(fd.get("nb_surveillants") ?? 0) || 0,
     contact: (fd.get("contact") as string | null)?.trim() || null,
     email: (fd.get("email") as string | null)?.trim() || null,
@@ -106,10 +113,10 @@ function parseForm(fd: FormData) {
     type_epreuve: (fd.get("type_epreuve") as string | null)?.trim() || null,
     date_debut: (fd.get("date_debut") as string | null) || null,
     date_fin: (fd.get("date_fin") as string | null) || null,
-    coefficient: Number(fd.get("coefficient") ?? 1) || 1,
-    frais_deplacement: Number(fd.get("frais_deplacement") ?? 0) || 0,
-    frais_coordination: Number(fd.get("frais_coordination") ?? 0) || 0,
-    remise: Number(fd.get("remise") ?? 0) || 0,
+    coefficient,
+    frais_deplacement: fraisDeplacement,
+    frais_coordination: fraisCoordination,
+    remise,
   };
 }
 
@@ -123,14 +130,23 @@ async function creerMissionDepuisDevis(
   if (!d) return { error: "Devis introuvable" };
   if (d.mission_id) return {}; // mission déjà liée — rien à faire
 
-  // Référence EX-YYYY-NNN suivante
-  const { data: refs } = await supabase.from("missions").select("reference");
   const annee = (d.date_debut as string | null)?.slice(0, 4) ?? "2026";
-  const max = (refs ?? []).reduce((acc, r) => {
-    const n = Number(String(r.reference).match(/^EX-\d{4}-(\d+)$/)?.[1] ?? 0);
-    return Math.max(acc, n);
-  }, 0);
-  const reference = `EX-${annee}-${String(max + 1).padStart(3, "0")}`;
+  const reference = await prochaineReferenceMission(supabase, annee);
+
+  // Montant de la mission = total calculé par le moteur (même règle que la fiche devis).
+  const [{ data: lignesDevis }, { data: equipeDevis }] = await Promise.all([
+    supabase.from("devis_lignes").select("quantite, prix_unitaire").eq("devis_id", devisId),
+    supabase.from("devis_equipe").select("effectif, heures_pers, taux_h").eq("devis_id", devisId),
+  ]);
+  const totaux = calculateDevisTotauxComplets({
+    montantHTBase: Number(d.montant_ht ?? 0),
+    coefficient: Number(d.coefficient ?? 1) > 0 ? Number(d.coefficient) : 1,
+    fraisDeplacement: Number(d.frais_deplacement ?? 0),
+    fraisCoordination: Number(d.frais_coordination ?? 0),
+    remise: Number(d.remise ?? 0),
+    lignes: (lignesDevis ?? []).map((l) => ({ quantite: Number(l.quantite ?? 1), prixUnitaire: Number(l.prix_unitaire ?? 0) })),
+    equipe: (equipeDevis ?? []).map((e) => ({ effectif: Number(e.effectif ?? 1), heuresPers: Number(e.heures_pers ?? 0), tauxH: Number(e.taux_h ?? 0) })),
+  });
 
   // Volume salles depuis la répartition du devis (max des deux sessions)
   const { data: salles } = await supabase.from("devis_salles").select("session, salle").eq("devis_id", devisId);
@@ -146,7 +162,7 @@ async function creerMissionDepuisDevis(
     type: d.type_epreuve ?? "Examen écrit",
     nb_salles: nbSalles,
     nb_surveillants: d.nb_surveillants ?? 1,
-    montant_ht: d.montant_ht ?? 0,
+    montant_ht: totaux.ht,
     statut: "Planifiée",
     org_id: d.org_id ?? orgId, // la mission hérite de l'org du devis
   }).select("id, reference").single();

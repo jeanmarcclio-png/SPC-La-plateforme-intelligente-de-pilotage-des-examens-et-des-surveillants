@@ -46,6 +46,8 @@ import {
   type LigneCockpit,
 } from "@/lib/operations/demandes/cockpit";
 import { chargerDemandes, enregistrerDemande, nouvelId } from "@/lib/operations/demandes/store";
+import { payloadMissionDepuisDemande } from "@/lib/operations/demandes/conversion";
+import { convertirDemandeEnMission } from "@/app/actions/demandes";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { showToast } from "@/components/Toast";
 import { DemandeForm } from "./DemandeForm";
@@ -178,6 +180,7 @@ export function DemandesCockpit() {
   const [apercu, setApercu] = useState<DemandeClient | null>(null);
   const [maintenant, setMaintenant] = useState<Date | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const enConversion = useRef(false);
 
   // Chargement client-only (localStorage) après montage : indisponible au
   // rendu serveur, donc impossible à dériver pendant le render. L'instant de
@@ -260,17 +263,30 @@ export function DemandesCockpit() {
     );
   }
 
-  function convertir(d: DemandeClient) {
+  // La conversion ne passe à « Convertie en mission » qu'après création réelle
+  // de la mission côté serveur : la référence affichée est celle du serveur.
+  async function convertir(d: DemandeClient) {
     if (d.statut !== "Validée SPC") {
       showToast("La demande doit être « Validée SPC » avant conversion.", "error");
       return;
     }
-    const missionRef = `EX-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 900) + 100)}`;
-    const date = new Date().toISOString();
-    persist(
-      { ...d, statut: "Convertie en mission", missionRef, updatedAt: date, historique: [...d.historique, { action: "Conversion mission", date, detail: missionRef }] },
-      `Mission ${missionRef} créée depuis ${d.reference}`,
-    );
+    if (enConversion.current) return;
+    enConversion.current = true;
+    try {
+      const res = await convertirDemandeEnMission(payloadMissionDepuisDemande(d));
+      if (res.error || !res.missionRef) {
+        showToast(res.error ?? "Conversion impossible.", "error");
+        return;
+      }
+      const missionRef = res.missionRef;
+      const date = new Date().toISOString();
+      persist(
+        { ...d, statut: "Convertie en mission", missionRef, updatedAt: date, historique: [...d.historique, { action: "Conversion mission", date, detail: missionRef }] },
+        `Mission ${missionRef} créée depuis ${d.reference}`,
+      );
+    } finally {
+      enConversion.current = false;
+    }
   }
 
   function changerStatut(d: DemandeClient, s: DemandeClient["statut"], label: string) {
