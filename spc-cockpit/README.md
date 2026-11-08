@@ -127,9 +127,13 @@ d'environnement sont configurées dans Vercel (jamais dans le dépôt).
 
 ## Dépannage
 
-- **Les écrans montrent des données d'exemple** → Supabase n'est pas connecté
-  (`.env.local` manquant/incomplet). L'app bascule volontairement sur le
-  mock-fallback plutôt que de planter.
+- **Toutes les pages répondent 503 « Configuration Supabase manquante »** →
+  `.env.local` absent ou incomplet (`NEXT_PUBLIC_SUPABASE_URL` et
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY`). Le middleware refuse l'accès plutôt que de
+  laisser passer une requête sans session.
+- **Les écrans montrent des données d'exemple** → Supabase est configuré mais
+  la lecture a échoué : l'app bascule volontairement sur le mock-fallback
+  plutôt que de planter.
 - **`column ... does not exist`** à l'exécution d'un SQL → une migration
   antérieure manque ; suivre l'ordre de `supabase/README.md`.
 - **Build échoue avec « No Next.js version detected » sur Vercel** → le Root

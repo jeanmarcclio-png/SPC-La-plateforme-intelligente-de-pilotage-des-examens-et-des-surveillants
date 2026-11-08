@@ -1,6 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 
+const CONFIG_MANQUANTE =
+  "Configuration Supabase manquante. Renseigner NEXT_PUBLIC_SUPABASE_URL et " +
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY dans .env.local (voir .env.example), puis relancer npm run dev.";
+
 export default async function proxy(req: NextRequest) {
   const res = NextResponse.next();
 
@@ -10,9 +14,22 @@ export default async function proxy(req: NextRequest) {
   // session Supabase. N'affecte en rien le déploiement réel.
   if (process.env.SPC_E2E === "1") return res;
 
+  // Configuration absente : aucune session ne peut être vérifiée. On répond
+  // 503 avec un message explicite — jamais un accès ouvert, jamais un crash 500.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    const { pathname } = req.nextUrl;
+    if (pathname === "/offline" || pathname === "/confidentialite") return res;
+    return new NextResponse(CONFIG_MANQUANTE, {
+      status: 503,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() { return req.cookies.getAll(); },
