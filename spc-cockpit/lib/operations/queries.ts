@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { appliquerTotauxDevis } from "./devis-totaux";
 import type { Surveillant, Mission, Affectation, Creneau, Devis, Incident, Salle, Amenagement, Facture, DevisLigne, DevisSalle, DevisEquipe , JournalEntry } from "./types";
 import { mockSurveillants, mockMissions, mockAffectations, mockDevis, mockIncidents, mockSalles, mockAmenagements, mockFactures, mockDevisLignes, mockDevisSalles, mockDevisEquipe, mockJournal } from "./mock";
 
@@ -101,7 +102,13 @@ export async function getAffectations(): Promise<Affectation[]> {
   }
 }
 
+// Devis avec totaux recalculés par le moteur à chaque lecture (voir devis-totaux.ts).
 export async function getDevisList(): Promise<Devis[]> {
+  const [bruts, lignes, equipe] = await Promise.all([lireDevisBruts(), getDevisLignes(), getDevisEquipe()]);
+  return bruts.map((d) => appliquerTotauxDevis(d, lignes, equipe));
+}
+
+async function lireDevisBruts(): Promise<Devis[]> {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.from("devis").select("*").order("created_at", { ascending: false });

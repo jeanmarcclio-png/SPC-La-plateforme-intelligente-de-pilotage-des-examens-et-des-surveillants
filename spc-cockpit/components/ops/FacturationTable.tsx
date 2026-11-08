@@ -53,13 +53,8 @@ function FactureForm({
   onCancel: () => void;
 }) {
   const [ht, setHt] = useState(0);
-  const [ttc, setTtc] = useState(0);
-  const [ttcTouched, setTtcTouched] = useState(false);
-
-  function onHtChange(v: number) {
-    setHt(v);
-    if (!ttcTouched) setTtc(ttcFromHT(v));
-  }
+  // TTC jamais saisi : calculé depuis le HT, TVA appliquée une seule fois.
+  const ttc = ttcFromHT(ht);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -86,10 +81,12 @@ function FactureForm({
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Montant HT (€)">
-          <input name="montant_ht" type="number" min="0" step="0.01" value={ht} onChange={(e) => onHtChange(Number(e.target.value))} className={inputCls} />
+          <input name="montant_ht" type="number" min="0" step="0.01" value={ht} onChange={(e) => setHt(Number(e.target.value))} className={inputCls} />
         </Field>
-        <Field label="Montant TTC (€)">
-          <input name="montant_ttc" type="number" min="0" step="0.01" value={ttc} onChange={(e) => { setTtcTouched(true); setTtc(Number(e.target.value)); }} className={inputCls} />
+        <Field label="Montant TTC (calculé, €)">
+          <div className="px-3 py-2 rounded-lg bg-gray-50 border border-gray-100 text-[13px] font-semibold text-gray-900" aria-live="polite">
+            {euro(ttc)}
+          </div>
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">

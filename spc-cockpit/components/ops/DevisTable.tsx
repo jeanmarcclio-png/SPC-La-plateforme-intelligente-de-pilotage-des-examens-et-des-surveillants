@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
-import type { Devis, DevisSalle } from "@/lib/operations/types";
+import type { Devis, DevisEquipe, DevisLigne, DevisSalle } from "@/lib/operations/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DevisSallesEditor } from "@/components/ops/DevisSallesEditor";
 import { createDevis, updateDevis, deleteDevis, duplicateDevis } from "@/app/actions/devis";
@@ -11,7 +11,7 @@ import { euro, dateFR } from "@/lib/operations/format";
 import { Button, ButtonLink } from "@/components/ops/Button";
 import { useRouter } from "next/navigation";
 import { Search, Plus, Pencil, Trash2, Eye, Copy } from "lucide-react";
-import { ttcFromHT } from "@/lib/operations/engine";
+import { calculateDevisTotauxComplets } from "@/lib/operations/engine";
 
 const ACCENT = "#2563eb";
 const STATUTS = ["Brouillon", "Envoyé", "Accepté", "Refusé", "Facturé"];
@@ -38,6 +38,8 @@ const inputCls =
 function DevisForm({
   initial,
   initialSalles,
+  initialLignes,
+  initialEquipe,
   suggestedRef,
   pending,
   onSubmit,
@@ -45,19 +47,29 @@ function DevisForm({
 }: {
   initial?: Devis;
   initialSalles: DevisSalle[];
+  initialLignes: DevisLigne[];
+  initialEquipe: DevisEquipe[];
   suggestedRef: string;
   pending: boolean;
   onSubmit: (fd: FormData) => void;
   onCancel: () => void;
 }) {
-  const [ht, setHt] = useState(initial?.montantHT ?? 0);
-  const [ttc, setTtc] = useState(initial?.montantTTC ?? 0);
-  const [ttcTouched, setTtcTouched] = useState(!!initial);
-
-  function onHtChange(v: number) {
-    setHt(v);
-    if (!ttcTouched) setTtc(ttcFromHT(v));
-  }
+  // Base HT saisie + paramètres : les totaux affichés viennent du moteur, comme à la lecture.
+  const [ht, setHt] = useState(initial?.montantHTBase ?? initial?.montantHT ?? 0);
+  const [coefficient, setCoefficient] = useState(initial?.coefficient ?? 1);
+  const [fraisDeplacement, setFraisDeplacement] = useState(initial?.fraisDeplacement ?? 0);
+  const [fraisCoordination, setFraisCoordination] = useState(initial?.fraisCoordination ?? 0);
+  const [remise, setRemise] = useState(initial?.remise ?? 0);
+  const totaux = calculateDevisTotauxComplets({
+    montantHTBase: ht,
+    coefficient: coefficient > 0 ? coefficient : 1,
+    fraisDeplacement,
+    fraisCoordination,
+    remise,
+    lignes: initialLignes,
+    equipe: initialEquipe,
+  });
+  const detailPresent = initialLignes.length > 0 || initialEquipe.length > 0;
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -107,34 +119,27 @@ function DevisForm({
         </Field>
       </div>
       <Field label="Coefficient d'ajustement">
-        <input name="coefficient" type="number" min="0.01" step="0.01" defaultValue={initial?.coefficient ?? 1} className={inputCls} />
+        <input name="coefficient" type="number" min="0.01" step="0.01" value={coefficient} onChange={(e) => setCoefficient(Number(e.target.value))} className={inputCls} />
         <p className="text-[11px] text-gray-400 mt-1">
           1,00 = aucun ajustement. Le coefficient représente une marge opérationnelle appliquée au volume horaire afin de couvrir les imprévus, renforts, remplacements, retards ou ajustements de dernière minute.
         </p>
       </Field>
       <div className="grid grid-cols-3 gap-3">
         <Field label="Frais déplacement (€)">
-          <input name="frais_deplacement" type="number" min="0" step="0.01" defaultValue={initial?.fraisDeplacement ?? 0} className={inputCls} />
+          <input name="frais_deplacement" type="number" min="0" step="0.01" value={fraisDeplacement} onChange={(e) => setFraisDeplacement(Number(e.target.value))} className={inputCls} />
         </Field>
         <Field label="Frais coordination (€)">
-          <input name="frais_coordination" type="number" min="0" step="0.01" defaultValue={initial?.fraisCoordination ?? 0} className={inputCls} />
+          <input name="frais_coordination" type="number" min="0" step="0.01" value={fraisCoordination} onChange={(e) => setFraisCoordination(Number(e.target.value))} className={inputCls} />
         </Field>
         <Field label="Remise (€)">
-          <input name="remise" type="number" min="0" step="0.01" defaultValue={initial?.remise ?? 0} className={inputCls} />
+          <input name="remise" type="number" min="0" step="0.01" value={remise} onChange={(e) => setRemise(Number(e.target.value))} className={inputCls} />
         </Field>
       </div>
-      <div className="grid grid-cols-3 gap-3">
-        <Field label="Montant HT (€)">
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Montant HT de base (€)">
           <input
             name="montant_ht" type="number" min="0" step="0.01" value={ht}
-            onChange={(e) => onHtChange(Number(e.target.value))}
-            className={inputCls}
-          />
-        </Field>
-        <Field label="Montant TTC (€)">
-          <input
-            name="montant_ttc" type="number" min="0" step="0.01" value={ttc}
-            onChange={(e) => { setTtcTouched(true); setTtc(Number(e.target.value)); }}
+            onChange={(e) => setHt(Number(e.target.value))}
             className={inputCls}
           />
         </Field>
@@ -142,7 +147,16 @@ function DevisForm({
           <input name="nb_surveillants" type="number" min="0" defaultValue={initial?.nbSurveillants ?? 0} className={inputCls} />
         </Field>
       </div>
-      <p className="text-[11px] text-gray-400">Le TTC se calcule automatiquement (TVA 20 %) tant que tu ne le modifies pas à la main.</p>
+      <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[12.5px]" aria-live="polite">
+        <div><div className="text-gray-500">Base brute HT</div><div className="font-semibold text-gray-900">{euro(totaux.baseBruteHT)}</div></div>
+        <div><div className="text-gray-500">Total HT</div><div className="font-semibold text-gray-900">{euro(totaux.ht)}</div></div>
+        <div><div className="text-gray-500">TVA</div><div className="font-semibold text-gray-900">{euro(totaux.tva)}</div></div>
+        <div><div className="text-gray-500">Total TTC</div><div className="font-extrabold text-gray-900">{euro(totaux.ttc)}</div></div>
+      </div>
+      <p className="text-[11px] text-gray-400">
+        Calculé automatiquement : base × coefficient + frais − remise, TVA appliquée une seule fois. Le TTC n&apos;est jamais saisi.
+        {detailPresent && " Les lignes ou l'équipe du détail du devis remplacent la base saisie."}
+      </p>
 
       <div className="pt-2 border-t border-gray-100">
         <h2 className="text-[13px] font-bold text-gray-900 mb-3">Répartition des salles par session</h2>
@@ -166,7 +180,17 @@ function DevisForm({
   );
 }
 
-export function DevisTable({ devis, devisSalles = [] }: { devis: Devis[]; devisSalles?: DevisSalle[] }) {
+export function DevisTable({
+  devis,
+  devisSalles = [],
+  devisLignes = [],
+  devisEquipe = [],
+}: {
+  devis: Devis[];
+  devisSalles?: DevisSalle[];
+  devisLignes?: DevisLigne[];
+  devisEquipe?: DevisEquipe[];
+}) {
   const [search, setSearch] = useState("");
   const [statut, setStatut] = useState("");
   const [dialog, setDialog] = useState<{ mode: "create" } | { mode: "edit"; devis: Devis } | null>(null);
@@ -315,6 +339,8 @@ export function DevisTable({ devis, devisSalles = [] }: { devis: Devis[]; devisS
               key={dialog.mode === "edit" ? dialog.devis.id : "create"}
               initial={dialog.mode === "edit" ? dialog.devis : undefined}
               initialSalles={dialog.mode === "edit" ? devisSalles.filter((s) => s.devisId === dialog.devis.id) : []}
+              initialLignes={dialog.mode === "edit" ? devisLignes.filter((l) => l.devisId === dialog.devis.id) : []}
+              initialEquipe={dialog.mode === "edit" ? devisEquipe.filter((e) => e.devisId === dialog.devis.id) : []}
               suggestedRef={suggestReference(devis)}
               pending={pending}
               onSubmit={submit}

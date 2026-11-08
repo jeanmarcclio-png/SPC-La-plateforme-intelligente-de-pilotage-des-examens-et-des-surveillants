@@ -113,8 +113,11 @@ export interface Devis {
   client: string;
   session?: string;
   statut: StatutDevis;
+  /** Totaux recalculés par le moteur (base + lignes/équipe, coefficient, frais, remise). */
   montantHT: number;
   montantTTC: number;
+  /** Base HT saisie sur le devis, avant coefficient, frais et remise. */
+  montantHTBase?: number;
   nbSurveillants: number;
   missionId?: number;
   contact?: string;
